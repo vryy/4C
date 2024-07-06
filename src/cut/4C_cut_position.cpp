@@ -19,37 +19,37 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create(
     const Element& element, const Point& point, Core::Geo::Cut::CutFloatType floattype)
 {
   const PositionFactory factory;
-  return factory.CreatePosition(element, point, floattype);
+  return factory.create_position(element, point, floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(const Element& element,
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create(const Element& element,
     const Core::LinAlg::Matrix<rdim, 1>& xyz, Core::Geo::Cut::CutFloatType floattype)
 {
   const PositionFactory factory;
-  if (rdim < factory.ProbDim())
+  if (rdim < factory.n_prob_dim())
     FOUR_C_THROW(
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
-        rdim, factory.ProbDim());
-  return factory.CreatePosition(element, xyz.data(), floattype);
+        rdim, factory.n_prob_dim());
+  return factory.create_position(element, xyz.data(), floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim, unsigned cdim, unsigned rdim_2>
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create(
     const Core::LinAlg::Matrix<rdim, cdim>& xyze, const Core::LinAlg::Matrix<rdim_2, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype)
 {
   const PositionFactory factory;
-  const unsigned probdim = factory.ProbDim();
+  const unsigned probdim = factory.n_prob_dim();
   const unsigned num_nodes_ele = Core::FE::getNumberOfElementNodes(distype);
 
   if (rdim < probdim or cdim != num_nodes_ele)
@@ -75,18 +75,18 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
         "received input : %d x 1 (rows x cols)",
         probdim, rdim_2);
 
-  return factory.CreatePosition(xyze_ptr, xyz.data(), distype, floattype);
+  return factory.create_position(xyze_ptr, xyz.data(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<rdim, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype)
 {
   const PositionFactory factory;
-  const unsigned probdim = factory.ProbDim();
+  const unsigned probdim = factory.n_prob_dim();
   const unsigned num_nodes_ele = Core::FE::getNumberOfElementNodes(distype);
 
   if (static_cast<unsigned>(xyze.numRows()) < probdim or
@@ -106,30 +106,30 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
     xyze_ptr = xyze_eptra.values();
   }
 
-  if (xyz.numRows() < probdim)
+  if (xyz.num_rows() < probdim)
     FOUR_C_THROW(
         "Dimension mismatch of xyz! \n"
         "expected input: %d x 1 (rows x cols)\n"
         "received input : %d x 1 (rows x cols)",
-        probdim, xyz.numRows());
+        probdim, xyz.num_rows());
 
-  return factory.CreatePosition(xyze_ptr, xyz.data(), distype, floattype);
+  return factory.create_position(xyze_ptr, xyz.data(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create(
     const std::vector<Node*> nodes, const Core::LinAlg::Matrix<rdim, 1>& xyz,
     Core::FE::CellType distype, Core::Geo::Cut::CutFloatType floattype)
 {
   const PositionFactory factory;
-  if (rdim < factory.ProbDim())
+  if (rdim < factory.n_prob_dim())
     FOUR_C_THROW(
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
-        rdim, factory.ProbDim());
-  return factory.CreatePosition(nodes, xyz.data(), distype, floattype);
+        rdim, factory.n_prob_dim());
+  return factory.create_position(nodes, xyz.data(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -139,12 +139,12 @@ template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_eleme
 void Core::Geo::Cut::PositionGeneric<probdim, eletype, num_nodes_element, dim,
     floattype>::construct_bounding_box()
 {
-  bbside_ = Teuchos::rcp(BoundingBox::Create());
+  bbside_ = Teuchos::rcp(BoundingBox::create());
 
   for (unsigned i = 0; i < num_nodes_element; ++i)
   {
     Core::LinAlg::Matrix<3, 1> x1(&this->xyze_(0, i), true);
-    bbside_->AddPoint(x1);
+    bbside_->add_point(x1);
   }
 }
 
@@ -152,7 +152,7 @@ void Core::Geo::Cut::PositionGeneric<probdim, eletype, num_nodes_element, dim,
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_element, unsigned dim,
     Core::Geo::Cut::CutFloatType floattype>
-bool Core::Geo::Cut::ComputePosition<probdim, eletype, num_nodes_element, dim, floattype>::Compute(
+bool Core::Geo::Cut::ComputePosition<probdim, eletype, num_nodes_element, dim, floattype>::compute(
     const double& Tol)
 {
   /* If the given point is outside the element bounding box, no need
@@ -168,9 +168,9 @@ bool Core::Geo::Cut::ComputePosition<probdim, eletype, num_nodes_element, dim, f
   //  Kernel::DebugComputePosition<probdim,eletype,floattype> cp( this->xsi_ );
   this->pos_status_ =
       (cp(this->xyze_, this->px_) ? Position::position_valid : Position::position_invalid);
-  this->compute_tolerance_ = cp.GetTolerance();
+  this->compute_tolerance_ = cp.get_tolerance();
 
-  if (this->pos_status_ == Position::position_valid) return WithinLimitsTol(Tol);
+  if (this->pos_status_ == Position::position_valid) return within_limits_tol(Tol);
 
   return false;
 }
@@ -184,7 +184,7 @@ bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element
 {
   // If the given point is outside the side's bounding box, no need to perform
   // the complex calculations
-  if (not this->bbside_->Within(1.0, &this->px_(0, 0)))
+  if (not this->bbside_->within(1.0, &this->px_(0, 0)))
   {
     this->pos_status_ = Position::position_outside_of_bbox;
     return false;
@@ -198,7 +198,7 @@ bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element
   double dist = 0.0;
   this->pos_status_ =
       (cd(this->xyze_, this->px_, dist) ? Position::position_valid : Position::position_invalid);
-  this->compute_tolerance_ = cd.GetTolerance();
+  this->compute_tolerance_ = cd.get_tolerance();
 
   return (this->pos_status_ == Position::position_valid);
 }
@@ -208,14 +208,14 @@ bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element
 template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_element, unsigned dim,
     Core::Geo::Cut::CutFloatType floattype>
 bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element, dim,
-    floattype>::Compute(const double& Tol, const bool& allow_dist)
+    floattype>::compute(const double& Tol, const bool& allow_dist)
 {
   xsi_aug_ = 0.0;
   /* If the given point is outside the side's bounding box, no need
    * to perform the complex calculations */
   if (not allow_dist)
   {
-    if (not this->bbside_->Within(1.0, &this->px_(0, 0)))
+    if (not this->bbside_->within(1.0, &this->px_(0, 0)))
     {
       this->pos_status_ = Position::position_outside_of_bbox;
       return false;
@@ -231,13 +231,13 @@ bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element
   this->pos_status_ =
       (cd(this->xyze_, this->px_, dist) ? Position::position_valid : Position::position_invalid);
 
-  this->compute_tolerance_ = cd.GetTolerance();
+  this->compute_tolerance_ = cd.get_tolerance();
 
   // if newton did not converge, try some other checks
   if (this->pos_status_ != Position::position_valid)
   {
     // if the surface has no area zero area
-    if (cd.ZeroArea())
+    if (cd.zero_area())
     {
       // Comment: If there is no area an the surface is a line it would be possible to calculate the
       // distance between the lines,
@@ -253,7 +253,7 @@ bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element
       // we will trust the distance value
       // --> this is quite critical as we cannot guarantee that the precicion of the distance
       // anymore (but only option to get a signed distance)
-      double res_nrm2 = cd.GetResidualL2Norm();
+      double res_nrm2 = cd.get_residual_l2_norm();
       if (res_nrm2 < 1.0)
       {
         std::cout
@@ -269,21 +269,21 @@ bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element
   }
 
   // Std Return in case Compute Distance converged!
-  return WithinLimitsTol(Tol, allow_dist);
+  return within_limits_tol(Tol, allow_dist);
 };
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Geo::Cut::PositionFactory::PositionFactory() : probdim_(Global::Problem::Instance()->NDim())
+Core::Geo::Cut::PositionFactory::PositionFactory() : probdim_(Global::Problem::instance()->n_dim())
 {
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::create_position(
     const Element& element, const Point& point, Core::Geo::Cut::CutFloatType floattype) const
 {
-  Core::FE::CellType distype = element.Shape();
+  Core::FE::CellType distype = element.shape();
 
   switch (distype)
   {
@@ -319,10 +319,10 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::create_position(
     const Element& element, const double* xyz, Core::Geo::Cut::CutFloatType floattype) const
 {
-  Core::FE::CellType distype = element.Shape();
+  Core::FE::CellType distype = element.shape();
 
   switch (distype)
   {
@@ -358,7 +358,7 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::create_position(
     const double* xyze, const double* xyz, const Core::FE::CellType& distype,
     Core::Geo::Cut::CutFloatType floattype) const
 {
@@ -396,7 +396,7 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::create_position(
     const std::vector<Core::Geo::Cut::Node*> nodes, const double* xyz, Core::FE::CellType distype,
     Core::Geo::Cut::CutFloatType floattype) const
 {
@@ -407,7 +407,7 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePo
     if (elements.size() != 1)
       FOUR_C_THROW("Couldn't find a unique element corresponding to the given nodes.");
 
-    distype = elements[0]->Shape();
+    distype = elements[0]->shape();
   }
 
   switch (distype)
@@ -469,47 +469,47 @@ Core::Geo::Cut::CutFloatType Core::Geo::Cut::PositionFactory::general_pos_floatt
 Core::Geo::Cut::CutFloatType Core::Geo::Cut::PositionFactory::general_dist_floattype_ =
     floattype_none;
 
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<2>(
     const Element& element, const Core::LinAlg::Matrix<2, 1>& xyz,
     Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3>(
     const Element& element, const Core::LinAlg::Matrix<3, 1>& xyz,
     Core::Geo::Cut::CutFloatType floattype);
 
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 3, 3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3, 3, 3>(
     const Core::LinAlg::Matrix<3, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 6, 3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3, 6, 3>(
     const Core::LinAlg::Matrix<3, 6>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 4, 3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3, 4, 3>(
     const Core::LinAlg::Matrix<3, 4>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 8, 3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3, 8, 3>(
     const Core::LinAlg::Matrix<3, 8>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 9, 3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3, 9, 3>(
     const Core::LinAlg::Matrix<3, 9>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 2, 3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3, 2, 3>(
     const Core::LinAlg::Matrix<3, 2>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2, 2, 2>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<2, 2, 2>(
     const Core::LinAlg::Matrix<2, 2>& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
 
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3>(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<2>(
     const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
     const Core::FE::CellType& distype, Core::Geo::Cut::CutFloatType floattype);
 
 
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<3>(
     const std::vector<Node*> nodes, const Core::LinAlg::Matrix<3, 1>& xyz,
     Core::FE::CellType distype, Core::Geo::Cut::CutFloatType floattype);
-template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2>(
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::create<2>(
     const std::vector<Node*> nodes, const Core::LinAlg::Matrix<2, 1>& xyz,
     Core::FE::CellType distype, Core::Geo::Cut::CutFloatType floattype);
 

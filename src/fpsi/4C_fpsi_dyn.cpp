@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
  *------------------------------------------------------------------------------------------------*/
 void fpsi_drt()
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // 1.- Get Communicator
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print the chuck
   if (comm.MyPID() == 0)
@@ -76,10 +76,10 @@ void fpsi_drt()
   }
 
   // 2.- Parameter reading
-  const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
   const Teuchos::ParameterList& poroelastdynparams = problem->poroelast_dynamic_params();
 
-  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
+  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
 
   // 3.- Creation of Poroelastic + Fluid problem. (discretization called inside)
   Teuchos::RCP<FPSI::FpsiBase> fpsi = Teuchos::null;
@@ -100,15 +100,15 @@ void fpsi_drt()
   //////////////////////////////////
 
   // 4.1.- Coupling and creation of combined dofmap
-  fpsi->SetupSystem();
+  fpsi->setup_system();
   // setup the linear solver, if necessary
-  fpsi->SetupSolver();
+  fpsi->setup_solver();
   // 4.2.- Solve the whole problem
-  fpsi->Timeloop();
+  fpsi->timeloop();
   Teuchos::TimeMonitor::summarize();
 
   // 5. - perform the result test
-  fpsi->TestResults(comm);
+  fpsi->test_results(comm);
 
 
   return;

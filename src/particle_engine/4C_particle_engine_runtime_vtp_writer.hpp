@@ -95,7 +95,7 @@ namespace PARTICLEENGINE
     /*!
      * \brief Write visualization files to disk
      */
-    void WriteToDisk(const double visualization_time, const int visualization_step);
+    void write_to_disk(const double visualization_time, const int visualization_step);
 
    private:
     //! communicator

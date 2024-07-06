@@ -24,11 +24,11 @@ FOUR_C_NAMESPACE_OPEN
 // initialize static variable
 Discret::ELEMENTS::FluidHDGType Discret::ELEMENTS::FluidHDGType::instance_;
 
-Discret::ELEMENTS::FluidHDGType& Discret::ELEMENTS::FluidHDGType::Instance() { return instance_; }
+Discret::ELEMENTS::FluidHDGType& Discret::ELEMENTS::FluidHDGType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidHDG* object = new Discret::ELEMENTS::FluidHDG(-1, -1);
@@ -40,7 +40,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDG")
@@ -54,7 +54,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::FluidHDG(id, owner));
@@ -67,7 +67,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::Create(
 void Discret::ELEMENTS::FluidHDGType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = Core::FE::getDimension(dwele->Shape()) + 1;
+  numdf = Core::FE::getDimension(dwele->shape()) + 1;
   dimns = numdf;
   nv = numdf - 1;
   np = 1;
@@ -77,7 +77,7 @@ void Discret::ELEMENTS::FluidHDGType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGType::ComputeNullSpace(
+void Discret::ELEMENTS::FluidHDGType::compute_null_space(
     Core::FE::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
   if (Core::FE::DiscretizationFaces* facedis = dynamic_cast<Core::FE::DiscretizationFaces*>(&dis))
@@ -87,11 +87,11 @@ void Discret::ELEMENTS::FluidHDGType::ComputeNullSpace(
     double* mode[6];
     for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
 
-    const Epetra_Map* frowmap = facedis->FaceRowMap();
+    const Epetra_Map* frowmap = facedis->face_row_map();
     for (int i = 0; i < frowmap->NumMyElements(); ++i)
     {
-      std::vector<int> dofs = facedis->Dof(0, facedis->lRowFace(i));
-      const unsigned int dim = Core::FE::getDimension(facedis->lRowFace(i)->Shape()) + 1;
+      std::vector<int> dofs = facedis->dof(0, facedis->l_row_face(i));
+      const unsigned int dim = Core::FE::getDimension(facedis->l_row_face(i)->shape()) + 1;
       FOUR_C_ASSERT(dofs.size() % dim == 0, "Could not match face dofs");
       const unsigned int ndofs = dofs.size() / dim;
       for (unsigned int i = 0; i < dofs.size(); ++i)
@@ -101,13 +101,13 @@ void Discret::ELEMENTS::FluidHDGType::ComputeNullSpace(
         mode[i / ndofs][lid] = 1.;
       }
     }
-    const Epetra_Map* erowmap = dis.ElementRowMap();
+    const Epetra_Map* erowmap = dis.element_row_map();
     for (int i = 0; i < erowmap->NumMyElements(); ++i)
     {
-      std::vector<int> dofs = dis.Dof(0, dis.lRowElement(i));
+      std::vector<int> dofs = dis.dof(0, dis.l_row_element(i));
       FOUR_C_ASSERT(dofs.size() == 1, "Expect a single pressure dof per element for fluid HDG");
       const unsigned int lid = rowmap->LID(dofs[0]);
-      const unsigned int dim = Core::FE::getDimension(dis.lRowElement(i)->Shape());
+      const unsigned int dim = Core::FE::getDimension(dis.l_row_element(i)->shape());
       for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
       mode[dim][lid] = 1.;
     }
@@ -167,7 +167,7 @@ Discret::ELEMENTS::FluidHDG::FluidHDG(const Discret::ELEMENTS::FluidHDG& old)
  |  Deep copy this instance of Fluid and return pointer to it (public)  |
  |                                                    kronbichler 05/13 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidHDG::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidHDG::clone() const
 {
   Discret::ELEMENTS::FluidHDG* newelement = new Discret::ELEMENTS::FluidHDG(*this);
   return newelement;
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::FluidHDG::pack(Core::Communication::PackBuffer& data) co
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Element
@@ -204,7 +204,7 @@ void Discret::ELEMENTS::FluidHDG::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -226,10 +226,10 @@ void Discret::ELEMENTS::FluidHDG::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Read element from input (public)                  kronbichler 06/14 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::FluidHDG::ReadElement(
+bool Discret::ELEMENTS::FluidHDG::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  bool success = Fluid::ReadElement(eletype, distype, linedef);
+  bool success = Fluid::read_element(eletype, distype, linedef);
   int degree;
   linedef->extract_int("DEG", degree);
   degree_ = degree;
@@ -260,7 +260,7 @@ int Discret::ELEMENTS::FluidHDG::evaluate(Teuchos::ParameterList& params,
   const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   std::string impltype = "hdg";
@@ -273,7 +273,7 @@ int Discret::ELEMENTS::FluidHDG::evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
           ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -292,8 +292,8 @@ int Discret::ELEMENTS::FluidHDG::evaluate(Teuchos::ParameterList& params,
     case FLD::project_fluid_field:
     case FLD::calc_pressure_average:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->EvaluateService(
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
+          ->evaluate_service(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }

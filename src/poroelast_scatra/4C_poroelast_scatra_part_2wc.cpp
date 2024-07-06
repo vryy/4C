@@ -24,13 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 PoroElastScaTra::PoroScatraPart2WC::PoroScatraPart2WC(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart(comm, timeparams),
-      scaincnp_(Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
-      structincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->structure_field()()->Dispnp())))),
-      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_field()()->Velnp()))))
+      scaincnp_(Teuchos::rcp(new Epetra_Vector(*(sca_tra_field()->phinp())))),
+      structincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->structure_field()()->dispnp())))),
+      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_field()()->velnp()))))
 {
   if (comm.MyPID() == 0) std::cout << "\n Create PoroScatraPart2WC algorithm ... \n" << std::endl;
 
-  const Teuchos::ParameterList& params = Global::Problem::Instance()->poro_scatra_control_params();
+  const Teuchos::ParameterList& params = Global::Problem::instance()->poro_scatra_control_params();
   // Get the parameters for the convergence_check
   itmax_ = params.get<int>("ITEMAX");            // default: =10
   ittol_ = params.get<double>("TOLINC_GLOBAL");  // default: =1e-6
@@ -39,15 +39,15 @@ PoroElastScaTra::PoroScatraPart2WC::PoroScatraPart2WC(
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart2WC::Timeloop()
+void PoroElastScaTra::PoroScatraPart2WC::timeloop()
 {
   // initial_calculations();
 
-  while (NotFinished())
+  while (not_finished())
   {
     prepare_time_step();
 
-    Solve();
+    solve();
 
     prepare_output();
 
@@ -66,40 +66,40 @@ void PoroElastScaTra::PoroScatraPart2WC::read_restart(int restart)
   // (Note that dofmaps might have changed in a redistribution call!)
   if (restart)
   {
-    SetScatraSolution();
-    SetPoroSolution();
+    set_scatra_solution();
+    set_poro_solution();
 
     poro_field()->read_restart(restart);
-    ScaTraField()->read_restart(restart);
+    sca_tra_field()->read_restart(restart);
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
-    if (poro_field()->HasSubmeshes())
+    if (poro_field()->has_submeshes())
       replace_dof_sets(structure_field()->discretization(), fluid_field()->discretization(),
-          ScaTraField()->discretization());
+          sca_tra_field()->discretization());
 
     // the variables need to be set on other field
-    SetScatraSolution();
-    SetPoroSolution();
+    set_scatra_solution();
+    set_poro_solution();
 
     // second restart needed due to two way coupling.
-    ScaTraField()->read_restart(restart);
+    sca_tra_field()->read_restart(restart);
     poro_field()->read_restart(restart);
 
     // in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
-    if (poro_field()->HasSubmeshes())
+    if (poro_field()->has_submeshes())
       replace_dof_sets(structure_field()->discretization(), fluid_field()->discretization(),
-          ScaTraField()->discretization());
+          sca_tra_field()->discretization());
 
-    SetTimeStep(poro_field()->Time(), restart);
+    set_time_step(poro_field()->time(), restart);
 
     if (matchinggrid_)
     {
       // Material pointers to other field were deleted during read_restart().
       // They need to be reset.
       PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-          poro_field()->structure_field()->discretization(), ScaTraField()->discretization());
+          poro_field()->structure_field()->discretization(), sca_tra_field()->discretization());
       PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-          poro_field()->fluid_field()->discretization(), ScaTraField()->discretization());
+          poro_field()->fluid_field()->discretization(), sca_tra_field()->discretization());
     }
   }
 }
@@ -107,15 +107,15 @@ void PoroElastScaTra::PoroScatraPart2WC::read_restart(int restart)
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart2WC::DoPoroStep()
+void PoroElastScaTra::PoroScatraPart2WC::do_poro_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
   }
 
   // Newton-Raphson iteration
-  poro_field()->Solve();
+  poro_field()->solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -123,7 +123,7 @@ void PoroElastScaTra::PoroScatraPart2WC::DoPoroStep()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart2WC::do_scatra_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
   }
@@ -131,7 +131,7 @@ void PoroElastScaTra::PoroScatraPart2WC::do_scatra_step()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  ScaTraField()->Solve();
+  sca_tra_field()->solve();
 }
 
 /*----------------------------------------------------------------------*/
@@ -145,13 +145,13 @@ void PoroElastScaTra::PoroScatraPart2WC::prepare_time_step(bool printheader)
 
   if (printheader) print_header();
 
-  SetPoroSolution();
-  ScaTraField()->prepare_time_step();
+  set_poro_solution();
+  sca_tra_field()->prepare_time_step();
   // set structure-based scalar transport values
-  SetScatraSolution();
+  set_scatra_solution();
 
   poro_field()->prepare_time_step();
-  SetPoroSolution();
+  set_poro_solution();
   // SetScatraSolution();
 }
 
@@ -171,9 +171,9 @@ void PoroElastScaTra::PoroScatraPart2WC::prepare_output()
 void PoroElastScaTra::PoroScatraPart2WC::update()
 {
   poro_field()->update();
-  ScaTraField()->update();
+  sca_tra_field()->update();
 
-  ScaTraField()->evaluate_error_compared_to_analytical_sol();
+  sca_tra_field()->evaluate_error_compared_to_analytical_sol();
 }
 
 /*----------------------------------------------------------------------*
@@ -182,19 +182,19 @@ void PoroElastScaTra::PoroScatraPart2WC::update()
 void PoroElastScaTra::PoroScatraPart2WC::output()
 {
   poro_field()->output();
-  ScaTraField()->check_and_write_output_and_restart();
+  sca_tra_field()->check_and_write_output_and_restart();
 }
 
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart2WC::Solve()
+void PoroElastScaTra::PoroScatraPart2WC::solve()
 {
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n*******************************************\n Poro-Scatra 2WC OUTER ITERATION "
                  "LOOP \n*******************************************\n";
@@ -206,18 +206,18 @@ void PoroElastScaTra::PoroScatraPart2WC::Solve()
 
     // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    scaincnp_->Update(1.0, *ScaTraField()->Phinp(), 0.0);
-    structincnp_->Update(1.0, *poro_field()->structure_field()->Dispnp(), 0.0);
-    fluidincnp_->Update(1.0, *poro_field()->fluid_field()->Velnp(), 0.0);
+    scaincnp_->Update(1.0, *sca_tra_field()->phinp(), 0.0);
+    structincnp_->Update(1.0, *poro_field()->structure_field()->dispnp(), 0.0);
+    fluidincnp_->Update(1.0, *poro_field()->fluid_field()->velnp(), 0.0);
 
     // set structure-based scalar transport values
-    SetScatraSolution();
+    set_scatra_solution();
 
     // solve structural system
-    DoPoroStep();
+    do_poro_step();
 
     // set mesh displacement and velocity fields
-    SetPoroSolution();
+    set_poro_solution();
 
     // solve scalar transport equation
     do_scatra_step();
@@ -254,17 +254,17 @@ bool PoroElastScaTra::PoroScatraPart2WC::convergence_check(int itnum)
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0, *(ScaTraField()->Phinp()), -1.0);
-  structincnp_->Update(1.0, *(poro_field()->structure_field()->Dispnp()), -1.0);
-  fluidincnp_->Update(1.0, *(poro_field()->fluid_field()->Velnp()), -1.0);
+  scaincnp_->Update(1.0, *(sca_tra_field()->phinp()), -1.0);
+  structincnp_->Update(1.0, *(poro_field()->structure_field()->dispnp()), -1.0);
+  fluidincnp_->Update(1.0, *(poro_field()->fluid_field()->velnp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  ScaTraField()->Phinp()->Norm2(&scanorm_L2);
+  sca_tra_field()->phinp()->Norm2(&scanorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
-  poro_field()->structure_field()->Dispnp()->Norm2(&dispnorm_L2);
+  poro_field()->structure_field()->dispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);
-  poro_field()->fluid_field()->Velnp()->Norm2(&fluidnorm_L2);
+  poro_field()->fluid_field()->velnp()->Norm2(&fluidnorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
@@ -272,7 +272,7 @@ bool PoroElastScaTra::PoroScatraPart2WC::convergence_check(int itnum)
   if (fluidnorm_L2 < 1e-6) fluidnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout
@@ -301,7 +301,7 @@ bool PoroElastScaTra::PoroScatraPart2WC::convergence_check(int itnum)
       (fluidincnorm_L2 / fluidnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       printf("\n");
       printf(
@@ -319,7 +319,7 @@ bool PoroElastScaTra::PoroScatraPart2WC::convergence_check(int itnum)
           (fluidincnorm_L2 / fluidnorm_L2 > ittol_)))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))
+    if ((get_comm().MyPID() == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                       |\n");

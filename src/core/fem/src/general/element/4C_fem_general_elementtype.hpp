@@ -64,14 +64,14 @@ namespace Core::Elements
     }
 
     /// create an element from a dat file specifier
-    virtual Teuchos::RCP<Element> Create(
+    virtual Teuchos::RCP<Element> create(
         const std::string eletype, const std::string eledistype, const int id, const int owner)
     {
       return Teuchos::null;
     }
 
     /// create an empty element
-    virtual Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) = 0;
+    virtual Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) = 0;
 
     /// initialize the element type
     virtual int initialize(Core::FE::Discretization& dis);
@@ -102,7 +102,7 @@ namespace Core::Elements
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
 
     /// do the null space computation
-    virtual Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    virtual Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
   };
 

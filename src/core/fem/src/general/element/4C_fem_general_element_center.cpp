@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<double> Core::FE::element_center_refe_coords(const Core::Elements::Element& ele)
 {
   // get nodes of element
-  const Core::Nodes::Node* const* nodes = ele.Nodes();
+  const Core::Nodes::Node* const* nodes = ele.nodes();
   const int numnodes = ele.num_node();
   const double invnumnodes = 1.0 / numnodes;
 
@@ -26,7 +26,7 @@ std::vector<double> Core::FE::element_center_refe_coords(const Core::Elements::E
     double var = 0.0;
     for (int j = 0; j < numnodes; ++j)
     {
-      const auto& x = nodes[j]->X();
+      const auto& x = nodes[j]->x();
       var += x[i];
     }
     centercoords[i] = var * invnumnodes;

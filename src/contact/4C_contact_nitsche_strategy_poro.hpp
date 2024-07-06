@@ -63,12 +63,13 @@ namespace CONTACT
     //  void Integrate(CONTACT::ParamsInterface& cparams);
     void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
+    void set_parent_state(
+        const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bp) const;
 
 

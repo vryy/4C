@@ -67,7 +67,7 @@ Mat::PlasticLinElastType Mat::PlasticLinElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::PlasticLinElastType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticLinElastType::create(const std::vector<char>& data)
 {
   Mat::PlasticLinElast* plastic = new Mat::PlasticLinElast();
   plastic->unpack(data);
@@ -95,19 +95,19 @@ void Mat::PlasticLinElast::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
-  if (params_ != nullptr) matid = params_->Id();
+  if (params_ != nullptr) matid = params_->id();
   add_to_pack(data, matid);
 
   // pack history data
   int histsize;
   // if material is not initialised, i.e. start simulation, nothing to pack
-  if (!Initialized())
+  if (!initialized())
   {
     histsize = 0;
   }
@@ -140,23 +140,23 @@ void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::PlasticLinElast*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // history data
@@ -403,7 +403,7 @@ void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // ------------------------------------------ relative effective stress
   // eta^{trial}_{n+1} = s^{trial}_{n+1} - beta^{trial}_{n+1}
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> eta(true);
-  RelStress(devstress, beta, eta);
+  rel_stress(devstress, beta, eta);
 
   // J2 = 1/2 ( (eta11^{trial})^2 + (eta22^{trial})^2 + (eta33^{trial})^2
   //      + 2 . (eta12^{trial})^2 + 2 . (eta23^{trial})^2 + 2 . (eta13^{trial})^2)
@@ -607,7 +607,7 @@ void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     // total stress
     // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
     // pressure/volumetric stress no influence due to plasticity
-    Stress(p, devstress, *stress);
+    PlasticLinElast::stress(p, devstress, *stress);
 
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . N
@@ -648,7 +648,7 @@ void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   {
     // trial state vectors = result vectors of time step n+1
     // sigma^e_{n+1} = sigma^{e,trial}_{n+1} = s^{trial}_{n+1} + p . id2
-    Stress(p, devstress, *stress);
+    PlasticLinElast::stress(p, devstress, *stress);
 
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1}
@@ -773,7 +773,7 @@ void Mat::PlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*
  | computes linear stress tensor                             dano 05/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::Stress(const double p,             // volumetric stress
+void Mat::PlasticLinElast::stress(const double p,             // volumetric stress
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            // 2nd PK-stress
 )
@@ -789,7 +789,7 @@ void Mat::PlasticLinElast::Stress(const double p,             // volumetric stre
 /*----------------------------------------------------------------------*
  | compute relative deviatoric stress tensor                 dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::RelStress(
+void Mat::PlasticLinElast::rel_stress(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& beta,       // back stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               // relative stress
@@ -1061,7 +1061,7 @@ void Mat::PlasticLinElast::fd_check(
     devdisturbstress.scale(devstressfac);
 
     // total disturb stress
-    Stress(disturbp, devdisturbstress, disturbstress);
+    PlasticLinElast::stress(disturbp, devdisturbstress, disturbstress);
 
     // add the old back stress  to the total disturb stress
     double betafac = 0.0;
@@ -1115,28 +1115,28 @@ void Mat::PlasticLinElast::fd_check(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)              dano 03/13 |
  *---------------------------------------------------------------------*/
-void Mat::PlasticLinElast::VisNames(std::map<std::string, int>& names)
+void Mat::PlasticLinElast::vis_names(std::map<std::string, int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
  | return visualization data (public)                       dano 03/13 |
  *---------------------------------------------------------------------*/
-bool Mat::PlasticLinElast::VisData(
+bool Mat::PlasticLinElast::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
-    for (int iter = 0; iter < numgp; iter++) temp += AccumulatedStrain(iter);
+    for (int iter = 0; iter < numgp; iter++) temp += accumulated_strain(iter);
     data[0] = temp / numgp;
   }
   return true;
-}  // VisData()
+}  // vis_data()
 
 
 /*----------------------------------------------------------------------*/

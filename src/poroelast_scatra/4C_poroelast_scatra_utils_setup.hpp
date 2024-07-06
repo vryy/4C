@@ -39,12 +39,12 @@ namespace PoroElastScaTra
       // disc.is cloned from the struct. one.
       //  After that, an ale-scatra disc. is cloned from the structure discretization.
 
-      Global::Problem* problem = Global::Problem::Instance();
+      Global::Problem* problem = Global::Problem::instance();
 
       // 1.-Initialization.
-      Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
-      Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("porofluid");
-      Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
+      Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
+      Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("porofluid");
+      Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
       // setup of the discretizations, including clone strategy (do not set material pointers, this
       // will be done here)
@@ -52,15 +52,15 @@ namespace PoroElastScaTra
 
       // 3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the
       // structural one.
-      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
+      if (fluiddis->num_global_nodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
-      if (!scatradis->Filled()) scatradis->fill_complete();
+      if (!scatradis->filled()) scatradis->fill_complete();
 
-      if (scatradis->NumGlobalNodes() == 0)
+      if (scatradis->num_global_nodes() == 0)
       {
         // fill scatra discretization by cloning structure discretization
         Core::FE::CloneDiscretization<PoroScatraCloneStrategy>(
-            structdis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
+            structdis, scatradis, Global::Problem::instance()->cloning_material_map());
         scatradis->fill_complete();
 
         // assign materials. Order is important here!
@@ -72,20 +72,20 @@ namespace PoroElastScaTra
         // discretization
 
         // build a proxy of the structure discretization for the scatra field
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
         // build a proxy of the fluid discretization for the scatra field
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
         // build a proxy of the fluid discretization for the structure/fluid field
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
 
         // check if ScatraField has 2 discretizations, so that coupling is possible
-        if (scatradis->AddDofSet(structdofset) != 1)
+        if (scatradis->add_dof_set(structdofset) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        if (scatradis->AddDofSet(fluiddofset) != 2)
+        if (scatradis->add_dof_set(fluiddofset) != 2)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        if (structdis->AddDofSet(scatradofset) != 2)
+        if (structdis->add_dof_set(scatradofset) != 2)
           FOUR_C_THROW("unexpected dof sets in structure field");
-        if (fluiddis->AddDofSet(scatradofset) != 2)
+        if (fluiddis->add_dof_set(scatradofset) != 2)
           FOUR_C_THROW("unexpected dof sets in fluid field");
 
         structdis->fill_complete();
@@ -101,16 +101,16 @@ namespace PoroElastScaTra
         dis.push_back(scatradis);
 
         Teuchos::ParameterList binning_params =
-            Global::Problem::Instance()->binning_strategy_params();
+            Global::Problem::instance()->binning_strategy_params();
         Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-            "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+            "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         auto element_filter = [](const Core::Elements::Element* element)
         { return Core::Binstrategy::Utils::SpecialElement::none; };
         auto rigid_sphere_radius = [](const Core::Elements::Element* element) { return 0.0; };
         auto correct_beam_center_node = [](const Core::Nodes::Node* node) { return node; };
         Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-            Global::Problem::Instance()->OutputControlFile(), dis, element_filter,
+            Global::Problem::instance()->output_control_file(), dis, element_filter,
             rigid_sphere_radius, correct_beam_center_node, false);
 
         // set material pointers
@@ -123,28 +123,29 @@ namespace PoroElastScaTra
         scatradis->fill_complete();
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
-        const int ndofpernode_fluid = fluiddis->NumDof(0, fluiddis->lRowNode(0));
+        const int ndofpernode_fluid = fluiddis->num_dof(0, fluiddis->l_row_node(0));
         const int ndofperelement_fluid = 0;
-        const int ndofpernode_struct = structdis->NumDof(0, structdis->lRowNode(0));
+        const int ndofpernode_struct = structdis->num_dof(0, structdis->l_row_node(0));
         const int ndofperelement_struct = 0;
-        const int ndofpernode_scatra = scatradis->NumDof(0, scatradis->lRowNode(0));
+        const int ndofpernode_scatra = scatradis->num_dof(0, scatradis->l_row_node(0));
         const int ndofperelement_scatra = 0;
 
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
-        if (structdis->AddDofSet(dofsetaux) != 2)
+        if (structdis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in structure field");
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
-        if (fluiddis->AddDofSet(dofsetaux) != 2) FOUR_C_THROW("unexpected dof sets in fluid field");
+        if (fluiddis->add_dof_set(dofsetaux) != 2)
+          FOUR_C_THROW("unexpected dof sets in fluid field");
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_struct, ndofperelement_struct, 0, true));
-        if (scatradis->AddDofSet(dofsetaux) != 1)
+        if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
-        if (scatradis->AddDofSet(dofsetaux) != 2)
+        if (scatradis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in scatra field");
 
         // call assign_degrees_of_freedom also for auxiliary dofsets

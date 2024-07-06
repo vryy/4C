@@ -29,16 +29,16 @@ namespace FLD
   {
     // friend class ParObjectFactory;
    public:
-    static TDSEleDataType& Instance() { return instance_; };
+    static TDSEleDataType& instance() { return instance_; };
 
     /// Create ParObject from packed data
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override
+    Core::Communication::ParObject* create(const std::vector<char>& data) override
     {
       return nullptr;
     }
 
     /// internal name of this ParObjectType.
-    std::string Name() const override { return "TDSEleData"; }
+    std::string name() const override { return "TDSEleData"; }
 
    private:
     static TDSEleDataType instance_;
@@ -75,16 +75,16 @@ namespace FLD
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return FLD::TDSEleDataType::Instance().UniqueParObjectId();
+      return FLD::TDSEleDataType::instance().unique_par_object_id();
     }
 
     //! @name Time-dependent subgrid scales
     /*!
     \brief Memory allocation for subgrid-scale arrays
     */
-    void ActivateTDS(int nquad, int nsd, double** saccn = nullptr, double** sveln = nullptr,
+    void activate_tds(int nquad, int nsd, double** saccn = nullptr, double** sveln = nullptr,
         double** svelnp = nullptr);
 
 
@@ -113,12 +113,12 @@ namespace FLD
     /*!
     \brief Returns the subgrid velocity at time n (sveln_)
     */
-    Core::LinAlg::SerialDenseMatrix Sveln() const { return sveln_; }
+    Core::LinAlg::SerialDenseMatrix sveln() const { return sveln_; }
 
     /*!
     \brief Returns the subgrid velocity at time n+1 (svelnp_)
     */
-    Core::LinAlg::SerialDenseMatrix Svelnp() const { return svelnp_; }
+    Core::LinAlg::SerialDenseMatrix svelnp() const { return svelnp_; }
 
    private:
     //! matrices of subgrid-scale acceleration values at integration points of this element

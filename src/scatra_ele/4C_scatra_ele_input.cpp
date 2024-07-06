@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | read element input                                        fang 02/15 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Transport::ReadElement(
+bool Discret::ELEMENTS::Transport::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read implementation type
@@ -73,16 +73,16 @@ bool Discret::ELEMENTS::Transport::ReadElement(
     FOUR_C_THROW("Transport element received invalid implementation type!");
 
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   // set discretization type
-  SetDisType(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::StringToCellType(distype));
 
-  if (Material()->MaterialType() == Core::Materials::m_myocard)
+  if (material()->material_type() == Core::Materials::m_myocard)
   {
-    Teuchos::RCP<Mat::Myocard> myocard = Teuchos::rcp_dynamic_cast<Mat::Myocard>(Material());
+    Teuchos::RCP<Mat::Myocard> myocard = Teuchos::rcp_dynamic_cast<Mat::Myocard>(material());
     myocard->setup(linedef);
   }
 

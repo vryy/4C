@@ -26,16 +26,16 @@ namespace Discret
       class Wall1NurbsType : public Core::Elements::ElementType
       {
        public:
-        std::string Name() const override { return "Wall1NurbsType"; }
+        std::string name() const override { return "Wall1NurbsType"; }
 
-        static Wall1NurbsType& Instance();
+        static Wall1NurbsType& instance();
 
-        Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+        Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+        Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
             const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
         void setup_element_definition(
             std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -44,7 +44,7 @@ namespace Discret
         void nodal_block_information(
             Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::LinAlg::SerialDenseMatrix compute_null_space(
             Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
        private:
@@ -76,7 +76,7 @@ namespace Discret
         \brief Deep copy this instance of Wall1 and return pointer to it
         */
 
-        Core::Elements::Element* Clone() const override;
+        Core::Elements::Element* clone() const override;
 
 
         /*!
@@ -87,18 +87,18 @@ namespace Discret
 
         \return my parobject id
         */
-        int UniqueParObjectId() const override
+        int unique_par_object_id() const override
         {
-          return Wall1NurbsType::Instance().UniqueParObjectId();
+          return Wall1NurbsType::instance().unique_par_object_id();
         }
 
 
         /// Print this element
         void print(std::ostream& os) const override;
 
-        Core::Elements::ElementType& ElementType() const override
+        Core::Elements::ElementType& element_type() const override
         {
-          return Wall1NurbsType::Instance();
+          return Wall1NurbsType::instance();
         }
 
         /*!
@@ -107,13 +107,13 @@ namespace Discret
         \return nurbs4 or nurbs9
 
         */
-        Core::FE::CellType Shape() const override;
+        Core::FE::CellType shape() const override;
 
 
         /*!
         \brief Return number of lines of this element.
         */
-        int NumLine() const override
+        int num_line() const override
         {
           if (num_node() == 9 || num_node() == 4)
           {
@@ -130,13 +130,13 @@ namespace Discret
         /*!
         \brief Get vector of Teuchos::RCPs to the lines of this element
         */
-        std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+        std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
 
         /*!
         \brief Get vector of Teuchos::RCPs to the surfaces of this element
         */
-        std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+        std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
 
        private:

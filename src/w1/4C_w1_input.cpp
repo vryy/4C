@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Wall1::ReadElement(
+bool Discret::ELEMENTS::Wall1::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // set discretization type
-  SetDisType(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::StringToCellType(distype));
 
   linedef->extract_double("THICK", thickness_);
   if (thickness_ <= 0) FOUR_C_THROW("WALL element thickness needs to be < 0");
@@ -41,16 +41,16 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
   gaussrule_ = get_gaussrule(ngp.data());
 
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   {
     const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
     const int numgp = intpoints.nquad;
-    SolidMaterial()->setup(numgp, linedef);
+    solid_material()->setup(numgp, linedef);
   }
 
   std::string buffer;
@@ -141,10 +141,10 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
     FOUR_C_THROW("ERROR: No EAS for geometrically linear WALL element");
 
   // validate kinematics of solid material
-  SolidMaterial()->ValidKinematics(kintype_);
+  solid_material()->valid_kinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
-  if (SolidMaterial()->UsesExtendedUpdate())
+  if (solid_material()->uses_extended_update())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
@@ -157,7 +157,7 @@ Core::FE::GaussRule2D Discret::ELEMENTS::Wall1::get_gaussrule(int* ngp)
 {
   Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::undefined;
 
-  switch (Shape())
+  switch (shape())
   {
     case Core::FE::CellType::quad4:
     case Core::FE::CellType::quad8:

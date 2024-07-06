@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Vele3SurfaceType Discret::ELEMENTS::Vele3SurfaceType::instance_;
 
-Discret::ELEMENTS::Vele3SurfaceType& Discret::ELEMENTS::Vele3SurfaceType::Instance()
+Discret::ELEMENTS::Vele3SurfaceType& Discret::ELEMENTS::Vele3SurfaceType::instance()
 {
   return instance_;
 }
@@ -32,8 +32,8 @@ Discret::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, cons
     Core::Nodes::Node** nodes, Discret::ELEMENTS::Vele3* parent, const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lsurface);
   return;
 }
@@ -52,7 +52,7 @@ Discret::ELEMENTS::Vele3Surface::Vele3Surface(const Discret::ELEMENTS::Vele3Surf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Vele3Surface::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Vele3Surface::clone() const
 {
   Discret::ELEMENTS::Vele3Surface* newelement = new Discret::ELEMENTS::Vele3Surface(*this);
   return newelement;
@@ -60,7 +60,7 @@ Core::Elements::Element* Discret::ELEMENTS::Vele3Surface::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Vele3Surface::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Vele3Surface::shape() const
 {
   switch (num_node())
   {
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::Vele3Surface::unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Vele3Surface::print(std::ostream& os) const
 {
-  os << "Vele3Surface " << Core::FE::CellTypeToString(Shape());
+  os << "Vele3Surface " << Core::FE::CellTypeToString(shape());
   Element::print(os);
   return;
 }
@@ -110,7 +110,7 @@ void Discret::ELEMENTS::Vele3Surface::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::lines()
 {
   return Core::Communication::ElementBoundaryFactory<Vele3Line, Vele3Surface>(
       Core::Communication::buildLines, *this);
@@ -120,7 +120,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surfa
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

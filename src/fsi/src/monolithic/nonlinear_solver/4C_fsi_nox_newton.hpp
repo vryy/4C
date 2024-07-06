@@ -42,7 +42,7 @@ namespace NOX
       bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
           const ::NOX::Solver::Generic& solver) override;
 
-      void Residual(double current, double desired);
+      void residual(double current, double desired);
 
      private:
       /// Printing Utilities

@@ -28,7 +28,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static FluidEleParameterPoro* Instance(
+      static FluidEleParameterPoro* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       void set_element_poro_parameter(Teuchos::ParameterList& params, int myrank);
@@ -37,19 +37,19 @@ namespace Discret
       void print_fluid_parameter_poro() const;
 
       //! partial integration of porosity gradient in continuity equation
-      bool PoroContiPartInt() const { return poro_conti_partint_; };
+      bool poro_conti_part_int() const { return poro_conti_partint_; };
 
       //! biot stabilization
-      bool StabBiot() const { return stab_biot_; };
+      bool stab_biot() const { return stab_biot_; };
 
       //! add convective term
-      bool ConvectiveTerm() const { return poro_convective_term_; };
+      bool convective_term() const { return poro_convective_term_; };
 
       //! scaling factor for biot stabilization
-      double StabBiotScaling() const { return stab_biot_scaling_; };
+      double stab_biot_scaling() const { return stab_biot_scaling_; };
 
       //! flag for inclusion of transient terms in continuity equation
-      bool IsStationaryConti() const
+      bool is_stationary_conti() const
       {
         return (not(transient_terms_ == Inpar::PoroElast::transient_all or
                     transient_terms_ == Inpar::PoroElast::transient_continuity_only));

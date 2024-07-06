@@ -34,7 +34,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elemen
   // preparations for element
   //--------------------------------------------------------------------------------
 
-  if (SetupCalc(ele, discretization) == -1) return 0;
+  if (setup_calc(ele, discretization) == -1) return 0;
 
   //--------------------------------------------------------------------------------
   // extract element based or nodal values
@@ -50,7 +50,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elemen
   const auto action = Teuchos::getIntegralValue<ScaTra::Action>(params, "action");
 
   // evaluate action
-  EvaluateActionOD(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
+  evaluate_action_od(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
   return 0;
@@ -61,7 +61,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elemen
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(
+int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action_od(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -128,7 +128,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
 
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
-  if (not scatrapara_->MatGP())
+  if (not scatrapara_->mat_gp())
   {
     set_internal_variables_for_mat_and_rhs();
 
@@ -149,7 +149,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
   // integration points and weights
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -158,11 +158,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
+    if (scatrapara_->mat_gp()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
-    if (scatrapara_->IsConservative()) get_divergence(vdiv, evelnp_);
+    if (scatrapara_->is_conservative()) get_divergence(vdiv, evelnp_);
 
     //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} =
     // J * N_x
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
     {
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
-      rea_phi = densnp[k] * scatravarmanager_->Phinp(k) * reamanager_->GetReaCoeff(k);
+      rea_phi = densnp[k] * scatravarmanager_->phinp(k) * reamanager_->get_rea_coeff(k);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -199,19 +199,19 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
       // subgrid-scale part of scalar
       calc_strong_residual(k, scatrares, densam[k], densnp[k], rea_phi, rhsint, tau[k]);
 
-      double rhsfac = scatraparatimint_->TimeFacRhs() * fac;
+      double rhsfac = scatraparatimint_->time_fac_rhs() * fac;
 
       //----------------------------------------------------------------
       // standard Galerkin terms
       //----------------------------------------------------------------
 
-      if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
+      if (scatraparatimint_->is_incremental() and not scatraparatimint_->is_stationary())
         calc_lin_mass_od_mesh(emat, k, ndofpernodemesh, rhsfac, fac, densam[k], densnp[k],
-            scatravarmanager_->Phinp(k), scatravarmanager_->Hist(k), J, dJ_dmesh);
+            scatravarmanager_->phinp(k), scatravarmanager_->hist(k), J, dJ_dmesh);
 
       // the order of the following three functions is important
       // and must not be changed
-      compute_rhs_int(rhsint, densam[k], densnp[k], scatravarmanager_->Hist(k));
+      compute_rhs_int(rhsint, densam[k], densnp[k], scatravarmanager_->hist(k));
 
       // diffusive part used in stabilization terms
       Core::LinAlg::Matrix<nen_, 1> diff(true);
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         get_laplacian_strong_form(diff);
-        diff.scale(diffmanager_->GetIsotropicDiff(k));
+        diff.scale(diffmanager_->get_isotropic_diff(k));
       }
 
       recompute_scatra_res_for_rhs(scatrares, k, diff, densn[k], densnp[k], rea_phi, rhsint);
@@ -235,19 +235,19 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
       //----------------------------------------------------------------
-      if (not scatrapara_->IsConservative())
+      if (not scatrapara_->is_conservative())
       {
         calc_conv_od_mesh(emat, k, ndofpernodemesh, fac, rhsfac, densnp[k], J,
-            scatravarmanager_->GradPhi(k), scatravarmanager_->ConVel(k));
+            scatravarmanager_->grad_phi(k), scatravarmanager_->con_vel(k));
       }
       else
-        calc_conv_cons_od_mesh(emat, k, fac, scatraparatimint_->TimeFac() * fac, densnp[k], J);
+        calc_conv_cons_od_mesh(emat, k, fac, scatraparatimint_->time_fac() * fac, densnp[k], J);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      calc_diff_od_mesh(emat, k, ndofpernodemesh, diffmanager_->GetIsotropicDiff(k), fac, rhsfac, J,
-          scatravarmanager_->GradPhi(k), scatravarmanager_->ConVel(k), dJ_dmesh);
+      calc_diff_od_mesh(emat, k, ndofpernodemesh, diffmanager_->get_isotropic_diff(k), fac, rhsfac,
+          J, scatravarmanager_->grad_phi(k), scatravarmanager_->con_vel(k), dJ_dmesh);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term
@@ -289,7 +289,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
 
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
-  if (not scatrapara_->MatGP())
+  if (not scatrapara_->mat_gp())
   {
     set_internal_variables_for_mat_and_rhs();
 
@@ -310,7 +310,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
   // integration points and weights
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -319,18 +319,18 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
+    if (scatrapara_->mat_gp()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
-    if (scatrapara_->IsConservative()) get_divergence(vdiv, evelnp_);
+    if (scatrapara_->is_conservative()) get_divergence(vdiv, evelnp_);
 
     // loop all scalars
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
     {
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
-      rea_phi = densnp[k] * scatravarmanager_->Phinp(k) * reamanager_->GetReaCoeff(k);
+      rea_phi = densnp[k] * scatravarmanager_->phinp(k) * reamanager_->get_rea_coeff(k);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -339,17 +339,17 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
       double rhsint(0.0);
       get_rhs_int(rhsint, densnp[k], k);
 
-      const double timefacfac = scatraparatimint_->TimeFac() * fac;
+      const double timefacfac = scatraparatimint_->time_fac() * fac;
 
       //----------------------------------------------------------------
       // standard Galerkin terms
       //----------------------------------------------------------------
 
-      if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
+      if (scatraparatimint_->is_incremental() and not scatraparatimint_->is_stationary())
         calc_lin_mass_od_fluid(emat, k, numdofpernode_fluid, timefacfac, fac, densam[k], densnp[k],
-            scatravarmanager_->Phinp(k), scatravarmanager_->Hist(k));
+            scatravarmanager_->phinp(k), scatravarmanager_->hist(k));
 
-      compute_rhs_int(rhsint, densam[k], densnp[k], scatravarmanager_->Hist(k));
+      compute_rhs_int(rhsint, densam[k], densnp[k], scatravarmanager_->hist(k));
 
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
@@ -361,17 +361,17 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
       //----------------------------------------------------------------
       // calculation of convective element matrix in convective form
       calc_mat_conv_od_fluid(
-          emat, k, numdofpernode_fluid, timefacfac, densnp[k], scatravarmanager_->GradPhi(k));
+          emat, k, numdofpernode_fluid, timefacfac, densnp[k], scatravarmanager_->grad_phi(k));
 
       // add conservative contributions
-      if (scatrapara_->IsConservative())
+      if (scatrapara_->is_conservative())
         calc_mat_conv_add_cons_od_fluid(
-            emat, k, numdofpernode_fluid, timefacfac, densnp[k], scatravarmanager_->Phinp(k));
+            emat, k, numdofpernode_fluid, timefacfac, densnp[k], scatravarmanager_->phinp(k));
 
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      calc_diff_od_fluid(emat, k, numdofpernode_fluid, timefacfac, scatravarmanager_->GradPhi(k));
+      calc_diff_od_fluid(emat, k, numdofpernode_fluid, timefacfac, scatravarmanager_->grad_phi(k));
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term
@@ -446,7 +446,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_mesh(
 {
   double vtrans = 0.0;
 
-  if (scatraparatimint_->IsGenAlpha())
+  if (scatraparatimint_->is_gen_alpha())
     vtrans = rhsfac * densam * hist / J;
   else
   {
@@ -503,7 +503,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_od_mesh(
     const double rhsfac, const double densnp, const double J,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const Core::LinAlg::Matrix<nsd_, 1>& convelint)
 {
-  if (not scatraparatimint_->IsStationary())
+  if (not scatraparatimint_->is_stationary())
   {
     // convective term in convective form
     const double densfac = fac * densnp;
@@ -542,14 +542,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
     const double J  //!< Jacobian determinant of mapping between spatial and parameter coordinates
 ) const
 {
-  if (not scatraparatimint_->IsStationary())
+  if (not scatraparatimint_->is_stationary())
   {
     // d (phi div v_s)
     // --------------- = phi*derxy*(d_n+1)/theta/dt (plus shape derivatives, see below)
     //    d (d_n+1)
     //
     // prefactor is fac, since timefacfac/theta/dt = fac
-    const double densfac = scatravarmanager_->Phinp(k) * fac * densnp;
+    const double densfac = scatravarmanager_->phinp(k) * fac * densnp;
     for (unsigned vi = 0; vi < nen_; ++vi)
     {
       const int fvi = vi * numdofpernode_ + k;
@@ -594,7 +594,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
       for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const int fvi = vi * numdofpernode_ + k;
-        const double v = scatravarmanager_->Phinp(k) * timefacfac / J * funct_(vi);
+        const double v = scatravarmanager_->phinp(k) * timefacfac / J * funct_(vi);
 
         emat(fvi, ui * 3) += v * v0;
         emat(fvi, ui * 3 + 1) += v * v1;
@@ -608,7 +608,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
     for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
     {
       const int fvi = vi * numdofpernode_ + k;
-      const double v = scatravarmanager_->Phinp(k) * timefacfac / J * funct_(vi);
+      const double v = scatravarmanager_->phinp(k) * timefacfac / J * funct_(vi);
 
       for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
@@ -946,7 +946,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_react_od_mesh(
     const double rhsfac, const double rea_phi, const double J,
     const Core::LinAlg::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
-  if (reamanager_->Active())
+  if (reamanager_->active())
   {
     // standard Galerkin term
     double vrhs = rhsfac * rea_phi / J;

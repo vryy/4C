@@ -54,7 +54,7 @@ namespace FLD
     \brief set scalar fields
 
     */
-    void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
+    void set_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
         Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override;
 
@@ -102,7 +102,7 @@ namespace FLD
     \brief return thermpressaf_ in TimIntLoma
 
     */
-    double ReturnThermpressaf() override { return thermpressaf_; }
+    double return_thermpressaf() override { return thermpressaf_; }
 
 
    protected:

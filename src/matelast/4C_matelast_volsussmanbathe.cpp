@@ -26,7 +26,7 @@ Mat::Elastic::VolSussmanBathe::VolSussmanBathe(Mat::Elastic::PAR::VolSussmanBath
 {
 }
 
-void Mat::Elastic::VolSussmanBathe::AddStrainEnergy(double& psi,
+void Mat::Elastic::VolSussmanBathe::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
@@ -48,7 +48,7 @@ void Mat::Elastic::VolSussmanBathe::add_derivatives_modified(Core::LinAlg::Matri
   ddPmodII(2) += kappa;
 }
 
-void Mat::Elastic::VolSussmanBathe::Add3rdVolDeriv(
+void Mat::Elastic::VolSussmanBathe::add3rd_vol_deriv(
     const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   d3PsiVolDJ3 += 0.;

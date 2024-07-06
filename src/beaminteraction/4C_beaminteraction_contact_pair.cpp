@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamContactPair::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::Create(
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::create(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
     const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>& beam_interaction_conditions_ptr)
 {
@@ -79,12 +79,12 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
       dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele_ptrs[1]) != nullptr ||
       dynamic_cast<Discret::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_sphere =
-      ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance();
+      ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance();
 
   if (other_is_beam or other_is_solid)
   {
     // Beam-to-beam and beam-to-solid pairs are exclusively created by conditions.
-    return beam_interaction_conditions_ptr->CreateContactPair(ele_ptrs);
+    return beam_interaction_conditions_ptr->create_contact_pair(ele_ptrs);
   }
   else if (other_is_sphere)
   {
@@ -95,7 +95,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
     const Discret::ELEMENTS::Beam3Base* beamele1 =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
 
-    const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
+    const unsigned int numnodes_centerline = beamele1->num_centerline_nodes();
     const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;
 
     switch (numnodalvalues)

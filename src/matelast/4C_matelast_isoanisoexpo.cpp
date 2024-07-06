@@ -34,13 +34,13 @@ Mat::Elastic::IsoAnisoExpo::IsoAnisoExpo(Mat::Elastic::PAR::IsoAnisoExpo* params
 {
 }
 
-void Mat::Elastic::IsoAnisoExpo::PackSummand(Core::Communication::PackBuffer& data) const
+void Mat::Elastic::IsoAnisoExpo::pack_summand(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, a_);
   add_to_pack(data, structural_tensor_);
 }
 
-void Mat::Elastic::IsoAnisoExpo::UnpackSummand(
+void Mat::Elastic::IsoAnisoExpo::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, a_);
@@ -54,7 +54,7 @@ void Mat::Elastic::IsoAnisoExpo::setup(int numgp, Input::LineDefinition* linedef
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
     Core::LinAlg::Matrix<3, 3> Id(true);
     for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-    SetFiberVecs(-1.0, Id, Id);
+    set_fiber_vecs(-1.0, Id, Id);
   }
 
   // path if fibers are given in .dat file
@@ -65,19 +65,19 @@ void Mat::Elastic::IsoAnisoExpo::setup(int numgp, Input::LineDefinition* linedef
     {
       // Read in of data
       Core::LinAlg::Matrix<3, 3> locsys(true);
-      ReadRadAxiCir(linedef, locsys);
+      read_rad_axi_cir(linedef, locsys);
 
       Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
-      SetFiberVecs(0.0, locsys, Id);
+      set_fiber_vecs(0.0, locsys, Id);
     }
 
     // FIBER1 nomenclature
     else if (linedef->has_named("FIBER1"))
     {
       // Read in of data
-      ReadFiber(linedef, "FIBER1", a_);
+      read_fiber(linedef, "FIBER1", a_);
       params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 
@@ -138,7 +138,7 @@ void Mat::Elastic::IsoAnisoExpo::add_stress_aniso_modified(const Core::LinAlg::M
   cmat.update(1.0, cmataniso, 1.0);
 }
 
-void Mat::Elastic::IsoAnisoExpo::GetDerivativesAniso(Core::LinAlg::Matrix<2, 1>& dPI_aniso,
+void Mat::Elastic::IsoAnisoExpo::get_derivatives_aniso(Core::LinAlg::Matrix<2, 1>& dPI_aniso,
     Core::LinAlg::Matrix<3, 1>& ddPII_aniso, Core::LinAlg::Matrix<4, 1>& dddPIII_aniso,
     const double I4, const int gp, const int eleGID)
 {
@@ -161,14 +161,14 @@ void Mat::Elastic::IsoAnisoExpo::GetDerivativesAniso(Core::LinAlg::Matrix<2, 1>&
                      exp(k2 * (I4 - 1.0) * (I4 - 1.0));
 };
 
-void Mat::Elastic::IsoAnisoExpo::GetFiberVecs(
+void Mat::Elastic::IsoAnisoExpo::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void Mat::Elastic::IsoAnisoExpo::SetFiberVecs(const double newgamma,
+void Mat::Elastic::IsoAnisoExpo::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90))

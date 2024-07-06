@@ -85,11 +85,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -97,20 +97,20 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tri3:
-            return Discret::ELEMENTS::WallTri3PoroType::Instance().UniqueParObjectId();
+            return Discret::ELEMENTS::WallTri3PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::quad4:
-            return Discret::ELEMENTS::WallQuad4PoroType::Instance().UniqueParObjectId();
+            return Discret::ELEMENTS::WallQuad4PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::quad9:
-            return Discret::ELEMENTS::WallQuad9PoroType::Instance().UniqueParObjectId();
+            return Discret::ELEMENTS::WallQuad9PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::nurbs4:
-            return Discret::ELEMENTS::WallNurbs4PoroType::Instance().UniqueParObjectId();
+            return Discret::ELEMENTS::WallNurbs4PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::nurbs9:
-            return Discret::ELEMENTS::WallNurbs9PoroType::Instance().UniqueParObjectId();
+            return Discret::ELEMENTS::WallNurbs9PoroType::instance().unique_par_object_id();
           default:
             FOUR_C_THROW("unknown element type");
             break;
@@ -135,10 +135,10 @@ namespace Discret
       void unpack(const std::vector<char>& data) override;
 
       //! Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       //! Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //! @name Access methods
 
@@ -147,25 +147,25 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tri3:
-            return Discret::ELEMENTS::WallTri3PoroType::Instance();
+            return Discret::ELEMENTS::WallTri3PoroType::instance();
           case Core::FE::CellType::quad4:
-            return Discret::ELEMENTS::WallQuad4PoroType::Instance();
+            return Discret::ELEMENTS::WallQuad4PoroType::instance();
           case Core::FE::CellType::quad9:
-            return Discret::ELEMENTS::WallQuad9PoroType::Instance();
+            return Discret::ELEMENTS::WallQuad9PoroType::instance();
           case Core::FE::CellType::nurbs4:
-            return Discret::ELEMENTS::WallNurbs4PoroType::Instance();
+            return Discret::ELEMENTS::WallNurbs4PoroType::instance();
           case Core::FE::CellType::nurbs9:
-            return Discret::ELEMENTS::WallNurbs9PoroType::Instance();
+            return Discret::ELEMENTS::WallNurbs9PoroType::instance();
           default:
             FOUR_C_THROW("unknown element type");
             break;
         }
-        return Discret::ELEMENTS::WallQuad4PoroType::Instance();
+        return Discret::ELEMENTS::WallQuad4PoroType::instance();
       }
 
       //!@}
@@ -205,7 +205,7 @@ namespace Discret
 
 
       //! initialize the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitElement();
+      virtual void init_element();
 
       //!@}
 
@@ -214,7 +214,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
       //!@}
@@ -243,7 +243,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -259,7 +259,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
 
       //! return anisotropic permeability directions (used for cloning)

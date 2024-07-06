@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroFluid::create_mate
 
 Mat::ScatraMatMultiPoroFluidType Mat::ScatraMatMultiPoroFluidType::instance_;
 
-Core::Communication::ParObject* Mat::ScatraMatMultiPoroFluidType::Create(
+Core::Communication::ParObject* Mat::ScatraMatMultiPoroFluidType::create(
     const std::vector<char>& data)
 {
   Mat::ScatraMatMultiPoroFluid* scatra_mat = new Mat::ScatraMatMultiPoroFluid();
@@ -67,12 +67,12 @@ void Mat::ScatraMatMultiPoroFluid::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // add base class material
@@ -85,23 +85,23 @@ void Mat::ScatraMatMultiPoroFluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ScatraMatMultiPoroFluid*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // extract base class material
@@ -129,7 +129,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroVolFrac::create_ma
 
 Mat::ScatraMatMultiPoroVolFracType Mat::ScatraMatMultiPoroVolFracType::instance_;
 
-Core::Communication::ParObject* Mat::ScatraMatMultiPoroVolFracType::Create(
+Core::Communication::ParObject* Mat::ScatraMatMultiPoroVolFracType::create(
     const std::vector<char>& data)
 {
   Mat::ScatraMatMultiPoroVolFrac* scatra_mat = new Mat::ScatraMatMultiPoroVolFrac();
@@ -158,12 +158,12 @@ void Mat::ScatraMatMultiPoroVolFrac::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // add base class material
@@ -176,23 +176,23 @@ void Mat::ScatraMatMultiPoroVolFrac::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ScatraMatMultiPoroVolFrac*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // extract base class material
@@ -217,7 +217,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroSolid::create_mate
 
 Mat::ScatraMatMultiPoroSolidType Mat::ScatraMatMultiPoroSolidType::instance_;
 
-Core::Communication::ParObject* Mat::ScatraMatMultiPoroSolidType::Create(
+Core::Communication::ParObject* Mat::ScatraMatMultiPoroSolidType::create(
     const std::vector<char>& data)
 {
   Mat::ScatraMatMultiPoroSolid* scatra_mat = new Mat::ScatraMatMultiPoroSolid();
@@ -243,12 +243,12 @@ void Mat::ScatraMatMultiPoroSolid::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // add base class material
@@ -261,23 +261,23 @@ void Mat::ScatraMatMultiPoroSolid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ScatraMatMultiPoroSolid*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // extract base class material
@@ -310,7 +310,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroTemperature::creat
 
 Mat::ScatraMatMultiPoroTemperatureType Mat::ScatraMatMultiPoroTemperatureType::instance_;
 
-Core::Communication::ParObject* Mat::ScatraMatMultiPoroTemperatureType::Create(
+Core::Communication::ParObject* Mat::ScatraMatMultiPoroTemperatureType::create(
     const std::vector<char>& data)
 {
   Mat::ScatraMatMultiPoroTemperature* scatra_mat = new Mat::ScatraMatMultiPoroTemperature();
@@ -337,12 +337,12 @@ void Mat::ScatraMatMultiPoroTemperature::pack(Core::Communication::PackBuffer& d
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // add base class material
@@ -355,23 +355,23 @@ void Mat::ScatraMatMultiPoroTemperature::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ScatraMatMultiPoroTemperature*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // extract base class material

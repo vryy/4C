@@ -37,7 +37,7 @@ int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -95,7 +95,7 @@ int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
       // need current global displacement and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual
       // values for each degree of freedom
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -116,12 +116,12 @@ int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
       //
       // get element displcements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       // get residual displacements
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
@@ -280,9 +280,9 @@ void Discret::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params,
   // current nodal position
   for (int j = 0; j < 3; ++j)
   {
-    xcurr(j) = Nodes()[0]->X()[j] + disp[j];          // first node
-    xcurr(j + 3) = Nodes()[1]->X()[j] + disp[3 + j];  // second node
-    xcurr(j + 6) = Nodes()[2]->X()[j] + disp[6 + j];  // third node
+    xcurr(j) = nodes()[0]->x()[j] + disp[j];          // first node
+    xcurr(j + 3) = nodes()[1]->x()[j] + disp[3 + j];  // second node
+    xcurr(j + 6) = nodes()[2]->x()[j] + disp[6 + j];  // third node
   }
 
   // auxiliary vector for both internal force and stiffness matrix
@@ -305,16 +305,16 @@ void Discret::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params,
   deltatheta = acos(s);
 
   // spring constant from material law
-  Teuchos::RCP<const Core::Mat::Material> currmat = Material();
+  Teuchos::RCP<const Core::Mat::Material> currmat = material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element
-  switch (currmat->MaterialType())
+  switch (currmat->material_type())
   {
     case Core::Materials::m_spring:  // only elastic spring supported
     {
       const Mat::Spring* actmat = static_cast<const Mat::Spring*>(currmat.get());
-      spring = actmat->Stiffness();
+      spring = actmat->stiffness();
     }
     break;
     default:
@@ -346,9 +346,9 @@ void Discret::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   // current nodal position
   for (int j = 0; j < 3; ++j)
   {
-    xcurr(j) = Nodes()[0]->X()[j] + disp[j];          // first node
-    xcurr(j + 3) = Nodes()[1]->X()[j] + disp[3 + j];  // second node
-    xcurr(j + 6) = Nodes()[2]->X()[j] + disp[6 + j];  // third node
+    xcurr(j) = nodes()[0]->x()[j] + disp[j];          // first node
+    xcurr(j + 3) = nodes()[1]->x()[j] + disp[3 + j];  // second node
+    xcurr(j + 6) = nodes()[2]->x()[j] + disp[6 + j];  // third node
   }
 
   // auxiliary vector for both internal force and stiffness matrix
@@ -437,16 +437,16 @@ void Discret::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   }
 
   // spring constant from material law
-  Teuchos::RCP<const Core::Mat::Material> currmat = Material();
+  Teuchos::RCP<const Core::Mat::Material> currmat = material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element
-  switch (currmat->MaterialType())
+  switch (currmat->material_type())
   {
     case Core::Materials::m_spring:  // only elastic spring supported
     {
       const Mat::Spring* actmat = static_cast<const Mat::Spring*>(currmat.get());
-      spring = actmat->Stiffness();
+      spring = actmat->stiffness();
     }
     break;
     default:
@@ -596,82 +596,6 @@ inline void Discret::ELEMENTS::Torsion3::node_shift(
   FOUR_C_THROW(
       "Torsion3::node_shift is deprecated; if needed adapt parameter handling according to "
       "parameter interface pointer first!");
-
-  //  /*get number of degrees of freedom per node; note: the following function assumes the same
-  //  number of degrees
-  //   *of freedom for each element node*/
-  //  int numdof = NumDofPerNode(*(Nodes()[0]));
-  //
-  //  double time = params.get<double>("total time",0.0);
-  //  double starttime = params.get<double>("STARTTIMEACT",0.0);
-  //  double dt = params.get<double>("delta time");
-  //  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
-  //  int curvenumber = params.get<int> ("CURVENUMBER", -1)-1;
-  //  int dbcdispdir = params.get<int> ("OSCILLDIR", -1)-1;
-  //  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
-  //  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
-  //  Inpar::STATMECH::DBCType dbctype = params.get<Inpar::STATMECH::DBCType>("DBCTYPE",
-  //  Inpar::STATMECH::dbctype_std); bool shearflow = false;
-  //  if(dbctype==Inpar::STATMECH::dbctype_shearfixed ||
-  //  dbctype==Inpar::STATMECH::dbctype_sheartrans || dbctype==Inpar::STATMECH::dbctype_affineshear)
-  //    shearflow = true;
-  //
-  //  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0)
-  //  > 0.0, this
-  //   * method has to change the displacement variables*/
-  //  if(periodlength->at(0) > 0.0)
-  //    //loop through all nodes except for the first node which remains fixed as reference node
-  //    for(int i=1;i<nnode;i++)
-  //    {
-  //      for(int dof= ndim - 1; dof > -1; dof--)
-  //      {
-  //        /*if the distance in some coordinate direction between some node and the first node
-  //        becomes smaller by adding or subtracting
-  //         * the period length, the respective node has obviously been shifted due to periodic
-  //         boundary conditions and should be shifted
-  //         * back for evaluation of element matrices and vectors; this way of detecting shifted
-  //         nodes works as long as the element length
-  //         * is smaller than half the periodic length*/
-  //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + periodlength->at(dof) -
-  //        (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs(
-  //        (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) )
-  //        )
-  //        {
-  //          disp[numdof*i+dof] += periodlength->at(dof);
-  //
-  //          /*the upper domain surface orthogonal to the z-direction may be subject to shear
-  //          Dirichlet boundary condition; the lower surface
-  //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper
-  //           z-surface and reenter through the lower *z-surface, the shear has to be substracted
-  //           from nodal coordinates in that case */
-  //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
-  //          fabs(time-starttime)>dt/1e4)
-  //            disp[numdof*i+dbcdispdir] +=
-  //            shearamplitude*Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
-  //        }
-  //
-  //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) -
-  //        (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs(
-  //        (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) )
-  //        )
-  //        {
-  //          disp[numdof*i+dof] -= periodlength->at(dof);
-  //
-  //          /*the upper domain surface orthogonal to the z-direction may be subject to shear
-  //          Dirichlet boundary condition; the lower surface
-  //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower
-  //           z-surface and reenter through the upper *z-surface, the shear has to be added to
-  //           nodal coordinates in that case */
-  //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
-  //          fabs(time-starttime)>dt/1e4)
-  //            disp[numdof*i+dbcdispdir] -=
-  //            shearamplitude*Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
-  //        }
-  //      }
-  //    }
-
-
-  return;
 
 }  // Discret::ELEMENTS::Torsion3::node_shift
 

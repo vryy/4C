@@ -34,7 +34,7 @@ namespace
       const std::vector<int>& mysize, const std::vector<char>& mydata,
       std::vector<int>& receivedsize, std::vector<char>& receiveddata)
   {
-    const Epetra_Comm& comm = exporter.Comm();
+    const Epetra_Comm& comm = exporter.get_comm();
 
     const int numprocs = comm.NumProc();
     const int myrank = comm.MyPID();
@@ -61,7 +61,7 @@ namespace
 
     // receive size information
     int length = 0;
-    exporter.ReceiveAny(frompid, tag, receivedsize, length);
+    exporter.receive_any(frompid, tag, receivedsize, length);
     if (length != static_cast<int>(mysize.size()) or tag != frompid)
       FOUR_C_THROW(
           "Size information got mixed up!\n"
@@ -69,10 +69,10 @@ namespace
           "Received tag    = %d, Expected tag    = %d",
           length, mysize.size(), tag, frompid);
 
-    exporter.Wait(sizerequest);
+    exporter.wait(sizerequest);
 
     // receive the gids
-    exporter.ReceiveAny(frompid, tag, receiveddata, length);
+    exporter.receive_any(frompid, tag, receiveddata, length);
     if (length != receivedsize[0] or tag != frompid * 10)
       FOUR_C_THROW(
           "Data information got mixed up! \n"
@@ -80,7 +80,7 @@ namespace
           "Received tag    = %d, Expected tag    = %d",
           length, receivedsize[0], tag, frompid * 10);
 
-    exporter.Wait(datarequest);
+    exporter.wait(datarequest);
   }
 
   template <typename T>
@@ -223,7 +223,7 @@ void Solid::MODELEVALUATOR::Data::setup()
 {
   check_init();
 
-  const std::set<enum Inpar::Solid::ModelType>& mt = sdyn_ptr_->GetModelTypes();
+  const std::set<enum Inpar::Solid::ModelType>& mt = sdyn_ptr_->get_model_types();
   std::set<enum Inpar::Solid::ModelType>::const_iterator it;
   // setup model type specific data containers
   for (it = mt.begin(); it != mt.end(); ++it)
@@ -254,7 +254,7 @@ void Solid::MODELEVALUATOR::Data::setup()
 
   /* so far, we need the special parameter data container for beams only if
    * the applied beam elements have non-additive rotation vector DOFs */
-  if (sdyn_ptr_->HaveEleTech(Inpar::Solid::EleTech::rotvec))
+  if (sdyn_ptr_->have_ele_tech(Inpar::Solid::EleTech::rotvec))
   {
     beam_data_ptr_ = Teuchos::rcp(new BeamData());
     beam_data_ptr_->init();
@@ -326,8 +326,8 @@ void Solid::MODELEVALUATOR::Data::fill_norm_type_maps()
   {
     for (qiter = qtypes.begin(); qiter != qtypes.end(); ++qiter)
     {
-      normtype_force_[*qiter] = sdyn_ptr_->GetNoxNormType();
-      normtype_update_[*qiter] = sdyn_ptr_->GetNoxNormType();
+      normtype_force_[*qiter] = sdyn_ptr_->get_nox_norm_type();
+      normtype_update_[*qiter] = sdyn_ptr_->get_nox_norm_type();
     }
   }
 
@@ -501,7 +501,7 @@ bool Solid::MODELEVALUATOR::Data::is_ele_eval_error() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::MODELEVALUATOR::Data::IsPredictorState() const
+bool Solid::MODELEVALUATOR::Data::is_predictor_state() const
 {
   check_init_setup();
 

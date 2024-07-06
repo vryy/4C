@@ -55,7 +55,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElastHyper::create_material()
 Mat::ElastHyperType Mat::ElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::ElastHyperType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ElastHyperType::create(const std::vector<char>& data)
 {
   auto* elhy = new Mat::ElastHyper();
   elhy->unpack(data);
@@ -85,7 +85,7 @@ Mat::ElastHyper::ElastHyper(Mat::PAR::ElastHyper* params)
   for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
@@ -100,11 +100,11 @@ void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
   summandProperties_.pack(data);
 
@@ -115,7 +115,7 @@ void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
     // loop map of associated potential summands
     for (const auto& p : potsum_)
     {
-      p->PackSummand(data);
+      p->pack_summand(data);
     }
   }
 }
@@ -131,23 +131,23 @@ void Mat::ElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = dynamic_cast<Mat::PAR::ElastHyper*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -163,7 +163,7 @@ void Mat::ElastHyper::unpack(const std::vector<char>& data)
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summand_matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(summand_matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(summand_matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -171,7 +171,7 @@ void Mat::ElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (auto& p : potsum_)
     {
-      p->UnpackSummand(data, position);
+      p->unpack_summand(data, position);
       p->register_anisotropy_extensions(anisotropy_);
     }
 
@@ -186,7 +186,7 @@ void Mat::ElastHyper::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Mat::ElastHyper::MatID(const unsigned index) const
+int Mat::ElastHyper::mat_id(const unsigned index) const
 {
   if ((int)index >= params_->nummat_)
   {
@@ -207,7 +207,7 @@ double Mat::ElastHyper::shear_mod() const
     // loop map of associated potential summands
     for (const auto& p : potsum_)
     {
-      p->AddShearMod(haveshearmod, shearmod);
+      p->add_shear_mod(haveshearmod, shearmod);
     }
   }
   if (!haveshearmod)
@@ -219,13 +219,13 @@ double Mat::ElastHyper::shear_mod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::ElastHyper::GetYoung()
+double Mat::ElastHyper::get_young()
 {
   double young;
   double shear;
   double bulk;
   young = shear = bulk = 0.;
-  for (auto& p : potsum_) p->AddYoungsMod(young, shear, bulk);
+  for (auto& p : potsum_) p->add_youngs_mod(young, shear, bulk);
 
   if (bulk != 0. || shear != 0.) young += 9. * bulk * shear / (3. * bulk + shear);
 
@@ -234,12 +234,12 @@ double Mat::ElastHyper::GetYoung()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
+void Mat::ElastHyper::setup_aaa(Teuchos::ParameterList& params, const int eleGID)
 {
   // loop map of associated potential summands
   for (auto& p : potsum_)
   {
-    p->SetupAAA(params, eleGID);
+    p->setup_aaa(params, eleGID);
   }
 }
 
@@ -291,34 +291,34 @@ void Mat::ElastHyper::update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::GetFiberVecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
+void Mat::ElastHyper::get_fiber_vecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
     for (auto& p : potsum_)
     {
-      p->GetFiberVecs(fibervecs);
+      p->get_fiber_vecs(fibervecs);
     }
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::EvaluateFiberVecs(const double newgamma,
+void Mat::ElastHyper::evaluate_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
     for (auto& p : potsum_)
     {
-      p->SetFiberVecs(newgamma, locsys, defgrd);
+      p->set_fiber_vecs(newgamma, locsys, defgrd);
     }
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::StrainEnergy(
+void Mat::ElastHyper::strain_energy(
     const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   static Core::LinAlg::Matrix<6, 1> C_strain(true);
@@ -335,7 +335,7 @@ void Mat::ElastHyper::StrainEnergy(
   // loop map of associated potential summands
   for (const auto& p : potsum_)
   {
-    p->AddStrainEnergy(psi, prinv, modinv, glstrain, gp, eleGID);
+    p->add_strain_energy(psi, prinv, modinv, glstrain, gp, eleGID);
   }
 }
 
@@ -803,12 +803,12 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::VisNames(std::map<std::string, int>& names)
+void Mat::ElastHyper::vis_names(std::map<std::string, int>& names)
 {
-  if (anisotropic_principal() or AnisotropicModified())
+  if (anisotropic_principal() or anisotropic_modified())
   {
     std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs;
-    GetFiberVecs(fibervecs);
+    get_fiber_vecs(fibervecs);
     int vissize = fibervecs.size();
     std::string fiber;
     for (int i = 0; i < vissize; i++)
@@ -823,21 +823,21 @@ void Mat::ElastHyper::VisNames(std::map<std::string, int>& names)
   // loop map of associated potential summands
   for (auto& p : potsum_)
   {
-    p->VisNames(names);
+    p->vis_names(names);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Mat::ElastHyper::VisData(
+bool Mat::ElastHyper::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   //
   int return_val = 0;
-  if (anisotropic_principal() or AnisotropicModified())
+  if (anisotropic_principal() or anisotropic_modified())
   {
     std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs;
-    GetFiberVecs(fibervecs);
+    get_fiber_vecs(fibervecs);
     int vissize = fibervecs.size();
     for (int i = 0; i < vissize; i++)
     {
@@ -859,19 +859,19 @@ bool Mat::ElastHyper::VisData(
   // loop map of associated potential summands
   for (auto& p : potsum_)
   {
-    return_val += static_cast<int>(p->VisData(name, data, numgp, eleID));
+    return_val += static_cast<int>(p->vis_data(name, data, numgp, eleID));
   }
   return (bool)return_val;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Mat::Elastic::Summand> Mat::ElastHyper::GetPotSummandPtr(
+Teuchos::RCP<const Mat::Elastic::Summand> Mat::ElastHyper::get_pot_summand_ptr(
     const Core::Materials::MaterialType& materialtype) const
 {
   for (const auto& p : potsum_)
   {
-    if (p->MaterialType() == materialtype) return p;
+    if (p->material_type() == materialtype) return p;
   }
   return Teuchos::null;
 }

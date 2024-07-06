@@ -39,7 +39,7 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::ArteryEleCalcPresBased(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ArteryEleCalcPresBased<distype>*
-Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
+Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
@@ -52,7 +52,7 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].Instance(Core::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].instance(Core::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 /*----------------------------------------------------------------------*
@@ -84,7 +84,7 @@ int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate(Artery* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
+int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_service(Artery* ele,
     const Arteries::Action action, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -106,7 +106,7 @@ int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* 
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
+int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::scatra_evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -137,7 +137,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
   const int numnode = my::iel_;
 
   // get pressure
-  Teuchos::RCP<const Epetra_Vector> pressnp = discretization.GetState(0, "pressurenp");
+  Teuchos::RCP<const Epetra_Vector> pressnp = discretization.get_state(0, "pressurenp");
   if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
@@ -148,22 +148,22 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
   const double L = calculate_ele_length(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != Core::Materials::m_cnst_art)
+  if (material->material_type() != Core::Materials::m_cnst_art)
     FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material
   const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
 
-  if (actmat->IsCollapsed()) return;
+  if (actmat->is_collapsed()) return;
 
   // Read in diameter
-  const double diam = actmat->Diam();
+  const double diam = actmat->diam();
   // Read in blood viscosity
-  const double visc = actmat->Viscosity();
+  const double visc = actmat->viscosity();
 
   const double hag_pois = M_PI * pow(diam, 4) / 128.0 / visc;
   // gaussian points
-  const Core::FE::IntegrationPoints1D intpoints(ele->GaussRule());
+  const Core::FE::IntegrationPoints1D intpoints(ele->gauss_rule());
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -214,7 +214,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* e
     Core::LinAlg::SerialDenseVector& flowVec, Teuchos::RCP<const Core::Mat::Material> material)
 {
   // get pressure
-  Teuchos::RCP<const Epetra_Vector> pressnp = discretization.GetState(0, "pressurenp");
+  Teuchos::RCP<const Epetra_Vector> pressnp = discretization.get_state(0, "pressurenp");
   if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
@@ -225,16 +225,16 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* e
   const double L = calculate_ele_length(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != Core::Materials::m_cnst_art)
+  if (material->material_type() != Core::Materials::m_cnst_art)
     FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material
   const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
 
   // Read in diameter
-  const double diam = actmat->Diam();
+  const double diam = actmat->diam();
   // Read in blood viscosity
-  const double visc = actmat->Viscosity();
+  const double visc = actmat->viscosity();
 
   const double hag_pois = M_PI * pow(diam, 4) / 128.0 / visc;
 
@@ -252,10 +252,10 @@ double Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
 {
   double length;
   // get current element length
-  if (discretization.NumDofSets() > 1 && discretization.HasState(1, "curr_seg_lengths"))
+  if (discretization.num_dof_sets() > 1 && discretization.has_state(1, "curr_seg_lengths"))
   {
     Teuchos::RCP<const Epetra_Vector> curr_seg_lengths =
-        discretization.GetState(1, "curr_seg_lengths");
+        discretization.get_state(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
     Core::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);

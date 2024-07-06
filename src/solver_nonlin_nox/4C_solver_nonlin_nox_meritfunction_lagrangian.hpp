@@ -97,7 +97,7 @@ namespace NOX
         const std::string& name() const override;
 
         //! return the name of the merit function
-        inline enum MeritFctName Type() const { return lagrangian_type_; }
+        inline enum MeritFctName type() const { return lagrangian_type_; }
 
        private:
         /// \brief Get a list of currently supported Lagrangian merit function types

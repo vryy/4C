@@ -81,37 +81,37 @@ namespace CONTACT
     \brief Get Epetra communicator
 
     */
-    const Epetra_Comm& Comm() const;
+    const Epetra_Comm& get_comm() const;
 
     /*!
     \brief Get contact manager
 
     */
-    Teuchos::RCP<Mortar::ManagerBase> ContactManager() const;
+    Teuchos::RCP<Mortar::ManagerBase> contact_manager() const;
 
     /*!
     \brief Get meshtying manager
 
     */
-    Teuchos::RCP<Mortar::ManagerBase> MtManager() const;
+    Teuchos::RCP<Mortar::ManagerBase> mt_manager() const;
 
     /*!
     \brief Get strategy of meshtying/contact problem
 
     */
-    Mortar::StrategyBase& GetStrategy() const;
+    Mortar::StrategyBase& get_strategy() const;
 
     /*!
     \brief return bool indicating if contact is defined
 
     */
-    bool HaveContact() const { return (cman_ != Teuchos::null); }
+    bool have_contact() const { return (cman_ != Teuchos::null); }
 
     /*!
     \brief return bool indicating if meshtying is defined
 
     */
-    bool HaveMeshtying() const { return (mtman_ != Teuchos::null); }
+    bool have_meshtying() const { return (mtman_ != Teuchos::null); }
 
     /*!
     \brief Write results for visualization for meshtying/contact problems
@@ -142,7 +142,7 @@ namespace CONTACT
     \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi);
+    void recover(Teuchos::RCP<Epetra_Vector> disi);
 
     /*!
     \brief set state vector
@@ -160,13 +160,13 @@ namespace CONTACT
     \brief update
 
     */
-    void Update(Teuchos::RCP<Epetra_Vector> dis);
+    void update(Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
     \brief visualize stuff with gmsh
 
     */
-    void VisualizeGmsh(const int istep, const int iter = -1);
+    void visualize_gmsh(const int istep, const int iter = -1);
 
     /*!
     \brief write restart

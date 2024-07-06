@@ -40,7 +40,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleParameterLsReinit* Instance(
+      static ScaTraEleParameterLsReinit* instance(
           const std::string& disname  //!< name of discretization
       );
 
@@ -49,35 +49,35 @@ namespace Discret
       /*========================================================================*/
 
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_parameters(Teuchos::ParameterList& parameters  //!< parameter list
           ) override;
 
       /*========================================================================*/
       //! @name access-routines
       /*========================================================================*/
 
-      Inpar::ScaTra::ReInitialAction ReinitType() const { return reinittype_; };
-      Inpar::ScaTra::SmoothedSignType SignType() const { return signtype_; };
-      Inpar::ScaTra::CharEleLengthReinit CharEleLengthReinit() const
+      Inpar::ScaTra::ReInitialAction reinit_type() const { return reinittype_; };
+      Inpar::ScaTra::SmoothedSignType sign_type() const { return signtype_; };
+      Inpar::ScaTra::CharEleLengthReinit char_ele_length_reinit() const
       {
         return charelelengthreinit_;
       };
       double interface_thickness_fac() const { return interfacethicknessfac_; };
-      bool UseProjectedVel() const { return useprojectedreinitvel_; };
-      Inpar::ScaTra::LinReinit LinForm() const { return linform_; };
-      Inpar::ScaTra::ArtDiff ArtDiff() const { return artdiff_; };
+      bool use_projected_vel() const { return useprojectedreinitvel_; };
+      Inpar::ScaTra::LinReinit lin_form() const { return linform_; };
+      Inpar::ScaTra::ArtDiff art_diff() const { return artdiff_; };
 
       /// access the penalty parameter for the elliptical reinitialization
-      double PenaltyPara() const
+      double penalty_para() const
       {
         FOUR_C_ASSERT(alphapen_ > 0.0, "The penalty parameter have to be larger than zero!");
         return alphapen_;
       };
 
-      bool Project() const { return project_; };
-      bool Lumping() const { return lumping_; };
-      double ProjectDiff() const { return projectdiff_; };
-      Inpar::ScaTra::DiffFunc DiffFct() const { return difffct_; };
+      bool project() const { return project_; };
+      bool lumping() const { return lumping_; };
+      double project_diff() const { return projectdiff_; };
+      Inpar::ScaTra::DiffFunc diff_fct() const { return difffct_; };
 
      private:
       // reinit type

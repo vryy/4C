@@ -67,7 +67,7 @@ namespace Core::LinearSolver
     /*!
      \brief Setup the label of this class.
     */
-    std::string SetupLabel()
+    std::string setup_label()
     {
       std::stringstream strLabel;
 
@@ -146,7 +146,7 @@ namespace Core::LinearSolver
      Derived from Epetra_Operator, get fine level OperatorDomainMap
 
      */
-    const Epetra_Map& OperatorDomainMap() const override { return a_->FullDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return a_->full_domain_map(); }
 
     /*!
       \brief Get fine level OperatorRangeMap
@@ -154,7 +154,7 @@ namespace Core::LinearSolver
       Derived from Epetra_Operator, get fine level OperatorRangeMap
 
     */
-    const Epetra_Map& OperatorRangeMap() const override { return a_->FullRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return a_->full_range_map(); }
 
     /*!
       \brief ApplyInverse the preconditioner

@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoHex18Type Discret::ELEMENTS::SoHex18Type::instance_;
 
-Discret::ELEMENTS::SoHex18Type& Discret::ELEMENTS::SoHex18Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoHex18Type& Discret::ELEMENTS::SoHex18Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex18Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex18Type::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoHex18(-1, -1);
@@ -36,7 +36,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex18Type::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18Type::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -64,7 +64,7 @@ void Discret::ELEMENTS::SoHex18Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex18Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex18Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -100,11 +100,11 @@ Discret::ELEMENTS::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
   init_gp();
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -128,7 +128,7 @@ Discret::ELEMENTS::SoHex18::SoHex18(const Discret::ELEMENTS::SoHex18& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoHex18::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoHex18::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoHex18(*this);
   return newelement;
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::SoHex18::pack(Core::Communication::PackBuffer& data) con
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   SoBase::pack(data);
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::SoHex18::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -200,7 +200,7 @@ void Discret::ELEMENTS::SoHex18::print(std::ostream& os) const
 |  get vector of surfaces (public)                          seitz 11/14 |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -209,7 +209,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::S
 /*----------------------------------------------------------------------*
 |  get vector of lines (public)                            seitz 11/14 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -218,9 +218,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::L
 /*----------------------------------------------------------------------*
 |  Return names of visualization data (public)             seitz 11/14 |
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoHex18::vis_names(std::map<std::string, int>& names)
 {
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
 
   return;
 }
@@ -228,31 +228,31 @@ void Discret::ELEMENTS::SoHex18::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
 |  Return visualization data (public)                      seitz 11/14 |
 *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex18::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoHex18::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, NUMGPT_SOH18, this->Id());
+  return solid_material()->vis_data(name, data, NUMGPT_SOH18, this->id());
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex18::ReadElement(
+bool Discret::ELEMENTS::SoHex18::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
 
-  SetMaterial(0, Mat::Factory(material));
+  set_material(0, Mat::Factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
 
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  SolidMaterial()->setup(NUMGPT_SOH18, linedef);
+  solid_material()->setup(NUMGPT_SOH18, linedef);
 
   // temporary variable for read-in
   std::string buffer;
@@ -272,10 +272,10 @@ bool Discret::ELEMENTS::SoHex18::ReadElement(
     FOUR_C_THROW("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(kintype_);
+  solid_material()->valid_kinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
-  if (SolidMaterial()->UsesExtendedUpdate())
+  if (solid_material()->uses_extended_update())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
@@ -288,9 +288,9 @@ void Discret::ELEMENTS::SoHex18::init_gp()
   Core::FE::IntPointsAndWeights<NUMDIM_SOH18> intpoints(Core::FE::GaussRule3D::hex_18point);
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
-    wgt_.at(gp) = (intpoints.IP().qwgt)[gp];
+    wgt_.at(gp) = (intpoints.ip().qwgt)[gp];
     for (int idim = 0; idim < NUMDIM_SOH18; idim++)
-      xsi_.at(gp)(idim) = (intpoints.IP().qxg)[gp][idim];
+      xsi_.at(gp)(idim) = (intpoints.ip().qxg)[gp][idim];
   }
 }
 
@@ -360,8 +360,8 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_linstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -382,8 +382,8 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -406,8 +406,8 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_linstiffmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       // need current velocities and accelerations (for non constant mass matrix)
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
@@ -430,10 +430,10 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_stress:
     {
       // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      if (discretization.get_comm().MyPID() == owner())
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+        Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
         Teuchos::RCP<std::vector<char>> stressdata =
             params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         Teuchos::RCP<std::vector<char>> straindata =
@@ -480,7 +480,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      SolidMaterial()->update();
+      solid_material()->update();
       update();
     }
     break;
@@ -489,13 +489,13 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
 
     case calc_recover:
     {
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       recover(myres);
@@ -530,7 +530,7 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
   const double time = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
@@ -559,10 +559,9 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;  // material coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -608,8 +607,8 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? Global::Problem::Instance()
-                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            (functnum > 0) ? Global::Problem::instance()
+                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -631,11 +630,9 @@ int Discret::ELEMENTS::SoHex18::init_jacobian_mapping()
   Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    Core::Nodes::Node** nodes = Nodes();
-    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
+    xrefe(i, 0) = nodes()[i]->x()[0];
+    xrefe(i, 1) = nodes()[i]->x()[1];
+    xrefe(i, 2) = nodes()[i]->x()[2];
   }
   invJ_.reserve(NUMGPT_SOH18);
   detJ_.reserve(NUMGPT_SOH18);
@@ -678,10 +675,10 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
   Core::LinAlg::Matrix<NUMNOD_SOH18, 3> xrefe(false);  // X, material coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOH18, 3> xcurr(false);  // x, current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -757,7 +754,7 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ * wgt_[gp];
@@ -797,7 +794,7 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
 
     if (massmatrix)  // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -828,10 +825,10 @@ void Discret::ELEMENTS::SoHex18::lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUM
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned int c = 0; c < (*emass).numCols(); ++c)  // parse columns
+    for (unsigned int c = 0; c < (*emass).num_cols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned int r = 0; r < (*emass).numRows(); ++r)  // parse rows
+      for (unsigned int r = 0; r < (*emass).num_rows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -848,19 +845,19 @@ int Discret::ELEMENTS::SoHex18Type::initialize(Core::FE::Discretization& dis)
 {
   // here we order the nodes such that we have a positive definite jacobian
   //       maybe the python script generating the hex18 elements would be a better place for this.
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex18*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex18*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->init_jacobian_mapping() == 1) actele->flip_t();
   }
   dis.fill_complete(false, false, false);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex18*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex18*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->init_jacobian_mapping() == 1) FOUR_C_THROW("why");
   }
@@ -872,30 +869,30 @@ int Discret::ELEMENTS::SoHex18Type::initialize(Core::FE::Discretization& dis)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoHex18::flip_t()
 {
-  if (NodeIds() == nullptr) FOUR_C_THROW("couldn't get node ids");
+  if (node_ids() == nullptr) FOUR_C_THROW("couldn't get node ids");
   // reorder nodes
   int new_nodeids[NUMNOD_SOH18];
-  new_nodeids[0] = NodeIds()[9];
-  new_nodeids[1] = NodeIds()[10];
-  new_nodeids[2] = NodeIds()[11];
-  new_nodeids[3] = NodeIds()[12];
-  new_nodeids[4] = NodeIds()[13];
-  new_nodeids[5] = NodeIds()[14];
-  new_nodeids[6] = NodeIds()[15];
-  new_nodeids[7] = NodeIds()[16];
-  new_nodeids[8] = NodeIds()[17];
+  new_nodeids[0] = node_ids()[9];
+  new_nodeids[1] = node_ids()[10];
+  new_nodeids[2] = node_ids()[11];
+  new_nodeids[3] = node_ids()[12];
+  new_nodeids[4] = node_ids()[13];
+  new_nodeids[5] = node_ids()[14];
+  new_nodeids[6] = node_ids()[15];
+  new_nodeids[7] = node_ids()[16];
+  new_nodeids[8] = node_ids()[17];
 
-  new_nodeids[9] = NodeIds()[0];
-  new_nodeids[10] = NodeIds()[1];
-  new_nodeids[11] = NodeIds()[2];
-  new_nodeids[12] = NodeIds()[3];
-  new_nodeids[13] = NodeIds()[4];
-  new_nodeids[14] = NodeIds()[5];
-  new_nodeids[15] = NodeIds()[6];
-  new_nodeids[16] = NodeIds()[7];
-  new_nodeids[17] = NodeIds()[8];
+  new_nodeids[9] = node_ids()[0];
+  new_nodeids[10] = node_ids()[1];
+  new_nodeids[11] = node_ids()[2];
+  new_nodeids[12] = node_ids()[3];
+  new_nodeids[13] = node_ids()[4];
+  new_nodeids[14] = node_ids()[5];
+  new_nodeids[15] = node_ids()[6];
+  new_nodeids[16] = node_ids()[7];
+  new_nodeids[17] = node_ids()[8];
 
-  SetNodeIds(NUMNOD_SOH18, new_nodeids);
+  set_node_ids(NUMNOD_SOH18, new_nodeids);
   return;
 }
 

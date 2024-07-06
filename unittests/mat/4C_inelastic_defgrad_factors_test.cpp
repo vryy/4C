@@ -89,9 +89,9 @@ namespace
 
       // create InelasticDefgradLinScalarIso object initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_scalar_data;
-      inelastic_defgrad_scalar_data.Add("SCALAR1", 1);
-      inelastic_defgrad_scalar_data.Add("SCALAR1_MolarGrowthFac", growth_fac);
-      inelastic_defgrad_scalar_data.Add("SCALAR1_RefConc", ref_conc);
+      inelastic_defgrad_scalar_data.add("SCALAR1", 1);
+      inelastic_defgrad_scalar_data.add("SCALAR1_MolarGrowthFac", growth_fac);
+      inelastic_defgrad_scalar_data.add("SCALAR1_RefConc", ref_conc);
 
       params_inelastic_defgrad_lin_scalar_iso_ =
           std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradLinScalar>(std::shared_ptr(
@@ -107,13 +107,13 @@ namespace
 
       // create InelasticDefgradLinScalarAniso object initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_lin_scalar_aniso_data;
-      inelastic_defgrad_lin_scalar_aniso_data.Add("SCALAR1", 1);
-      inelastic_defgrad_lin_scalar_aniso_data.Add("SCALAR1_MolarGrowthFac", growth_fac);
-      inelastic_defgrad_lin_scalar_aniso_data.Add("SCALAR1_RefConc", ref_conc);
+      inelastic_defgrad_lin_scalar_aniso_data.add("SCALAR1", 1);
+      inelastic_defgrad_lin_scalar_aniso_data.add("SCALAR1_MolarGrowthFac", growth_fac);
+      inelastic_defgrad_lin_scalar_aniso_data.add("SCALAR1_RefConc", ref_conc);
 
       // vector to instantiate the deformation direction object
       const std::vector<double> growthdir{1.0, 0.5, 0.3};
-      inelastic_defgrad_lin_scalar_aniso_data.Add("GrowthDirection", growthdir);
+      inelastic_defgrad_lin_scalar_aniso_data.add("GrowthDirection", growthdir);
 
       params_inelastic_defgrad_lin_scalar_aniso_ =
           std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradLinScalarAniso>(std::shared_ptr(
@@ -130,45 +130,45 @@ namespace
       // InelasticDefgradPolyIntercalFracIso object initialize container for required electrode
       // material parameters
       const int problemid(0);
-      Global::Problem& problem = (*Global::Problem::Instance());
-      problem.Materials()->SetReadFromProblem(problemid);
+      Global::Problem& problem = (*Global::Problem::instance());
+      problem.materials()->set_read_from_problem(problemid);
       // set up material to be added to problem instance
       const int matid(1);
 
       Core::IO::InputParameterContainer electrode_data;
       // add dummy parameters to electrode material
-      electrode_data.Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
-      electrode_data.Add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
-      electrode_data.Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      electrode_data.Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-      electrode_data.Add("DIFF_PARA_NUM", 0);
-      electrode_data.Add("DIFF_PARA", std::vector<double>(0, 0.0));
-      electrode_data.Add("COND", 0);
-      electrode_data.Add("COND_PARA_NUM", 0);
-      electrode_data.Add("COND_PARA", std::vector<double>(0, 0.0));
-      electrode_data.Add("COND_CONC_DEP_FUNCT", 0);
-      electrode_data.Add("COND_TEMP_SCALE_FUNCT", 0);
-      electrode_data.Add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-      electrode_data.Add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
-      electrode_data.Add("OCP_MODEL", std::string("Polynomial"));
-      electrode_data.Add("X_MIN", -1.0);
-      electrode_data.Add("X_MAX", -1.0);
-      electrode_data.Add("OCP_PARA_NUM", 1);
+      electrode_data.add("DIFF_COEF_CONC_DEP_FUNCT", 0);
+      electrode_data.add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
+      electrode_data.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+      electrode_data.add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+      electrode_data.add("DIFF_PARA_NUM", 0);
+      electrode_data.add("DIFF_PARA", std::vector<double>(0, 0.0));
+      electrode_data.add("COND", 0);
+      electrode_data.add("COND_PARA_NUM", 0);
+      electrode_data.add("COND_PARA", std::vector<double>(0, 0.0));
+      electrode_data.add("COND_CONC_DEP_FUNCT", 0);
+      electrode_data.add("COND_TEMP_SCALE_FUNCT", 0);
+      electrode_data.add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+      electrode_data.add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
+      electrode_data.add("OCP_MODEL", std::string("Polynomial"));
+      electrode_data.add("X_MIN", -1.0);
+      electrode_data.add("X_MAX", -1.0);
+      electrode_data.add("OCP_PARA_NUM", 1);
       std::vector<double> ocp_para(1, 0.0);
-      electrode_data.Add("OCP_PARA", ocp_para);
-      electrode_data.Add("OCP_CSV", std::string(""));
+      electrode_data.add("OCP_PARA", ocp_para);
+      electrode_data.add("OCP_CSV", std::string(""));
 
       // make sure that the default parameters exist in the problem
-      Global::Problem::Instance()->setParameterList(Teuchos::make_rcp<Teuchos::ParameterList>());
+      Global::Problem::instance()->set_parameter_list(Teuchos::make_rcp<Teuchos::ParameterList>());
 
       // add actually required parameters to electrode material
       const double c_max(4.91375e4);
       const double chi_max(1.0);
-      electrode_data.Add("C_MAX", c_max);
-      electrode_data.Add("CHI_MAX", chi_max);
+      electrode_data.add("C_MAX", c_max);
+      electrode_data.add("CHI_MAX", chi_max);
 
       // add material to problem instance
-      problem.Materials()->insert(matid,
+      problem.materials()->insert(matid,
           Mat::make_parameter(1, Core::Materials::MaterialType::m_electrode, electrode_data));
 
       // parameter list to be passed to pre_evaluate
@@ -181,13 +181,13 @@ namespace
       // initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_data;
 
-      inelastic_defgrad_poly_intercal_frac_data.Add("MATID", matid);
-      inelastic_defgrad_poly_intercal_frac_data.Add("SCALAR1", 1);
-      inelastic_defgrad_poly_intercal_frac_data.Add("SCALAR1_RefConc", ref_conc);
-      inelastic_defgrad_poly_intercal_frac_data.Add("POLY_PARAMS", poly_coeffs);
-      inelastic_defgrad_poly_intercal_frac_data.Add("X_max", x_max);
-      inelastic_defgrad_poly_intercal_frac_data.Add("X_min", x_min);
-      inelastic_defgrad_poly_intercal_frac_data.Add(
+      inelastic_defgrad_poly_intercal_frac_data.add("MATID", matid);
+      inelastic_defgrad_poly_intercal_frac_data.add("SCALAR1", 1);
+      inelastic_defgrad_poly_intercal_frac_data.add("SCALAR1_RefConc", ref_conc);
+      inelastic_defgrad_poly_intercal_frac_data.add("POLY_PARAMS", poly_coeffs);
+      inelastic_defgrad_poly_intercal_frac_data.add("X_max", x_max);
+      inelastic_defgrad_poly_intercal_frac_data.add("X_min", x_min);
+      inelastic_defgrad_poly_intercal_frac_data.add(
           "POLY_PARA_NUM", static_cast<int>(poly_coeffs.size()));
 
       // get pointer to parameter class
@@ -202,7 +202,7 @@ namespace
 
       // set the value of the reference polynomial
       params_inelastic_defgrad_poly_intercal_frac_->set_polynom_reference_value(
-          polynomial_shape_->ComputePolynomial(x_ref));
+          polynomial_shape_->compute_polynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
       poly_intercal_frac_iso_ = Teuchos::rcp(new Mat::InelasticDefgradPolyIntercalFracIso(
@@ -214,14 +214,14 @@ namespace
       // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
       // parameters
       Core::IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_aniso_data;
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add("MATID", matid);
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add("SCALAR1", 1);
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add("SCALAR1_RefConc", ref_conc);
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add("GrowthDirection", growthdir);
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add("POLY_PARAMS", poly_coeffs);
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add("X_max", x_max);
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add("X_min", x_min);
-      inelastic_defgrad_poly_intercal_frac_aniso_data.Add(
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add("MATID", matid);
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add("SCALAR1", 1);
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add("SCALAR1_RefConc", ref_conc);
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add("GrowthDirection", growthdir);
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add("POLY_PARAMS", poly_coeffs);
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add("X_max", x_max);
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add("X_min", x_min);
+      inelastic_defgrad_poly_intercal_frac_aniso_data.add(
           "POLY_PARA_NUM", static_cast<int>(poly_coeffs.size()));
 
       // get pointer to parameter class
@@ -233,7 +233,7 @@ namespace
 
       // set the value of the reference polynomial
       params_inelastic_defgrad_poly_intercal_frac_aniso_->set_polynom_reference_value(
-          polynomial_shape_->ComputePolynomial(x_ref));
+          polynomial_shape_->compute_polynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
       poly_intercal_frac_aniso_ = Teuchos::rcp(new Mat::InelasticDefgradPolyIntercalFracAniso(
@@ -244,9 +244,9 @@ namespace
 
       // create InelasticDefgradLinTempIso object initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_temp_iso_data;
-      inelastic_defgrad_temp_iso_data.Add("MATID", matid);
-      inelastic_defgrad_temp_iso_data.Add("RefTemp", 298.0);
-      inelastic_defgrad_temp_iso_data.Add("Temp_GrowthFac", 1.0e-3);
+      inelastic_defgrad_temp_iso_data.add("MATID", matid);
+      inelastic_defgrad_temp_iso_data.add("RefTemp", 298.0);
+      inelastic_defgrad_temp_iso_data.add("Temp_GrowthFac", 1.0e-3);
 
       // get pointer to parameter class
       params_lin_temp_iso_ = std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradLinTempIso>(
@@ -269,7 +269,7 @@ namespace
       // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
       // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::Done();
+      Global::Problem::done();
     }
 
     // deformation gradient
@@ -367,7 +367,7 @@ namespace
       // create object
       auto growth_direction = Mat::PAR::InelasticDeformationDirection(growth_directions[i]);
       // check the results
-      FOUR_C_EXPECT_NEAR(growth_direction.GrowthDirMat(), growth_direction_solutions[i], 1.0e-12);
+      FOUR_C_EXPECT_NEAR(growth_direction.growth_dir_mat(), growth_direction_solutions[i], 1.0e-12);
     }
   }
 
@@ -379,7 +379,7 @@ namespace
 
     // loop over test values and check whether the result is correct
     for (auto i = 0U; i < TestValues.size(); ++i)
-      EXPECT_NEAR(polynomial_shape_->ComputePolynomial(TestValues[i]), Results[i], 1.0e-12);
+      EXPECT_NEAR(polynomial_shape_->compute_polynomial(TestValues[i]), Results[i], 1.0e-12);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestComputePolynomialDerivative)
@@ -607,7 +607,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_scalar_iso_->EvaluateODStiffMat(&FM_, iFin_lin_scalar_iso_solution_, dSdiFin_, dSdc);
+    lin_scalar_iso_->evaluate_od_stiff_mat(&FM_, iFin_lin_scalar_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
@@ -621,7 +621,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_scalar_aniso_->EvaluateODStiffMat(&FM_, iFin_lin_scalar_aniso_solution_, dSdiFin_, dSdc);
+    lin_scalar_aniso_->evaluate_od_stiff_mat(&FM_, iFin_lin_scalar_aniso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
@@ -635,7 +635,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    poly_intercal_frac_iso_->EvaluateODStiffMat(
+    poly_intercal_frac_iso_->evaluate_od_stiff_mat(
         &FM_, iFin_poly_intercal_frac_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
@@ -650,7 +650,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    poly_intercal_frac_aniso_->EvaluateODStiffMat(
+    poly_intercal_frac_aniso_->evaluate_od_stiff_mat(
         &FM_, iFin_poly_intercal_frac_aniso_solution_, dSdiFin_, dSdc);
 
     // compare the results
@@ -665,7 +665,7 @@ namespace
     // clang-format on
 
     // evaluate the method
-    lin_temp_iso_->EvaluateODStiffMat(&FM_, iFin_lin_temp_iso_solution_, dSdiFin_, dSdc);
+    lin_temp_iso_->evaluate_od_stiff_mat(&FM_, iFin_lin_temp_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
     FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-15);

@@ -48,7 +48,7 @@ class LineIntegration
   \brief Transform the Gauss integration point available in the limit (-1,1) to the actual line
   coordinates
    */
-  void Transform(const Core::LinAlg::Matrix<2, 2> &xyze, const double &eta,
+  void transform(const Core::LinAlg::Matrix<2, 2> &xyze, const double &eta,
       Core::LinAlg::Matrix<2, 1> &x_gp_lin, Core::LinAlg::Matrix<2, 1> &normal, double &drs);
 
  private:

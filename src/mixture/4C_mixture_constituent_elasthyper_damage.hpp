@@ -81,7 +81,7 @@ namespace MIXTURE
      *
      * The vector data contains all information to rebuild the exact copy of an instance of a class
      * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
+     * parobject id defined at the top of the file and delivered by unique_par_object_id().
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
@@ -92,7 +92,7 @@ namespace MIXTURE
      *
      * The vector data contains all information to rebuild the exact copy of an instance of a class
      * on a different processor. The first entry in data hast to be an integer which is the unique
-     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
+     * parobject id defined at the top of the file and delivered by unique_par_object_id().
      *
      * @param position (in/out) : current position to unpack data
      * @param data (in) : vector storing all data to be unpacked into this instance.

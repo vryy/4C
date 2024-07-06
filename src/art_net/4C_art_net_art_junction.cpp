@@ -79,14 +79,14 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     //----------------------------------------------------------------------
     // (1) Get the junction boundary conditions
     //----------------------------------------------------------------------
 
     std::vector<Core::Conditions::Condition *> myConditions;
-    discret_->GetCondition("ArtJunctionCond", myConditions);
+    discret_->get_condition("ArtJunctionCond", myConditions);
     int numofcond = myConditions.size();
 
     if (numofcond == 1)
@@ -104,19 +104,19 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
       for (int i = 0; i < numofcond; i++)
       {
         // get the node number connected to the condition
-        const std::vector<int> *nodes = myConditions[i]->GetNodes();
+        const std::vector<int> *nodes = myConditions[i]->get_nodes();
 
         // The junction condition must be connected to one and only one node
         if (nodes->size() != 1)
           FOUR_C_THROW("Artery Connection BC should have only one node connected to it!");
 
-        int local_id = discret_->NodeRowMap()->LID((*nodes)[0]);
+        int local_id = discret_->node_row_map()->LID((*nodes)[0]);
         // Get the actual node connected to the condition
-        Core::Nodes::Node *nd = discret_->lColNode(local_id);
+        Core::Nodes::Node *nd = discret_->l_col_node(local_id);
 
         // find whether the nodes is at the inlet or at the outlet of the element
         std::string terminalType =
-            nd->GetCondition("ArtInOutCond")->parameters().get<std::string>("terminaltype");
+            nd->get_condition("ArtInOutCond")->parameters().get<std::string>("terminaltype");
         if (terminalType == "inlet")
           IOart[i] = -1;
         else if (terminalType == "outlet")
@@ -213,10 +213,10 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
 
         for (unsigned int j = 0; j < SortedConds[i].size(); j++)
         {
-          const std::vector<int> *nodes = SortedConds[i][j]->GetNodes();
+          const std::vector<int> *nodes = SortedConds[i][j]->get_nodes();
           Teuchos::RCP<JunctionNodeParams> nodeparams = Teuchos::rcp(new JunctionNodeParams);
 
-          int local_id = discret_->NodeRowMap()->LID((*nodes)[0]);
+          int local_id = discret_->node_row_map()->LID((*nodes)[0]);
           inserted = nodalParams->insert(std::make_pair(local_id, nodeparams)).second;
           if (!inserted) FOUR_C_THROW("Node %d has more than one condition", (*nodes)[0] + 1);
         }
@@ -236,13 +236,13 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int Arteries::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
+int Arteries::UTILS::ArtJunctionWrapper::solve(Teuchos::ParameterList &params)
 {
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
   //----------------------------------------------------------------------
 
-  if (discret_->Comm().MyPID() != 0) return 0;
+  if (discret_->get_comm().MyPID() != 0) return 0;
 
   std::map<const int, Teuchos::RCP<class ArtJunctionBc>>::iterator mapiter;
 
@@ -302,7 +302,7 @@ Arteries::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Core::FE::Discretizat
   //----------------------------------------------------------------------
   // Extracting the nodes to whome the junction is connected
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < conds.size(); i++) nodes_.push_back((*(conds[i]->GetNodes()))[0]);
+  for (unsigned int i = 0; i < conds.size(); i++) nodes_.push_back((*(conds[i]->get_nodes()))[0]);
 }
 
 
@@ -432,7 +432,7 @@ int Arteries::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
   // loop over all the nodes and read in the required parameters
   for (unsigned int i = 0; i < nodes_.size(); i++)
   {
-    int local_id = discret_->NodeRowMap()->LID(nodes_[i]);
+    int local_id = discret_->node_row_map()->LID(nodes_[i]);
     A[i] = (*nodalMap)[local_id]->A_;
     Q[i] = (*nodalMap)[local_id]->Q_;
     W[i] = (*nodalMap)[local_id]->W_;
@@ -522,7 +522,7 @@ int Arteries::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
   //----------------------------------------------------------------------
   for (unsigned int i = 0; i < nodes_.size(); i++)
   {
-    int local_id = discret_->NodeRowMap()->LID(nodes_[i]);
+    int local_id = discret_->node_row_map()->LID(nodes_[i]);
     (*nodalMap)[local_id]->A_ = A[i];
     (*nodalMap)[local_id]->Q_ = Q[i];
   }

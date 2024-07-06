@@ -38,15 +38,15 @@ PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 
 
 
-void PostFilterBase::WriteFiles()
+void PostFilterBase::write_files()
 {
   FOUR_C_ASSERT(writer_ != Teuchos::null, "No writer has been set! Fatal error");
-  writer_->WriteFiles(*this);
+  writer_->write_files(*this);
 }
 
 
 
-void PostFilterBase::WriteAnyResults(PostField* field, const char* type, const ResultType restype)
+void PostFilterBase::write_any_results(PostField* field, const char* type, const ResultType restype)
 {
   PostResult result = PostResult(field);
   result.next_result();
@@ -80,7 +80,7 @@ void PostFilterBase::WriteAnyResults(PostField* field, const char* type, const R
           // Normal dof vectors have ndim dofs per node. (But then there are
           // velocity / pressure vectors and such...)
           dim = field->problem()->num_dim();
-        writer_->WriteResult(key, key, restype, dim);
+        writer_->write_result(key, key, restype, dim);
       }
     }
   }

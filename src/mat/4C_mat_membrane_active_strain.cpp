@@ -51,7 +51,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneActiveStrain::create_materia
 
 Mat::MembraneActiveStrainType Mat::MembraneActiveStrainType::instance_;
 
-Core::Communication::ParObject* Mat::MembraneActiveStrainType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MembraneActiveStrainType::create(const std::vector<char>& data)
 {
   Mat::MembraneActiveStrain* membrane_activestrain = new Mat::MembraneActiveStrain();
   membrane_activestrain->unpack(data);
@@ -95,12 +95,12 @@ void Mat::MembraneActiveStrain::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // fiber vectors: Fiber1, Fiber2, Normal
@@ -143,22 +143,22 @@ void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid = -1;
   extract_from_pack(position, data, matid);
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::MembraneActiveStrain*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // fiber vectors: Fiber1, Fiber2, Normal
@@ -241,7 +241,7 @@ void Mat::MembraneActiveStrain::setup(int numgp, Input::LineDefinition* linedef)
  | active strain and hyperelastic stress response plus elasticity tensor|
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+void Mat::MembraneActiveStrain::evaluate_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
     Core::LinAlg::Matrix<3, 3>& cmat, const int gp, const int eleGID)
@@ -324,7 +324,7 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
   Core::LinAlg::Matrix<3, 3> cmatpassive_loc(true);
   Core::LinAlg::Matrix<3, 1> S_passive_loc_voigt(true);
   Teuchos::rcp_dynamic_cast<Mat::MembraneElastHyper>(matpassive_, true)
-      ->EvaluateMembrane(defgrd_passive_local, cauchygreen_passive_local, params, Q_trafo,
+      ->evaluate_membrane(defgrd_passive_local, cauchygreen_passive_local, params, Q_trafo,
           S_passive_loc_voigt, cmatpassive_loc, gp, eleGID);
 
   //******************
@@ -376,17 +376,17 @@ void Mat::MembraneActiveStrain::reset_step()
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::VisNames(std::map<std::string, int>& names)
+void Mat::MembraneActiveStrain::vis_names(std::map<std::string, int>& names)
 {
-  matpassive_->VisNames(names);
+  matpassive_->vis_names(names);
   names["voltage"] = 1;     // scalar
   names["activation"] = 1;  // scalar
-}  // Mat::MembraneActiveStrain::VisNames
+}  // Mat::MembraneActiveStrain::vis_names
 
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-bool Mat::MembraneActiveStrain::VisData(
+bool Mat::MembraneActiveStrain::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "voltage")
@@ -408,8 +408,8 @@ bool Mat::MembraneActiveStrain::VisData(
     return true;
   }
 
-  return matpassive_->VisData(name, data, numgp, eleID);
-}  // Mat::MembraneActiveStrain::VisData
+  return matpassive_->vis_data(name, data, numgp, eleID);
+}  // Mat::MembraneActiveStrain::vis_data
 
 /*----------------------------------------------------------------------*
  | setup fiber vectors                                                  |

@@ -87,9 +87,9 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector> gridvnp = Teuchos::null);
 
     /// Gmsh solution output
-    virtual void GmshSolutionOutput(const std::string& filename_base,  ///< name for output file
-        int step,                                                      ///< step number
-        const Teuchos::RCP<FLD::XFluidState>& state,                   ///< state
+    virtual void gmsh_solution_output(const std::string& filename_base,  ///< name for output file
+        int step,                                                        ///< step number
+        const Teuchos::RCP<FLD::XFluidState>& state,                     ///< state
         int count = -1){};
 
     /// Gmsh solution output for previous time step
@@ -128,9 +128,9 @@ namespace FLD
         std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr){};
 
     /// Main output routine for gmsh output
-    virtual void GmshOutput(const std::string& filename_base,  ///< name for output file
-        const std::string& prefix,                             ///< data prefix
-        int step,                                              ///< step number
+    virtual void gmsh_output(const std::string& filename_base,  ///< name for output file
+        const std::string& prefix,                              ///< data prefix
+        int step,                                               ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
         Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
@@ -138,7 +138,7 @@ namespace FLD
     ){};
 
     /// Gmsh output for EOS
-    virtual void GmshOutputEOS(int step,            ///< step number
+    virtual void gmsh_output_eos(int step,          ///< step number
         Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
     ){};
 
@@ -177,9 +177,9 @@ namespace FLD
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner);
 
     /// Gmsh solution output
-    void GmshSolutionOutput(const std::string& filename_base,  ///< name for output file
-        int step,                                              ///< step number
-        const Teuchos::RCP<FLD::XFluidState>& state,           ///< state
+    void gmsh_solution_output(const std::string& filename_base,  ///< name for output file
+        int step,                                                ///< step number
+        const Teuchos::RCP<FLD::XFluidState>& state,             ///< state
         int count = -1) override;
 
     /// Gmsh solution output for previous time step
@@ -214,9 +214,9 @@ namespace FLD
         std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr) override;
 
     /// Main output routine for gmsh output
-    void GmshOutput(const std::string& filename_base,  ///< name for output file
-        const std::string& prefix,                     ///< data prefix (e.g. "SOL")
-        int step,                                      ///< step number
+    void gmsh_output(const std::string& filename_base,  ///< name for output file
+        const std::string& prefix,                      ///< data prefix (e.g. "SOL")
+        int step,                                       ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
         Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
@@ -226,7 +226,7 @@ namespace FLD
     );
 
     /// Gmsh output for EOS
-    void GmshOutputEOS(int step,                    ///< step number
+    void gmsh_output_eos(int step,                  ///< step number
         Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
         ) override;
 

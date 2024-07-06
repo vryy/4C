@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -39,7 +39,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::Instance(
             new ScaTraEleBoundaryCalcLoma<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -110,14 +110,14 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   std::vector<int> lmparent(nenparent);
   std::vector<int> lmparentowner;
   std::vector<int> lmparentstride;
-  parentele->LocationVector(discretization, lmparent, lmparentowner, lmparentstride);
+  parentele->location_vector(discretization, lmparent, lmparentowner, lmparentstride);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = my::scatraparams_->NdsVel();
+  const int ndsvel = my::scatraparams_->nds_vel();
 
   // get velocity values at nodes
   const Teuchos::RCP<const Epetra_Vector> convel =
-      discretization.GetState(ndsvel, "convective velocity field");
+      discretization.get_state(ndsvel, "convective velocity field");
 
   // safety check
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
@@ -172,7 +172,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
 
   // calculate integral of normal diffusive and velocity flux
   // NOTE: add integral value only for elements which are NOT ghosted!
-  if (ele->Owner() == discretization.Comm().MyPID())
+  if (ele->owner() == discretization.get_comm().MyPID())
   {
     norm_diff_flux_and_vel_integral(ele, params, mynormdiffflux, mynormvel);
   }
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype,
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 

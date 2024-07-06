@@ -80,14 +80,14 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_couplogmixneohooke;
       }
 
       /// add shear modulus equivalent
-      void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-          double& shearmod                  ///< variable to add upon
+      void add_shear_mod(bool& haveshearmod,  ///< non-zero shear modulus was added
+          double& shearmod                    ///< variable to add upon
       ) const override;
 
       //@}
@@ -118,7 +118,7 @@ namespace Mat
        */
 
       // add strain energy
-      void AddStrainEnergy(double& psi,  ///< strain energy function
+      void add_strain_energy(double& psi,  ///< strain energy function
           const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           const Core::LinAlg::Matrix<3, 1>&
@@ -139,14 +139,14 @@ namespace Mat
 
       /// add the derivatives of a coupled strain energy functions associated with a purely
       /// isochoric deformation
-      void AddCoupDerivVol(
+      void add_coup_deriv_vol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override
       {
         FOUR_C_THROW("not implemented");
       }
 
       /// Indicator for formulation
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation

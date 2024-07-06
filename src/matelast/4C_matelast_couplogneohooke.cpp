@@ -47,7 +47,7 @@ Mat::Elastic::CoupLogNeoHooke::CoupLogNeoHooke(Mat::Elastic::PAR::CoupLogNeoHook
 {
 }
 
-void Mat::Elastic::CoupLogNeoHooke::AddShearMod(
+void Mat::Elastic::CoupLogNeoHooke::add_shear_mod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
 ) const
@@ -57,7 +57,7 @@ void Mat::Elastic::CoupLogNeoHooke::AddShearMod(
   shearmod += params_->mue_;
 }
 
-void Mat::Elastic::CoupLogNeoHooke::AddStrainEnergy(double& psi,
+void Mat::Elastic::CoupLogNeoHooke::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {

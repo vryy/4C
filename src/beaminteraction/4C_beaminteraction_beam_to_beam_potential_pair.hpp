@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
     elements
     */
-    void ResetState(double time, const std::vector<double>& centerline_dofvec_ele1,
+    void reset_state(double time, const std::vector<double>& centerline_dofvec_ele1,
         const std::vector<double>& centerline_dofvec_ele2) override;
 
     /*!
@@ -144,12 +144,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Get ptr to first beam element
     */
-    inline const Discret::ELEMENTS::Beam3Base* BeamElement1() const { return beam_element1_; };
+    inline const Discret::ELEMENTS::Beam3Base* beam_element1() const { return beam_element1_; };
 
     /*!
     \brief Get ptr to second beam element
     */
-    inline const Discret::ELEMENTS::Beam3Base* BeamElement2() const { return beam_element2_; };
+    inline const Discret::ELEMENTS::Beam3Base* beam_element2() const { return beam_element2_; };
     //@}
 
    private:

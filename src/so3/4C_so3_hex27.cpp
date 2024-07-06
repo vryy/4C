@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoHex27Type Discret::ELEMENTS::SoHex27Type::instance_;
 
-Discret::ELEMENTS::SoHex27Type& Discret::ELEMENTS::SoHex27Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoHex27Type& Discret::ELEMENTS::SoHex27Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex27Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex27Type::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoHex27(-1, -1);
@@ -40,7 +40,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::SoHex27Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex27Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex27Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -107,14 +107,14 @@ Discret::ELEMENTS::SoHex27::SoHex27(int id, int owner)
   invJ_.resize(NUMGPT_SOH27, Core::LinAlg::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     pstype_ = Prestress::GetType();
     pstime_ = Prestress::GetPrestressTime();
 
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH27, NUMGPT_SOH27));
@@ -145,7 +145,7 @@ Discret::ELEMENTS::SoHex27::SoHex27(const Discret::ELEMENTS::SoHex27& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoHex27::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoHex27::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoHex27(*this);
   return newelement;
@@ -154,7 +154,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoHex27::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoHex27::Shape() const { return Core::FE::CellType::hex27; }
+Core::FE::CellType Discret::ELEMENTS::SoHex27::shape() const { return Core::FE::CellType::hex27; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::SoHex27::pack(Core::Communication::PackBuffer& data) con
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   SoBase::pack(data);
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::SoHex27::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -247,7 +247,7 @@ void Discret::ELEMENTS::SoHex27::print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex27::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex27::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -256,7 +256,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex27::S
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex27::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex27::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -265,21 +265,21 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex27::L
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoHex27::vis_names(std::map<std::string, int>& names)
 {
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex27::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoHex27::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, NUMGPT_SOH27, this->Id());
+  return solid_material()->vis_data(name, data, NUMGPT_SOH27, this->id());
 }
 
 FOUR_C_NAMESPACE_CLOSE

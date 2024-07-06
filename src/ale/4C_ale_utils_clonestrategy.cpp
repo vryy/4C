@@ -45,7 +45,7 @@ void ALE::UTILS::AleCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if (mtype != Core::Materials::m_stvenant && mtype != Core::Materials::m_elasthyper)
     FOUR_C_THROW("Material with ID %d is not admissible for ALE elements", matid);
 }
@@ -60,14 +60,14 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
     Discret::ELEMENTS::Ale2* ale2 = dynamic_cast<Discret::ELEMENTS::Ale2*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->SetMaterial(0, Mat::Factory(matid));
+      ale2->set_material(0, Mat::Factory(matid));
     }
     else
     {
       Discret::ELEMENTS::Ale3* ale3 = dynamic_cast<Discret::ELEMENTS::Ale3*>(newele.get());
       if (ale3 != nullptr)
       {
-        ale3->SetMaterial(0, Mat::Factory(matid));
+        ale3->set_material(0, Mat::Factory(matid));
       }
       else
       {
@@ -81,7 +81,7 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
         dynamic_cast<Discret::ELEMENTS::Nurbs::Ale2Nurbs*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->SetMaterial(0, Mat::Factory(matid));
+      ale2->set_material(0, Mat::Factory(matid));
     }
     else
     {
@@ -90,7 +90,7 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
 
       if (ale3 != nullptr)
       {
-        ale3->SetMaterial(0, Mat::Factory(matid));
+        ale3->set_material(0, Mat::Factory(matid));
       }
       else
       {
@@ -115,14 +115,14 @@ bool ALE::UTILS::AleCloneStrategy::determine_ele_type(
   Discret::ELEMENTS::Fluid* f3 = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
   if (f3 != nullptr)
   {
-    cloneit = f3->IsAle();  // if not ALE, element will not be cloned
-                            // --> theoretically, support of Eulerian sub meshes
+    cloneit = f3->is_ale();  // if not ALE, element will not be cloned
+                             // --> theoretically, support of Eulerian sub meshes
   }
 
   // Clone it now.
   if (cloneit and ismyele)
   {
-    const int nsd = Core::FE::getDimension(actele->Shape());
+    const int nsd = Core::FE::getDimension(actele->shape());
     if (nsd == 3)
       eletype.push_back("ALE3");
     else if (nsd == 2)

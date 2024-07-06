@@ -28,7 +28,7 @@ NOX::FSI::Group::Group(FourC::FSI::MonolithicInterface& mfsi, Teuchos::Parameter
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::FSI::Group::CaptureSystemState()
+void NOX::FSI::Group::capture_system_state()
 {
   // we know we already have the first linear system calculated
 

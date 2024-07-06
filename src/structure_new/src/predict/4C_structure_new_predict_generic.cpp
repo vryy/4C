@@ -62,12 +62,12 @@ void Solid::Predict::Generic::pre_predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
   print();
-  dbc_ptr_->UpdateLocSysManager();
+  dbc_ptr_->update_loc_sys_manager();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Predict::Generic::Predict(::NOX::Abstract::Group& grp)
+void Solid::Predict::Generic::predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
   bool& ispredict = gstate_ptr_->is_predict();
@@ -77,7 +77,7 @@ void Solid::Predict::Generic::Predict(::NOX::Abstract::Group& grp)
   pre_predict(grp);
 
   // compute the actual prediction step
-  Compute(grp);
+  compute(grp);
 
   // post-process the prediction step
   post_predict(grp);
@@ -110,7 +110,7 @@ void Solid::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string Solid::Predict::Generic::Name() const
+std::string Solid::Predict::Generic::name() const
 {
   check_init();
   return Inpar::Solid::PredEnumString(type_);
@@ -223,7 +223,7 @@ void Solid::Predict::Generic::print() const
   if (gstate_ptr_->get_my_rank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and
       gstate_ptr_->get_step_n() % iodata_ptr_->get_print2_screen_every_n_step() == 0)
   {
-    Core::IO::cout << "=== Structural predictor: " << Name().c_str() << " ===" << Core::IO::endl;
+    Core::IO::cout << "=== Structural predictor: " << name().c_str() << " ===" << Core::IO::endl;
   }
 }
 

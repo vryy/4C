@@ -52,8 +52,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::setup()
     if (!is_sr_beam)
       FOUR_C_THROW("The BeamToBeamPointCouplingPair only works for Simo Reissner beams");
   };
-  check_simo_reissner_beam(this->Element1());
-  check_simo_reissner_beam(this->Element2());
+  check_simo_reissner_beam(this->element1());
+  check_simo_reissner_beam(this->element2());
 
   this->issetup_ = true;
 }
@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::setup()
  *
  */
 template <typename Beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::EvaluateAndAssemble(
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -85,7 +85,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
 {
   const std::array<const Core::Elements::Element*, 2> beam_ele = {
-      this->Element1(), this->Element2()};
+      this->element1(), this->element2()};
 
   // Initialize variables for evaluation of the positional coupling terms.
   std::array<Core::LinAlg::Matrix<Beam::n_dof_, 1, int>, 2> gid_pos;
@@ -101,7 +101,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
   {
     // Get GIDs of the beams positional DOF.
     std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
-    beam_ele[i_beam]->LocationVector(*discret, lm_beam, lmowner, lmstride);
+    beam_ele[i_beam]->location_vector(*discret, lm_beam, lmowner, lmstride);
     const std::array<int, 12> pos_dof_indices = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
     for (unsigned int i = 0; i < Beam::n_dof_; i++)
       gid_pos[i_beam](i) = lm_beam[pos_dof_indices[i]];
@@ -145,7 +145,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
 
     // Add the coupling force to the global force vector.
     if (force_vector != Teuchos::null)
-      force_vector->SumIntoGlobalValues(gid_pos[i_beam].numRows(), gid_pos[i_beam].data(),
+      force_vector->SumIntoGlobalValues(gid_pos[i_beam].num_rows(), gid_pos[i_beam].data(),
           Core::FADUtils::CastToDouble(force_element[i_beam]).data());
   }
 
@@ -158,7 +158,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
       {
         for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
           for (unsigned int j_dof = 0; j_dof < Beam::n_dof_; j_dof++)
-            stiffness_matrix->FEAssemble(
+            stiffness_matrix->fe_assemble(
                 force_element[i_beam](i_dof).dx(j_beam * Beam::n_dof_ + j_dof),
                 gid_pos[i_beam](i_dof), gid_pos[j_beam](j_dof));
       }
@@ -177,7 +177,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
 {
   const std::array<const Core::Elements::Element*, 2> beam_ele = {
-      this->Element1(), this->Element2()};
+      this->element1(), this->element2()};
 
   // Declare variables for evaluation of the rotational coupling terms.
   std::array<Core::LinAlg::Matrix<n_dof_rot_, 1, int>, 2> gid_rot;
@@ -195,7 +195,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
   {
     // Get GIDs of the beams rotational DOF.
     std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
-    beam_ele[i_beam]->LocationVector(*discret, lm_beam, lmowner, lmstride);
+    beam_ele[i_beam]->location_vector(*discret, lm_beam, lmowner, lmstride);
     const std::array<int, 9> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
     for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot[i_beam](i) = lm_beam[rot_dof_indices[i]];
 
@@ -269,7 +269,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
     }
 
     if (force_vector != Teuchos::null)
-      force_vector->SumIntoGlobalValues(gid_rot[i_beam].numRows(), gid_rot[i_beam].data(),
+      force_vector->SumIntoGlobalValues(gid_rot[i_beam].num_rows(), gid_rot[i_beam].data(),
           Core::FADUtils::CastToDouble(moment_nodal_load[i_beam]).data());
   }
 
@@ -292,7 +292,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
 
         for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
           for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)
-            stiffness_matrix->FEAssemble(
+            stiffness_matrix->fe_assemble(
                 moment_stiff_temp(i_dof, j_dof), gid_rot[i_beam](i_dof), gid_rot[j_beam](j_dof));
       }
     }
@@ -310,7 +310,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::print(std::ostream& out
   // Print some general information: Element IDs and dofvecs.
   out << "\n------------------------------------------------------------------------";
   out << "\nInstance of BeamToBeamPenaltyPointCouplingPair"
-      << "\nBeam1 EleGID:  " << Element1()->Id() << "\nBeam2 EleGID: " << Element2()->Id();
+      << "\nBeam1 EleGID:  " << element1()->id() << "\nBeam2 EleGID: " << element2()->id();
   out << "------------------------------------------------------------------------\n";
 }
 
@@ -323,8 +323,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<
 {
   check_init_setup();
 
-  out << "Beam-to-beam point coupling pair, beam1 gid: " << Element1()->Id()
-      << " beam2 gid: " << Element2()->Id() << ", position in parameter space: ["
+  out << "Beam-to-beam point coupling pair, beam1 gid: " << element1()->id()
+      << " beam2 gid: " << element2()->id() << ", position in parameter space: ["
       << position_in_parameterspace_[0] << ", " << position_in_parameterspace_[1] << "]\n";
 }
 

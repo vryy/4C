@@ -22,7 +22,7 @@ Mat::Elastic::PAR::IsoVarga::IsoVarga(const Core::Mat::PAR::Parameter::Data& mat
 
 Mat::Elastic::IsoVarga::IsoVarga(Mat::Elastic::PAR::IsoVarga* params) : params_(params) {}
 
-void Mat::Elastic::IsoVarga::AddShearMod(bool& haveshearmod, double& shearmod) const
+void Mat::Elastic::IsoVarga::add_shear_mod(bool& haveshearmod, double& shearmod) const
 {
   // indeed, a shear modulus is provided
   haveshearmod = haveshearmod or true;

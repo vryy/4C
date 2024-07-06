@@ -93,19 +93,19 @@ namespace Core::Communication
     // do we have to build volume, surface or line elements?
     // get node connectivity for specific distype of parent element
     unsigned int nele = 0;
-    const Core::FE::CellType distype = ele.Shape();
+    const Core::FE::CellType distype = ele.shape();
     std::vector<std::vector<int>> connectivity;
     switch (buildtype)
     {
       case buildSurfaces:
       {
-        nele = ele.NumSurface();
+        nele = ele.num_surface();
         connectivity = Core::FE::getEleNodeNumberingSurfaces(distype);
         break;
       }
       case buildLines:
       {
-        nele = ele.NumLine();
+        nele = ele.num_line();
         connectivity = Core::FE::getEleNodeNumberingLines(distype);
         break;
       }
@@ -129,13 +129,13 @@ namespace Core::Communication
       // get connectivity infos
       for (unsigned int inode = 0; inode < nnode; inode++)
       {
-        nodeids[inode] = ele.PointIds()[connectivity[iele][inode]];
-        nodes[inode] = ele.Points()[connectivity[iele][inode]];
+        nodeids[inode] = ele.point_ids()[connectivity[iele][inode]];
+        nodes[inode] = ele.points()[connectivity[iele][inode]];
       }
 
       // allocate a new boundary element
       boundaryeles[iele] = Teuchos::rcp(new BoundaryEle(
-          iele, ele.Owner(), nodeids.size(), nodeids.data(), nodes.data(), &ele, iele));
+          iele, ele.owner(), nodeids.size(), nodeids.data(), nodes.data(), &ele, iele));
     }
 
     return boundaryeles;
@@ -182,11 +182,11 @@ namespace Core::Communication
   std::vector<Teuchos::RCP<Core::Elements::Element>> GetElementLines(ParentEle& ele)
   {
     // 1D boundary element and 2D/3D parent element
-    if (Core::FE::getDimension(ele.Shape()) > 1)
+    if (Core::FE::getDimension(ele.shape()) > 1)
     {
       return ElementBoundaryFactory<BoundaryEle, ParentEle>(buildLines, ele);
     }
-    else if (Core::FE::getDimension(ele.Shape()) == 1)
+    else if (Core::FE::getDimension(ele.shape()) == 1)
     {
       // 1D boundary element and 1D parent element
       //  -> we return the element itself
@@ -198,12 +198,12 @@ namespace Core::Communication
   template <class BoundaryEle, class ParentEle>
   std::vector<Teuchos::RCP<Core::Elements::Element>> GetElementSurfaces(ParentEle& ele)
   {
-    if (Core::FE::getDimension(ele.Shape()) > 2)
+    if (Core::FE::getDimension(ele.shape()) > 2)
     {
       // 2D boundary element and 3D parent element
       return ElementBoundaryFactory<BoundaryEle, ParentEle>(buildSurfaces, ele);
     }
-    else if (Core::FE::getDimension(ele.Shape()) == 2)
+    else if (Core::FE::getDimension(ele.shape()) == 2)
     {
       // 2D boundary element and 2D parent element
       // -> we return the element itself

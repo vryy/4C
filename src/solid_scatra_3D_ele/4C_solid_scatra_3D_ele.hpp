@@ -36,22 +36,22 @@ namespace Discret::ELEMENTS
     void setup_element_definition(
         std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+    Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
         const std::string elecelltype, const int id, const int owner) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-    [[nodiscard]] std::string Name() const override { return "SolidScatraType"; }
+    [[nodiscard]] std::string name() const override { return "SolidScatraType"; }
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-    static SolidScatraType& Instance();
+    static SolidScatraType& instance();
 
    private:
     static SolidScatraType instance_;
@@ -65,41 +65,41 @@ namespace Discret::ELEMENTS
    public:
     SolidScatra(int id, int owner);
 
-    [[nodiscard]] Core::Elements::Element* Clone() const override;
+    [[nodiscard]] Core::Elements::Element* clone() const override;
 
-    [[nodiscard]] int UniqueParObjectId() const override
+    [[nodiscard]] int unique_par_object_id() const override
     {
-      return SolidScatraType::Instance().UniqueParObjectId();
+      return SolidScatraType::instance().unique_par_object_id();
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
     void unpack(const std::vector<char>& data) override;
 
-    [[nodiscard]] Core::Elements::ElementType& ElementType() const override
+    [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return SolidScatraType::Instance();
+      return SolidScatraType::instance();
     }
 
-    [[nodiscard]] Core::FE::CellType Shape() const override { return celltype_; }
+    [[nodiscard]] Core::FE::CellType shape() const override { return celltype_; }
 
-    [[nodiscard]] virtual Mat::So3Material& SolidMaterial(int nummat = 0) const;
+    [[nodiscard]] virtual Mat::So3Material& solid_material(int nummat = 0) const;
 
-    [[nodiscard]] int NumLine() const override;
+    [[nodiscard]] int num_line() const override;
 
-    [[nodiscard]] int NumSurface() const override;
+    [[nodiscard]] int num_surface() const override;
 
-    [[nodiscard]] int NumVolume() const override;
+    [[nodiscard]] int num_volume() const override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
-    [[nodiscard]] int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
-    bool ReadElement(const std::string& eletype, const std::string& celltype,
+    bool read_element(const std::string& eletype, const std::string& celltype,
         Input::LineDefinition* linedef) override;
 
     int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
@@ -113,30 +113,30 @@ namespace Discret::ELEMENTS
         Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
-    Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override
+    Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override
     {
       return interface_ptr_;
     }
 
-    [[nodiscard]] inline bool IsParamsInterface() const override
+    [[nodiscard]] inline bool is_params_interface() const override
     {
       return (not interface_ptr_.is_null());
     }
 
     [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface() const
     {
-      if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+      if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
     }
 
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
-    bool VisData(const std::string& name, std::vector<double>& data) override;
+    bool vis_data(const std::string& name, std::vector<double>& data) override;
 
     /// return ScaTra::ImplType
-    [[nodiscard]] Inpar::ScaTra::ImplType ImplType() const { return properties_.impltype; }
+    [[nodiscard]] Inpar::ScaTra::ImplType impl_type() const { return properties_.impltype; }
 
     /*!
      * @brief Returns the Cauchy stress in the direction @p dir at @p xi with normal @p n

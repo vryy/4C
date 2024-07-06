@@ -158,28 +158,28 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Vector> initial_guess() = 0;
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
+    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> dispnp() const = 0;
 
     /// known displacements at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Dispn() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> dispn() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Velnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> velnp() const = 0;
 
     /// known velocity at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> veln() const = 0;
 
     /// known velocity at \f$t_{n-1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Velnm() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> velnm() const = 0;
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Accnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> accnp() const = 0;
 
     /// known acceleration at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> Accn() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> accn() const = 0;
 
     virtual void resize_m_step_tim_ada() = 0;
 
@@ -197,7 +197,7 @@ namespace Adapter
     virtual const Epetra_Map* dof_row_map_view() = 0;
 
     /// domain map of system matrix (do we really need this?)
-    [[nodiscard]] virtual const Epetra_Map& DomainMap() const = 0;
+    [[nodiscard]] virtual const Epetra_Map& domain_map() const = 0;
 
     /// direct access to system matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override = 0;
@@ -213,26 +213,26 @@ namespace Adapter
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
 
     /// do we have this model
-    virtual bool HaveModel(Inpar::Solid::ModelType model)
+    virtual bool have_model(Inpar::Solid::ModelType model)
     {
       FOUR_C_THROW("new time integration only");
       return false;
     }
 
     /// return model evaluator
-    virtual Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) = 0;
+    virtual Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() = 0;
+    virtual Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
 
     /// are there any algebraic constraints?
-    virtual bool HaveConstraint() = 0;
+    virtual bool have_constraint() = 0;
 
     /// are there any spring dashpot bcs?
-    virtual bool HaveSpringDashpot() = 0;
+    virtual bool have_spring_dashpot() = 0;
 
     /// get constraint manager defined in the structure
     virtual Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() = 0;
@@ -250,21 +250,21 @@ namespace Adapter
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
 
     /// expand dirichlet bc map
-    virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd){
+    virtual void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd){
         /* This is only needed for the old structural time integration.
            For the new structural time integration this is already
            implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
     };
 
     /// contract dirichlet bc map
-    virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove){
+    virtual void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove){
         /* This is only needed for the old structural time integration.
            For the new structural time integration this is already
            implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
     };
 
     /// set evaluation action
-    virtual void SetActionType(const Core::Elements::ActionType& action) = 0;
+    virtual void set_action_type(const Core::Elements::ActionType& action) = 0;
 
     //@}
 
@@ -272,38 +272,38 @@ namespace Adapter
     //@{
 
     /// return time integration factor
-    [[nodiscard]] virtual double TimIntParam() const = 0;
+    [[nodiscard]] virtual double tim_int_param() const = 0;
 
     //! Return current time \f$t_{n}\f$
-    [[nodiscard]] virtual double TimeOld() const = 0;
+    [[nodiscard]] virtual double time_old() const = 0;
 
     //! Return target time \f$t_{n+1}\f$
-    [[nodiscard]] virtual double Time() const = 0;
+    [[nodiscard]] virtual double time() const = 0;
 
     /// Get upper limit of time range of interest
-    [[nodiscard]] virtual double GetTimeEnd() const = 0;
+    [[nodiscard]] virtual double get_time_end() const = 0;
 
     //! Set upper limit of time range of interest
-    virtual void SetTimeEnd(double timemax) = 0;
+    virtual void set_time_end(double timemax) = 0;
 
     /// Get time step size \f$\Delta t_n\f$
-    [[nodiscard]] virtual double Dt() const = 0;
+    [[nodiscard]] virtual double dt() const = 0;
 
     /// Return current step number $n$
-    [[nodiscard]] virtual int StepOld() const = 0;
+    [[nodiscard]] virtual int step_old() const = 0;
 
     /// Return current step number $n+1$
-    [[nodiscard]] virtual int Step() const = 0;
+    [[nodiscard]] virtual int step() const = 0;
 
     /// Get number of time steps
-    [[nodiscard]] virtual int NumStep() const = 0;
+    [[nodiscard]] virtual int num_step() const = 0;
 
     /// Take the time and integrate (time loop)
     /// \date 11/08
-    virtual int Integrate() = 0;
+    virtual int integrate() = 0;
 
     //! do something in case nonlinear solution does not converge for some reason
-    virtual Inpar::Solid::ConvergenceStatus PerformErrorAction(
+    virtual Inpar::Solid::ConvergenceStatus perform_error_action(
         Inpar::Solid::ConvergenceStatus nonlinsoldiv) = 0;
 
     /// tests if there are more time steps to do
@@ -319,13 +319,13 @@ namespace Adapter
     virtual void set_time(const double time) = 0;
 
     //! Sets the current step \f$n\f$
-    virtual void SetStep(int step) = 0;
+    virtual void set_step(int step) = 0;
 
     //! Sets the current step \f$n+1\f$
-    virtual void SetStepn(int step) = 0;
+    virtual void set_stepn(int step) = 0;
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
-    virtual void SetTimen(const double time) = 0;
+    virtual void set_timen(const double time) = 0;
 
     /*!
     \brief update displacement and evaluate elements
@@ -356,7 +356,7 @@ namespace Adapter
     void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
-    virtual void Update(double endtime) = 0;
+    virtual void update(double endtime) = 0;
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
@@ -408,22 +408,22 @@ namespace Adapter
     virtual void set_state(const Teuchos::RCP<Epetra_Vector>& x) = 0;
 
     /// wrapper for things that should be done before prepare_time_step is called
-    virtual void PrePredict() = 0;
+    virtual void pre_predict() = 0;
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    virtual void PreSolve() = 0;
+    virtual void pre_solve() = 0;
 
     /// wrapper for things that should be done before updating
-    virtual void PreUpdate() = 0;
+    virtual void pre_update() = 0;
 
     /// wrapper for things that should be done after solving the update
     virtual void post_update() = 0;
 
     /// wrapper for things that should be done after the output
-    virtual void PostOutput() = 0;
+    virtual void post_output() = 0;
 
     /// wrapper for things that should be done after the actual time loop is finished
-    virtual void PostTimeLoop() = 0;
+    virtual void post_time_loop() = 0;
 
     //@}
 
@@ -436,7 +436,7 @@ namespace Adapter
     for the time step. All boundary conditions have
     been set.
     */
-    virtual Inpar::Solid::ConvergenceStatus Solve() = 0;
+    virtual Inpar::Solid::ConvergenceStatus solve() = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -457,16 +457,16 @@ namespace Adapter
     //@{
 
     /// write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> write_access_dispnp() = 0;
 
     /// write access to extract velocities at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> write_access_velnp() = 0;
 
     /// write access to extract displacements at \f$t^{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> write_access_dispn() = 0;
 
     /// write access to extract velocities at \f$t^{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> write_access_veln() = 0;
 
     //@}
 
@@ -481,7 +481,7 @@ namespace Adapter
     ///
     /// \note This method will be deprecated as soon as new structural time integration is
     ///       completely engulfed by all algorithms using this method.
-    virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce) = 0;
+    virtual void set_force_interface(Teuchos::RCP<Epetra_MultiVector> iforce) = 0;
 
     //! specific method for iterative staggered partitioned TSI
 
@@ -500,27 +500,27 @@ namespace Adapter
     //@{
 
     /// material displacements (structure with ale)
-    virtual Teuchos::RCP<Epetra_Vector> DispMat() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> disp_mat() = 0;
 
     /// apply material displacements to structure field (structure with ale)
-    virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat) = 0;
+    virtual void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) = 0;
 
     //@}
 
     /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     virtual void reset() = 0;
 
     /// set structure displacement vector due to biofilm growth
-    virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;
+    virtual void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;
 
     /// Write Gmsh output for structural field
     virtual void write_gmsh_struc_output_step() = 0;
 
     /// bool indicating if micro material is used
-    virtual bool HaveMicroMat() = 0;
+    virtual bool have_micro_mat() = 0;
 
     /// \brief Returns true if the final state has been written
     [[nodiscard]] virtual bool has_final_state_been_written() const = 0;

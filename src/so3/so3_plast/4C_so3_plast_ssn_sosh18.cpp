@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoSh18PlastType Discret::ELEMENTS::SoSh18PlastType::instance_;
 
-Discret::ELEMENTS::SoSh18PlastType& Discret::ELEMENTS::SoSh18PlastType::Instance()
+Discret::ELEMENTS::SoSh18PlastType& Discret::ELEMENTS::SoSh18PlastType::instance()
 {
   return instance_;
 }
@@ -35,7 +35,7 @@ Discret::ELEMENTS::SoSh18PlastType& Discret::ELEMENTS::SoSh18PlastType::Instance
 | create the new element type (public)                     seitz 11/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoSh18PlastType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoSh18PlastType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh18Plast(-1, -1);
@@ -47,7 +47,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh18PlastType::Create(
 | create the new element type (public)                     seitz 11/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -63,7 +63,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::Create
 | create the new element type (public)                     seitz 11/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -106,11 +106,11 @@ Discret::ELEMENTS::SoSh18Plast::SoSh18Plast(int id, int owner)
       Discret::ELEMENTS::SoSh18(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -132,7 +132,7 @@ Discret::ELEMENTS::SoSh18Plast::SoSh18Plast(const Discret::ELEMENTS::SoSh18Plast
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoSh18Plast::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoSh18Plast::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoSh18Plast(*this);
   return newelement;
@@ -146,7 +146,7 @@ void Discret::ELEMENTS::SoSh18Plast::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class So3Plast Element
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::SoSh18Plast::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
@@ -174,7 +174,7 @@ void Discret::ELEMENTS::SoSh18Plast::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Discret::ELEMENTS::SoSh18::unpack(basedata);
 
-  SyncEAS();
+  sync_eas();
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -192,15 +192,15 @@ void Discret::ELEMENTS::SoSh18Plast::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh18Plast::ReadElement(
+bool Discret::ELEMENTS::SoSh18Plast::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  bool read = (Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::ReadElement(
+  bool read = (Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::read_element(
                    eletype, distype, linedef) &&
-               Discret::ELEMENTS::SoSh18::ReadElement(eletype, distype, linedef));
+               Discret::ELEMENTS::SoSh18::read_element(eletype, distype, linedef));
 
   // sync the EAS info
-  SyncEAS();
+  sync_eas();
 
 
   return read;
@@ -209,7 +209,7 @@ bool Discret::ELEMENTS::SoSh18Plast::ReadElement(
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::SyncEAS()
+void Discret::ELEMENTS::SoSh18Plast::sync_eas()
 {
   if (eas_ == true)
   {
@@ -277,10 +277,10 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
   Core::LinAlg::Matrix<nen_, nsd_> xrefe;  // reference coord. of element
   Core::LinAlg::Matrix<nen_, nsd_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < nen_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -292,8 +292,8 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
 
   // get plastic hyperelastic material
   Mat::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
-    plmat = dynamic_cast<Mat::PlasticElastHyper*>(Material().get());
+  if (material()->material_type() == Core::Materials::m_plelasthyper)
+    plmat = dynamic_cast<Mat::PlasticElastHyper*>(material().get());
 
   // get time integration data
   double theta = str_params_interface().get_tim_int_factor_disp();
@@ -394,7 +394,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
     // calculate the deformation gradient consistent to the modified strains
     // but only if the material needs a deformation gradient (e.g. plasticity)
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
-    if (Teuchos::rcp_static_cast<Mat::So3Material>(Material())->needs_defgrd() ||
+    if (Teuchos::rcp_static_cast<Mat::So3Material>(material())->needs_defgrd() ||
         iostrain == Inpar::Solid::strain_ea || iostress == Inpar::Solid::stress_cauchy)
     {
       // compute the deformation gradient - shell-style
@@ -426,10 +426,10 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
     Core::LinAlg::Matrix<numstr_, 1> pk2;
     Core::LinAlg::Matrix<numstr_, numstr_> cmat;
     if (plmat != nullptr)
-      plmat->EvaluateElast(&defgrd, &delta_lp(), &pk2, &cmat, gp, Id());
+      plmat->evaluate_elast(&defgrd, &delta_lp(), &pk2, &cmat, gp, id());
     else
     {
-      SolidMaterial()->evaluate(&defgrd, &glstrain, params, &pk2, &cmat, gp, Id());
+      solid_material()->evaluate(&defgrd, &glstrain, params, &pk2, &cmat, gp, id());
     }
     // material call *********************************************
 
@@ -559,7 +559,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
       Core::LinAlg::Matrix<NUMNOD_SOH18, 1> shapefunct;
       Core::FE::shape_function<Core::FE::CellType::hex18>(SoSh18::xsi_[gp], shapefunct);
 
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
 
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
@@ -607,8 +607,8 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
   if ((stiffmatrix || force) && eas_)
   {
     Core::LinAlg::FixedSizeSerialDenseSolver<num_eas, num_eas, 1> solve_for_KaaInv;
-    solve_for_KaaInv.SetMatrix(SoSh18::KaaInv_);
-    int err2 = solve_for_KaaInv.Factor();
+    solve_for_KaaInv.set_matrix(SoSh18::KaaInv_);
+    int err2 = solve_for_KaaInv.factor();
     int err = solve_for_KaaInv.invert();
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Kaa failed");
 

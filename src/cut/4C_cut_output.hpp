@@ -149,19 +149,19 @@ namespace Core::Geo
       inline void GmshLineDump(
           std::ofstream& file, Core::Geo::Cut::Point* p1, Core::Geo::Cut::Point* p2)
       {
-        GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, nullptr);
+        GmshLineDump(file, p1, p2, p1->id(), p2->id(), false, nullptr);
       }
 
       inline void GmshLineDump(
           std::ofstream& file, Core::Geo::Cut::Point* p1, Core::Geo::Cut::Point* p2, bool to_local)
       {
-        GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), to_local, nullptr);
+        GmshLineDump(file, p1, p2, p1->id(), p2->id(), to_local, nullptr);
       }
 
       inline void GmshLineDump(std::ofstream& file, Core::Geo::Cut::Point* p1,
           Core::Geo::Cut::Point* p2, bool to_local, Element* ele)
       {
-        GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), to_local, ele);
+        GmshLineDump(file, p1, p2, p1->id(), p2->id(), to_local, ele);
       }
 
       void GmshLineDump(std::ofstream& file, Core::Geo::Cut::Line* line, bool to_local = false,
@@ -391,7 +391,7 @@ namespace Core::Geo
       inline void GmshObjectDump<BoundaryCell>(
           std::ofstream& file, BoundaryCell* obj, bool to_local, Element* ele)
       {
-        GmshCellDump(file, obj->Shape(), obj->Coordinates());
+        GmshCellDump(file, obj->shape(), obj->coordinates());
       }
 
       /*!

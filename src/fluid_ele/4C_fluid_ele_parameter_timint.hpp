@@ -34,7 +34,7 @@ namespace Discret
     {
      public:
       //! Singleton access method
-      static FluidEleParameterTimInt* Instance(
+      static FluidEleParameterTimInt* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! time parameter are set
@@ -45,50 +45,50 @@ namespace Discret
       void print_fluid_time_parameter();
 
       //! flag to (de)activate generalized-alpha time-integration scheme
-      bool IsGenalpha() { return is_genalpha_; };
+      bool is_genalpha() { return is_genalpha_; };
       /// Flags to switch on/off the different fluid formulations
       //! flag to (de)activate generalized-alpha-np1 time-integration scheme
-      bool IsGenalphaNP() { return is_genalpha_np_; };
+      bool is_genalpha_np() { return is_genalpha_np_; };
       //! flag to (de)activate stationary formulation
-      bool IsStationary() { return is_stationary_; };
+      bool is_stationary() { return is_stationary_; };
       //! flag to (de)activate stationary formulation
-      bool IsOneStepTheta() { return is_one_step_theta_; };
+      bool is_one_step_theta() { return is_one_step_theta_; };
       //! flag to (de)activate full implicit pressure in momentum equation (and adjust continuity eq
       //! accordingly)
       bool is_full_impl_pressure_and_cont() const { return is_cont_impl_press_impl_; };
       //! flag to (de)activate full implicit pressure in momentum equation (and adjust continuity eq
       //! accordingly)
-      bool IsImplPressure() const { return is_cont_impl_press_normal_; };
+      bool is_impl_pressure() const { return is_cont_impl_press_normal_; };
 
       //! flag for new or old implementation. WILL BE REMOVED!
       bool is_new_ost_implementation() const { return ostnew_; };
 
       /// parameters for the time integration
       //! time algorithm
-      Inpar::FLUID::TimeIntegrationScheme TimeAlgo() { return timealgo_; };
+      Inpar::FLUID::TimeIntegrationScheme time_algo() { return timealgo_; };
       //! actual time to evaluate the body BC
-      double Time() { return time_; };
+      double time() { return time_; };
       //! time-step length
-      double Dt() { return dt_; };
+      double dt() { return dt_; };
       //! timefac = dt_ * ("pseudo"-)theta_
-      double TimeFac() { return timefac_; };
+      double time_fac() { return timefac_; };
       //! factor for left-hand side due to one-step-theta time-integration scheme
-      double Theta() { return theta_; };
+      double theta() { return theta_; };
       //! factor for right-hand side due to one-step-theta time-integration scheme
-      double OmTheta() { return omtheta_; };
+      double om_theta() { return omtheta_; };
       //! generalised-alpha parameter (connecting velocity and acceleration)
-      double Gamma() { return gamma_; };
+      double gamma() { return gamma_; };
       //! generalised-alpha parameter (velocity)
-      double AlphaF() { return alpha_f_; };
+      double alpha_f() { return alpha_f_; };
       //! generalised-alpha parameter (acceleration)
-      double AlphaM() { return alpha_m_; };
+      double alpha_m() { return alpha_m_; };
       //! generalised-alpha parameter, alphaF_*gamma_*dt_
-      double Afgdt() { return afgdt_; };
+      double afgdt() { return afgdt_; };
       //! generalised-alpha parameter, gamma_/alphaM_*dt_
       //! time integration factor for the right hand side (boundary elements)
-      double TimeFacRhs() { return timefacrhs_; };
+      double time_fac_rhs() { return timefacrhs_; };
       //! time integration factor for the left hand side (pressure)
-      double TimeFacPre() { return timefacpre_; };
+      double time_fac_pre() { return timefacpre_; };
 
      private:
       //! Flag SetGeneralParameter was called

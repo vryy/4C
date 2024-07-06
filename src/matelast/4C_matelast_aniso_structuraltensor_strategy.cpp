@@ -97,7 +97,7 @@ Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic::
 {
 }
 
-void Mat::Elastic::StructuralTensorStrategyBase::DyadicProduct(
+void Mat::Elastic::StructuralTensorStrategyBase::dyadic_product(
     const Core::LinAlg::Matrix<3, 1>& M, Core::LinAlg::Matrix<6, 1>& result)
 {
   for (int i = 0; i < 3; ++i) result(i) = M(i) * M(i);
@@ -107,7 +107,7 @@ void Mat::Elastic::StructuralTensorStrategyBase::DyadicProduct(
   result(5) = M(0) * M(2);
 }
 
-void Mat::Elastic::StructuralTensorStrategyBase::DyadicProduct(
+void Mat::Elastic::StructuralTensorStrategyBase::dyadic_product(
     const Core::LinAlg::Matrix<3, 1>& M, Core::LinAlg::Matrix<3, 3>& result)
 {
   result.multiply_nt(M, M);
@@ -117,13 +117,13 @@ void Mat::Elastic::StructuralTensorStrategyStandard::setup_structural_tensor(
     const Core::LinAlg::Matrix<3, 1>& fiber_vector,
     Core::LinAlg::Matrix<6, 1>& structural_tensor_stress)
 {
-  DyadicProduct(fiber_vector, structural_tensor_stress);
+  dyadic_product(fiber_vector, structural_tensor_stress);
 }
 
 void Mat::Elastic::StructuralTensorStrategyStandard::setup_structural_tensor(
     const Core::LinAlg::Matrix<3, 1>& fiber_vector, Core::LinAlg::Matrix<3, 3>& structural_tensor)
 {
-  DyadicProduct(fiber_vector, structural_tensor);
+  dyadic_product(fiber_vector, structural_tensor);
 }
 
 void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structural_tensor(
@@ -274,7 +274,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
 
   // zero out small entries
   const double tol = get_residual_tol();
-  for (unsigned i = 0; i < structural_tensor_stress.numRows(); ++i)
+  for (unsigned i = 0; i < structural_tensor_stress.num_rows(); ++i)
     if (abs(structural_tensor_stress(i)) < tol) structural_tensor_stress(i) = 0.0;
 
   // scale whole structural tensor with its trace, because
@@ -300,7 +300,7 @@ void Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic::setup
   // constant for dispersion around fiber_vector
   double c1 = params_->c1_;
 
-  DyadicProduct(fiber_vector, structural_tensor_stress);
+  dyadic_product(fiber_vector, structural_tensor_stress);
 
   Core::LinAlg::Matrix<6, 1> Identity(true);
   Identity(0) = 1.0;
@@ -321,7 +321,7 @@ void Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic::setup
 double Mat::Elastic::StructuralTensorStrategyBase::get_residual_tol()
 {
   double restol = -1.0;
-  Global::Problem* gprob = Global::Problem::Instance();
+  Global::Problem* gprob = Global::Problem::instance();
   restol = gprob->structural_dynamic_params().get<double>("TOLRES");
 
   return restol;

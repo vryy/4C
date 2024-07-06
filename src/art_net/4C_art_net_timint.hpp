@@ -62,12 +62,12 @@ namespace Arteries
     //! get discretization
     Teuchos::RCP<Core::FE::Discretization> discretization() override { return discret_; }
 
-    double Dt() const override { return dta_; }
+    double dt() const override { return dta_; }
 
-    double Time() const { return time_; }
-    int Step() const { return step_; }
+    double time() const { return time_; }
+    int step() const { return step_; }
 
-    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+    int itemax() const { return params_.get<int>("max nonlin iter steps"); }
 
     void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override = 0;
 
@@ -75,7 +75,7 @@ namespace Arteries
     \brief start time loop for startingalgo, normal problems and restarts
 
     */
-    void Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
+    void integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     /*!
     \brief prepare the loop
@@ -87,11 +87,12 @@ namespace Arteries
     \brief Do time integration (time loop)
 
     */
-    void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void time_loop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     //! set the initial field on the artery discretization
-    virtual void SetInitialField(const Inpar::ArtDyn::InitialField init,  //!< type of initial field
-        const int startfuncno  //!< number of spatial function
+    virtual void set_initial_field(
+        const Inpar::ArtDyn::InitialField init,  //!< type of initial field
+        const int startfuncno                    //!< number of spatial function
     )
     {
       // each artery integration should overwrite this if used
@@ -103,7 +104,7 @@ namespace Arteries
     void prepare_time_step() override;
 
     /// setup the variables to do a new time step
-    void PrepareLinearSolve() override
+    void prepare_linear_solve() override
     {
       // each artery integration should overwrite this if used
       FOUR_C_THROW("not implemented");
@@ -117,16 +118,16 @@ namespace Arteries
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
     };
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() const override { return rhs_; }
 
     //! iterative update of primary variable
-    void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) override
+    void update_iter(const Teuchos::RCP<const Epetra_Vector> inc) override
     {
       // each artery integration should overwrite this if used
       FOUR_C_THROW("not implemented");
@@ -134,7 +135,7 @@ namespace Arteries
     }
 
     // get solution vector
-    Teuchos::RCP<const Epetra_Vector> Pressurenp() const override
+    Teuchos::RCP<const Epetra_Vector> pressurenp() const override
     {
       // each artery integration should overwrite this if used
       FOUR_C_THROW("not implemented");
@@ -144,15 +145,15 @@ namespace Arteries
     \brief solve linearised artery and bifurcation
 
     */
-    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override = 0;
+    void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override = 0;
 
-    void SolveScatra() override = 0;
+    void solve_scatra() override = 0;
 
     //! is output needed for the current time step?
-    bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
+    bool do_output() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
     // set solve scatra flag
-    void SetSolveScatra(const bool solvescatra) override
+    void set_solve_scatra(const bool solvescatra) override
     {
       solvescatra_ = solvescatra;
       return;
@@ -165,7 +166,7 @@ namespace Arteries
     }
 
     // create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override = 0;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override = 0;
 
    protected:
     //! @name general algorithm parameters

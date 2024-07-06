@@ -28,7 +28,7 @@ void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::extract_element_and_node_va
 )
 {
   // extract thermo state vector from discretization
-  Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(2, "thermo");
+  Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(2, "thermo");
   if (tempnp == Teuchos::null)
     FOUR_C_THROW("Cannot extract thermo state vector from discretization!");
 
@@ -67,7 +67,7 @@ void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::calc_mat_soret(
     {
       // linearizations of Soret effect term in concentration residuals w.r.t. concentration dofs
       emat(rowconc, ui * 2) += timefacfac * funct(ui) * laplawfrhs_gradtemp / temp *
-                               diffmanagerstithermo_->GetSoret() *
+                               diffmanagerstithermo_->get_soret() *
                                (diffcoeff + conc * diffcoeffderiv);
     }
 
@@ -110,7 +110,7 @@ void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::calc_mat_soret_od(
 
       // linearizations of Soret effect term in concentration residuals w.r.t. thermo dofs
       emat(rowconc, ui) +=
-          timefacfac * diffcoeff * diffmanagerstithermo_->GetSoret() * concentration *
+          timefacfac * diffcoeff * diffmanagerstithermo_->get_soret() * concentration *
           (laplawf / temperature - funct(ui) * laplawfrhs_gradtemp / (pow(temperature, 2)));
 
       // Soret effect term does not appear in electric potential residuals
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::calc_rhs_soret(
 
     // contributions of Soret effect term to concentration residuals
     erhs[vi * 2] -=
-        rhsfac * laplawfrhs_gradtemp * diffcoeff * conc * diffmanagerstithermo_->GetSoret() / temp;
+        rhsfac * laplawfrhs_gradtemp * diffcoeff * conc * diffmanagerstithermo_->get_soret() / temp;
 
     // Soret effect term does not appear in electric potential residuals
   }
@@ -161,8 +161,8 @@ void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::mat_soret(
   // extract material parameters from Soret material
   const Teuchos::RCP<const Mat::Soret> matsoret =
       Teuchos::rcp_static_cast<const Mat::Soret>(material);
-  diffmanagerstithermo_->SetIsotropicDiff(matsoret->Conductivity(), 0);
-  diffmanagerstithermo_->SetSoret(matsoret->SoretCoefficient());
+  diffmanagerstithermo_->set_isotropic_diff(matsoret->conductivity(), 0);
+  diffmanagerstithermo_->set_soret(matsoret->soret_coefficient());
 }
 
 

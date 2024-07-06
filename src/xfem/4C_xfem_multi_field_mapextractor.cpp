@@ -113,7 +113,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
         "to do? Seems as you are wrong here...");
 
   // get the communicator (supposed to be the same for all discretizations)
-  comm_ = Teuchos::rcpFromRef(dis_vec[0]->Comm());
+  comm_ = Teuchos::rcpFromRef(dis_vec[0]->get_comm());
 
   max_num_reserved_dofs_per_node_ = max_num_reserved_dofs_per_node;
 
@@ -148,7 +148,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   // create an auxiliary master interface discretization
   // ------------------------------------------------------------------------
   idiscret_ = Teuchos::rcp(new Core::FE::Discretization("multifield_interface",
-      Teuchos::rcp<Epetra_Comm>(comm().Clone()), Global::Problem::Instance()->NDim()));
+      Teuchos::rcp<Epetra_Comm>(get_comm().Clone()), Global::Problem::instance()->n_dim()));
 
   // ------------------------------------------------------------------------
   // (1) create a list of coupling discretizations per node on this proc and
@@ -164,7 +164,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   {
     for (unsigned d = 0; d < sl_dis_vec().size(); ++d)
     {
-      if (sl_dis_vec()[d]->NodeRowMap()->MyGID(*ngid))
+      if (sl_dis_vec()[d]->node_row_map()->MyGID(*ngid))
       {
         std::pair<std::set<int>::iterator, bool> is_unique = my_coupled_sl_dis[*ngid].insert(d);
         if (not is_unique.second)
@@ -207,15 +207,15 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   // (2) round robin loop
   // ------------------------------------------------------------------------
   // create an exporter for point to point communication
-  Core::Communication::Exporter exporter(comm());
-  const int numprocs = comm().NumProc();
+  Core::Communication::Exporter exporter(get_comm());
+  const int numprocs = get_comm().NumProc();
 
   for (int p = 0; p < numprocs; ++p)
   {
     // Send block to next proc. Receive a block from the last proc
     if (p > 0)
     {
-      int myrank = comm().MyPID();
+      int myrank = get_comm().MyPID();
       int tag = myrank;
 
       int frompid = myrank;
@@ -242,7 +242,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
 
       // receive size information
       int length = 0;
-      exporter.ReceiveAny(frompid, tag, receivedsize, length);
+      exporter.receive_any(frompid, tag, receivedsize, length);
       if (length != 2 or tag != frompid)
         FOUR_C_THROW(
             "Size information got mixed up!\n"
@@ -250,10 +250,10 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
             "Received tag    = %d, Expected tag    = %d",
             length, 2, tag, frompid);
 
-      exporter.Wait(sizerequest);
+      exporter.wait(sizerequest);
 
       // receive the gids
-      exporter.ReceiveAny(frompid, tag, receivedgid, length);
+      exporter.receive_any(frompid, tag, receivedgid, length);
       if (length != receivedsize[0] or tag != frompid * 10)
         FOUR_C_THROW(
             "GID information got mixed up! \n"
@@ -261,10 +261,10 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
             "Received tag    = %d, Expected tag    = %d",
             length, receivedsize[0], tag, frompid * 10);
 
-      exporter.Wait(gidrequest);
+      exporter.wait(gidrequest);
 
       // receive the sets
-      exporter.ReceiveAny(frompid, tag, receivedset, length);
+      exporter.receive_any(frompid, tag, receivedset, length);
       if (length != receivedsize[1] or tag != frompid * 100)
         FOUR_C_THROW(
             "Set information got mixed up! \n"
@@ -272,7 +272,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
             "Received tag    = %d, Expected tag    = %d",
             length, receivedsize[1], tag, frompid * 100);
 
-      exporter.Wait(setrequest);
+      exporter.wait(setrequest);
     }
     // in the first step, we keep all nodes on the owning proc
     else
@@ -338,15 +338,15 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
     if (sl_dis_id_to_copy_from == -1) sl_dis_id_to_copy_from = *cit_map->second.begin();
 
     // add the node on the owning processor
-    if (sl_dis_vec()[sl_dis_id_to_copy_from]->NodeRowMap()->MyGID(ngid))
+    if (sl_dis_vec()[sl_dis_id_to_copy_from]->node_row_map()->MyGID(ngid))
     {
       // clone the node, thus it becomes independent of any redistribution
-      Core::Nodes::Node* node = sl_dis_vec()[sl_dis_id_to_copy_from]->gNode(ngid);
-      Teuchos::RCP<Core::Nodes::Node> inode = Teuchos::rcp(node->Clone());
-      idiscret_->AddNode(inode);
+      Core::Nodes::Node* node = sl_dis_vec()[sl_dis_id_to_copy_from]->g_node(ngid);
+      Teuchos::RCP<Core::Nodes::Node> inode = Teuchos::rcp(node->clone());
+      idiscret_->add_node(inode);
       // store the id for the master/slave coupling maps
       for (cit_set = cit_map->second.begin(); cit_set != cit_map->second.end(); ++cit_set)
-        my_master_inode_gids[*cit_set].push_back(inode->Id());
+        my_master_inode_gids[*cit_set].push_back(inode->id());
     }
   }
 
@@ -424,15 +424,15 @@ void XFEM::MultiFieldMapExtractor::build_slave_node_map_extractors()
     std::vector<int> my_interface_row_node_gids(0);
     std::vector<int> my_non_interface_row_node_gids(0);
 
-    const int num_my_rnodes = (*cit_dis)->NumMyRowNodes();
-    int* my_row_node_gids = (*cit_dis)->NodeRowMap()->MyGlobalElements();
+    const int num_my_rnodes = (*cit_dis)->num_my_row_nodes();
+    int* my_row_node_gids = (*cit_dis)->node_row_map()->MyGlobalElements();
 
     for (unsigned nlid = 0; nlid < static_cast<unsigned>(num_my_rnodes); ++nlid)
     {
       int ngid = my_row_node_gids[nlid];
 
       // find the interface gids
-      if (IsInterfaceNode(ngid))
+      if (is_interface_node(ngid))
         my_interface_row_node_gids.push_back(ngid);
       else
         my_non_interface_row_node_gids.push_back(ngid);
@@ -442,16 +442,17 @@ void XFEM::MultiFieldMapExtractor::build_slave_node_map_extractors()
     partial_maps[MultiField::block_interface] = Teuchos::null;
     partial_maps[MultiField::block_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_interface_row_node_gids.size()),
-            my_interface_row_node_gids.data(), 0, comm()));
+            my_interface_row_node_gids.data(), 0, get_comm()));
 
     // slave sided non-interface node maps
     partial_maps[MultiField::block_non_interface] = Teuchos::null;
     partial_maps[MultiField::block_non_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_non_interface_row_node_gids.size()),
-            my_non_interface_row_node_gids.data(), 0, comm()));
+            my_non_interface_row_node_gids.data(), 0, get_comm()));
 
     // setup node map extractor
-    slave_map_extractors_[dis_count++][map_nodes]->setup(*((*cit_dis)->NodeRowMap()), partial_maps);
+    slave_map_extractors_[dis_count++][map_nodes]->setup(
+        *((*cit_dis)->node_row_map()), partial_maps);
   }
 }
 
@@ -469,10 +470,10 @@ void XFEM::MultiFieldMapExtractor::build_slave_dof_map_extractors()
   unsigned dis_count = 0;
   for (cit_dis = sl_dis_vec().begin(); cit_dis != sl_dis_vec().end(); ++cit_dis)
   {
-    int* my_node_gids = (*cit_dis)->NodeRowMap()->MyGlobalElements();
+    int* my_node_gids = (*cit_dis)->node_row_map()->MyGlobalElements();
 
     // loop over my nodes
-    for (int nlid = 0; nlid < (*cit_dis)->NodeRowMap()->NumMyElements(); ++nlid)
+    for (int nlid = 0; nlid < (*cit_dis)->node_row_map()->NumMyElements(); ++nlid)
     {
       int ngid = my_node_gids[nlid];
       // ----------------------------------------------------------------------
@@ -480,34 +481,34 @@ void XFEM::MultiFieldMapExtractor::build_slave_dof_map_extractors()
       // ----------------------------------------------------------------------
       if (slave_node_row_map(dis_count, MultiField::block_interface).MyGID(ngid))
       {
-        const Core::Nodes::Node* node = (*cit_dis)->lRowNode(nlid);
-        const unsigned numdof = (*cit_dis)->NumDof(node);
+        const Core::Nodes::Node* node = (*cit_dis)->l_row_node(nlid);
+        const unsigned numdof = (*cit_dis)->num_dof(node);
 
         for (unsigned i = 0; i < numdof; ++i)
-          my_sl_interface_dofs.push_back((*cit_dis)->Dof(node, i));
+          my_sl_interface_dofs.push_back((*cit_dis)->dof(node, i));
       }
       // ----------------------------------------------------------------------
       // non-interface DoF's
       // ----------------------------------------------------------------------
       else
       {
-        const Core::Nodes::Node* node = (*cit_dis)->lRowNode(nlid);
-        const unsigned numdof = (*cit_dis)->NumDof(node);
+        const Core::Nodes::Node* node = (*cit_dis)->l_row_node(nlid);
+        const unsigned numdof = (*cit_dis)->num_dof(node);
 
         for (unsigned i = 0; i < numdof; ++i)
-          my_sl_non_interface_dofs.push_back((*cit_dis)->Dof(node, i));
+          my_sl_non_interface_dofs.push_back((*cit_dis)->dof(node, i));
       }
     }
     // create slave interface dof row map
     partial_maps[MultiField::block_interface] = Teuchos::null;
-    partial_maps[MultiField::block_interface] = Teuchos::rcp(new Epetra_Map(
-        -1, static_cast<int>(my_sl_interface_dofs.size()), my_sl_interface_dofs.data(), 0, comm()));
+    partial_maps[MultiField::block_interface] = Teuchos::rcp(new Epetra_Map(-1,
+        static_cast<int>(my_sl_interface_dofs.size()), my_sl_interface_dofs.data(), 0, get_comm()));
 
     // create slave non-interface dof row map
     partial_maps[MultiField::block_non_interface] = Teuchos::null;
     partial_maps[MultiField::block_non_interface] =
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_sl_non_interface_dofs.size()),
-            my_sl_non_interface_dofs.data(), 0, comm()));
+            my_sl_non_interface_dofs.data(), 0, get_comm()));
 
     // setup dof map extractor
     slave_map_extractors_[dis_count++][map_dofs]->setup(*((*cit_dis)->dof_row_map()), partial_maps);
@@ -537,19 +538,19 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
 
     for (int j = 0; j < nnodes; ++j)
     {
-      const Core::Nodes::Node* node = sl_discret(i).gNode(ngids[j]);
-      const int numdof = sl_discret(i).NumDof(node);
-      my_num_std_dof = sl_discret(i).NumStandardDof(0, node);
+      const Core::Nodes::Node* node = sl_discret(i).g_node(ngids[j]);
+      const int numdof = sl_discret(i).num_dof(node);
+      my_num_std_dof = sl_discret(i).num_standard_dof(0, node);
       sl_max_num_dof_per_inode[ngids[j]] = numdof;
     }
 
     Core::Communication::Exporter export_max_dof_num(
-        sl_inodemap, ma_inodemap, sl_discret(i).Comm());
+        sl_inodemap, ma_inodemap, sl_discret(i).get_comm());
     export_max_dof_num.Export(sl_max_num_dof_per_inode);
 
     // communicate the number of standard DoF's
     // Supposed to be the same value on all discretizations and all nodes.
-    if (g_num_std_dof == -1) comm().MaxAll(&my_num_std_dof, &g_num_std_dof, 1);
+    if (g_num_std_dof == -1) get_comm().MaxAll(&my_num_std_dof, &g_num_std_dof, 1);
 
     if (my_num_std_dof != -1 and g_num_std_dof != my_num_std_dof)
       FOUR_C_THROW(
@@ -589,7 +590,7 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
           g_node_index_range, g_num_std_dof, ma_max_num_dof_per_inode));
 
   // set the new dof-set and finish the interface discretization
-  idiscret_->ReplaceDofSet(0, icoupl_dofset_, true);
+  idiscret_->replace_dof_set(0, icoupl_dofset_, true);
 
   idiscret_->fill_complete(true, false, false);
 }
@@ -618,7 +619,7 @@ void XFEM::MultiFieldMapExtractor::build_master_node_map_extractor()
   // --------------------------------------------------------------------------
   fullmap = Teuchos::null;
   // add interface nodes
-  fullmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(*i_discret().NodeRowMap()));
+  fullmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(*i_discret().node_row_map()));
 
   // merge non-interface nodes into the full map
   for (unsigned i = num_sl_dis(); i < partial_maps.size(); ++i)
@@ -654,13 +655,13 @@ void XFEM::MultiFieldMapExtractor::build_master_dof_map_extractor()
     for (int nlid = 0; nlid < num_my_inodes; ++nlid)
     {
       int ngid = inode_gids[nlid];
-      const Core::Nodes::Node* inode = i_discret().gNode(ngid);
-      const unsigned numdof = i_discret().NumDof(inode);
+      const Core::Nodes::Node* inode = i_discret().g_node(ngid);
+      const unsigned numdof = i_discret().num_dof(inode);
       for (unsigned j = 0; j < numdof; ++j)
-        my_ma_interface_dofs.push_back(i_discret().Dof(inode, j));
+        my_ma_interface_dofs.push_back(i_discret().dof(inode, j));
     }
-    partial_maps.at(i) = Teuchos::rcp<const Epetra_Map>(new Epetra_Map(
-        -1, static_cast<int>(my_ma_interface_dofs.size()), my_ma_interface_dofs.data(), 0, comm()));
+    partial_maps.at(i) = Teuchos::rcp<const Epetra_Map>(new Epetra_Map(-1,
+        static_cast<int>(my_ma_interface_dofs.size()), my_ma_interface_dofs.data(), 0, get_comm()));
   }
 
   // --------------------------------------------------------------------------
@@ -726,7 +727,7 @@ void XFEM::MultiFieldMapExtractor::build_element_map_extractor()
   for (cit = sl_dis_vec().begin(); cit != sl_dis_vec().end(); ++cit)
   {
     // get the element row map of each wrapped discretization
-    partial_maps[d] = Teuchos::rcp((*cit)->ElementRowMap(), false);
+    partial_maps[d] = Teuchos::rcp((*cit)->element_row_map(), false);
 
     // merge the partial maps to the full map
     fullmap = Core::LinAlg::MergeMap(fullmap, partial_maps[d], false);
@@ -747,7 +748,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::extract_vector(
 
   /* the partial map is equivalent to the full map (of desired type) from
    * the field slave map extractor */
-  const Teuchos::RCP<const Epetra_Map>& sl_full_map = sl_map_extractor(dis_id, map_type).FullMap();
+  const Teuchos::RCP<const Epetra_Map>& sl_full_map = sl_map_extractor(dis_id, map_type).full_map();
 
   if (sl_full_map.is_null())
     FOUR_C_THROW("null full map for field %s", FieldName2String(field).c_str());
@@ -770,7 +771,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::extract_vector(
 
   /* the partial map is equivalent to the full map (of desired type) from
    * the field slave map extractor */
-  const Teuchos::RCP<const Epetra_Map>& sl_full_map = sl_map_extractor(dis_id, map_type).FullMap();
+  const Teuchos::RCP<const Epetra_Map>& sl_full_map = sl_map_extractor(dis_id, map_type).full_map();
 
   if (sl_full_map.is_null())
     FOUR_C_THROW("null full map for field %s", FieldName2String(field).c_str());
@@ -819,7 +820,7 @@ void XFEM::MultiFieldMapExtractor::extract_element_vector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::InsertElementVector(
+void XFEM::MultiFieldMapExtractor::insert_element_vector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const
 {
   element_map_extractor_->insert_vector(partial, block, full);
@@ -827,7 +828,7 @@ void XFEM::MultiFieldMapExtractor::InsertElementVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::AddElementVector(
+void XFEM::MultiFieldMapExtractor::add_element_vector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const
 {
   element_map_extractor_->add_vector(partial, block, full, scale);
@@ -839,7 +840,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::insert_vector(
     const Epetra_Vector& partial, enum FieldName field, enum MapType map_type) const
 {
   const int dis_id = slave_id(field);
-  Teuchos::RCP<Epetra_Vector> full = Teuchos::rcp(new Epetra_Vector(*FullMap(map_type)));
+  Teuchos::RCP<Epetra_Vector> full = Teuchos::rcp(new Epetra_Vector(*full_map(map_type)));
   insert_vector(partial, dis_id, *full, map_type);
   return full;
 }
@@ -852,7 +853,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::insert_vector(
   const int dis_id = slave_id(field);
 
   Teuchos::RCP<Epetra_MultiVector> full =
-      Teuchos::rcp(new Epetra_MultiVector(*FullMap(map_type), partial.NumVectors()));
+      Teuchos::rcp(new Epetra_MultiVector(*full_map(map_type), partial.NumVectors()));
 
   insert_vector(partial, dis_id, *full, map_type);
   return full;
@@ -916,7 +917,7 @@ void XFEM::MultiFieldMapExtractor::build_slave_discret_id_map()
   int dis_count = 0;
   for (cit_dis = sl_dis_vec().begin(); cit_dis != sl_dis_vec().end(); ++cit_dis)
   {
-    const std::string& name = (*cit_dis)->Name();
+    const std::string& name = (*cit_dis)->name();
     if (name == "structure")
       slave_discret_id_map_[structure] = dis_count;
     else if (name == "xstructure")
@@ -930,7 +931,7 @@ void XFEM::MultiFieldMapExtractor::build_slave_discret_id_map()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool XFEM::MultiFieldMapExtractor::IsInterfaceNode(const int& ngid) const
+bool XFEM::MultiFieldMapExtractor::is_interface_node(const int& ngid) const
 {
   return (g_interface_node_gid_set().find(ngid) != g_interface_node_gid_set().end());
 }
@@ -957,12 +958,12 @@ int XFEM::MultiFieldMapExtractor::slave_id(enum FieldName field) const
  *----------------------------------------------------------------------------*/
 void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
 {
-  comm().Barrier();
+  get_comm().Barrier();
   std::set<int> g_unique_row_node_gid_set;
   g_interface_node_gid_set_.clear();
 
   // loop over all proc's
-  for (unsigned p = 0; p < static_cast<unsigned>(comm().NumProc()); ++p)
+  for (unsigned p = 0; p < static_cast<unsigned>(get_comm().NumProc()); ++p)
   {
     int num_my_unique_row_nodes = 0;
     std::vector<int> my_unique_row_node_gid_vec(0);
@@ -970,15 +971,16 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
     int num_my_interface_row_nodes = 0;
     std::vector<int> my_interface_row_node_gid_vec(0);
 
-    if (p == static_cast<unsigned>(comm().MyPID()))
+    if (p == static_cast<unsigned>(get_comm().MyPID()))
     {
       std::set<int> my_unique_row_node_gid_set;
       std::set<int> my_interface_row_node_gid_set;
       for (unsigned j = 0; j < slave_discret_vec_.size(); ++j)
       {
-        for (unsigned i = 0; i < static_cast<unsigned>(slave_discret_vec_[j]->NumMyRowNodes()); ++i)
+        for (unsigned i = 0; i < static_cast<unsigned>(slave_discret_vec_[j]->num_my_row_nodes());
+             ++i)
         {
-          int gid = slave_discret_vec_[j]->NodeRowMap()->GID(i);
+          int gid = slave_discret_vec_[j]->node_row_map()->GID(i);
           // insert the gid and check if it is unique on the current processor
           std::pair<std::set<int>::iterator, bool> is_unique =
               my_unique_row_node_gid_set.insert(gid);
@@ -1000,23 +1002,23 @@ void XFEM::MultiFieldMapExtractor::build_global_interface_node_gid_set()
           my_interface_row_node_gid_vec.begin());
     }
     // wait since only one proc did all the work
-    comm().Barrier();
+    get_comm().Barrier();
     // ------------------------------------------------------------------------
     // send the unique row node GID vector from processor p to all proc's
     // ------------------------------------------------------------------------
-    comm().Broadcast(&num_my_unique_row_nodes, 1, p);
+    get_comm().Broadcast(&num_my_unique_row_nodes, 1, p);
     if (num_my_unique_row_nodes == 0) continue;
     my_unique_row_node_gid_vec.resize(num_my_unique_row_nodes, -1);
-    comm().Broadcast(my_unique_row_node_gid_vec.data(), num_my_unique_row_nodes, p);
+    get_comm().Broadcast(my_unique_row_node_gid_vec.data(), num_my_unique_row_nodes, p);
 
     // ------------------------------------------------------------------------
     // send the interface row node GID vector from processor p to all proc's
     // ------------------------------------------------------------------------
-    comm().Broadcast(&num_my_interface_row_nodes, 1, p);
+    get_comm().Broadcast(&num_my_interface_row_nodes, 1, p);
     if (num_my_interface_row_nodes > 0)
     {
       my_interface_row_node_gid_vec.resize(num_my_interface_row_nodes, -1);
-      comm().Broadcast(my_interface_row_node_gid_vec.data(), num_my_interface_row_nodes, p);
+      get_comm().Broadcast(my_interface_row_node_gid_vec.data(), num_my_interface_row_nodes, p);
       // create/extend the global interface row node gid set
       g_interface_node_gid_set_.insert(
           my_interface_row_node_gid_vec.begin(), my_interface_row_node_gid_vec.end());
@@ -1044,13 +1046,13 @@ void XFEM::MultiFieldMapExtractor::build_master_interface_node_maps(
   {
     master_interface_node_maps_.push_back(
         Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(my_master_interface_node_gids[i].size()),
-            my_master_interface_node_gids[i].data(), 0, comm())));
+            my_master_interface_node_gids[i].data(), 0, get_comm())));
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> XFEM::MultiFieldMapExtractor::NodeRowMap(
+Teuchos::RCP<const Epetra_Map> XFEM::MultiFieldMapExtractor::node_row_map(
     enum FieldName field, enum MultiField::BlockType block) const
 {
   switch (block)
@@ -1076,25 +1078,26 @@ Teuchos::RCP<const Epetra_Map> XFEM::MultiFieldMapExtractor::NodeRowMap(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::AddMatrix(const Core::LinAlg::SparseOperator& partial_mat,
+void XFEM::MultiFieldMapExtractor::add_matrix(const Core::LinAlg::SparseOperator& partial_mat,
     int block, Core::LinAlg::SparseOperator& full_mat, double scale)
 {
   const Core::LinAlg::BlockSparseMatrixBase* block_mat =
       dynamic_cast<const Core::LinAlg::BlockSparseMatrixBase*>(&partial_mat);
   if (not block_mat) FOUR_C_THROW("The partial matrix must be a  Core::LinAlg::BlockSparseMatrix!");
-  if (block_mat->Rows() != 2 or block_mat->Cols() != 2)
+  if (block_mat->rows() != 2 or block_mat->cols() != 2)
     FOUR_C_THROW("We support only 2x2 block matrices!");
 
   Core::LinAlg::SparseMatrix* sp_mat = dynamic_cast<Core::LinAlg::SparseMatrix*>(&full_mat);
   if (not sp_mat) FOUR_C_THROW("The full matrix must be a Core::LinAlg::SparseMatrix!");
 
-  AddMatrix(*block_mat, block, *sp_mat, scale);
+  add_matrix(*block_mat, block, *sp_mat, scale);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::AddMatrix(const Core::LinAlg::BlockSparseMatrixBase& partial_mat,
-    int block, Core::LinAlg::SparseMatrix& full_mat, double scale)
+void XFEM::MultiFieldMapExtractor::add_matrix(
+    const Core::LinAlg::BlockSparseMatrixBase& partial_mat, int block,
+    Core::LinAlg::SparseMatrix& full_mat, double scale)
 {
   check_init_setup();
   // --------------------------------------------------------------------------
@@ -1105,7 +1108,7 @@ void XFEM::MultiFieldMapExtractor::AddMatrix(const Core::LinAlg::BlockSparseMatr
    *      of direct assignment for the non-interface DoF's? The current
    *      implementation makes it necessary to allocate almost the double
    *      amount of memory!                                        hiermeier */
-  full_mat.Add(partial_mat.Matrix(MultiField::block_non_interface, MultiField::block_non_interface),
+  full_mat.add(partial_mat.matrix(MultiField::block_non_interface, MultiField::block_non_interface),
       false, scale, 1.0);
 
   // --------------------------------------------------------------------------
@@ -1113,19 +1116,19 @@ void XFEM::MultiFieldMapExtractor::AddMatrix(const Core::LinAlg::BlockSparseMatr
   // --------------------------------------------------------------------------
   // (0) Add block non_interface/interface
   const Core::LinAlg::SparseMatrix& src_ni =
-      partial_mat.Matrix(MultiField::block_non_interface, MultiField::block_interface);
-  i_mat_col_transform(block)(partial_mat.FullRowMap(), partial_mat.FullColMap(), src_ni, scale,
+      partial_mat.matrix(MultiField::block_non_interface, MultiField::block_interface);
+  i_mat_col_transform(block)(partial_mat.full_row_map(), partial_mat.full_col_map(), src_ni, scale,
       Core::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, false, true);
 
   // (1) Add block interface/non_interface
   const Core::LinAlg::SparseMatrix& src_in =
-      partial_mat.Matrix(MultiField::block_interface, MultiField::block_non_interface);
+      partial_mat.matrix(MultiField::block_interface, MultiField::block_non_interface);
   i_mat_row_transform(block)(
       src_in, scale, Core::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, true);
 
   // (2) Add block interface/interface
   const Core::LinAlg::SparseMatrix& src_ii =
-      partial_mat.Matrix(MultiField::block_interface, MultiField::block_interface);
+      partial_mat.matrix(MultiField::block_interface, MultiField::block_interface);
   i_mat_row_col_transform(block)(src_ii, scale,
       Core::Adapter::CouplingSlaveConverter(i_coupling(block)),
       Core::Adapter::CouplingSlaveConverter(i_coupling(block)), full_mat, false, true);
@@ -1135,61 +1138,61 @@ void XFEM::MultiFieldMapExtractor::AddMatrix(const Core::LinAlg::BlockSparseMatr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Map>& XFEM::MultiFieldMapExtractor::FullMap(
+const Teuchos::RCP<const Epetra_Map>& XFEM::MultiFieldMapExtractor::full_map(
     enum MapType map_type) const
 {
-  return ma_map_extractor(map_type).FullMap();
+  return ma_map_extractor(map_type).full_map();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Nodes::Node* XFEM::MultiFieldMapExtractor::gINode(const int& gid) const
+Core::Nodes::Node* XFEM::MultiFieldMapExtractor::g_i_node(const int& gid) const
 {
-  return i_discret().gNode(gid);
+  return i_discret().g_node(gid);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* XFEM::MultiFieldMapExtractor::INodeRowMap() const
+const Epetra_Map* XFEM::MultiFieldMapExtractor::i_node_row_map() const
 {
-  return i_discret().NodeRowMap();
+  return i_discret().node_row_map();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::MultiFieldMapExtractor::INumDof(const Core::Nodes::Node* inode) const
+int XFEM::MultiFieldMapExtractor::i_num_dof(const Core::Nodes::Node* inode) const
 {
-  return i_discret().NumDof(0, inode);
+  return i_discret().num_dof(0, inode);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::MultiFieldMapExtractor::INumStandardDof() const
+int XFEM::MultiFieldMapExtractor::i_num_standard_dof() const
 {
   return icoupl_dofset_->num_standard_dof_per_node();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::MultiFieldMapExtractor::IDof(const Core::Nodes::Node* inode, int dof) const
+int XFEM::MultiFieldMapExtractor::i_dof(const Core::Nodes::Node* inode, int dof) const
 {
-  return i_discret().Dof(0, inode, dof);
+  return i_discret().dof(0, inode, dof);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::IDof(
+void XFEM::MultiFieldMapExtractor::i_dof(
     const Core::Nodes::Node* inode, std::vector<int>& dofs) const
 {
-  i_discret().Dof(static_cast<unsigned>(0), inode, dofs);
+  i_discret().dof(static_cast<unsigned>(0), inode, dofs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::IDof(std::vector<int>& dof, Core::Nodes::Node* inode,
+void XFEM::MultiFieldMapExtractor::i_dof(std::vector<int>& dof, Core::Nodes::Node* inode,
     unsigned nodaldofset_id, const Core::Elements::Element* element) const
 {
-  i_discret().Dof(dof, inode, 0, nodaldofset_id, element);
+  i_discret().dof(dof, inode, 0, nodaldofset_id, element);
 }
 
 /*----------------------------------------------------------------------------*

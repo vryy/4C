@@ -37,9 +37,9 @@ namespace Solid
 
       void setup() override;
 
-      int Integrate() override;
+      int integrate() override;
 
-      int IntegrateStep() override;
+      int integrate_step() override;
 
       void prepare_time_step() override;
 
@@ -55,11 +55,11 @@ namespace Solid
 
       void reset_step() override;
 
-      Inpar::Solid::ConvergenceStatus Solve() override;
+      Inpar::Solid::ConvergenceStatus solve() override;
 
       void prepare_partition_step() override;
 
-      void Update(double endtime) override;
+      void update(double endtime) override;
 
       void print_step() override;
 

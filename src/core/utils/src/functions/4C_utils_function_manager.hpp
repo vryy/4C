@@ -57,7 +57,7 @@ namespace Core::UTILS
     std::vector<Input::LineDefinition> valid_function_lines();
 
     /// Read the 4C input file and set up all Functions.
-    void ReadInput(Core::IO::DatFileReader& reader);
+    void read_input(Core::IO::DatFileReader& reader);
 
     /**
      * Tell the FunctionManager how to parse a set of @p possible_lines into a Function object.
@@ -81,10 +81,10 @@ namespace Core::UTILS
      * repeatedly.
      */
     template <typename T>
-    const T& FunctionById(int num) const;
+    const T& function_by_id(int num) const;
 
     template <typename T>
-    void SetFunctions(const std::vector<T>& functions)
+    void set_functions(const std::vector<T>& functions)
     {
       functions_ = functions;
     };
@@ -114,7 +114,7 @@ namespace Core::UTILS
 // --- template and inline functions --- //
 
 template <typename T>
-const T& Core::UTILS::FunctionManager::FunctionById(int num) const
+const T& Core::UTILS::FunctionManager::function_by_id(int num) const
 {
   const int input_id = num + 1;
   if (functions_.size() < (unsigned int)(input_id) || input_id < 1)

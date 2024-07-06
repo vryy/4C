@@ -40,8 +40,8 @@ void Discret::ELEMENTS::UTILS::CalcR(const Core::Elements::Element* ele,
   {
     for (int d = 0; d < nsd; ++d)
     {
-      xrefe(i, d) = ele->Nodes()[i]->X()[d];
-      xcurr(i, d) = ele->Nodes()[i]->X()[d] + disp[i * nsd + d];
+      xrefe(i, d) = ele->nodes()[i]->x()[d];
+      xcurr(i, d) = ele->nodes()[i]->x()[d] + disp[i * nsd + d];
     }
   }
   Core::LinAlg::Matrix<nsd, nen> deriv;
@@ -160,7 +160,7 @@ void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
 {
   // get Jacobian mapping wrt to the stored configuration
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>> invJdef;
-  mulfHistory->StoragetoMatrix(gp, invJdef, mulfHistory->JHistory());
+  mulfHistory->storageto_matrix(gp, invJdef, mulfHistory->j_history());
 
   // get derivatives wrt to last spatial configuration
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>> N_xyz;
@@ -176,7 +176,7 @@ void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
 
   // get stored old incremental F
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>> Fhist;
-  mulfHistory->StoragetoMatrix(gp, Fhist, mulfHistory->FHistory());
+  mulfHistory->storageto_matrix(gp, Fhist, mulfHistory->f_history());
 
   // build total defgrd = delta F * F_old
   defgrd.multiply(Finc, Fhist);
@@ -201,7 +201,7 @@ void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates(
 {
   for (auto i = 0; i < Core::FE::num_nodes<distype>; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     for (auto dim = 0; dim < probdim; ++dim) xrefe(i, dim) = x[dim];
   }
 }

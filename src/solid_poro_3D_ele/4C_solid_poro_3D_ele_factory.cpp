@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::SolidPoroCalcVariant Discret::ELEMENTS::create_solid_poro_calculation_interface(
     Core::Elements::Element& ele, Inpar::Poro::PoroType porotype)
 {
-  switch (ele.Shape())
+  switch (ele.shape())
   {
     case Core::FE::CellType::hex8:
       return create_solid_poro_calculation_interface<Core::FE::CellType::hex8>(porotype);

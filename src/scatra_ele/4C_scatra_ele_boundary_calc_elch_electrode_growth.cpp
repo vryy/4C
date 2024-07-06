@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -37,7 +37,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::I
                 numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -62,7 +62,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->Material());
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -72,13 +72,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
   my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->ConditionType() != Core::Conditions::S2IKineticsGrowth)
+  if (my::scatraparamsboundary_->condition_type() != Core::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
-  const double faraday = myelch::elchparams_->Faraday();
-  const double resistivity = my::scatraparamsboundary_->Resistivity();
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const double faraday = myelch::elchparams_->faraday();
+  const double resistivity = my::scatraparamsboundary_->resistivity();
+  const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
   if (kineticmodel != Inpar::S2I::growth_kinetics_butlervolmer)
   {
     FOUR_C_THROW(
@@ -91,13 +91,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions at current integration point
     my::eval_shape_func_and_int_fac(intpoints, gpid);
 
     // evaluate factor F/RT
-    const double frt = myelch::elchparams_->FRT();
+    const double frt = myelch::elchparams_->frt();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -114,7 +114,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     {
       case Inpar::S2I::growth_kinetics_butlervolmer:
       {
-        const double alphaa = my::scatraparamsboundary_->Alphadata();
+        const double alphaa = my::scatraparamsboundary_->alphadata();
         const double kr = my::scatraparamsboundary_->charge_transfer_constant();
         const double emasterphiint = my::funct_.dot(emasterphinp[0]);
         const double epd = 0.0;  // equilibrium potential is 0 for the plating reaction
@@ -160,12 +160,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   // safety checks
   if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
   if (my::numdofpernode_ != 2) FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (myelch::elchparams_->EquPot() != Inpar::ElCh::equpot_divi)
+  if (myelch::elchparams_->equ_pot() != Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of parent element
   Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->Material());
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -177,41 +177,41 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
   // extract condition type
   const Core::Conditions::ConditionType& s2iconditiontype =
-      my::scatraparamsboundary_->ConditionType();
+      my::scatraparamsboundary_->condition_type();
   if (s2iconditiontype != Core::Conditions::S2IKinetics and
       s2iconditiontype != Core::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->Alphadata();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
+  const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
+  const int numelectrons = my::scatraparamsboundary_->num_electrons();
+  const double faraday = myelch::elchparams_->faraday();
+  const double alphaa = my::scatraparamsboundary_->alphadata();
+  const double alphac = my::scatraparamsboundary_->alpha_c();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
-  const double resistivity = my::scatraparamsboundary_->Resistivity();
+  const double resistivity = my::scatraparamsboundary_->resistivity();
 
   // extract saturation value of intercalated lithium concentration from electrode material
-  const double cmax = matelectrode->CMax();
+  const double cmax = matelectrode->c_max();
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
-    const double detF = my::calculate_det_f_of_parent_element(ele, intpoints.Point(gpid));
+    const double detF = my::calculate_det_f_of_parent_element(ele, intpoints.point(gpid));
 
     // evaluate overall integration factors
-    const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
-    const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
+    const double timefacfac = my::scatraparamstimint_->time_fac() * fac;
+    const double timefacrhsfac = my::scatraparamstimint_->time_fac_rhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelch::elchparams_->FRT();
+    const double frt = myelch::elchparams_->frt();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -417,7 +417,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->Material());
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -429,41 +429,41 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
   // extract condition type
   const Core::Conditions::ConditionType& s2iconditiontype =
-      my::scatraparamsboundary_->ConditionType();
+      my::scatraparamsboundary_->condition_type();
   if (s2iconditiontype != Core::Conditions::S2IKinetics and
       s2iconditiontype != Core::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
-  const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->Alphadata();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
+  const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
+  const int numelectrons = my::scatraparamsboundary_->num_electrons();
+  const double faraday = myelch::elchparams_->faraday();
+  const double alphaa = my::scatraparamsboundary_->alphadata();
+  const double alphac = my::scatraparamsboundary_->alpha_c();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
-  const double resistivity = my::scatraparamsboundary_->Resistivity();
+  const double resistivity = my::scatraparamsboundary_->resistivity();
 
   // extract saturation value of intercalated lithium concentration from electrode material
-  const double cmax = matelectrode->CMax();
+  const double cmax = matelectrode->c_max();
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
-    const double detF = my::calculate_det_f_of_parent_element(ele, intpoints.Point(gpid));
+    const double detF = my::calculate_det_f_of_parent_element(ele, intpoints.point(gpid));
 
     // evaluate overall integration factors
-    const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
-    const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
+    const double timefacfac = my::scatraparamstimint_->time_fac() * fac;
+    const double timefacrhsfac = my::scatraparamstimint_->time_fac_rhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelch::elchparams_->FRT();
+    const double frt = myelch::elchparams_->frt();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -601,7 +601,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->Material());
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -611,42 +611,42 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
   my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->ConditionType() != Core::Conditions::S2IKineticsGrowth)
+  if (my::scatraparamsboundary_->condition_type() != Core::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
   if (kineticmodel != Inpar::S2I::growth_kinetics_butlervolmer)
   {
     FOUR_C_THROW(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
   }
-  const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->Alphadata();
+  const double faraday = myelch::elchparams_->faraday();
+  const double alphaa = my::scatraparamsboundary_->alphadata();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
   if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
-  const double resistivity = my::scatraparamsboundary_->Resistivity();
+  const double resistivity = my::scatraparamsboundary_->resistivity();
   const double factor =
-      my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density());
+      my::scatraparamsboundary_->molar_mass() / (my::scatraparamsboundary_->density());
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
     // evaluate overall integration factors
-    const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
-    const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
+    const double timefacfac = my::scatraparamstimint_->time_fac() * fac;
+    const double timefacrhsfac = my::scatraparamstimint_->time_fac_rhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelch::elchparams_->FRT();
+    const double frt = myelch::elchparams_->frt();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -714,7 +714,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 {
   // access material of parent element
   Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->Material());
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -725,33 +725,33 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   Core::LinAlg::Matrix<nen_, 1> eslavegrowthhist(true);
   my::extract_node_values(emasterphinp, discretization, la, "imasterphinp");
   my::extract_node_values(
-      eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->NdsGrowth());
+      eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->nds_growth());
 
-  if (my::scatraparamsboundary_->ConditionType() != Core::Conditions::S2IKineticsGrowth)
+  if (my::scatraparamsboundary_->condition_type() != Core::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
-  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
   if (kineticmodel != Inpar::S2I::growth_kinetics_butlervolmer)
   {
     FOUR_C_THROW(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
   }
-  const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->Alphadata();
-  const double alphac = my::scatraparamsboundary_->AlphaC();
+  const double faraday = myelch::elchparams_->faraday();
+  const double alphaa = my::scatraparamsboundary_->alphadata();
+  const double alphac = my::scatraparamsboundary_->alpha_c();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
-  const double resistivity = my::scatraparamsboundary_->Resistivity();
+  const double resistivity = my::scatraparamsboundary_->resistivity();
   const double factor =
-      my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density());
+      my::scatraparamsboundary_->molar_mass() / (my::scatraparamsboundary_->density());
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
@@ -762,12 +762,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         eslavematrix(irow, icol) += my::funct_(irow) * my::funct_(icol) * fac;
 
     // evaluate overall integration factors
-    const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
-    const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
+    const double timefacfac = my::scatraparamstimint_->time_fac() * fac;
+    const double timefacrhsfac = my::scatraparamstimint_->time_fac_rhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelch::elchparams_->FRT();
+    const double frt = myelch::elchparams_->frt();
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -838,7 +838,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   my::extract_node_values(discretization, la);
 
   // extract nodal growth variables associated with boundary element
-  my::extract_node_values(egrowth_, discretization, la, "growth", my::scatraparams_->NdsGrowth());
+  my::extract_node_values(egrowth_, discretization, la, "growth", my::scatraparams_->nds_growth());
 }
 
 // template classes

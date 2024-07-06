@@ -135,15 +135,15 @@ namespace Core::CLN
 
     const cln::cl_F& Value() const { return value_; }
 
-    static void SetPrecision(int precision)
+    static void set_precision(int precision)
     {
       if (precision <= 0) FOUR_C_THROW("Invalid preciso of %d", precision);
       precision_ = precision;
     }
 
-    static void ResetPrecision() { precision_ = CLN_START_PRECISION; }
+    static void reset_precision() { precision_ = CLN_START_PRECISION; }
 
-    static unsigned int GetPrecision() { return precision_; }
+    static unsigned int get_precision() { return precision_; }
 
     template <class ReferenceVal>
     static cln::cl_F& CachedConvert(double a, ReferenceVal ref)

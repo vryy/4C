@@ -36,7 +36,7 @@ XFEM::DiscretizationXFEM::DiscretizationXFEM(
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                             ager 11/14|
  *----------------------------------------------------------------------*/
-int XFEM::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
+int XFEM::DiscretizationXFEM::initial_fill_complete(const std::vector<int>& nds,
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // Call from BaseClass
@@ -55,7 +55,7 @@ int XFEM::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
 /*----------------------------------------------------------------------*
  |  checks if discretization is initialized (protected)  ager 11/14|
  *----------------------------------------------------------------------*/
-bool XFEM::DiscretizationXFEM::Initialized() const
+bool XFEM::DiscretizationXFEM::initialized() const
 {
   if (!initialized_)
     FOUR_C_THROW("DiscretizationXFEM is not initialized! - Call InitialFillComplete() once!");
@@ -76,7 +76,7 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
   initialdofsets_.clear();
 
   initialdofsets_.push_back(
-      Teuchos::rcp_dynamic_cast<Core::DOFSets::DofSet>(dofsets_[nds[0]], true)->Clone());
+      Teuchos::rcp_dynamic_cast<Core::DOFSets::DofSet>(dofsets_[nds[0]], true)->clone());
 
   // store map required for export to active dofs
   if (initialdofsets_.size() > 1)
@@ -97,8 +97,8 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
   int numdofspernode = 0;
   fsds->get_reserved_max_num_dofper_node(numdofspernode);
 
-  if (NumMyColNodes() == 0) FOUR_C_THROW("no column node on this proc available!");
-  int numdofspernodedofset = fsds->NumDof(lColNode(0));
+  if (num_my_col_nodes() == 0) FOUR_C_THROW("no column node on this proc available!");
+  int numdofspernodedofset = fsds->num_dof(l_col_node(0));
   int numdofsetspernode = 0;
 
   if (numdofspernode % numdofspernodedofset)
@@ -124,7 +124,7 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
     Teuchos::RCP<const Epetra_Vector>& initialvec, Teuchos::RCP<Epetra_Vector>& activevec)
 {
   // Is the discretization initialized?
-  Initialized();
+  initialized();
 
   Teuchos::RCP<Epetra_Vector> fullvec =
       Teuchos::rcp(new Epetra_Vector(*initialpermdofrowmap_, true));
@@ -156,7 +156,7 @@ void XFEM::DiscretizationXFEM::export_activeto_initial_vector(
     Teuchos::RCP<const Epetra_Vector> activevec, Teuchos::RCP<Epetra_Vector> initialvec)
 {
   // Is the discretization initialized?
-  Initialized();
+  initialized();
 
   Core::LinAlg::Export(*activevec, *initialvec);
 }
@@ -164,9 +164,9 @@ void XFEM::DiscretizationXFEM::export_activeto_initial_vector(
 /*----------------------------------------------------------------------*
  |  get dof row map (public)                                 ager 11/14 |
  *----------------------------------------------------------------------*/
-const Epetra_Map* XFEM::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
+const Epetra_Map* XFEM::DiscretizationXFEM::initial_dof_row_map(unsigned nds) const
 {
-  Initialized();
+  initialized();
   FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined initial dof set");
 
   return initialdofsets_[nds]->dof_row_map();
@@ -176,12 +176,12 @@ const Epetra_Map* XFEM::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
 /*----------------------------------------------------------------------*
  |  get dof column map (public)                              ager 11/14 |
  *----------------------------------------------------------------------*/
-const Epetra_Map* XFEM::DiscretizationXFEM::InitialDofColMap(unsigned nds) const
+const Epetra_Map* XFEM::DiscretizationXFEM::initial_dof_col_map(unsigned nds) const
 {
-  Initialized();
+  initialized();
   FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined initial dof set");
 
-  return initialdofsets_[nds]->DofColMap();
+  return initialdofsets_[nds]->dof_col_map();
 }
 
 /*---------------------------------------------------------------------------*
@@ -212,13 +212,13 @@ Teuchos::RCP<Epetra_Map> XFEM::DiscretizationXFEM::extend_map(
 /*----------------------------------------------------------------------*
  |  set a reference to a data vector (public)                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void XFEM::DiscretizationXFEM::SetInitialState(
+void XFEM::DiscretizationXFEM::set_initial_state(
     unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::DiscretizationXFEM::SetInitialState");
 
-  if (!HaveDofs()) FOUR_C_THROW("fill_complete() was not called");
-  const Epetra_Map* colmap = InitialDofColMap(nds);
+  if (!have_dofs()) FOUR_C_THROW("fill_complete() was not called");
+  const Epetra_Map* colmap = initial_dof_col_map(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 
   if (state_.size() <= nds) state_.resize(nds + 1);
@@ -234,7 +234,7 @@ void XFEM::DiscretizationXFEM::SetInitialState(
   else  // if it's not in column map export and allocate
   {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (not InitialDofRowMap(nds)->SameAs(state->Map()))
+    if (not initial_dof_row_map(nds)->SameAs(state->Map()))
     {
       FOUR_C_THROW(
           "row map of discretization and state vector %s are different. This is a fatal bug!",
@@ -250,7 +250,8 @@ void XFEM::DiscretizationXFEM::SetInitialState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool XFEM::DiscretizationXFEM::IsEqualXDofSet(int nds, const XFEM::XFEMDofSet& xdofset_new) const
+bool XFEM::DiscretizationXFEM::is_equal_x_dof_set(
+    int nds, const XFEM::XFEMDofSet& xdofset_new) const
 {
   const XFEM::XFEMDofSet* xdofset_old = dynamic_cast<XFEM::XFEMDofSet*>(dofsets_[nds].get());
   if (not xdofset_old) return false;

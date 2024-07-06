@@ -82,13 +82,13 @@ namespace FLD
     \brief read restart (some more RedModels-specific data)
 
     */
-    virtual void ReadRestartReducedD(int step);
+    virtual void read_restart_reduced_d(int step);
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    virtual void OutputReducedD();
+    virtual void output_reduced_d();
 
     /*!
     \brief Setup meshtying
@@ -119,7 +119,7 @@ namespace FLD
     \brief Additional function for RedModels in linear_relaxation_solve
 
     */
-    void CustomSolve(Teuchos::RCP<Epetra_Vector> relax) override;
+    void custom_solve(Teuchos::RCP<Epetra_Vector> relax) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)

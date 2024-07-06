@@ -10,7 +10,7 @@
 
 #include "4C_linalg_serialdensematrix.hpp"
 
-void MeshLoader::GetCutNode(int nid, double x, double y, double z, double lsv)
+void MeshLoader::get_cut_node(int nid, double x, double y, double z, double lsv)
 {
   if (nid > -1)
   {
@@ -23,7 +23,7 @@ void MeshLoader::GetCutNode(int nid, double x, double y, double z, double lsv)
   }
 }
 
-void MeshLoader::GetNode(int nid, double x, double y, double z, double lsv)
+void MeshLoader::get_node(int nid, double x, double y, double z, double lsv)
 {
   if (nid > -1)
   {
@@ -55,7 +55,7 @@ void MeshLoader::create_side(
       nids.push_back(nid2);
       nids.push_back(nid3);
       nids.push_back(nid4);
-      mesh_.AddCutSide(sid, nids, xyz, Core::FE::CellType::quad4);
+      mesh_.add_cut_side(sid, nids, xyz, Core::FE::CellType::quad4);
 
       break;
     }

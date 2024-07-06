@@ -31,11 +31,10 @@ void Discret::ELEMENTS::NStet5::init_element()
   Core::LinAlg::Matrix<4, 3 + 1> J;
   {
     // compute element volume and center node coordinate
-    Core::Nodes::Node** nodes = Nodes();  // outer nodes only
     for (double& i : midX_) i = 0.0;
     for (int i = 0; i < 4; ++i)
     {
-      const auto& x = nodes[i]->X();
+      const auto& x = nodes()[i]->x();
       J(i, 0) = 1.0;
       J(i, 1) = xrefe(i, 0) = x[0];
       J(i, 2) = xrefe(i, 1) = x[1];
@@ -84,9 +83,9 @@ void Discret::ELEMENTS::NStet5::init_element()
     //                               [0 2 3 4]
     for (int k = 0; k < 3; ++k)
     {
-      xrefe(0, k) = Nodes()[sub_lm(i)[0]]->X()[k];
-      xrefe(1, k) = Nodes()[sub_lm(i)[1]]->X()[k];
-      xrefe(2, k) = Nodes()[sub_lm(i)[2]]->X()[k];
+      xrefe(0, k) = nodes()[sub_lm(i)[0]]->x()[k];
+      xrefe(1, k) = nodes()[sub_lm(i)[1]]->x()[k];
+      xrefe(2, k) = nodes()[sub_lm(i)[2]]->x()[k];
       xrefe(3, k) = mid_x()[k];
     }
 
@@ -100,9 +99,9 @@ void Discret::ELEMENTS::NStet5::init_element()
     }
     subV_[i] = J.determinant() / 6.0;
     if (subV_[i] == 0.0)
-      FOUR_C_THROW("NSTET5 %d Subelement %d volume is zero %10.6e", Id(), i, subV_[i]);
+      FOUR_C_THROW("NSTET5 %d Subelement %d volume is zero %10.6e", id(), i, subV_[i]);
     else if (subV_[i] < 0.0)
-      FOUR_C_THROW("NSTET5 %d Subelement %d volume is negative %10.6e", Id(), i, subV_[i]);
+      FOUR_C_THROW("NSTET5 %d Subelement %d volume is negative %10.6e", id(), i, subV_[i]);
 
     // spatial derivatives of shape functions
     tmp.multiply_tn(xrefe, deriv);
@@ -114,18 +113,18 @@ void Discret::ELEMENTS::NStet5::init_element()
     Iaug(2, 1) = 1;
     Iaug(3, 2) = 1;
     partials = 0.0;
-    solver.SetMatrix(J);
-    solver.SetVectors(partials, Iaug);
+    solver.set_matrix(J);
+    solver.set_vectors(partials, Iaug);
     solver.factor_with_equilibration(true);
-    int err = solver.Factor();
-    int err2 = solver.Solve();
+    int err = solver.factor();
+    int err2 = solver.solve();
     if (err || err2) FOUR_C_THROW("Inversion of Jacobian failed");
     subnxyz_[i].multiply(deriv, partials);
   }  // for (int i=0; i<4; ++i)
 
 
   return;
-}  // Discret::ELEMENTS::NStet5::InitElement
+}  // Discret::ELEMENTS::NStet5::init_element
 
 
 
@@ -193,7 +192,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -208,7 +207,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -224,7 +223,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -251,7 +250,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
           params, "iostress", Inpar::Solid::stress_none);
       auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
           params, "iostrain", Inpar::Solid::strain_none);
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -263,12 +262,12 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
           lm, mydisp, nullptr, nullptr, nullptr, &elestress, &elestrain, iostress, iostrain);
 
       //--------------------------------- interpolate nodal stress from every node
-      Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
-      Teuchos::RCP<Epetra_MultiVector> nodestrain = ElementType().nstrain_;
+      Teuchos::RCP<Epetra_MultiVector> nodestress = element_type().nstress_;
+      Teuchos::RCP<Epetra_MultiVector> nodestrain = element_type().nstrain_;
       const int numnode = num_node();
       for (int i = 0; i < numnode; ++i)
       {
-        const int gid = Nodes()[i]->Id();
+        const int gid = nodes()[i]->id();
         const int lid = nodestress->Map().LID(gid);
         if (lid == -1) FOUR_C_THROW("Cannot find matching nodal stresses/strains");
         for (int j = 0; j < 6; ++j)
@@ -321,8 +320,8 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      Teuchos::RCP<Core::Mat::Material> mat = Material();
-      if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
+      Teuchos::RCP<Core::Mat::Material> mat = material();
+      if (mat->material_type() == Core::Materials::m_struct_multiscale)
       {
         auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
         micro->update();
@@ -758,10 +757,10 @@ void Discret::ELEMENTS::NStet5::nstet5lumpmass(Core::LinAlg::Matrix<15, 15>* ema
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned c = 0; c < (*emass).numCols(); ++c)  // parse columns
+    for (unsigned c = 0; c < (*emass).num_cols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned r = 0; r < (*emass).numRows(); ++r)  // parse rows
+      for (unsigned r = 0; r < (*emass).num_rows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -779,20 +778,20 @@ void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stre
     Core::LinAlg::Matrix<6, 6>& cmat, double& density, Core::LinAlg::Matrix<6, 1>& glstrain,
     Core::LinAlg::Matrix<3, 3>& defgrd, int gp)
 {
-  Core::LinAlg::SerialDenseVector stress_e(Teuchos::View, stress.data(), stress.numRows());
+  Core::LinAlg::SerialDenseVector stress_e(Teuchos::View, stress.data(), stress.num_rows());
   Core::LinAlg::SerialDenseMatrix cmat_e(
-      Teuchos::View, cmat.data(), cmat.numRows(), cmat.numRows(), cmat.numCols());
+      Teuchos::View, cmat.data(), cmat.num_rows(), cmat.num_rows(), cmat.num_cols());
   const Core::LinAlg::SerialDenseVector glstrain_e(
-      Teuchos::View, glstrain.data(), glstrain.numRows());
+      Teuchos::View, glstrain.data(), glstrain.num_rows());
 
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
-  switch (mat->MaterialType())
+  Teuchos::RCP<Core::Mat::Material> mat = material();
+  switch (mat->material_type())
   {
     case Core::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       auto* stvk = dynamic_cast<Mat::StVenantKirchhoff*>(mat.get());
       stvk->evaluate(&glstrain_e, &cmat_e, &stress_e);
-      density = stvk->Density();
+      density = stvk->density();
     }
     break;
     case Core::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
@@ -800,21 +799,21 @@ void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stre
     {
       auto* aaa = dynamic_cast<Mat::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
-      aaa->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
-      density = aaa->Density();
+      aaa->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
+      density = aaa->density();
     }
     break;
     case Core::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       auto* hyper = dynamic_cast<Mat::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
-      density = hyper->Density();
+      hyper->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
+      density = hyper->density();
       return;
       break;
     }
     default:
-      FOUR_C_THROW("Illegal type %d of material for element NStet5 tet4", mat->MaterialType());
+      FOUR_C_THROW("Illegal type %d of material for element NStet5 tet4", mat->material_type());
       break;
   }
 

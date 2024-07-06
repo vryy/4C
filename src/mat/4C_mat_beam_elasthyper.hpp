@@ -44,11 +44,11 @@ namespace Mat
   class BeamElastHyperMaterialType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return typeid(this).name(); }
+    std::string name() const override { return typeid(this).name(); }
 
-    static BeamElastHyperMaterialType& Instance() { return instance_; };
+    static BeamElastHyperMaterialType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static BeamElastHyperMaterialType instance_;
@@ -83,9 +83,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return BeamElastHyperMaterialType<T>::Instance().UniqueParObjectId();
+      return BeamElastHyperMaterialType<T>::instance().unique_par_object_id();
     }
 
     /*!
@@ -93,7 +93,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -107,7 +107,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -122,7 +122,7 @@ namespace Mat
     /** \brief get type of this material
      *
      */
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       /* the idea is that we have a generic type of material (this class), but two
        * possible types of material parameter definitions and hence types
@@ -133,7 +133,7 @@ namespace Mat
     /** \brief return copy of this material object
      *
      */
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new BeamElastHyperMaterial(*this));
     }
@@ -141,7 +141,7 @@ namespace Mat
     /** \brief get quick accessible material parameter data
      *
      */
-    Core::Mat::PAR::Parameter* Parameter() const override;
+    Core::Mat::PAR::Parameter* parameter() const override;
 
     //@}
 
@@ -152,7 +152,7 @@ namespace Mat
     /** \brief get quick accessible material parameter data
      *
      */
-    const Mat::PAR::BeamElastHyperMaterialParameterGeneric& Params() const;
+    const Mat::PAR::BeamElastHyperMaterialParameterGeneric& params() const;
 
     /*
      * \brief Compute axial stress contributions

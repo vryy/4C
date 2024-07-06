@@ -42,7 +42,7 @@ Adapter::StructureTimeAdaJoint::StructureTimeAdaJoint(Teuchos::RCP<Structure> st
 /*----------------------------------------------------------------------*/
 void Adapter::StructureTimeAdaJoint::setup_auxiliar()
 {
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   const Teuchos::ParameterList& jep = sdyn.sublist("TIMEADAPTIVITY").sublist("JOINT EXPLICIT");
 
   // get the parameters of the auxiliary integrator
@@ -54,17 +54,17 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   sta_ = Solid::TimeInt::build_strategy(adyn);
 
   ///// setup dataio
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   //
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(problem->io_params()));
   ioflags->set("STDOUTEVRY", 0);
   //
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
-  nox = problem->StructuralNoxParams();
+  nox = problem->structural_nox_params();
   //
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = stm_->discretization()->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = stm_->discretization()->writer();
   //
   Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new Solid::TimeInt::BaseDataIO());
   dataio->init(*ioflags, adyn, *xparams, output);
@@ -98,7 +98,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   // setup wrapper
   sta_wrapper_ = Teuchos::rcp(new Adapter::StructureTimeLoop(sta_));
 
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
     const Solid::TimeInt::Base& sti = *stm_;
@@ -135,7 +135,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string Adapter::StructureTimeAdaJoint::MethodTitle() const
+std::string Adapter::StructureTimeAdaJoint::method_title() const
 {
   return "JointExplicit_" + sta_->method_title();
 }
@@ -170,7 +170,7 @@ double Adapter::StructureTimeAdaJoint::method_lin_err_coeff_vel() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-enum Adapter::StructureTimeAda::AdaEnum Adapter::StructureTimeAdaJoint::MethodAdaptDis() const
+enum Adapter::StructureTimeAda::AdaEnum Adapter::StructureTimeAdaJoint::method_adapt_dis() const
 {
   return ada_;
 }
@@ -180,15 +180,15 @@ enum Adapter::StructureTimeAda::AdaEnum Adapter::StructureTimeAdaJoint::MethodAd
 void Adapter::StructureTimeAdaJoint::integrate_step_auxiliar()
 {
   // set current step size
-  sta_->SetDeltaTime(stepsize_);
-  sta_->SetTimeNp(time_ + stepsize_);
+  sta_->set_delta_time(stepsize_);
+  sta_->set_time_np(time_ + stepsize_);
 
   // integrate the auxiliary time integrator one step in time
   // buih: another solution is to use the wrapper, but it will do more than necessary
   const Solid::TimeInt::Base& sta = *sta_;
   const auto& gstate = sta.data_global_state();
 
-  sta_->IntegrateStep();
+  sta_->integrate_step();
 
   // copy onto target
   locerrdisn_->Update(1.0, *(gstate.get_dis_np()), 0.0);
@@ -215,12 +215,12 @@ void Adapter::StructureTimeAdaJoint::update_auxiliar()
   gstate_a.get_dis_np()->Update(1.0, (*gstate_i.get_dis_n()), 0.0);
   gstate_a.get_vel_np()->Update(1.0, (*gstate_i.get_vel_n()), 0.0);
   gstate_a.get_acc_np()->Update(1.0, (*gstate_i.get_acc_n()), 0.0);
-  gstate_a.get_multi_dis()->UpdateSteps((*gstate_i.get_dis_n()));
-  gstate_a.get_multi_vel()->UpdateSteps((*gstate_i.get_vel_n()));
-  gstate_a.get_multi_acc()->UpdateSteps((*gstate_i.get_acc_n()));
+  gstate_a.get_multi_dis()->update_steps((*gstate_i.get_dis_n()));
+  gstate_a.get_multi_vel()->update_steps((*gstate_i.get_vel_n()));
+  gstate_a.get_multi_acc()->update_steps((*gstate_i.get_acc_n()));
 
   gstate_a.get_time_np() = gstate_i.get_time_np();
-  gstate_a.get_delta_time()->UpdateSteps((*gstate_i.get_delta_time())[0]);
+  gstate_a.get_delta_time()->update_steps((*gstate_i.get_delta_time())[0]);
   gstate_a.get_fvisco_np()->Update(1.0, (*gstate_i.get_fvisco_n()), 0.0);
   gstate_a.get_fvisco_n()->Update(1.0, (*gstate_i.get_fvisco_n()), 0.0);
   gstate_a.get_finertial_np()->Update(1.0, (*gstate_i.get_finertial_n()), 0.0);
@@ -238,8 +238,8 @@ void Adapter::StructureTimeAdaJoint::reset_step()
   // base reset
   Adapter::StructureTimeAda::reset_step();
   // set current step size
-  sta_->SetDeltaTime(stepsize_);
-  sta_->SetTimeNp(time_ + stepsize_);
+  sta_->set_delta_time(stepsize_);
+  sta_->set_time_np(time_ + stepsize_);
   // reset the integrator
   sta_->reset_step();
 }

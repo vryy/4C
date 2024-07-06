@@ -21,7 +21,7 @@ Core::Nodes::NodeType Core::Nodes::NodeType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Core::Nodes::NodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::NodeType::create(const std::vector<char>& data)
 {
   std::vector<double> dummycoord(3, 999.0);
   auto* object = new Core::Nodes::Node(-1, dummycoord, -1);
@@ -52,13 +52,13 @@ Core::Nodes::Node::Node(const Core::Nodes::Node& old)
   // only a reference in the node anyway
   std::map<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator fool;
   for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
-    SetCondition(fool->first, fool->second);
+    set_condition(fool->first, fool->second);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Nodes::Node* Core::Nodes::Node::Clone() const
+Core::Nodes::Node* Core::Nodes::Node::clone() const
 {
   auto* newnode = new Core::Nodes::Node(*this);
   return newnode;
@@ -78,8 +78,8 @@ std::ostream& operator<<(std::ostream& os, const Core::Nodes::Node& node)
 void Core::Nodes::Node::print(std::ostream& os) const
 {
   // Print id and coordinates
-  os << "Node " << std::setw(12) << Id() << " Owner " << std::setw(4) << Owner() << " Coords "
-     << std::setw(12) << X()[0] << " " << std::setw(12) << X()[1] << " " << std::setw(12) << X()[2]
+  os << "Node " << std::setw(12) << id() << " Owner " << std::setw(4) << owner() << " Coords "
+     << std::setw(12) << x()[0] << " " << std::setw(12) << x()[1] << " " << std::setw(12) << x()[2]
      << " ";
 }
 
@@ -91,14 +91,12 @@ void Core::Nodes::Node::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add id
-  int id = Id();
-  add_to_pack(data, id);
+  add_to_pack(data, id());
   // add owner
-  int owner = Owner();
-  add_to_pack(data, owner);
+  add_to_pack(data, owner());
   // x_
   add_to_pack(data, x_);
 }
@@ -110,7 +108,7 @@ void Core::Nodes::Node::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // id_
   extract_from_pack(position, data, id_);
@@ -126,7 +124,7 @@ void Core::Nodes::Node::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::GetCondition(
+void Core::Nodes::Node::get_condition(
     const std::string& name, std::vector<Core::Conditions::Condition*>& out) const
 {
   const int num = condition_.count(name);
@@ -142,7 +140,7 @@ void Core::Nodes::Node::GetCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Conditions::Condition* Core::Nodes::Node::GetCondition(const std::string& name) const
+Core::Conditions::Condition* Core::Nodes::Node::get_condition(const std::string& name) const
 {
   auto curr = condition_.find(name);
   if (curr == condition_.end()) return nullptr;
@@ -153,7 +151,7 @@ Core::Conditions::Condition* Core::Nodes::Node::GetCondition(const std::string& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::ChangePos(std::vector<double> nvector)
+void Core::Nodes::Node::change_pos(std::vector<double> nvector)
 {
   FOUR_C_ASSERT(x_.size() == nvector.size(),
       "Mismatch in size of the nodal coordinates vector and the vector to change the nodal "
@@ -164,7 +162,7 @@ void Core::Nodes::Node::ChangePos(std::vector<double> nvector)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::SetPos(std::vector<double> nvector)
+void Core::Nodes::Node::set_pos(std::vector<double> nvector)
 {
   FOUR_C_ASSERT(x_.size() == nvector.size(),
       "Mismatch in size of the nodal coordinates vector and the vector to set the new nodal "
@@ -175,12 +173,12 @@ void Core::Nodes::Node::SetPos(std::vector<double> nvector)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::Nodes::Node::VisData(const std::string& name, std::vector<double>& data)
+bool Core::Nodes::Node::vis_data(const std::string& name, std::vector<double>& data)
 {
   if (name == "Nodeowner")
   {
     if (static_cast<int>(data.size()) < 1) FOUR_C_THROW("Size mismatch");
-    data[0] = Owner();
+    data[0] = owner();
     return true;
   }
   return false;

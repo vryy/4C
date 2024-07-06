@@ -51,11 +51,11 @@ namespace Mat
   class StVenantKirchhoffType : public Core::Communication::ParObjectType
   {
    public:
-    [[nodiscard]] std::string Name() const override { return "StVenantKirchhoffType"; }
+    [[nodiscard]] std::string name() const override { return "StVenantKirchhoffType"; }
 
-    static StVenantKirchhoffType& Instance() { return instance_; };
+    static StVenantKirchhoffType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static StVenantKirchhoffType instance_;
@@ -72,9 +72,9 @@ namespace Mat
     /// construct the material object given material parameters
     explicit StVenantKirchhoff(Mat::PAR::StVenantKirchhoff* params);
 
-    [[nodiscard]] int UniqueParObjectId() const override
+    [[nodiscard]] int unique_par_object_id() const override
     {
-      return StVenantKirchhoffType::Instance().UniqueParObjectId();
+      return StVenantKirchhoffType::instance().unique_par_object_id();
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -85,30 +85,30 @@ namespace Mat
 
     //! @name Access methods
 
-    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_stvenant;
     }
 
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (kinem != Inpar::Solid::KinemType::linear &&
           kinem != Inpar::Solid::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new StVenantKirchhoff(*this));
     }
 
     /// Young's modulus
-    [[nodiscard]] double Youngs() const { return params_->youngs_; }
+    [[nodiscard]] double youngs() const { return params_->youngs_; }
 
     /// Poisson's ratio
-    [[nodiscard]] double PoissonRatio() const { return params_->poissonratio_; }
+    [[nodiscard]] double poisson_ratio() const { return params_->poissonratio_; }
 
-    [[nodiscard]] double Density() const override { return params_->density_; }
+    [[nodiscard]] double density() const override { return params_->density_; }
 
     /// shear modulus
     [[nodiscard]] double shear_mod() const
@@ -116,7 +116,7 @@ namespace Mat
       return 0.5 * params_->youngs_ / (1.0 + params_->poissonratio_);
     }
 
-    [[nodiscard]] Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //@}
 
@@ -131,7 +131,7 @@ namespace Mat
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
-    void StrainEnergy(
+    void strain_energy(
         const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
     // computes isotropic elasticity tensor in matrix notion for 3d
@@ -139,7 +139,7 @@ namespace Mat
     //@}
 
     //! general setup of constitutive tensor based on Young's and poisson's ratio
-    static void FillCmat(Core::LinAlg::Matrix<6, 6>& cmat, double Emod, double nu);
+    static void fill_cmat(Core::LinAlg::Matrix<6, 6>& cmat, double Emod, double nu);
 
    private:
     /// my material parameters

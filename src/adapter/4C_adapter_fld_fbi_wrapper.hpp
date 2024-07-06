@@ -61,9 +61,9 @@ namespace Adapter
     /**
      * \brief Resets the external forces acting on the fluid to zero
      */
-    virtual void ResetExternalForces();
+    virtual void reset_external_forces();
 
-    virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
+    virtual Teuchos::RCP<const FLD::Meshtying> get_meshtying();
   };
 }  // namespace Adapter
 

@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, std::string sectionname)
-    : name_(dis->Name()),
+    : name_(dis->name()),
       reader_(reader),
-      comm_(reader.Comm()),
+      comm_(reader.get_comm()),
       sectionname_(sectionname),
       dis_(dis)
 {
@@ -35,9 +35,9 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 /*----------------------------------------------------------------------*/
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
-    : name_(dis->Name()),
+    : name_(dis->name()),
       reader_(reader),
-      comm_(reader.Comm()),
+      comm_(reader.get_comm()),
       sectionname_(sectionname),
       dis_(dis)
 {
@@ -50,9 +50,9 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
     const Core::IO::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
-    : name_(dis->Name()),
+    : name_(dis->name()),
       reader_(reader),
-      comm_(reader.Comm()),
+      comm_(reader.get_comm()),
       sectionname_(sectionname),
       dis_(dis)
 {
@@ -63,7 +63,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::IO::ElementReader::ReadAndDistribute()
+void Core::IO::ElementReader::read_and_distribute()
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();
@@ -124,7 +124,7 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
   // vector of all global element ids
   std::vector<int> eids;
   int numele = 0;
-  std::string inputfile_name = reader_.MyInputfileName();
+  std::string inputfile_name = reader_.my_inputfile_name();
 
   // all reading is done on proc 0
   if (comm_->MyPID() == 0)
@@ -175,7 +175,7 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
 void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, const int bsize)
 {
   std::ifstream file;
-  std::string inputfile_name = reader_.MyInputfileName();
+  std::string inputfile_name = reader_.my_inputfile_name();
 
   if (comm_->MyPID() == 0)
   {
@@ -230,7 +230,7 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
             // For the time being we support old and new input facilities. To
             // smooth transition.
 
-            Input::LineDefinition* linedef = ed.ElementLines(eletype, distype);
+            Input::LineDefinition* linedef = ed.element_lines(eletype, distype);
             if (linedef != nullptr)
             {
               if (not linedef->read(t))
@@ -243,8 +243,8 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
                     "failed to read element %d %s %s", elenumber, eletype.c_str(), distype.c_str());
               }
 
-              ele->SetNodeIds(distype, linedef);
-              ele->ReadElement(eletype, distype, linedef);
+              ele->set_node_ids(distype, linedef);
+              ele->read_element(eletype, distype, linedef);
             }
             else
             {
@@ -257,7 +257,7 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
 
             // get the node ids of this element
             const int numnode = ele->num_node();
-            const int* nodeids = ele->NodeIds();
+            const int* nodeids = ele->node_ids();
 
             // all node gids of this element are inserted into a set of
             // node ids --- it will be used later during reading of nodes

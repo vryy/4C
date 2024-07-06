@@ -28,10 +28,10 @@ XFEM::XFieldField::CouplingDofSet::CouplingDofSet(const int& my_num_reserve_dof_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::CouplingDofSet::Dof(
+void XFEM::XFieldField::CouplingDofSet::dof(
     std::vector<int>& dofs, const Core::Nodes::Node* node, unsigned nodal_dofset_id) const
 {
-  const int lid = node->LID();
+  const int lid = node->lid();
   if (lid == -1) return;
   const int num_dof = num_standard_dof_per_node();
   const int idx = (*idxcolnodes_)[lid] + nodal_dofset_id * num_dof;
@@ -41,9 +41,9 @@ void XFEM::XFieldField::CouplingDofSet::Dof(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::XFieldField::CouplingDofSet::NumDofPerNode(const Core::Nodes::Node& node) const
+int XFEM::XFieldField::CouplingDofSet::num_dof_per_node(const Core::Nodes::Node& node) const
 {
-  return my_num_dof_per_node(node.Id());
+  return my_num_dof_per_node(node.id());
 }
 
 /*----------------------------------------------------------------------------*

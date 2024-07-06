@@ -51,21 +51,21 @@ void Solid::EXPLICIT::AdamsBashforth2::setup()
   // ---------------------------------------------------------------------------
   // resizing of multi-step quantities
   // ---------------------------------------------------------------------------
-  global_state().get_multi_time()->Resize(-1, 0, true);
-  global_state().get_delta_time()->Resize(-1, 0, true);
-  global_state().get_multi_dis()->Resize(-1, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_vel()->Resize(-1, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_acc()->Resize(-1, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_time()->resize(-1, 0, true);
+  global_state().get_delta_time()->resize(-1, 0, true);
+  global_state().get_multi_dis()->resize(-1, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_vel()->resize(-1, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_acc()->resize(-1, 0, global_state().dof_row_map_view(), true);
 
   // here we initialized the dt of previous steps in the database, since a resize is performed
   const double dt = (*global_state().get_delta_time())[0];
-  global_state().get_delta_time()->UpdateSteps(dt);
+  global_state().get_delta_time()->update_steps(dt);
 
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().StartFuncNo());
+      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().start_func_no());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -132,7 +132,7 @@ void Solid::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   // set mass matrix
-  stiff_ptr->Add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
+  stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*

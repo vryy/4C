@@ -48,7 +48,7 @@ void FLD::XFluidOutputService::prepare_output()
 {
   dofset_out_->reset();
   dofset_out_->assign_degrees_of_freedom(*discret_, 0, 0);
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   // split based on complete fluid field (standard splitter that handles one dofset)
   Core::LinAlg::CreateMapExtractorFromDiscretization(
       *discret_, *dofset_out_, ndim, *velpressplitter_out_);
@@ -61,7 +61,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
     Teuchos::RCP<const FLD::XFluidState> state, Teuchos::RCP<Epetra_Vector> dispnp,
     Teuchos::RCP<Epetra_Vector> gridvnp)
 {
-  discret_->Writer()->new_step(step, time);
+  discret_->writer()->new_step(step, time);
 
   // create vector according to the initial row map holding all standard fluid unknowns
   outvec_fluid_->PutScalar(0.0);
@@ -69,17 +69,17 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
   const Epetra_Map* dofrowmap = dofset_out_->dof_row_map();  // original fluid unknowns
   const Epetra_Map* xdofrowmap = discret_->dof_row_map();    // fluid unknown for current cut
 
-  for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+  for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
   {
     // get row node via local id
-    const Core::Nodes::Node* xfemnode = discret_->lRowNode(i);
+    const Core::Nodes::Node* xfemnode = discret_->l_row_node(i);
 
     // the initial dofset contains the original dofs for each row node
-    const std::vector<int> gdofs_original(dofset_out_->Dof(xfemnode));
+    const std::vector<int> gdofs_original(dofset_out_->dof(xfemnode));
 
     // if the dofs for this node do not exist in the xdofrowmap, then a hole is given
     // else copy the right nodes
-    const std::vector<int> gdofs_current(discret_->Dof(0, xfemnode));
+    const std::vector<int> gdofs_current(discret_->dof(0, xfemnode));
 
     if (gdofs_current.size() == 0)
     {
@@ -120,10 +120,10 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
     else if (gdofs_current.size() % gdofs_original.size() == 0)  // multiple dofsets
     {
       // if there are multiple dofsets we write output for the standard dofset
-      Core::Geo::Cut::Node* node = state->Wizard()->GetNode(xfemnode->Id());
+      Core::Geo::Cut::Node* node = state->wizard()->get_node(xfemnode->id());
 
       const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& dofcellsets =
-          node->NodalDofSets();
+          node->nodal_dof_sets();
 
       int nds = 0;
       bool is_std_set = false;
@@ -133,7 +133,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
                dofcellsets.begin();
            cellsets != dofcellsets.end(); cellsets++)
       {
-        is_std_set = (*cellsets)->Is_Standard_DofSet();
+        is_std_set = (*cellsets)->is_standard_dof_set();
 
         if (is_std_set) break;
 
@@ -168,8 +168,8 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 
   Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->extract_cond_vector(outvec_fluid_);
 
-  discret_->Writer()->write_vector("velnp", outvec_fluid_);
-  discret_->Writer()->write_vector("pressure", pressure);
+  discret_->writer()->write_vector("velnp", outvec_fluid_);
+  discret_->writer()->write_vector("pressure", pressure);
 
   if (dispnp != Teuchos::null)
   {
@@ -178,46 +178,47 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
     // write ale displacement for t^{n+1}
     Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp));
     dispnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
-    discret_->Writer()->write_vector("dispnp", dispnprm);
+    discret_->writer()->write_vector("dispnp", dispnprm);
 
     // write grid velocity for t^{n+1}
     Teuchos::RCP<Epetra_Vector> gridvnprm = Teuchos::rcp(new Epetra_Vector(*gridvnp));
     gridvnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
-    discret_->Writer()->write_vector("gridv", gridvnprm);
+    discret_->writer()->write_vector("gridv", gridvnprm);
 
     // write convective velocity for t^{n+1}
     Teuchos::RCP<Epetra_Vector> convvel =
         Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(), true));
     convvel->Update(1.0, *outvec_fluid_, -1.0, *gridvnprm, 0.0);
-    discret_->Writer()->write_vector("convel", convvel);
+    discret_->writer()->write_vector("convel", convvel);
   }
 
-  discret_->Writer()->write_element_data(firstoutputofrun_);
+  discret_->writer()->write_element_data(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // write restart
   if (write_restart_data)
   {
-    if (discret_->Comm().MyPID() == 0) Core::IO::cout << "---  write restart... " << Core::IO::endl;
+    if (discret_->get_comm().MyPID() == 0)
+      Core::IO::cout << "---  write restart... " << Core::IO::endl;
 
     restart_count_++;
 
     // velocity/pressure vector
-    discret_->Writer()->write_vector("velnp_res", state->velnp_);
+    discret_->writer()->write_vector("velnp_res", state->velnp_);
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-    discret_->Writer()->write_vector("accnp_res", state->accnp_);
-    discret_->Writer()->write_vector("accn_res", state->accn_);
-    discret_->Writer()->write_vector("veln_res", state->veln_);
-    discret_->Writer()->write_vector("velnm_res", state->velnm_);
+    discret_->writer()->write_vector("accnp_res", state->accnp_);
+    discret_->writer()->write_vector("accn_res", state->accn_);
+    discret_->writer()->write_vector("veln_res", state->veln_);
+    discret_->writer()->write_vector("velnm_res", state->velnm_);
 
     if (dispnp != Teuchos::null)
     {
       // write ale displacement for t^{n+1} on full background
-      discret_->Writer()->write_vector("full_dispnp_res", dispnp);
+      discret_->writer()->write_vector("full_dispnp_res", dispnp);
 
       // write grid velocity for t^{n+1} on full background
-      discret_->Writer()->write_vector("full_gridvnp_res", gridvnp);
+      discret_->writer()->write_vector("full_gridvnp_res", gridvnp);
     }
   }
 
@@ -235,11 +236,11 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 
   if (restart_count_ == 5)
   {
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
       Core::IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts."
                      << Core::IO::endl;
 
-    discret_->Writer()->clear_map_cache();  // clear the output's map-cache
+    discret_->writer()->clear_map_cache();  // clear the output's map-cache
     restart_count_ = 0;
   }
 
@@ -266,13 +267,13 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
       include_inner_(include_inner)
 {
   if (!(bool)Core::UTILS::IntegralValue<int>(
-          Global::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+          Global::Problem::instance()->io_params(), "OUTPUT_GMSH"))
     FOUR_C_THROW(
         "If GMSH output is globally deactivated, don't create an instance of "
         "XFluidOutputServiceGmsh!");
 };
 
-void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
+void FLD::XFluidOutputServiceGmsh::gmsh_solution_output(
     const std::string& filename_base,             ///< name for output file
     int step,                                     ///< step number
     const Teuchos::RCP<FLD::XFluidState>& state,  ///< state
@@ -282,13 +283,13 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
   if (!gmsh_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Velnp());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->velnp());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
-  if (state->Accnp() != Teuchos::null)
+  if (state->accnp() != Teuchos::null)
   {
-    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->Accnp());
+    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->accnp());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
@@ -299,9 +300,9 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
 
   // no counter for standard solution output : -1
   const std::string prefix("SOL");
-  GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_vel, output_col_acc,
+  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, output_col_acc,
       dispnp_col);
-  cond_manager_->GmshOutput(filename_base, step, gmsh_step_diff_, gmsh_debug_out_screen_);
+  cond_manager_->gmsh_output(filename_base, step, gmsh_step_diff_, gmsh_debug_out_screen_);
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
@@ -313,13 +314,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
   if (!gmsh_ref_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Veln());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->veln());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
-  if (state->Accn() != Teuchos::null)
+  if (state->accn() != Teuchos::null)
   {
-    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->Accn());
+    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->accn());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
@@ -329,7 +330,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
 
 
   const std::string prefix("ref_SOL");
-  GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_vel, output_col_acc,
+  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, output_col_acc,
       dispnp_col);
 }
 
@@ -348,9 +349,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
     dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Velnp());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->velnp());
   const std::string prefix("SOL");
-  GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_vel, Teuchos::null,
+  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, Teuchos::null,
       dispnp_col);
 }
 
@@ -370,9 +371,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
 
 
   Teuchos::RCP<const Epetra_Vector> output_col_residual =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Residual());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->residual());
   const std::string prefix("RES");
-  GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_residual,
+  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_residual,
       Teuchos::null, dispnp_col);
 }
 
@@ -391,13 +392,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
     dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_incvel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->IncVel());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->inc_vel());
   const std::string prefix("INC");
-  GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_incvel, Teuchos::null,
+  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_incvel, Teuchos::null,
       dispnp_col);
 }
 
-void FLD::XFluidOutputServiceGmsh::GmshOutput(
+void FLD::XFluidOutputServiceGmsh::gmsh_output(
     const std::string& filename_base,  ///< name for output file
     const std::string& prefix,         ///< data prefix
     int step,                          ///< step number
@@ -409,13 +410,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
 )
 {
   // Todo: should be private
-  int myrank = discret_->Comm().MyPID();
+  int myrank = discret_->get_comm().MyPID();
 
   if (myrank == 0) std::cout << "\n\t ... writing Gmsh output...\n" << std::flush;
 
   bool screen_out = gmsh_debug_out_screen_;
 
-  auto file_name = discret_->Writer()->output()->file_name();
+  auto file_name = discret_->writer()->output()->file_name();
 
   // output for Element and Node IDs
   std::ostringstream filename_base_vel;
@@ -531,11 +532,11 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
                               << "\" {\n";
   }
 
-  const int numrowele = (discret_)->NumMyRowElements();
+  const int numrowele = (discret_)->num_my_row_elements();
   for (int i = 0; i < numrowele; ++i)
   {
-    Core::Elements::Element* actele = (discret_)->lRowElement(i);
-    Core::Geo::Cut::ElementHandle* e = wizard->GetElement(actele);
+    Core::Elements::Element* actele = (discret_)->l_row_element(i);
+    Core::Geo::Cut::ElementHandle* e = wizard->get_element(actele);
 
     if (e != nullptr)
     {
@@ -545,7 +546,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
       e->get_volume_cells_dof_sets(cell_sets, nds_sets, include_inner_);
 
 
-      if (e->IsIntersected())
+      if (e->is_intersected())
       {
         int set_counter = 0;
 
@@ -562,13 +563,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
           {
             Core::Geo::Cut::VolumeCell* vc = *i;
 
-            if (e->IsCut())
+            if (e->is_cut())
             {
               gmsh_output_volume_cell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
                   gmshfilecontent_acc, actele, e, vc, nds, vel, acc);
-              if (vc->Position() == Core::Geo::Cut::Point::outside)
+              if (vc->position() == Core::Geo::Cut::Point::outside)
               {
-                if (cond_manager_->HasMeshCoupling())
+                if (cond_manager_->has_mesh_coupling())
                   gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, wizard);
               }
             }
@@ -656,12 +657,12 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   if (nds.size() != 0)  // for element output of ghost values
   {
     // get element location vector, dirichlet flags and ownerships
-    actele->LocationVector(discret, nds, la, false);
+    actele->location_vector(discret, nds, la, false);
   }
   else
   {
     // get element location vector, dirichlet flags and ownerships
-    actele->LocationVector(discret, la, false);
+    actele->location_vector(discret, la, false);
   }
 
   std::vector<double> m(la[0].lm_.size());
@@ -683,7 +684,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
 
   int numnode = 0;
 
-  switch (actele->Shape())
+  switch (actele->shape())
   {
     case Core::FE::CellType::hex8:
     case Core::FE::CellType::hex20:
@@ -729,7 +730,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
       if (acc_output) acc_f << ",";
     }
     int j = 4 * i;
-    const auto& x = actele->Nodes()[i]->X();
+    const auto& x = actele->nodes()[i]->x();
     vel_f << x[0] + m_disp[j + 0] << "," << x[1] + m_disp[j + 1] << "," << x[2] + m_disp[j + 2];
     press_f << x[0] + m_disp[j + 0] << "," << x[1] + m_disp[j + 1] << "," << x[2] + m_disp[j + 2];
     if (acc_output)
@@ -790,7 +791,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   Core::Elements::Element::LocationArray la(1);
 
   // get element location vector, dirichlet flags and ownerships
-  actele->LocationVector(discret, nds, la, false);
+  actele->location_vector(discret, nds, la, false);
 
   std::vector<double> m(la[0].lm_.size());
   Core::FE::ExtractMyValues(*velvec, m, la[0].lm_);
@@ -825,20 +826,20 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   // integrationcells are not available because tessellation is not used
   if (volume_cell_gauss_point_by_ != Core::Geo::Cut::VCellGaussPts_Tessellation)
   {
-    const Core::Geo::Cut::plain_facet_set& facete = vc->Facets();
+    const Core::Geo::Cut::plain_facet_set& facete = vc->facets();
     for (Core::Geo::Cut::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
     {
       // split facet into tri and quad cell
       Core::Geo::Cut::Facet* fe = *i;
       std::vector<std::vector<Core::Geo::Cut::Point*>> split;
-      std::vector<Core::Geo::Cut::Point*> corners = fe->CornerPoints();
+      std::vector<Core::Geo::Cut::Point*> corners = fe->corner_points();
 
       if (corners.size() == 3)  // only Tri can be used directly. Quad may be concave
         split.push_back(corners);
       else
       {
-        if (!fe->IsFacetSplit()) fe->SplitFacet(fe->CornerPoints());
-        split = fe->GetSplitCells();
+        if (!fe->is_facet_split()) fe->split_facet(fe->corner_points());
+        split = fe->get_split_cells();
       }
 
       for (std::vector<std::vector<Core::Geo::Cut::Point*>>::const_iterator j = split.begin();
@@ -873,7 +874,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             press_f << ",";
             if (acc_output) acc_f << ",";
           }
-          const double* x = cell[k]->X();
+          const double* x = cell[k]->x();
           vel_f << x[0] << "," << x[1] << "," << x[2];
           press_f << x[0] << "," << x[1] << "," << x[2];
           if (acc_output) acc_f << x[0] << "," << x[1] << "," << x[2];
@@ -891,7 +892,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           Core::Geo::Cut::Point* point = cell[k];
           const Core::LinAlg::Matrix<3, 1>& rst = e->local_coordinates(point);
 
-          switch (actele->Shape())
+          switch (actele->shape())
           {
             case Core::FE::CellType::hex8:
             {
@@ -965,15 +966,15 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   // integrationcells based output for tessellation
   else
   {
-    const Core::Geo::Cut::plain_integrationcell_set& intcells = vc->IntegrationCells();
+    const Core::Geo::Cut::plain_integrationcell_set& intcells = vc->integration_cells();
     for (Core::Geo::Cut::plain_integrationcell_set::const_iterator i = intcells.begin();
          i != intcells.end(); ++i)
     {
       Core::Geo::Cut::IntegrationCell* ic = *i;
 
-      const std::vector<Core::Geo::Cut::Point*>& points = ic->Points();
+      const std::vector<Core::Geo::Cut::Point*>& points = ic->points();
 
-      switch (ic->Shape())
+      switch (ic->shape())
       {
         case Core::FE::CellType::hex8:
           vel_f << "VH(";
@@ -1000,7 +1001,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           press_f << ",";
           if (acc_output) acc_f << ",";
         }
-        const double* x = points[i]->X();
+        const double* x = points[i]->x();
         vel_f << x[0] << "," << x[1] << "," << x[2];
         press_f << x[0] << "," << x[1] << "," << x[2];
         if (acc_output) acc_f << x[0] << "," << x[1] << "," << x[2];
@@ -1018,7 +1019,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
         Core::Geo::Cut::Point* point = points[i];
         const Core::LinAlg::Matrix<3, 1>& rst = e->local_coordinates(point);
 
-        switch (actele->Shape())
+        switch (actele->shape())
         {
           case Core::FE::CellType::hex8:
           {
@@ -1162,25 +1163,25 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
   double drs;
 
   std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> bcells;
-  vc->GetBoundaryCells(bcells);
+  vc->get_boundary_cells(bcells);
   for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::iterator i = bcells.begin();
        i != bcells.end(); ++i)
   {
     int sid = i->first;
     std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = i->second;
 
-    if (!cond_manager_->IsMeshCoupling(sid)) continue;
+    if (!cond_manager_->is_mesh_coupling(sid)) continue;
 
     Core::Elements::Element* side = cond_manager_->get_side(sid);
 
-    Core::Geo::Cut::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
+    Core::Geo::Cut::SideHandle* s = wizard->get_mesh_cutting_side(sid, 0);
 
     const int numnodes = side->num_node();
-    Core::Nodes::Node** nodes = side->Nodes();
+    Core::Nodes::Node** nodes = side->nodes();
     Core::LinAlg::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {
-      const double* x = nodes[i]->X().data();
+      const double* x = nodes[i]->x().data();
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
@@ -1189,9 +1190,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
       Core::Geo::Cut::BoundaryCell* bc = *i;
 
       // Issue with boundary cell outputs for marked background sides
-      if (bc->GetFacet()->on_marked_background_side()) continue;
+      if (bc->get_facet()->on_marked_background_side()) continue;
 
-      switch (bc->Shape())
+      switch (bc->shape())
       {
         case Core::FE::CellType::quad4:
           bound_f << "VQ(";
@@ -1204,7 +1205,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
           break;
       }
 
-      const std::vector<Core::Geo::Cut::Point*>& points = bc->Points();
+      const std::vector<Core::Geo::Cut::Point*>& points = bc->points();
       for (std::vector<Core::Geo::Cut::Point*>::const_iterator i = points.begin();
            i != points.end(); ++i)
       {
@@ -1212,7 +1213,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
 
         if (i != points.begin()) bound_f << ",";
 
-        const double* x = p->X();
+        const double* x = p->x();
         bound_f << x[0] << "," << x[1] << "," << x[2];
       }
 
@@ -1226,7 +1227,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
         // the bc corner points will always lie on the respective side
         const Core::LinAlg::Matrix<2, 1>& eta = s->local_coordinates(p);
 
-        switch (side->Shape())
+        switch (side->shape())
         {
           case Core::FE::CellType::quad4:
           {
@@ -1270,7 +1271,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
           }
           default:
           {
-            FOUR_C_THROW("unsupported side shape %d", side->Shape());
+            FOUR_C_THROW("unsupported side shape %d", side->shape());
             break;
           }
         }
@@ -1290,8 +1291,8 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
 {
   if (!gmsh_discret_out_) return;
 
-  if (discret_->Comm().MyPID() == 0)
-    std::cout << "discretization output " << discret_->Name() << std::endl;
+  if (discret_->get_comm().MyPID() == 0)
+    std::cout << "discretization output " << discret_->name() << std::endl;
 
   // cast to DiscretizationFaces
   Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
@@ -1303,13 +1304,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
 
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("DISCRET",
-      discret_->Writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
-      discret_->Comm().MyPID());
+      discret_->writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
+      discret_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
 
-  XFEM::UTILS::PrintDiscretizationToStream(discret_, discret_->Name(), true, false, true, false,
+  XFEM::UTILS::PrintDiscretizationToStream(discret_, discret_->name(), true, false, true, false,
       print_faces, false, gmshfilecontent, curr_pos);
 
   // append other discretizations involved (cutter surface discretization, coupling discretization,
@@ -1319,7 +1320,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
   gmshfilecontent.close();
 }
 
-void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
+void FLD::XFluidOutputServiceGmsh::gmsh_output_eos(
     int step, Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab)
 {
   if (!gmsh_eos_out_ || edge_stab == Teuchos::null) return;
@@ -1334,27 +1335,27 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
 
   // output for Element and Node IDs
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("EOS",
-      discret_->Writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
-      discret_->Comm().MyPID());
+      discret_->writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
+      discret_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
 
-  if (xdiscret->FilledExtension() == true)  // stabilization output
+  if (xdiscret->filled_extension() == true)  // stabilization output
   {
-    std::map<int, int>& ghost_penalty_map = edge_stab->GetGhostPenaltyMap();
+    std::map<int, int>& ghost_penalty_map = edge_stab->get_ghost_penalty_map();
 
-    if (!edge_stab->GetGhostPenaltyMap().empty())
+    if (!edge_stab->get_ghost_penalty_map().empty())
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" "
                       << "ghost penalty stabilized \" {\n";
-      for (int i = 0; i < xdiscret->NumMyRowFaces(); ++i)
+      for (int i = 0; i < xdiscret->num_my_row_faces(); ++i)
       {
-        const Core::Elements::Element* actele = xdiscret->lRowFace(i);
+        const Core::Elements::Element* actele = xdiscret->l_row_face(i);
 
 
-        std::map<int, int>::iterator it = ghost_penalty_map.find(actele->Id());
+        std::map<int, int>::iterator it = ghost_penalty_map.find(actele->id());
         if (it != ghost_penalty_map.end())
         {
           int ghost_penalty = it->second;
@@ -1364,24 +1365,24 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
                 double(ghost_penalty), actele, gmshfilecontent);
         }
         else
-          FOUR_C_THROW("face %d in map not found", actele->Id());
+          FOUR_C_THROW("face %d in map not found", actele->id());
       }
       gmshfilecontent << "};\n";
     }
 
-    std::map<int, int>& edge_based_map = edge_stab->GetEdgeBasedMap();
+    std::map<int, int>& edge_based_map = edge_stab->get_edge_based_map();
 
 
-    if (!edge_stab->GetEdgeBasedMap().empty())
+    if (!edge_stab->get_edge_based_map().empty())
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" "
                       << "edgebased stabilized \" {\n";
 
-      for (int i = 0; i < xdiscret->NumMyRowFaces(); ++i)
+      for (int i = 0; i < xdiscret->num_my_row_faces(); ++i)
       {
-        const Core::Elements::Element* actele = xdiscret->lRowFace(i);
-        std::map<int, int>::iterator it = edge_based_map.find(actele->Id());
+        const Core::Elements::Element* actele = xdiscret->l_row_face(i);
+        std::map<int, int>::iterator it = edge_based_map.find(actele->id());
 
         if (it != edge_based_map.end())
         {

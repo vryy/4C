@@ -90,7 +90,7 @@ namespace Discret
 
       //! Internal implementation class for ScaTraHDGIntFace elements (the first object is created
       //! in Discret::ELEMENTS::ScaTraHDGIntFace::Evaluate)
-      static ScaTraHDGIntFaceImplInterface* Impl(const Core::Elements::Element* ele);
+      static ScaTraHDGIntFaceImplInterface* impl(const Core::Elements::Element* ele);
     };
 
     //! Internal ScaTraHDGIntFace element implementation
@@ -121,7 +121,7 @@ namespace Discret
 
      public:
       //! Singleton access method
-      static ScaTraHDGIntFaceImpl<distype>* Instance(
+      static ScaTraHDGIntFaceImpl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! Constructor
@@ -158,7 +158,7 @@ namespace Discret
 
       //! decide which terms have to be assembled and decide the assembly pattern, return if no
       //! assembly required
-      bool PrepareAssemble(Teuchos::ParameterList& stabparams, Teuchos::ParameterList& faceparams);
+      bool prepare_assemble(Teuchos::ParameterList& stabparams, Teuchos::ParameterList& faceparams);
 
 
     };  // end class ScaTraHDGIntFaceImpl

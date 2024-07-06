@@ -44,7 +44,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::setup()
   TimIntCardiacMonodomain::setup();
 
   // Activation time at time n+1
-  activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
+  activation_time_interpol_.reset(new Epetra_Vector(*discret_->node_row_map()));
 }
 
 /*----------------------------------------------------------------------*
@@ -62,7 +62,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::update()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntCardiacMonodomainHDG::element_material_time_update()
 {
-  discret_->ClearState(true);
+  discret_->clear_state(true);
 
   Teuchos::ParameterList eleparams;
   Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
@@ -75,18 +75,18 @@ void ScaTra::TimIntCardiacMonodomainHDG::element_material_time_update()
 
   Core::LinAlg::SerialDenseMatrix dummyMat;
   Core::LinAlg::SerialDenseVector dummyVec;
-  Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
 
 
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
-    ele->LocationVector(*discret_, la, false);
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
+    ele->location_vector(*discret_, la, false);
 
     ele->evaluate(eleparams, *discret_, la, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
   }
 
-  discret_->ClearState(true);
+  discret_->clear_state(true);
 }
 
 /*----------------------------------------------------------------------*
@@ -125,12 +125,12 @@ void ScaTra::TimIntCardiacMonodomainHDG::output_state()
 
 
   // copy values from node to dof vector
-  Teuchos::RCP<Epetra_Vector> dofphi = Core::LinAlg::CreateVector(*discret_->NodeRowMap());
+  Teuchos::RCP<Epetra_Vector> dofphi = Core::LinAlg::CreateVector(*discret_->node_row_map());
 
   for (int i = 0; i < dofphi->MyLength(); ++i)
   {
-    int dofgid = discret_->NodeRowMap()->GID(i);
-    dofphi->ReplaceMyValue(discret_->NodeRowMap()->LID(dofgid), 0, (*interpolatedPhinp_)[i]);
+    int dofgid = discret_->node_row_map()->GID(i);
+    dofphi->ReplaceMyValue(discret_->node_row_map()->LID(dofgid), 0, (*interpolatedPhinp_)[i]);
   }
   output_->write_vector("phinp", dofphi);
 }
@@ -161,9 +161,9 @@ void ScaTra::TimIntCardiacMonodomainHDG::pack_material()
   Core::Communication::PackBuffer buffer;
 
   // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
     hdgele->pack_material(buffer);
   }
 
@@ -178,9 +178,9 @@ void ScaTra::TimIntCardiacMonodomainHDG::unpack_material()
 {
   std::vector<char>::size_type index = 0;
   // loop over elements
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
     std::vector<char> data;
     hdgele->extract_from_pack(index, *data_, data);
     hdgele->unpack_material(data);
@@ -191,7 +191,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::unpack_material()
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntCardiacMonodomainHDG::project_material()
 {
-  discret_->ClearState(true);
+  discret_->clear_state(true);
   // set action
   Teuchos::ParameterList eleparams;
   Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
@@ -201,9 +201,9 @@ void ScaTra::TimIntCardiacMonodomainHDG::project_material()
   Core::LinAlg::SerialDenseVector dummyVec;
   Core::Elements::Element::LocationArray dummy(1);
 
-  for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
+  for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Core::Elements::Element *ele = discret_->lColElement(iele);
+    Core::Elements::Element *ele = discret_->l_col_element(iele);
 
     // call routine on elements to project material field
     ele->evaluate(eleparams, *discret_, dummy, dummyMat, dummyMat, dummyVec, dummyVec, dummyVec);
@@ -218,7 +218,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::read_restart(
   // Call function from base class
   ScaTra::TimIntHDG::read_restart(step, input);
 
-  activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
+  activation_time_interpol_.reset(new Epetra_Vector(*discret_->node_row_map()));
 }
 
 FOUR_C_NAMESPACE_CLOSE

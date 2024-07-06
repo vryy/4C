@@ -43,13 +43,13 @@ namespace ScaTra
     void init() override;
 
     /// outer level time loop
-    void TimeLoop() override;
+    void time_loop() override;
 
     /// read restart for preceding turbulent inflow simulation
-    void ReadInflowRestart(int restart);
+    void read_inflow_restart(int restart);
 
     /// Add tests to global problem and start tests
-    void TestResults();
+    void test_results();
 
    protected:
     /// time loop for one-way coupling

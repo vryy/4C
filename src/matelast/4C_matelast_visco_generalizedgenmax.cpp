@@ -34,7 +34,7 @@ Mat::Elastic::GeneralizedGenMax::GeneralizedGenMax(Mat::Elastic::PAR::Generalize
     internalpotsum_.clear();
     // get parameters of each branch
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> ViscoBranch = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> ViscoBranch = Mat::Elastic::Summand::factory(matid);
 
     double nummat = -1.0;
     const std::vector<int>* branchmatids = nullptr;
@@ -46,7 +46,7 @@ Mat::Elastic::GeneralizedGenMax::GeneralizedGenMax(Mat::Elastic::PAR::Generalize
     {
       // get parameters of each component
       int curmatid = branchmatids->at(i);
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(curmatid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(curmatid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       // write summand in the vector of summands of each branch
       internalpotsum_.push_back(sum);

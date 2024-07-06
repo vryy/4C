@@ -54,7 +54,7 @@ namespace PoroMultiPhaseScaTra
     }
 
     //! set-up linear system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
@@ -83,11 +83,11 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<const Epetra_Vector>& vec_art) override;
 
     //! check if initial fields on coupled DOFs are equal
-    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont,
+    void check_initial_fields(Teuchos::RCP<const Epetra_Vector> vec_cont,
         Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
     //! access artery (1D) dof row map
-    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
+    Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
 
     //! access full dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
@@ -99,7 +99,7 @@ namespace PoroMultiPhaseScaTra
     void setup() override;
 
     //! apply mesh movement (on artery elements)
-    void ApplyMeshMovement() override;
+    void apply_mesh_movement() override;
 
     //! access to blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;

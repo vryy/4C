@@ -41,7 +41,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::check_material_type(const int mat
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if ((mtype != Core::Materials::m_fluidporo))
     FOUR_C_THROW("Material with ID %d is not admissible for fluid poroelasticity elements", matid);
 }
@@ -58,16 +58,16 @@ void PoroElast::UTILS::PoroelastCloneStrategy::set_element_data(
       Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::FluidPoro>(newele);
   if (fluid != Teuchos::null)
   {
-    fluid->SetMaterial(0, Mat::Factory(matid));
+    fluid->set_material(0, Mat::Factory(matid));
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
-    static_cast<Mat::PAR::FluidPoro*>(fluid->Material()->Parameter())
-        ->SetInitialPorosity(
-            Teuchos::rcp_static_cast<Mat::StructPoro>(oldele->Material())->InitPorosity());
-    fluid->SetDisType(oldele->Shape());  // set distype as well!
-    fluid->SetIsAle(true);
+    static_cast<Mat::PAR::FluidPoro*>(fluid->material()->parameter())
+        ->set_initial_porosity(
+            Teuchos::rcp_static_cast<Mat::StructPoro>(oldele->material())->init_porosity());
+    fluid->set_dis_type(oldele->shape());  // set distype as well!
+    fluid->set_is_ale(true);
     auto* so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(oldele);
     if (so_base)
-      fluid->SetKinematicType(so_base->KinematicType());
+      fluid->set_kinematic_type(so_base->kinematic_type());
     else
       FOUR_C_THROW(
           " dynamic cast from Core::Elements::Element* to Discret::ELEMENTS::So_base* failed ");
@@ -88,7 +88,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_dire
       Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::FluidPoro>(newele);
 
   // the element type name, needed to cast correctly in the following
-  const std::string eletypename = oldele->ElementType().Name();
+  const std::string eletypename = oldele->element_type().name();
 
   if (eletypename == "So_tet4PoroType")
   {
@@ -151,7 +151,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_noda
       Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::FluidPoro>(newele);
 
   // the element type name, needed to cast correctly in the following
-  const std::string eletypename = oldele->ElementType().Name();
+  const std::string eletypename = oldele->element_type().name();
 
   if (eletypename == "So_tet4PoroType")
   {

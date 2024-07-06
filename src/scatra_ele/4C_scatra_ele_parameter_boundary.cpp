@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::ScaTraEleParameterBoundary*
-Discret::ELEMENTS::ScaTraEleParameterBoundary::Instance(const std::string& disname)
+Discret::ELEMENTS::ScaTraEleParameterBoundary::instance(const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname) {
         return std::unique_ptr<ScaTraEleParameterBoundary>(new ScaTraEleParameterBoundary(disname));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
@@ -60,7 +60,7 @@ Discret::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_parameters(
     Teuchos::ParameterList& parameters)
 {
   kineticmodel_ = parameters.get<int>("kinetic model", std::numeric_limits<int>::infinity());
@@ -78,18 +78,18 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(
         case Inpar::S2I::kinetics_constperm:
         case Inpar::S2I::kinetics_linearperm:
         {
-          SetIsPseudoContact(parameters);
-          SetNumScal(parameters);
-          SetPermeabilities(parameters);
+          set_is_pseudo_contact(parameters);
+          set_num_scal(parameters);
+          set_permeabilities(parameters);
           break;
         }
 
         case Inpar::S2I::kinetics_constantinterfaceresistance:
         {
-          SetIsPseudoContact(parameters);
-          SetResistance(parameters);
-          SetNumElectrons(parameters);
-          SetOnOff(parameters);
+          set_is_pseudo_contact(parameters);
+          set_resistance(parameters);
+          set_num_electrons(parameters);
+          set_on_off(parameters);
           break;
         }
 
@@ -109,28 +109,28 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(
         case Inpar::S2I::kinetics_butlervolmerreducedthermoresistance:
         case Inpar::S2I::kinetics_butlervolmerreducedresistance:
         {
-          SetAlpha(parameters);
+          set_alpha(parameters);
           set_charge_transfer_constant(parameters);
-          SetIsPseudoContact(parameters);
-          SetNumElectrons(parameters);
-          SetNumScal(parameters);
-          SetStoichiometries(parameters);
+          set_is_pseudo_contact(parameters);
+          set_num_electrons(parameters);
+          set_num_scal(parameters);
+          set_stoichiometries(parameters);
           if (kineticmodel_ == Inpar::S2I::kinetics_butlervolmerreducedcapacitance)
           {
-            SetCapacitance(parameters);
+            set_capacitance(parameters);
           }
           if (kineticmodel_ == Inpar::S2I::kinetics_butlervolmerpeltier)
-            SetPeltier(parameters);
+            set_peltier(parameters);
           else if (kineticmodel_ == Inpar::S2I::kinetics_butlervolmerresistance or
                    kineticmodel_ == Inpar::S2I::kinetics_butlervolmerreducedresistance)
           {
-            SetConvTolIterNum(parameters);
-            SetResistance(parameters);
+            set_conv_tol_iter_num(parameters);
+            set_resistance(parameters);
           }
           if (kineticmodel_ == Inpar::S2I::kinetics_butlervolmerreducedthermoresistance)
           {
             set_energy_substance_ratio(parameters);
-            SetThermoPerm(parameters);
+            set_thermo_perm(parameters);
           }
           break;
         }
@@ -155,14 +155,14 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(
       {
         case Inpar::S2I::growth_kinetics_butlervolmer:
         {
-          SetAlpha(parameters);
+          set_alpha(parameters);
           set_charge_transfer_constant(parameters);
-          SetDensityMolarMass(parameters);
-          SetNumElectrons(parameters);
-          SetNumScal(parameters);
-          SetRegularization(parameters);
-          SetResistivity(parameters);
-          SetStoichiometries(parameters);
+          set_density_molar_mass(parameters);
+          set_num_electrons(parameters);
+          set_num_scal(parameters);
+          set_regularization(parameters);
+          set_resistivity(parameters);
+          set_stoichiometries(parameters);
           break;
         }
 
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetAlpha(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_alpha(Teuchos::ParameterList& parameters)
 {
   alphaa_ = parameters.get<double>("alpha_a", std::numeric_limits<double>::infinity());
   alphac_ = parameters.get<double>("alpha_c", std::numeric_limits<double>::infinity());
@@ -205,7 +205,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_charge_transfer_constant
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetConvTolIterNum(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_conv_tol_iter_num(
     Teuchos::ParameterList& parameters)
 {
   convtolimplicit_bv_ =
@@ -218,7 +218,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetConvTolIterNum(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetDensityMolarMass(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_density_molar_mass(
     Teuchos::ParameterList& parameters)
 {
   density_ = parameters.get<double>("density", std::numeric_limits<double>::infinity());
@@ -240,7 +240,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_energy_substance_ratio(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetIsPseudoContact(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_is_pseudo_contact(
     Teuchos::ParameterList& parameters)
 {
   is_pseudo_contact_ =
@@ -249,7 +249,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetIsPseudoContact(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetNumElectrons(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_num_electrons(
     Teuchos::ParameterList& parameters)
 {
   numelectrons_ = parameters.get<int>("numelectrons", std::numeric_limits<int>::infinity());
@@ -260,7 +260,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetNumElectrons(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetNumScal(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_num_scal(Teuchos::ParameterList& parameters)
 {
   numscal_ = parameters.get<int>("numscal", std::numeric_limits<int>::infinity());
   if (numscal_ <= 0) FOUR_C_THROW("Scalar must be positive");
@@ -268,14 +268,14 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetNumScal(Teuchos::Paramete
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetPeltier(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_peltier(Teuchos::ParameterList& parameters)
 {
   peltier_ = parameters.get<double>("peltier", std::numeric_limits<double>::infinity());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetPermeabilities(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_permeabilities(
     Teuchos::ParameterList& parameters)
 {
   permeabilities_ = parameters.get<const std::vector<double>*>("permeabilities");
@@ -285,7 +285,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetPermeabilities(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetRegularization(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_regularization(
     Teuchos::ParameterList& parameters)
 {
   regularizationparameter_ = parameters.get<double>("regpar", -1.0);
@@ -297,7 +297,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetRegularization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetResistance(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_resistance(
     Teuchos::ParameterList& parameters)
 {
   resistance_ = parameters.get<double>("resistance", std::numeric_limits<double>::infinity());
@@ -306,7 +306,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetResistance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetResistivity(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_resistivity(
     Teuchos::ParameterList& parameters)
 {
   resistivity_ = 1.0 / (parameters.get<double>("conductivity", -1.0));
@@ -315,7 +315,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetResistivity(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetCapacitance(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_capacitance(
     Teuchos::ParameterList& parameters)
 {
   capacitance_ = parameters.get<double>("capacitance", -1.0);
@@ -324,7 +324,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetCapacitance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetStoichiometries(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_stoichiometries(
     Teuchos::ParameterList& parameters)
 {
   stoichiometries_ = parameters.get<const std::vector<int>*>("stoichiometries");
@@ -344,7 +344,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetStoichiometries(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetThermoPerm(
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_thermo_perm(
     Teuchos::ParameterList& parameters)
 {
   thermoperm_ = parameters.get<double>("thermoperm", std::numeric_limits<double>::infinity());
@@ -353,7 +353,7 @@ void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetThermoPerm(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterBoundary::SetOnOff(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterBoundary::set_on_off(Teuchos::ParameterList& parameters)
 {
   onoff_ = parameters.get<const std::vector<int>*>("onoff");
   if (onoff_ == nullptr) FOUR_C_THROW("Cannot get vector 'onoff' from parameter list");

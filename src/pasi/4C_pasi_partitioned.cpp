@@ -49,7 +49,7 @@ void PaSI::PartitionedAlgo::init()
   init_particle_algorithm();
 
   // set communication object at the interface
-  interface_ = structurefield_->Interface();
+  interface_ = structurefield_->interface();
 
   // construct interface states
   intfdispnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
@@ -84,7 +84,7 @@ void PaSI::PartitionedAlgo::read_restart(int restartstep)
   particlealgorithm_->read_restart(restartstep);
 
   // set time and step after restart
-  SetTimeStep(structurefield_->TimeOld(), restartstep);
+  set_time_step(structurefield_->time_old(), restartstep);
 
   // extract interface states
   extract_interface_states();
@@ -93,24 +93,24 @@ void PaSI::PartitionedAlgo::read_restart(int restartstep)
   set_interface_states(intfdispnp_, intfvelnp_, intfaccnp_);
 }
 
-void PaSI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
+void PaSI::PartitionedAlgo::test_results(const Epetra_Comm& comm)
 {
   // get instance of global problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // add structure field specific result test object
-  problem->AddFieldTest(structurefield_->CreateFieldTest());
+  problem->add_field_test(structurefield_->create_field_test());
 
   // create particle field specific result test objects
   std::vector<std::shared_ptr<Core::UTILS::ResultTest>> allresulttests =
-      particlealgorithm_->CreateResultTests();
+      particlealgorithm_->create_result_tests();
 
   // add particle field specific result test objects
   for (auto& resulttest : allresulttests)
-    if (resulttest) problem->AddFieldTest(Teuchos::rcp(resulttest));
+    if (resulttest) problem->add_field_test(Teuchos::rcp(resulttest));
 
   // perform all tests
-  problem->TestAll(comm);
+  problem->test_all(comm);
 }
 
 void PaSI::PartitionedAlgo::prepare_time_step(bool printheader)
@@ -138,22 +138,22 @@ void PaSI::PartitionedAlgo::struct_step()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::StructStep");
 
-  if ((Comm().MyPID() == 0) and print_screen_evry() and (Step() % print_screen_evry() == 0))
+  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0))
     printf("-------------------- STRUCTURE SOLVER --------------------\n");
 
   // integrate structural time step
-  structurefield_->Solve();
+  structurefield_->solve();
 }
 
 void PaSI::PartitionedAlgo::particle_step()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::particle_step");
 
-  if ((Comm().MyPID() == 0) and print_screen_evry() and (Step() % print_screen_evry() == 0))
+  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0))
     printf("-------------------- PARTICLE SOLVER ---------------------\n");
 
   // integrate time step
-  particlealgorithm_->IntegrateTimeStep();
+  particlealgorithm_->integrate_time_step();
 }
 
 void PaSI::PartitionedAlgo::post_evaluate_time_step()
@@ -168,9 +168,9 @@ void PaSI::PartitionedAlgo::extract_interface_states()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::extract_interface_states");
 
-  intfdispnp_ = interface_->extract_pasi_cond_vector(structurefield_->Dispnp());
-  intfvelnp_ = interface_->extract_pasi_cond_vector(structurefield_->Velnp());
-  intfaccnp_ = interface_->extract_pasi_cond_vector(structurefield_->Accnp());
+  intfdispnp_ = interface_->extract_pasi_cond_vector(structurefield_->dispnp());
+  intfvelnp_ = interface_->extract_pasi_cond_vector(structurefield_->velnp());
+  intfaccnp_ = interface_->extract_pasi_cond_vector(structurefield_->accnp());
 }
 
 void PaSI::PartitionedAlgo::set_interface_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,
@@ -184,31 +184,34 @@ void PaSI::PartitionedAlgo::set_interface_states(Teuchos::RCP<const Epetra_Vecto
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-      particlewallinterface->GetWallDataState();
+      particlewallinterface->get_wall_data_state();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (walldatastate->GetDispRow() == Teuchos::null or walldatastate->GetDispCol() == Teuchos::null)
+  if (walldatastate->get_disp_row() == Teuchos::null or
+      walldatastate->get_disp_col() == Teuchos::null)
     FOUR_C_THROW("wall displacements not initialized!");
-  if (walldatastate->GetVelCol() == Teuchos::null) FOUR_C_THROW("wall velocities not initialized!");
-  if (walldatastate->GetAccCol() == Teuchos::null)
+  if (walldatastate->get_vel_col() == Teuchos::null)
+    FOUR_C_THROW("wall velocities not initialized!");
+  if (walldatastate->get_acc_col() == Teuchos::null)
     FOUR_C_THROW("wall accelerations not initialized!");
 #endif
 
   // export displacement, velocity and acceleration states
-  Core::LinAlg::Export(*intfdispnp, *walldatastate->GetDispCol());
-  Core::LinAlg::Export(*intfvelnp, *walldatastate->GetVelCol());
-  Core::LinAlg::Export(*intfaccnp, *walldatastate->GetAccCol());
+  Core::LinAlg::Export(*intfdispnp, *walldatastate->get_disp_col());
+  Core::LinAlg::Export(*intfvelnp, *walldatastate->get_vel_col());
+  Core::LinAlg::Export(*intfaccnp, *walldatastate->get_acc_col());
 
   // export column to row displacements (no communication)
-  Core::LinAlg::Export(*walldatastate->GetDispCol(), *walldatastate->GetDispRow());
+  Core::LinAlg::Export(*walldatastate->get_disp_col(), *walldatastate->get_disp_row());
 
   // print norm of interface displacement to the screen
-  if (print_screen_evry() and (Step() % print_screen_evry() == 0))
+  if (print_screen_evry() and (step() % print_screen_evry() == 0))
   {
     double normintfdisp(0.0);
     intfdispnp->Norm2(&normintfdisp);
 
-    if (Comm().MyPID() == 0) printf("--> Norm of interface displacement: %10.5E\n", normintfdisp);
+    if (get_comm().MyPID() == 0)
+      printf("--> Norm of interface displacement: %10.5E\n", normintfdisp);
   }
 }
 
@@ -228,7 +231,7 @@ void PaSI::PartitionedAlgo::struct_output()
 void PaSI::PartitionedAlgo::particle_output()
 {
   // write output
-  particlealgorithm_->WriteOutput();
+  particlealgorithm_->write_output();
 
   // write restart information
   particlealgorithm_->write_restart();
@@ -237,13 +240,13 @@ void PaSI::PartitionedAlgo::particle_output()
 void PaSI::PartitionedAlgo::init_structure_field()
 {
   // get instance of global problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // get parameter list
   const Teuchos::ParameterList& params = problem->structural_dynamic_params();
 
   // access the structural discretization
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
 
   // build structure
   if (params.get<std::string>("INT_STRATEGY") == "Standard")
@@ -268,16 +271,16 @@ void PaSI::PartitionedAlgo::init_structure_field()
 void PaSI::PartitionedAlgo::init_particle_algorithm()
 {
   // get instance of global problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // get parameter list
-  const Teuchos::ParameterList& params = problem->ParticleParams();
+  const Teuchos::ParameterList& params = problem->particle_params();
 
   // reference to vector of initial particles
-  std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles = problem->Particles();
+  std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles = problem->particles();
 
   // create and init particle algorithm
-  particlealgorithm_ = Teuchos::rcp(new PARTICLEALGORITHM::ParticleAlgorithm(Comm(), params));
+  particlealgorithm_ = Teuchos::rcp(new PARTICLEALGORITHM::ParticleAlgorithm(get_comm(), params));
   particlealgorithm_->init(initialparticles);
 }
 

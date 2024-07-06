@@ -19,15 +19,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh8p8::ReadElement(
+bool Discret::ELEMENTS::SoSh8p8::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  SolidMaterial()->setup(NUMGPT_SOH8, linedef);
+  solid_material()->setup(NUMGPT_SOH8, linedef);
 
   // a temprorary variable for read-in
   std::string buffer;
@@ -48,10 +48,10 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
   kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(kintype_);
+  solid_material()->valid_kinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
-  if (SolidMaterial()->UsesExtendedUpdate())
+  if (solid_material()->uses_extended_update())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
 

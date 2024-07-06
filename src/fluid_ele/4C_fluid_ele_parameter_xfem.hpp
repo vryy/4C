@@ -30,7 +30,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static FluidEleParameterXFEM* Instance(
+      static FluidEleParameterXFEM* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// set all the XFEM specific parameters
@@ -57,11 +57,11 @@ namespace Discret
       //@{
 
       //! coupling approach (Nitsche or hybrid stress-based LM)
-      Inpar::XFEM::CouplingMethod GetCouplingMethod() const { return coupling_method_; }
+      Inpar::XFEM::CouplingMethod get_coupling_method() const { return coupling_method_; }
 
       //! get information, whether L2-projection between stress fields is accomplished on whole cut
       //! element or on physical volume
-      Inpar::XFEM::HybridLmL2Proj HybridLM_L2Proj() const { return hybrid_lm_l2_proj_; }
+      Inpar::XFEM::HybridLmL2Proj hybrid_lm_l2_proj() const { return hybrid_lm_l2_proj_; }
 
       //@}
 
@@ -80,14 +80,14 @@ namespace Discret
 
       //! get the element length definition used for viscous part of the penalty term in Nitsche's
       //! method
-      Inpar::XFEM::ViscStabHk ViscStabHK() const { return visc_stab_hk_; };
+      Inpar::XFEM::ViscStabHk visc_stab_hk() const { return visc_stab_hk_; };
 
       //! get the dimensionless user defined scaling for the penalty term in Nitsche's method and
       //! scaling factor for the MHVS method (then gamma = 1/n, see publications)
-      double NITStabScaling() const { return nit_stab_gamma_; };
+      double nit_stab_scaling() const { return nit_stab_gamma_; };
 
       //! get Nitsche's penalty scaling for tangential terms
-      double NITStabScalingTang() const { return nit_stab_gamma_tang_; };
+      double nit_stab_scaling_tang() const { return nit_stab_gamma_tang_; };
 
       //! get information, whether the formulation should be symmetric/skew-symmetric in the adjoint
       //! viscous terms
@@ -120,7 +120,7 @@ namespace Discret
 
       //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the
       //! third dimension and strong Dirichlet condition to fix u_z = 0
-      bool IsPseudo2D() const { return is_pseudo_2_d_; };
+      bool is_pseudo2_d() const { return is_pseudo_2_d_; };
 
       //@}
 
@@ -131,11 +131,14 @@ namespace Discret
       /*----------------------------------------------------*/
       //@{
       //! get the type of scaling for convective/inflow stabilization term for xfluid-fluid problems
-      Inpar::XFEM::XffConvStabScaling XffConvStabScaling() const { return xff_conv_stab_scaling_; }
+      Inpar::XFEM::XffConvStabScaling xff_conv_stab_scaling() const
+      {
+        return xff_conv_stab_scaling_;
+      }
 
       //! get the type of scaling for convective/inflow stabilization term for classical xfluid
       //! problem
-      Inpar::XFEM::ConvStabScaling ConvStabScaling() const { return conv_stab_scaling_; }
+      Inpar::XFEM::ConvStabScaling conv_stab_scaling() const { return conv_stab_scaling_; }
 
       //@}
 

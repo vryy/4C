@@ -38,18 +38,19 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
   std::vector<int> gid_beam_dof;
   std::vector<int> gid_solid_dof;
   std::vector<int> gid_node;
-  for (int i_lid = 0; i_lid < discret_ptr->NumMyRowNodes(); i_lid++)
+  for (int i_lid = 0; i_lid < discret_ptr->num_my_row_nodes(); i_lid++)
   {
     gid_node.clear();
-    Core::Nodes::Node* current_node = discret_ptr->lRowNode(i_lid);
-    discret_ptr->Dof(current_node, gid_node);
+    Core::Nodes::Node* current_node = discret_ptr->l_row_node(i_lid);
+    discret_ptr->dof(current_node, gid_node);
     if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
       for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     else
       for (unsigned int dim = 0; dim < 3; ++dim) gid_solid_dof.push_back(gid_node[dim]);
   }
-  Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0, discret_ptr->Comm());
-  Epetra_Map solid_dof_map(-1, gid_solid_dof.size(), gid_solid_dof.data(), 0, discret_ptr->Comm());
+  Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0, discret_ptr->get_comm());
+  Epetra_Map solid_dof_map(
+      -1, gid_solid_dof.size(), gid_solid_dof.data(), 0, discret_ptr->get_comm());
 
   // Extract the forces and add them to the discretization.
   Teuchos::RCP<Epetra_Vector> force_beam =
@@ -64,9 +65,9 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
   if (write_unique_ids)
   {
     auto& visualization_data = visualization->get_visualization_data();
-    std::vector<double>& unique_id = visualization_data.GetPointData<double>("uid_0_node_id");
-    for (int i_lid = 0; i_lid < discret_ptr->NumMyRowNodes(); i_lid++)
-      unique_id.push_back(discret_ptr->lRowNode(i_lid)->Id());
+    std::vector<double>& unique_id = visualization_data.get_point_data<double>("uid_0_node_id");
+    for (int i_lid = 0; i_lid < discret_ptr->num_my_row_nodes(); i_lid++)
+      unique_id.push_back(discret_ptr->l_row_node(i_lid)->id());
   }
 }
 
@@ -81,16 +82,17 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
 {
   // Get the visualization vectors.
   auto& visualization_data = output_writer_base_ptr->get_visualization_data();
-  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
-  std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
-  std::vector<double>& normal_averaged = visualization_data.GetPointData<double>("normal_averaged");
-  std::vector<double>& normal_element = visualization_data.GetPointData<double>("normal_element");
-  std::vector<double>& coupling_id = visualization_data.GetPointData<double>("coupling_id");
+  std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+  std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
+  std::vector<double>& normal_averaged =
+      visualization_data.get_point_data<double>("normal_averaged");
+  std::vector<double>& normal_element = visualization_data.get_point_data<double>("normal_element");
+  std::vector<double>& coupling_id = visualization_data.get_point_data<double>("coupling_id");
 
   std::vector<double>* face_id = nullptr;
   if (write_unique_ids)
   {
-    face_id = &(visualization_data.GetPointData<double>("uid_0_face_id"));
+    face_id = &(visualization_data.get_point_data<double>("uid_0_face_id"));
   }
 
   // Loop over face elements.
@@ -98,7 +100,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
   {
     // Only write the output for the faces that are part of a pair, since otherwise there are faces
     // which have empty position arrays since set_state was never called on them.
-    if (face_element_iterator.second->IsPartOfPair())
+    if (face_element_iterator.second->is_part_of_pair())
     {
       // Setup variables.
       Core::LinAlg::Matrix<3, 1, double> X, u, r, n, n_averaged;
@@ -107,11 +109,11 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       Core::LinAlg::Matrix<2, 1, double> xi(true);
       Core::LinAlg::SerialDenseMatrix nodal_coordinates =
           Core::FE::getEleNodeNumbering_nodes_paramspace(
-              face_element_iterator.second->GetDrtFaceElement()->Shape());
+              face_element_iterator.second->get_drt_face_element()->shape());
 
       // Loop over element nodes.
-      for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->num_node();
-           i_node++)
+      for (int i_node = 0;
+           i_node < face_element_iterator.second->get_drt_face_element()->num_node(); i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
           xi(i_dim) = nodal_coordinates(i_dim, i_node);
@@ -133,7 +135,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
         coupling_id.push_back(condition_coupling_id);
 
         if (write_unique_ids)
-          face_id->push_back(face_element_iterator.second->GetDrtFaceElement()->Id());
+          face_id->push_back(face_element_iterator.second->get_drt_face_element()->id());
       }
     }
   }
@@ -156,16 +158,16 @@ void BEAMINTERACTION::GetGlobalCouplingForceResultants(const Core::FE::Discretiz
   std::vector<int> gid_node;
 
   // Loop over the nodes and sum up the forces and moments.
-  for (int i_lid = 0; i_lid < discret.NumMyRowNodes(); i_lid++)
+  for (int i_lid = 0; i_lid < discret.num_my_row_nodes(); i_lid++)
   {
     gid_node.clear();
-    Core::Nodes::Node* current_node = discret.lRowNode(i_lid);
-    discret.Dof(current_node, gid_node);
+    Core::Nodes::Node* current_node = discret.l_row_node(i_lid);
+    discret.dof(current_node, gid_node);
 
     // Get the local force and displacement values.
     Core::FE::ExtractMyValues(force, local_force, gid_node);
     Core::FE::ExtractMyValues(displacement, local_position, gid_node);
-    for (unsigned int dim = 0; dim < 3; ++dim) local_position[dim] += current_node->X()[dim];
+    for (unsigned int dim = 0; dim < 3; ++dim) local_position[dim] += current_node->x()[dim];
 
     if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
     {

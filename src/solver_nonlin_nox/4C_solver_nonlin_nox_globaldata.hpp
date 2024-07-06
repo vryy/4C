@@ -96,10 +96,10 @@ namespace NOX
       virtual ~GlobalData() = default;
 
       //! return the nox_utils class
-      const ::NOX::Utils& get_NOX_utils() const;
+      const ::NOX::Utils& get_nox_utils() const;
 
       //! return the nox_utils class pointer
-      const Teuchos::RCP<::NOX::Utils>& get_NOX_utils_ptr() const;
+      const Teuchos::RCP<::NOX::Utils>& get_nox_utils_ptr() const;
 
       //! return the nln parameter list
       const Teuchos::ParameterList& get_nln_parameter_list() const;

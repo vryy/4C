@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::ConstraintMixtureHistoryType Mat::ConstraintMixtureHistoryType::instance_;
 
-Core::Communication::ParObject* Mat::ConstraintMixtureHistoryType::Create(
+Core::Communication::ParObject* Mat::ConstraintMixtureHistoryType::create(
     const std::vector<char>& data)
 {
   Mat::ConstraintMixtureHistory* cmhis = new Mat::ConstraintMixtureHistory();
@@ -32,7 +32,7 @@ void Mat::ConstraintMixtureHistory::pack(Core::Communication::PackBuffer& data) 
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // Pack internal variables
@@ -69,7 +69,7 @@ void Mat::ConstraintMixtureHistory::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // unpack internal variables
   double a;

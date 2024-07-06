@@ -25,13 +25,13 @@ namespace Discret
     class FluidTypeImmersed : public FluidTypeImmersedBase
     {
      public:
-      std::string Name() const override { return "FluidTypeImmersed"; }
+      std::string name() const override { return "FluidTypeImmersed"; }
 
-      static FluidTypeImmersed& Instance();
+      static FluidTypeImmersed& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -67,11 +67,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of fluid and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -79,15 +79,15 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return FluidTypeImmersed::Instance().UniqueParObjectId();
+        return FluidTypeImmersed::instance().unique_par_object_id();
       }
 
       /*!
       \brief Each element whose nodes are all covered by an immersed dis. are set IsImmersed
       */
-      void SetIsImmersed(int isimmersed) override { is_immersed_ = isimmersed; };
+      void set_is_immersed(int isimmersed) override { is_immersed_ = isimmersed; };
 
       /*!
       \brief Each element which has nodes covered by the immersed dis. but at least one node that is
@@ -132,12 +132,12 @@ namespace Discret
       /*!
       \brief returns true if element was set IsImmersed
       */
-      int IsImmersed() override { return is_immersed_; };
+      int is_immersed() override { return is_immersed_; };
 
       /*!
       \brief returns true if element was set IsBundaryImmersed
       */
-      int IsBoundaryImmersed() override { return is_immersed_bdry_; };
+      int is_boundary_immersed() override { return is_immersed_bdry_; };
 
       /*!
       \brief returns true if element needs to get projected Dirichlet values
@@ -180,7 +180,7 @@ namespace Discret
       /*!
       \brief construct rcp to vector for divergence projection handling
       */
-      void ConstructElementRCP(int size) override
+      void construct_element_rcp(int size) override
       {
         if (intpoint_has_projected_divergence_ == Teuchos::null)
           intpoint_has_projected_divergence_ = Teuchos::rcp(new std::vector<int>(size, 0));
@@ -196,7 +196,7 @@ namespace Discret
       /*!
       \brief Clean up the element rcp
       */
-      void DestroyElementRCP() override
+      void destroy_element_rcp() override
       {
         intpoint_has_projected_divergence_->clear();
         stored_projected_intpoint_divergence_->clear();
@@ -208,7 +208,7 @@ namespace Discret
           FOUR_C_THROW("stored_projected_intpoint_divergence_ not cleared properly");
       };
 
-      void VisNames(std::map<std::string, int>& names) override
+      void vis_names(std::map<std::string, int>& names) override
       {
         names["IsBoundaryImmersed"] = 1;
         names["IsImmersed"] = 1;
@@ -230,30 +230,30 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if it recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override
+      bool vis_data(const std::string& name, std::vector<double>& data) override
       {
         if (name == "Owner")
         {
           if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
-          data[0] = Owner();
+          data[0] = owner();
           return true;
         }
         if (name == "IsImmersed")
         {
           if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
-          data[0] = IsImmersed();
+          data[0] = is_immersed();
           return true;
         }
         if (name == "IsBoundaryImmersed")
         {
           if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
-          data[0] = IsBoundaryImmersed();
+          data[0] = is_boundary_immersed();
           return true;
         }
         if (name == "EleGId")
         {
           if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
-          data[0] = Id();
+          data[0] = id();
           return true;
         }
         return false;

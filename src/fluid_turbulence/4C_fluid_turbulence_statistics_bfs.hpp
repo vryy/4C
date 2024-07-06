@@ -84,14 +84,14 @@ namespace FLD
     global vectors. This method allows to do the time average of the
     nodal values after a certain amount of timesteps.
     */
-    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses);
+    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses);
 
     /*!
     \brief The values of velocity, pressure, temperature and its squared
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void DoLomaTimeSample(
+    void do_loma_time_sample(
         Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp, const double eosfac);
 
     /*!
@@ -99,7 +99,8 @@ namespace FLD
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void DoScatraTimeSample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp);
+    void do_scatra_time_sample(
+        Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp);
 
     /*!
     \brief Dump the result to file.
@@ -108,7 +109,7 @@ namespace FLD
     statistic to the file
     */
 
-    void DumpStatistics(int step);
+    void dump_statistics(int step);
 
     /*!
     \brief Dump the result to file for low-Mach-number flow.
@@ -117,7 +118,7 @@ namespace FLD
     statistic to the file
     */
 
-    void DumpLomaStatistics(int step);
+    void dump_loma_statistics(int step);
 
     /*!
     \brief Dump the result to file for turbulent flow with passive scalar.

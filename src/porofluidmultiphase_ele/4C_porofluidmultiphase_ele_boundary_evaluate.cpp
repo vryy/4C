@@ -39,7 +39,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate(Teuchos::ParameterL
 {
   // we assume here, that numdofpernode is equal for every node within
   // the element and does not change during the computations
-  const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
+  const int numdofpernode = num_dof_per_node(*(nodes()[0]));
 
   // copy pointers to matrices and vectors into std::vector
   std::vector<Core::LinAlg::SerialDenseMatrix*> elemat(2);
@@ -56,8 +56,8 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate(Teuchos::ParameterL
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
-      this, numdofpernode, discretization.Name())
+  return Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::provide_impl(
+      this, numdofpernode, discretization.name())
       ->evaluate(this, params, discretization, la, elemat, elevec);
 }
 
@@ -74,8 +74,8 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate_neumann(Teuchos::Pa
   params.set<Core::Conditions::Condition*>("condition", &condition);
 
   // build the location array
-  LocationArray la(discretization.NumDofSets());
-  Core::Elements::Element::LocationVector(discretization, la, false);
+  LocationArray la(discretization.num_dof_sets());
+  Core::Elements::Element::location_vector(discretization, la, false);
 
   // evaluate boundary element
   return evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);

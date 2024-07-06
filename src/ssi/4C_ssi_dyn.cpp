@@ -27,21 +27,21 @@ void ssi_drt()
 {
   // 1.- Initialization
   Teuchos::RCP<SSI::SSIBase> ssi = Teuchos::null;
-  Global::Problem* problem = Global::Problem::Instance();
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  Global::Problem* problem = Global::Problem::instance();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   {
     TEUCHOS_FUNC_TIME_MONITOR("SSI: setup");
 
     // 2.- Parameter reading
-    auto& ssiparams = const_cast<Teuchos::ParameterList&>(problem->SSIControlParams());
+    auto& ssiparams = const_cast<Teuchos::ParameterList&>(problem->ssi_control_params());
     // access scatra params list
     auto& scatradyn =
         const_cast<Teuchos::ParameterList&>(problem->scalar_transport_dynamic_params());
     // access structural dynamic params list which will be possibly modified while creating the time
     // integrator
     auto& sdyn = const_cast<Teuchos::ParameterList&>(
-        Global::Problem::Instance()->structural_dynamic_params());
+        Global::Problem::instance()->structural_dynamic_params());
 
     // introduce additional scatra field on manifold?
     const bool is_scatra_manifold =
@@ -94,9 +94,9 @@ void ssi_drt()
     }
 
     // 3.1.1 initial fill_complete
-    problem->GetDis("structure")->fill_complete(true, true, true);
-    problem->GetDis("scatra")->fill_complete(true, true, true);
-    if (is_scatra_manifold) problem->GetDis("scatra_manifold")->fill_complete(true, true, true);
+    problem->get_dis("structure")->fill_complete(true, true, true);
+    problem->get_dis("scatra")->fill_complete(true, true, true);
+    if (is_scatra_manifold) problem->get_dis("scatra_manifold")->fill_complete(true, true, true);
 
     // 3.1.2 init the chosen ssi algorithm
     // Construct time integrators of subproblems inside.
@@ -105,14 +105,14 @@ void ssi_drt()
     // now we can finally fill our discretizations
     // reinitialization of the structural elements is
     // vital for parallelization here!
-    problem->GetDis("structure")->fill_complete(true, true, true);
-    problem->GetDis("scatra")->fill_complete(true, false, true);
-    if (is_scatra_manifold) problem->GetDis("scatra_manifold")->fill_complete(true, false, true);
+    problem->get_dis("structure")->fill_complete(true, true, true);
+    problem->get_dis("scatra")->fill_complete(true, false, true);
+    if (is_scatra_manifold) problem->get_dis("scatra_manifold")->fill_complete(true, false, true);
 
-    Core::Rebalance::UTILS::print_parallel_distribution(*problem->GetDis("structure"));
-    Core::Rebalance::UTILS::print_parallel_distribution(*problem->GetDis("scatra"));
+    Core::Rebalance::UTILS::print_parallel_distribution(*problem->get_dis("structure"));
+    Core::Rebalance::UTILS::print_parallel_distribution(*problem->get_dis("scatra"));
     if (is_scatra_manifold)
-      Core::Rebalance::UTILS::print_parallel_distribution(*problem->GetDis("scatra_manifold"));
+      Core::Rebalance::UTILS::print_parallel_distribution(*problem->get_dis("scatra_manifold"));
 
     // 3.1.4 Setup the coupled problem
     // now as we redistributed our discretizations we can construct all
@@ -120,7 +120,7 @@ void ssi_drt()
     ssi->setup();
 
     // 3.2- Read restart if needed. (discretization called inside)
-    if (ssi->IsRestart()) ssi->read_restart(problem->restart());
+    if (ssi->is_restart()) ssi->read_restart(problem->restart());
 
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
     // read
@@ -130,22 +130,22 @@ void ssi_drt()
     {
       std::string filename = Teuchos::getNumericStringParameter(ssiparams, "SCATRA_FILENAME");
       auto inputscatra = Teuchos::rcp(new Core::IO::InputControl(filename, comm));
-      problem->SetInputControlFile(inputscatra);
+      problem->set_input_control_file(inputscatra);
     }
 
     // 4.- Run of the actual problem.
     // 4.1.- Some setup needed for the subproblems.
-    ssi->SetupSystem();
+    ssi->setup_system();
   }
 
   // 4.2.- Solve the whole problem
-  ssi->Timeloop();
+  ssi->timeloop();
 
   // 4.3.- Summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // 5. - perform the result test
-  ssi->TestResults(comm);
+  ssi->test_results(comm);
 }
 
 FOUR_C_NAMESPACE_CLOSE

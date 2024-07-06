@@ -32,7 +32,7 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
   if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow!");
 
   // get number of elements
-  numele_ = discret_->NumGlobalElements();
+  numele_ = discret_->num_global_elements();
   // and time-step size
   dt_ = params_.get<double>("time step size");
 
@@ -259,7 +259,7 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
   (*log_res) << "# and after that averaged over the whole box\n\n";
 
   // clear statistics
-  this->ClearStatistics();
+  this->clear_statistics();
 
   return;
 }  // TurbulenceStatisticsCha::TurbulenceStatisticsTgv
@@ -268,7 +268,7 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
 
 /*----------------------------------------------------------------------*
 ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
+void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
     std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs,
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam)
@@ -316,7 +316,7 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
   discret_->evaluate(
       eleparams_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  discret_->ClearState();
+  discret_->clear_state();
 
   // ------------------------------------------------
   // get results from element call via parameter list
@@ -537,65 +537,69 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
   // global sums
 
   // compute global sum, volume
-  discret_->Comm().SumAll(local_vol->data(), global_vol->data(), presize);
+  discret_->get_comm().SumAll(local_vol->data(), global_vol->data(), presize);
 
   // compute global sum, element sizes
-  discret_->Comm().SumAll(local_incrhk->data(), global_incrhk->data(), presize);
+  discret_->get_comm().SumAll(local_incrhk->data(), global_incrhk->data(), presize);
 
   // compute global sum, element sizes in viscous regime, Bazilevs parameter
-  discret_->Comm().SumAll(local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize);
+  discret_->get_comm().SumAll(local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize);
 
   // compute global sum, element sizes
-  discret_->Comm().SumAll(local_incrstrle->data(), global_incrstrle->data(), presize);
+  discret_->get_comm().SumAll(local_incrstrle->data(), global_incrstrle->data(), presize);
 
   // compute global sum, gradient based element sizes
-  discret_->Comm().SumAll(local_incrgradle->data(), global_incrgradle->data(), presize);
+  discret_->get_comm().SumAll(local_incrgradle->data(), global_incrgradle->data(), presize);
 
   // compute global sums, stabilisation parameters
-  discret_->Comm().SumAll(local_incrtauM->data(), global_incrtauM->data(), presize);
-  discret_->Comm().SumAll(local_incrtauC->data(), global_incrtauC->data(), presize);
+  discret_->get_comm().SumAll(local_incrtauM->data(), global_incrtauM->data(), presize);
+  discret_->get_comm().SumAll(local_incrtauC->data(), global_incrtauC->data(), presize);
 
   // compute global sum, mk
-  discret_->Comm().SumAll(local_incrmk->data(), global_incrmk->data(), presize);
+  discret_->get_comm().SumAll(local_incrmk->data(), global_incrmk->data(), presize);
 
   // compute global sums, momentum equation residuals
-  discret_->Comm().SumAll(local_incrres->data(), global_incrres->data(), velsize);
-  discret_->Comm().SumAll(local_incrres_sq->data(), global_incrres_sq->data(), velsize);
-  discret_->Comm().SumAll(local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
-  discret_->Comm().SumAll(local_incrabsres->data(), global_incrabsres->data(), presize);
+  discret_->get_comm().SumAll(local_incrres->data(), global_incrres->data(), velsize);
+  discret_->get_comm().SumAll(local_incrres_sq->data(), global_incrres_sq->data(), velsize);
+  discret_->get_comm().SumAll(local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
+  discret_->get_comm().SumAll(local_incrabsres->data(), global_incrabsres->data(), presize);
 
-  discret_->Comm().SumAll(local_incrsvelaf->data(), global_incrsvelaf->data(), velsize);
-  discret_->Comm().SumAll(local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize);
-  discret_->Comm().SumAll(local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize);
+  discret_->get_comm().SumAll(local_incrsvelaf->data(), global_incrsvelaf->data(), velsize);
+  discret_->get_comm().SumAll(local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize);
+  discret_->get_comm().SumAll(local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize);
 
   // compute global sums, incompressibility residuals
-  discret_->Comm().SumAll(local_incrresC->data(), global_incrresC->data(), presize);
-  discret_->Comm().SumAll(local_incrresC_sq->data(), global_incrresC_sq->data(), presize);
+  discret_->get_comm().SumAll(local_incrresC->data(), global_incrresC->data(), presize);
+  discret_->get_comm().SumAll(local_incrresC_sq->data(), global_incrresC_sq->data(), presize);
 
-  discret_->Comm().SumAll(local_incrspressnp->data(), global_incrspressnp->data(), presize);
-  discret_->Comm().SumAll(local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
+  discret_->get_comm().SumAll(local_incrspressnp->data(), global_incrspressnp->data(), presize);
+  discret_->get_comm().SumAll(
+      local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
 
   // compute global sums, dissipation rates
 
-  discret_->Comm().SumAll(local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize);
+  discret_->get_comm().SumAll(local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize);
+  discret_->get_comm().SumAll(local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
+  discret_->get_comm().SumAll(local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize);
+  discret_->get_comm().SumAll(
+      local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
+  discret_->get_comm().SumAll(
       local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize);
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize);
+  discret_->get_comm().SumAll(local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize);
+  discret_->get_comm().SumAll(local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize);
+  discret_->get_comm().SumAll(local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize);
+  discret_->get_comm().SumAll(
       local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(), presize);
-  discret_->Comm().SumAll(local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize);
+  discret_->get_comm().SumAll(
+      local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize);
 
   // compute global sums, subgrid stresses
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_incrcrossstress->data(), global_incrcrossstress->data(), stresssize);
-  discret_->Comm().SumAll(local_incrreystress->data(), global_incrreystress->data(), stresssize);
+  discret_->get_comm().SumAll(
+      local_incrreystress->data(), global_incrreystress->data(), stresssize);
 
 
   for (int rr = 0; rr < velsize; ++rr)
@@ -738,12 +742,12 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
 /*----------------------------------------------------------------------*
        Dump the result to file.
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsTgv::DumpStatistics(const int step)
+void FLD::TurbulenceStatisticsTgv::dump_statistics(const int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     Teuchos::RCP<std::ofstream> log_res;
 
@@ -942,7 +946,7 @@ void FLD::TurbulenceStatisticsTgv::DumpStatistics(const int step)
 /*----------------------------------------------------------------------*
                   Reset sums and number of samples to 0
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsTgv::ClearStatistics()
+void FLD::TurbulenceStatisticsTgv::clear_statistics()
 {
   // reset residuals and subscale averages
   for (unsigned rr = 0; rr < sumres_->size() / 3; ++rr)

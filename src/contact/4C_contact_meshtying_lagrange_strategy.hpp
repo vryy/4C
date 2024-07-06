@@ -119,7 +119,7 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
 
-    void EvalConstrRHS()
+    void eval_constr_rhs()
     {
       std::cout
           << "Warning: The evaluate_constr_rhs() function is not yet implemented for meshtying."
@@ -184,11 +184,11 @@ namespace CONTACT
     bool evaluate_force_stiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
 
     //! Return the desired right-hand-side block pointer (read-only) [derived]
-    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) const override;
 
     /*! \brief Modify system before linear solve

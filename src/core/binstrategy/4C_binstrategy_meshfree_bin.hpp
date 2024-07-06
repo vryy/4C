@@ -71,7 +71,7 @@ namespace Core::FE::MeshFree
      *
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    Core::Elements::Element* Clone() const override = 0;
+    Core::Elements::Element* clone() const override = 0;
 
     /*------------------------------------------------------------------------*/
     /*!
@@ -81,7 +81,7 @@ namespace Core::FE::MeshFree
      * top of parobject.H
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    int UniqueParObjectId() const override = 0;
+    int unique_par_object_id() const override = 0;
 
     /*========================================================================*/
     //! @name Query methods
@@ -97,10 +97,10 @@ namespace Core::FE::MeshFree
      * Adds entry at the end of nodeid_ and node_ pointers
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    virtual void AddNode(Core::Nodes::Node* nodeptr  //!< (in): pointer to node to be added
+    virtual void add_node(Core::Nodes::Node* nodeptr  //!< (in): pointer to node to be added
     )
     {
-      ELEMENT::nodeid_.push_back(nodeptr->Id());
+      ELEMENT::nodeid_.push_back(nodeptr->id());
       ELEMENT::node_.push_back(nodeptr);
       return;
     }
@@ -115,8 +115,8 @@ namespace Core::FE::MeshFree
      * Adds entry at the end of nodeid_ and node_ pointers
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    virtual void AddNode(const int gid,  //!< (in): global id of node to be added
-        Core::Nodes::Node* nodeptr       //!< (in): pointer to node to be added
+    virtual void add_node(const int gid,  //!< (in): global id of node to be added
+        Core::Nodes::Node* nodeptr        //!< (in): pointer to node to be added
     )
     {
       ELEMENT::nodeid_.push_back(gid);
@@ -131,7 +131,7 @@ namespace Core::FE::MeshFree
      * vectors node_ and nodeid_
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    virtual void DeleteNode(int gid  //!< (in): global id of node to be deleted
+    virtual void delete_node(int gid  //!< (in): global id of node to be deleted
     );
 
     /*------------------------------------------------------------------------*/
@@ -139,7 +139,7 @@ namespace Core::FE::MeshFree
      * \brief Delete all nodes from the meshfree bin
      *///                                                  (public) ghamm 11/12
     /*------------------------------------------------------------------------*/
-    virtual inline void DeleteNodes()
+    virtual inline void delete_nodes()
     {
       ELEMENT::nodeid_.clear();
       ELEMENT::node_.clear();

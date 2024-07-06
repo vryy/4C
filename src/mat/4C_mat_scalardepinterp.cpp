@@ -46,7 +46,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScalarDepInterp::create_material()
 Mat::ScalarDepInterpType Mat::ScalarDepInterpType::instance_;
 
 
-Core::Communication::ParObject* Mat::ScalarDepInterpType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScalarDepInterpType::create(const std::vector<char>& data)
 {
   Mat::ScalarDepInterp* ScalarDepInterp = new Mat::ScalarDepInterp();
   ScalarDepInterp->unpack(data);
@@ -94,8 +94,8 @@ void Mat::ScalarDepInterp::setup(int numgp, Input::LineDefinition* linedef)
   lambda_unit_mat_->setup(numgp, linedef);
 
   // Some safety check
-  const double density1 = lambda_zero_mat_->Density();
-  const double density2 = lambda_unit_mat_->Density();
+  const double density1 = lambda_zero_mat_->density();
+  const double density2 = lambda_unit_mat_->density();
   if (abs(density1 - density2) > 1e-14)
     FOUR_C_THROW(
         "The densities of the materials specified in IDMATZEROSC and IDMATUNITSC must be equal!");
@@ -103,7 +103,7 @@ void Mat::ScalarDepInterp::setup(int numgp, Input::LineDefinition* linedef)
 
   double lambda = 1.0;
   // Read lambda from input file, if available
-  if (linedef->has_named("lambda")) ReadLambda(linedef, "lambda", lambda);
+  if (linedef->has_named("lambda")) read_lambda(linedef, "lambda", lambda);
 
   lambda_ = std::vector<double>(numgp, lambda);
 
@@ -179,10 +179,10 @@ void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // evaluate strain energy functions
     double psi_lambda_zero = 0.0;
-    lambda_zero_mat_->StrainEnergy(*glstrain, psi_lambda_zero, gp, eleGID);
+    lambda_zero_mat_->strain_energy(*glstrain, psi_lambda_zero, gp, eleGID);
 
     double psi_lambda_unit = 0.0;
-    lambda_unit_mat_->StrainEnergy(*glstrain, psi_lambda_unit, gp, eleGID);
+    lambda_unit_mat_->strain_energy(*glstrain, psi_lambda_unit, gp, eleGID);
 
     // and add the stresses due to possible dependency of the ratio w.r.t. to C
     // ... - 2 * \Psi_0 * \frac{\partial}{\partial \mym C} \lambda(C) ) + * 2 * \Psi_1 *
@@ -200,11 +200,11 @@ void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   int numgp = 0;
@@ -238,23 +238,23 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = dynamic_cast<Mat::PAR::ScalarDepInterp*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   int numgp;
@@ -321,18 +321,18 @@ void Mat::ScalarDepInterp::reset_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::VisNames(std::map<std::string, int>& names)
+void Mat::ScalarDepInterp::vis_names(std::map<std::string, int>& names)
 {
   std::string fiber = "lambda";
   names[fiber] = 1;  // 1-dim vector
 
-  lambda_zero_mat_->VisNames(names);
-  lambda_unit_mat_->VisNames(names);
+  lambda_zero_mat_->vis_names(names);
+  lambda_unit_mat_->vis_names(names);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Mat::ScalarDepInterp::VisData(
+bool Mat::ScalarDepInterp::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "lambda")
@@ -348,12 +348,12 @@ bool Mat::ScalarDepInterp::VisData(
     data[0] = temp / ((double)numgp);
   }
 
-  bool tmp1 = lambda_zero_mat_->VisData(name, data, numgp, eleID);
-  bool tmp2 = lambda_unit_mat_->VisData(name, data, numgp, eleID);
+  bool tmp1 = lambda_zero_mat_->vis_data(name, data, numgp, eleID);
+  bool tmp2 = lambda_unit_mat_->vis_data(name, data, numgp, eleID);
   return (tmp1 and tmp2);
 }
 
-void Mat::ScalarDepInterp::ReadLambda(
+void Mat::ScalarDepInterp::read_lambda(
     Input::LineDefinition* linedef, std::string specifier, double& lambda)
 {
   linedef->extract_double(specifier, lambda);
@@ -361,15 +361,15 @@ void Mat::ScalarDepInterp::ReadLambda(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::StrainEnergy(
+void Mat::ScalarDepInterp::strain_energy(
     const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   // evaluate strain energy functions
   double psi_lambda_zero = 0.0;
-  lambda_zero_mat_->StrainEnergy(glstrain, psi_lambda_zero, gp, eleGID);
+  lambda_zero_mat_->strain_energy(glstrain, psi_lambda_zero, gp, eleGID);
 
   double psi_lambda_unit = 0.0;
-  lambda_unit_mat_->StrainEnergy(glstrain, psi_lambda_unit, gp, eleGID);
+  lambda_unit_mat_->strain_energy(glstrain, psi_lambda_unit, gp, eleGID);
 
   double lambda = 0.0;
   for (unsigned gp = 0; gp < lambda_.size(); gp++)

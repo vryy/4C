@@ -34,7 +34,7 @@ namespace ScaTra
     //! @name Preconditioning
     /*========================================================================*/
 
-    void SetupSplitter() override;
+    void setup_splitter() override;
 
     // -----------------------------------------------------------------
     // general methods
@@ -53,7 +53,7 @@ namespace ScaTra
     virtual void predict_therm_pressure() = 0;
 
     //! compute initial total mass in domain
-    void ComputeInitialMass();
+    void compute_initial_mass();
 
     //! compute thermodynamic pressure and time derivative
     virtual void compute_therm_pressure() = 0;
@@ -69,28 +69,28 @@ namespace ScaTra
     virtual void compute_therm_pressure_time_derivative() = 0;
 
     //! update thermodynamic pressure and time derivative
-    virtual void UpdateThermPressure() = 0;
+    virtual void update_therm_pressure() = 0;
 
     //! return thermo. press. at time step n
-    double ThermPressN() const { return thermpressn_; }
+    double therm_press_n() const { return thermpressn_; }
 
     //! return thermo. press. at time step n+1
-    double ThermPressNp() const { return thermpressnp_; }
+    double therm_press_np() const { return thermpressnp_; }
 
     //! return thermo. press. at time step n+alpha_F
-    virtual double ThermPressAf() = 0;
+    virtual double therm_press_af() = 0;
 
     //! return thermo. press. at time step n+alpha_M
-    virtual double ThermPressAm() = 0;
+    virtual double therm_press_am() = 0;
 
     //! return time der. of thermo. press. at time step n+1
-    double ThermPressDtNp() const { return thermpressdtnp_; }
+    double therm_press_dt_np() const { return thermpressdtnp_; }
 
     //! return time derivative of thermo. press. at time step n+alpha_F
-    virtual double ThermPressDtAf() = 0;
+    virtual double therm_press_dt_af() = 0;
 
     //! return time derivative of thermo. press. at time step n+alpha_M
-    virtual double ThermPressDtAm() = 0;
+    virtual double therm_press_dt_am() = 0;
 
    protected:
     /*!

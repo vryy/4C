@@ -68,8 +68,8 @@ void Adapter::CouplingNonLinMortar::setup(Teuchos::RCP<Core::FE::Discretization>
     Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
     const std::string& couplingcond)
 {
-  myrank_ = masterdis->Comm().MyPID();
-  comm_ = Teuchos::rcp(masterdis->Comm().Clone());
+  myrank_ = masterdis->get_comm().MyPID();
+  comm_ = Teuchos::rcp(masterdis->get_comm().Clone());
 
   // ParameterList
   Teuchos::ParameterList input;
@@ -166,7 +166,7 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
     std::vector<Core::Conditions::Condition*> conds;
     std::vector<Core::Conditions::Condition*> conds_master(0);
     std::vector<Core::Conditions::Condition*> conds_slave(0);
-    masterdis->GetCondition(couplingcond, conds);
+    masterdis->get_condition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
@@ -202,9 +202,9 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
   }
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& inputmortar = Global::Problem::Instance()->mortar_coupling_params();
-  const Teuchos::ParameterList& meshtying = Global::Problem::Instance()->contact_dynamic_params();
-  const Teuchos::ParameterList& wearlist = Global::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& inputmortar = Global::Problem::instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& meshtying = Global::Problem::instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& wearlist = Global::Problem::instance()->wear_params();
 
   input.setParameters(inputmortar);
   input.setParameters(meshtying);
@@ -215,10 +215,10 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
 
   // is this a nurbs problem?
   bool isnurbs = false;
-  Core::FE::ShapeFunctionType distype = Global::Problem::Instance()->spatial_approximation_type();
+  Core::FE::ShapeFunctionType distype = Global::Problem::instance()->spatial_approximation_type();
   if (distype == Core::FE::ShapeFunctionType::nurbs) isnurbs = true;
   input.set<bool>("NURBS", isnurbs);
-  input.set<int>("DIMENSION", Global::Problem::Instance()->NDim());
+  input.set<int>("DIMENSION", Global::Problem::instance()->n_dim());
 
   // check for invalid parameter values
   if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
@@ -249,10 +249,10 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
   const bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (Mortar::Interface)
-  const int dim = Global::Problem::Instance()->NDim();
+  const int dim = Global::Problem::instance()->n_dim();
 
   // create an empty mortar interface
-  interface = CONTACT::Interface::Create(0, *comm_, dim, input, false);
+  interface = CONTACT::Interface::create(0, *comm_, dim, input, false);
 
   //  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and
   //  slidingale==false) or
@@ -294,21 +294,21 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = masterdis->Dof(0, node)[k];
+        dofids[ii] = masterdis->dof(0, node)[k];
         ii += 1;
       }
     }
     Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(
-        new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, false, false, false));
+        new CONTACT::FriNode(node->id(), node->x(), node->owner(), dofids, false, false, false));
 
     if (isnurbs)
     {
       Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
-      cnode->NurbsW() = cp->W();
+      cnode->nurbs_w() = cp->w();
     }
 
-    interface->AddNode(cnode);
+    interface->add_node(cnode);
   }
 
   // feeding slave nodes to the interface including ghosted nodes
@@ -325,21 +325,21 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = slavedis->Dof(0, node)[k] + dofoffset;
+        dofids[ii] = slavedis->dof(0, node)[k] + dofoffset;
         ii += 1;
       }
     }
     Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(
-        new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), dofids, true, true, false));
+        new CONTACT::FriNode(node->id(), node->x(), node->owner(), dofids, true, true, false));
 
     if (isnurbs)
     {
       Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
-      cnode->NurbsW() = cp->W();
+      cnode->nurbs_w() = cp->w();
     }
 
-    interface->AddNode(cnode);
+    interface->add_node(cnode);
   }
 }
 
@@ -357,7 +357,7 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   const bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (Mortar::Interface)
-  const int dim = Global::Problem::Instance()->NDim();
+  const int dim = Global::Problem::instance()->n_dim();
 
   // ########## CHECK for a better implementation of this ###################
   // If this option is used, check functionality ... not sure if this is correct!
@@ -398,14 +398,14 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, isnurbs));
+        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, isnurbs));
 
     if (isnurbs)
     {
       Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
           Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
 
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -413,12 +413,12 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
           Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+          faceele->parent_master_element()->id(), faceele->face_master_number());
 
       // store nurbs specific data to node
-      cele->ZeroSized() = zero_size;
-      cele->Knots() = mortarknots;
-      cele->NormalFac() = normalfac;
+      cele->zero_sized() = zero_size;
+      cele->knots() = mortarknots;
+      cele->normal_fac() = normalfac;
     }
 
     interface->add_element(cele);
@@ -435,14 +435,14 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
     if (true)  //(slidingale==false)
     {
       Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-          ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true, isnurbs));
+          ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true, isnurbs));
 
       if (isnurbs)
       {
         Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
             Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
 
-        Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+        Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
         std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
         std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -450,12 +450,12 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
             Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
         double normalfac = 0.0;
         bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
-            normalfac, faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+            normalfac, faceele->parent_master_element()->id(), faceele->face_master_number());
 
         // store nurbs specific data to node
-        cele->ZeroSized() = zero_size;
-        cele->Knots() = mortarknots;
-        cele->NormalFac() = normalfac;
+        cele->zero_sized() = zero_size;
+        cele->knots() = mortarknots;
+        cele->normal_fac() = normalfac;
       }
 
       interface->add_element(cele);
@@ -465,11 +465,11 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
       std::vector<int> nidsoff;
       for (int i = 0; i < ele->num_node(); i++)
       {
-        nidsoff.push_back(ele->NodeIds()[ele->num_node() - 1 - i] + nodeoffset);
+        nidsoff.push_back(ele->node_ids()[ele->num_node() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + eleoffset,
-          ele->Owner(), ele->Shape(), ele->num_node(), nidsoff.data(), true));
+      Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->id() + eleoffset,
+          ele->owner(), ele->shape(), ele->num_node(), nidsoff.data(), true));
 
       interface->add_element(cele);
     }
@@ -515,7 +515,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
     Teuchos::RCP<Core::FE::Discretization> masterdis, Teuchos::RCP<CONTACT::Interface>& interface)
 {
   const Teuchos::ParameterList& input =
-      Global::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
+      Global::Problem::instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
   const Inpar::Mortar::ParallelRedist parallelRedist =
       Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(input, "PARALLEL_REDIST");
 
@@ -535,12 +535,12 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   }
 
   // create binary search tree
-  interface->CreateSearchTree();
+  interface->create_search_tree();
 
   // store old row maps (before parallel redistribution)
-  pslavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-  pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
-  pslavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
+  pslavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_dofs()));
+  pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->master_row_dofs()));
+  pslavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_nodes()));
   psmdofrowmap_ = Core::LinAlg::MergeMap(pslavedofrowmap_, pmasterdofrowmap_, false);
 
   // print parallel distribution
@@ -552,22 +552,22 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   if (parallelRedist != Inpar::Mortar::ParallelRedist::redist_none && comm_->NumProc() > 1)
   {
     // redistribute optimally among all procs
-    interface->Redistribute();
+    interface->redistribute();
 
     // call fill complete again
     interface->fill_complete(true);
 
     // re create binary search tree
-    interface->CreateSearchTree();
+    interface->create_search_tree();
 
     // print parallel distribution again
     interface->print_parallel_distribution();
   }
 
   // store row maps (after parallel redistribution)
-  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
-  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
+  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_dofs()));
+  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->master_row_dofs()));
+  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_nodes()));
   smdofrowmap_ = Core::LinAlg::MergeMap(slavedofrowmap_, masterdofrowmap_, false);
 
   // store interface
@@ -580,7 +580,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
 /*----------------------------------------------------------------------*
  | setup contact elements for spring dashpot condition     pfaller Apr15|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
+void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
     Teuchos::RCP<Core::FE::Discretization> masterdis,
     Teuchos::RCP<Core::FE::Discretization> slavedis,
     Teuchos::RCP<Core::Conditions::Condition> spring, const int coupling_id,
@@ -608,7 +608,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
 
   // Coupling condition is defined by "DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS"
   std::vector<Core::Conditions::Condition*> coup_conds;
-  slavedis->GetCondition("RobinSpringDashpotCoupling", coup_conds);
+  slavedis->get_condition("RobinSpringDashpotCoupling", coup_conds);
 
   // number of coupling conditions
   const int n_coup_conds = (int)coup_conds.size();
@@ -636,13 +636,13 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   // get mortar coupling parameters
   Teuchos::ParameterList input;
   // set default values
-  input.setParameters(Global::Problem::Instance()->mortar_coupling_params());
-  input.setParameters(Global::Problem::Instance()->contact_dynamic_params());
-  input.setParameters(Global::Problem::Instance()->WearParams());
+  input.setParameters(Global::Problem::instance()->mortar_coupling_params());
+  input.setParameters(Global::Problem::instance()->contact_dynamic_params());
+  input.setParameters(Global::Problem::instance()->wear_params());
   input.set<int>("PROBTYPE", Inpar::CONTACT::other);
 
   // is this a nurbs problem?
-  Core::FE::ShapeFunctionType distype = Global::Problem::Instance()->spatial_approximation_type();
+  Core::FE::ShapeFunctionType distype = Global::Problem::instance()->spatial_approximation_type();
   switch (distype)
   {
     case Core::FE::ShapeFunctionType::nurbs:
@@ -663,11 +663,11 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   input.set<bool>("Two_half_pass", false);
 
   // get problem dimension (2D or 3D) and create (Mortar::Interface)
-  const int dim = Global::Problem::Instance()->NDim();
+  const int dim = Global::Problem::instance()->n_dim();
 
   // generate contact interface
   Teuchos::RCP<CONTACT::Interface> interface =
-      CONTACT::Interface::Create(0, comm, dim, input, false);
+      CONTACT::Interface::create(0, comm, dim, input, false);
 
   // feeding nodes to the interface including ghosted nodes
   std::map<int, Core::Nodes::Node*>::const_iterator nodeiter;
@@ -676,7 +676,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
 
   // eleoffset is neccessary because slave and master elements are from different conditions
-  const int eleoffset = masterdis->ElementRowMap()->MaxAllGID() + 1;
+  const int eleoffset = masterdis->element_row_map()->MaxAllGID() + 1;
 
   // MASTER NODES
   // feeding master nodes to the interface including ghosted nodes
@@ -685,9 +685,9 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
     Core::Nodes::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), masterdis->Dof(node), false, false, false));
+        node->id(), node->x(), node->owner(), masterdis->dof(node), false, false, false));
 
-    interface->AddNode(mrtrnode);
+    interface->add_node(mrtrnode);
   }
 
   // SLAVE NODES
@@ -697,9 +697,9 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
     Core::Nodes::Node* node = nodeiter->second;
 
     Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::rcp(new CONTACT::FriNode(
-        node->Id(), node->X(), node->Owner(), slavedis->Dof(node), true, true, false));
+        node->id(), node->x(), node->owner(), slavedis->dof(node), true, true, false));
 
-    interface->AddNode(mrtrnode);
+    interface->add_node(mrtrnode);
   }
 
   // MASTER ELEMENTS
@@ -709,7 +709,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false));
+        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false));
 
     interface->add_element(mrtrele);
   }
@@ -721,7 +721,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id() + eleoffset, ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true));
+        ele->id() + eleoffset, ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true));
 
     interface->add_element(mrtrele);
   }
@@ -736,7 +736,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   {
     bool isFinalDistribution = false;
     const Teuchos::ParameterList& input =
-        Global::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
+        Global::Problem::instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
     if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(input, "PARALLEL_REDIST") ==
             Inpar::Mortar::ParallelRedist::redist_none or
         comm_->NumProc() == 1)
@@ -746,14 +746,14 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
   }
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_dofs()));
+  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->master_row_dofs()));
 
   // store interface
   interface_ = interface;
 
   // create binary search tree
-  interface_->CreateSearchTree();
+  interface_->create_search_tree();
 
   // interface displacement (=0) has to be merged from slave and master discretization
   Teuchos::RCP<Epetra_Map> dofrowmap =
@@ -776,13 +776,13 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
 /*----------------------------------------------------------------------*
  |  print interface                                         farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::PrintInterface(std::ostream& os) { interface_->print(os); }
+void Adapter::CouplingNonLinMortar::print_interface(std::ostream& os) { interface_->print(os); }
 
 
 /*----------------------------------------------------------------------*
  |  Integrate slave-side matrix + linearization (D matrix)   farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
+void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
@@ -800,31 +800,31 @@ void Adapter::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   interface_->set_element_areas();
 
   // loop over all slave col elements and direct integration
-  for (int j = 0; j < interface_->SlaveColElements()->NumMyElements(); ++j)
+  for (int j = 0; j < interface_->slave_col_elements()->NumMyElements(); ++j)
   {
-    int gid = interface_->SlaveColElements()->GID(j);
-    Core::Elements::Element* ele = interface_->Discret().gElement(gid);
+    int gid = interface_->slave_col_elements()->GID(j);
+    Core::Elements::Element* ele = interface_->discret().g_element(gid);
     if (!ele) FOUR_C_THROW("ERROR: Cannot find ele with gid %", gid);
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
     Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::rcp(
-        new CONTACT::Integrator(interface_->interface_params(), cele->Shape(), *comm_));
+        new CONTACT::Integrator(interface_->interface_params(), cele->shape(), *comm_));
 
-    integrator->IntegrateD(*cele, *comm_, true);
+    integrator->integrate_d(*cele, *comm_, true);
   }
 
   // assemble routine
-  interface_->AssembleD(*D_);
-  interface_->AssembleLinD(*DLin_, false);
+  interface_->assemble_d(*D_);
+  interface_->assemble_lin_d(*DLin_, false);
 
   // complete matrices
-  D_->Complete();
-  DLin_->Complete();
+  D_->complete();
+  DLin_->complete();
 
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      Global::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
+      Global::Problem::instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(input, "PARALLEL_REDIST") !=
       Inpar::Mortar::ParallelRedist::redist_none)
     parredist = true;
@@ -847,7 +847,7 @@ void Adapter::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
 /*----------------------------------------------------------------------*
  |  Integrate mortar matrices + linearization (D/M matrix)   farah 01/16|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
+void Adapter::CouplingNonLinMortar::integrate_lin_dm(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
@@ -868,14 +868,14 @@ void Adapter::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   interface_->evaluate();
 
   // assemble mortar matrices and lin.
-  interface_->AssembleDM(*D_, *M_);
-  interface_->AssembleLinDM(*DLin_, *MLin_);
+  interface_->assemble_dm(*D_, *M_);
+  interface_->assemble_lin_dm(*DLin_, *MLin_);
 
   // complete
-  D_->Complete();
-  M_->Complete(*masterdofrowmap_, *slavedofrowmap_);
-  DLin_->Complete(*smdofrowmap_, *slavedofrowmap_);
-  MLin_->Complete(*smdofrowmap_, *masterdofrowmap_);
+  D_->complete();
+  M_->complete(*masterdofrowmap_, *slavedofrowmap_);
+  DLin_->complete(*smdofrowmap_, *slavedofrowmap_);
+  MLin_->complete(*smdofrowmap_, *masterdofrowmap_);
 
   // Dinv * M
   create_p();
@@ -902,7 +902,7 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      Global::Problem::Instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
+      Global::Problem::instance()->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(input, "PARALLEL_REDIST") !=
       Inpar::Mortar::ParallelRedist::redist_none)
     parredist = true;
@@ -946,7 +946,7 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
  |  Integrate mortar matrices + linearization (D/M matrix) + gap vector |
  |  + compute projection operator P                         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
+void Adapter::CouplingNonLinMortar::integrate_all(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
@@ -967,15 +967,15 @@ void Adapter::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   interface_->evaluate();
 
   // assemble mortar matrices and lin.
-  interface_->AssembleDM(*D_, *M_);
-  interface_->AssembleLinDM(*DLin_, *MLin_);
-  interface_->AssembleG(*gap_);
+  interface_->assemble_dm(*D_, *M_);
+  interface_->assemble_lin_dm(*DLin_, *MLin_);
+  interface_->assemble_g(*gap_);
 
   // complete
-  D_->Complete();
-  M_->Complete(*masterdofrowmap_, *slavedofrowmap_);
-  DLin_->Complete(*smdofrowmap_, *slavedofrowmap_);
-  MLin_->Complete(*smdofrowmap_, *masterdofrowmap_);
+  D_->complete();
+  M_->complete(*masterdofrowmap_, *slavedofrowmap_);
+  DLin_->complete(*smdofrowmap_, *slavedofrowmap_);
+  MLin_->complete(*smdofrowmap_, *masterdofrowmap_);
 
   // Dinv * M
   create_p();
@@ -990,7 +990,7 @@ void Adapter::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
  |  Evaluate all mortar matrices and vectors necessary for mesh sliding |
  |                                                          wirtz 02/16 |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::EvaluateSliding(const std::string& statename,
+void Adapter::CouplingNonLinMortar::evaluate_sliding(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
 {
   // safety check
@@ -1007,27 +1007,27 @@ void Adapter::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   interface_->initialize();
   interface_->set_element_areas();
 
-  interface_->BuildActiveSet(true);
+  interface_->build_active_set(true);
 
   // call interface evaluate (d,m,gap...)
   interface_->evaluate();
 
   // assemble mortar matrices and lin.
-  interface_->AssembleDM(*D_, *M_);
-  interface_->AssembleLinDM(*DLin_, *MLin_);
-  interface_->AssembleTNderiv(H_, Teuchos::null);
-  interface_->AssembleTN(T_, Teuchos::null);
-  interface_->AssembleS(*N_);
-  interface_->AssembleG(*gap_);
+  interface_->assemble_dm(*D_, *M_);
+  interface_->assemble_lin_dm(*DLin_, *MLin_);
+  interface_->assemble_t_nderiv(H_, Teuchos::null);
+  interface_->assemble_tn(T_, Teuchos::null);
+  interface_->assemble_s(*N_);
+  interface_->assemble_g(*gap_);
 
   // complete
-  D_->Complete();
-  M_->Complete(*masterdofrowmap_, *slavedofrowmap_);
-  DLin_->Complete(*smdofrowmap_, *slavedofrowmap_);
-  MLin_->Complete(*smdofrowmap_, *masterdofrowmap_);
-  H_->Complete();
-  T_->Complete();
-  N_->Complete(*smdofrowmap_, *slavedofrowmap_);
+  D_->complete();
+  M_->complete(*masterdofrowmap_, *slavedofrowmap_);
+  DLin_->complete(*smdofrowmap_, *slavedofrowmap_);
+  MLin_->complete(*smdofrowmap_, *masterdofrowmap_);
+  H_->complete();
+  T_->complete();
+  N_->complete(*smdofrowmap_, *slavedofrowmap_);
 
   // Dinv * M
   create_p();
@@ -1048,19 +1048,19 @@ void Adapter::CouplingNonLinMortar::create_p()
 
   // check
   if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(
-          Interface()->interface_params(), "LM_SHAPEFCN") != Inpar::Mortar::shape_dual)
+          interface()->interface_params(), "LM_SHAPEFCN") != Inpar::Mortar::shape_dual)
     FOUR_C_THROW("ERROR: Creation of P operator only for dual shape functions!");
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
-  D_->Complete();
+  D_->complete();
   Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
   Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*slavedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
-  Dinv_->ExtractDiagonalCopy(*diag);
+  Dinv_->extract_diagonal_copy(*diag);
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->MyLength(); ++i)
@@ -1082,13 +1082,13 @@ void Adapter::CouplingNonLinMortar::create_p()
   if (err > 0) FOUR_C_THROW("ERROR: replace_diagonal_values failed!");
 
   // complete inverse D matrix
-  Dinv_->Complete();
+  Dinv_->complete();
 
   // do the multiplication P = inv(D) * M
   P_ = Core::LinAlg::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
-  P_->Complete(*masterdofrowmap_, *slavedofrowmap_);
+  P_->complete(*masterdofrowmap_, *slavedofrowmap_);
 
   // bye
   return;

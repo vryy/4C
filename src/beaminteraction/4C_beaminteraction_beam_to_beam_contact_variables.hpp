@@ -61,22 +61,22 @@ namespace BEAMINTERACTION
     \brief Set closest point
     */
 
-    void SetCP(std::pair<TYPE, TYPE> cp) { closestpoint_ = cp; };
+    void set_cp(std::pair<TYPE, TYPE> cp) { closestpoint_ = cp; };
 
     /*!
     \brief Get closest point
     */
-    std::pair<TYPE, TYPE> GetCP() const { return closestpoint_; };
+    std::pair<TYPE, TYPE> get_cp() const { return closestpoint_; };
 
     /*!
     \brief Get Segment Ids
     */
-    std::pair<int, int> GetSegIds() const { return segids_; };
+    std::pair<int, int> get_seg_ids() const { return segids_; };
 
     /*!
     \brief Get Integration Ids
     */
-    std::pair<int, int> GetIntIds() const { return intids_; };
+    std::pair<int, int> get_int_ids() const { return intids_; };
 
     /*!
     \brief Get jacobi factor
@@ -86,72 +86,72 @@ namespace BEAMINTERACTION
     /*!
     \brief Set gap
     */
-    void SetGap(TYPE gap) { gap_ = gap; };
+    void set_gap(TYPE gap) { gap_ = gap; };
 
     /*!
     \brief Get gap
     */
-    TYPE GetGap() const { return gap_; };
+    TYPE get_gap() const { return gap_; };
 
     /*!
     \brief Set gap
     */
-    void SetNormal(Core::LinAlg::Matrix<3, 1, TYPE> normal) { normal_ = normal; };
+    void set_normal(Core::LinAlg::Matrix<3, 1, TYPE> normal) { normal_ = normal; };
 
     /*!
     \brief Get gap
     */
-    Core::LinAlg::Matrix<3, 1, TYPE> GetNormal() const { return normal_; };
+    Core::LinAlg::Matrix<3, 1, TYPE> get_normal() const { return normal_; };
 
     /*!
     \brief Get penalty parameter
     */
-    double GetPP() const { return pp_; };
+    double get_pp() const { return pp_; };
 
     /*!
     \brief Set penalty force
     */
-    void Setfp(TYPE fp) { fp_ = fp; };
+    void setfp(TYPE fp) { fp_ = fp; };
 
     /*!
     \brief Get penalty force
     */
-    TYPE Getfp() const { return fp_; };
+    TYPE getfp() const { return fp_; };
 
     /*!
     \brief Set derivative of penalty force
     */
-    void Setdfp(TYPE dfp) { dfp_ = dfp; };
+    void setdfp(TYPE dfp) { dfp_ = dfp; };
 
     /*!
     \brief Get pre-factor for penalty parameter
     */
-    TYPE GetPPfac() const { return ppfac_; };
+    TYPE get_p_pfac() const { return ppfac_; };
 
     /*!
     \brief Set pre-factor for penalty parameter
     */
-    void SetPPfac(TYPE ppfac) { ppfac_ = ppfac; };
+    void set_p_pfac(TYPE ppfac) { ppfac_ = ppfac; };
 
     /*!
     \brief Get linearization of pre-factor for penalty parameter
     */
-    TYPE GetDPPfac() const { return dppfac_; };
+    TYPE get_dp_pfac() const { return dppfac_; };
 
     /*!
     \brief Set linearization of pre-factor for penalty parameter
     */
-    void SetDPPfac(TYPE dppfac) { dppfac_ = dppfac; };
+    void set_dp_pfac(TYPE dppfac) { dppfac_ = dppfac; };
 
     /*!
     \brief Get derivative of penalty force
     */
-    TYPE Getdfp() const { return dfp_; };
+    TYPE getdfp() const { return dfp_; };
 
     /*!
     \brief Set penalty energy
     */
-    void SetEnergy(TYPE e) { energy_ = e; };
+    void set_energy(TYPE e) { energy_ = e; };
 
     /*!
     \brief Get penalty energy
@@ -161,12 +161,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Set length integrated penalty energy
     */
-    void SetIntegratedEnergy(double inte) { integratedenergy_ = inte; };
+    void set_integrated_energy(double inte) { integratedenergy_ = inte; };
 
     /*!
     \brief Get length integrated penalty energy
     */
-    double GetIntegratedEnergy() const { return integratedenergy_; };
+    double get_integrated_energy() const { return integratedenergy_; };
 
     /*!
     \brief Set contact angle

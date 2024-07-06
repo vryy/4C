@@ -44,9 +44,9 @@ namespace Core::LinearSolver
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector = Teuchos::null) override;
 
     //! Actual call to the underlying amesos solver
-    int Solve() override;
+    int solve() override;
 
-    bool IsFactored() { return factored_; }
+    bool is_factored() { return factored_; }
 
    private:
     //! type/implementation of Amesos solver to be used

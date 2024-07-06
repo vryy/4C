@@ -41,7 +41,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Sutherland::create_material()
 Mat::SutherlandType Mat::SutherlandType::instance_;
 
 
-Core::Communication::ParObject* Mat::SutherlandType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SutherlandType::create(const std::vector<char>& data)
 {
   Mat::Sutherland* sutherland = new Mat::Sutherland();
   sutherland->unpack(data);
@@ -66,11 +66,11 @@ void Mat::Sutherland::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -81,23 +81,23 @@ void Mat::Sutherland::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::Sutherland*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -107,37 +107,38 @@ void Mat::Sutherland::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Sutherland::ComputeViscosity(const double temp) const
+double Mat::Sutherland::compute_viscosity(const double temp) const
 {
   // previous implementation using "pow"-function appears to be extremely
   // time-consuming sometimes, at least on the computing cluster
   // const double visc =
   // std::pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
-  const double visc = sqrt((temp / RefTemp()) * (temp / RefTemp()) * (temp / RefTemp())) *
-                      ((RefTemp() + SuthTemp()) / (temp + SuthTemp())) * RefVisc();
+  const double visc = sqrt((temp / ref_temp()) * (temp / ref_temp()) * (temp / ref_temp())) *
+                      ((ref_temp() + suth_temp()) / (temp + suth_temp())) * ref_visc();
 
   return visc;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Sutherland::ComputeDiffusivity(const double temp) const
+double Mat::Sutherland::compute_diffusivity(const double temp) const
 {
   // previous implementation using "pow"-function appears to be extremely
   // time-consuming sometimes, at least on the computing cluster
   // const double diffus =
   // std::pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
-  const double diffus = sqrt((temp / RefTemp()) * (temp / RefTemp()) * (temp / RefTemp())) *
-                        ((RefTemp() + SuthTemp()) / (temp + SuthTemp())) * RefVisc() / PraNum();
+  const double diffus = sqrt((temp / ref_temp()) * (temp / ref_temp()) * (temp / ref_temp())) *
+                        ((ref_temp() + suth_temp()) / (temp + suth_temp())) * ref_visc() /
+                        pra_num();
 
   return diffus;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Mat::Sutherland::ComputeDensity(const double temp, const double thermpress) const
+double Mat::Sutherland::compute_density(const double temp, const double thermpress) const
 {
-  const double density = thermpress / (GasConst() * temp);
+  const double density = thermpress / (gas_const() * temp);
 
   return density;
 }

@@ -48,7 +48,7 @@ namespace Mortar
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype> + 1;
 
-      Core::Nodes::Node** mynodes = ele.Points();
+      Core::Nodes::Node** mynodes = ele.points();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       std::fill(globcoord, globcoord + ndim, 0.0);
@@ -310,7 +310,7 @@ namespace Mortar
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype> + 1;
 
-      Core::Nodes::Node** mynodes = ele.Nodes();
+      Core::Nodes::Node** mynodes = ele.nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
@@ -329,7 +329,7 @@ namespace Mortar
       {
         for (int j = 0; j < ndim; ++j)
         {
-          coord(j, i) = mynodes[i]->X()[j];
+          coord(j, i) = mynodes[i]->x()[j];
 
           // use shape function values for interpolation
           globcoord[j] += val(i) * coord(j, i);
@@ -367,7 +367,7 @@ namespace Mortar
         FOUR_C_THROW("ERROR: vector of element displacements has wrong dimension (%d != %d)",
             n * globdim, edisp.size());
 
-      Core::Nodes::Node** mynodes = ele.Nodes();
+      Core::Nodes::Node** mynodes = ele.nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < globdim; ++i) globcoord[i] = 0.0;
@@ -389,7 +389,7 @@ namespace Mortar
       {
         for (int j = 0; j < globdim; ++j)
         {
-          coord(j, i) = mynodes[i]->X()[j] + edisp[i * globdim + j];
+          coord(j, i) = mynodes[i]->x()[j] + edisp[i * globdim + j];
 
           // use shape function values for interpolation
           globcoord[j] += val(i) * coord(j, i);
@@ -416,7 +416,7 @@ namespace Mortar
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
-        for (int j = 0; j < ndim; ++j) xref(j, k) = ele.Nodes()[k]->X()[j];
+        for (int j = 0; j < ndim; ++j) xref(j, k) = ele.nodes()[k]->x()[j];
 
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
@@ -547,7 +547,7 @@ namespace Mortar
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
-        for (int j = 0; j < ndim; ++j) xref(j, k) = ele.Nodes()[k]->X()[j];
+        for (int j = 0; j < ndim; ++j) xref(j, k) = ele.nodes()[k]->x()[j];
 
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
@@ -674,7 +674,7 @@ namespace Mortar
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
         for (int j = 0; j < ndim; ++j)
-          xref(j, k) = (ele.Nodes()[k]->X()[j]) + targetdisp[k * ndim + j];
+          xref(j, k) = (ele.nodes()[k]->x()[j]) + targetdisp[k * ndim + j];
 
       // first estimation for parameter space coordinates
       for (int p = 0; p < 3; ++p) xi[p] = 0.0;

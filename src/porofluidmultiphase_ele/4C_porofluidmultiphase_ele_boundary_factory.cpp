@@ -22,10 +22,10 @@ FOUR_C_NAMESPACE_OPEN
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
 Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
+Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::provide_impl(
     const Core::Elements::Element* ele, const int numdofpernode, const std::string& disname)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -58,7 +58,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
     default:
     {
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->shape(), ele->num_node());
       break;
     }
   }
@@ -75,7 +75,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
 Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::define_problem_type(
     const int numdofpernode, const std::string& disname)
 {
-  return Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Instance(
+  return Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
       numdofpernode, disname);
 }
 

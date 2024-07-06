@@ -15,14 +15,14 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Nurbs::Ale2NurbsType Discret::ELEMENTS::Nurbs::Ale2NurbsType::instance_;
 
-Discret::ELEMENTS::Nurbs::Ale2NurbsType& Discret::ELEMENTS::Nurbs::Ale2NurbsType::Instance()
+Discret::ELEMENTS::Nurbs::Ale2NurbsType& Discret::ELEMENTS::Nurbs::Ale2NurbsType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale2NurbsType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale2NurbsType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Nurbs::Ale2Nurbs* object = new Discret::ELEMENTS::Nurbs::Ale2Nurbs(-1, -1);
@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale2NurbsType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE2")
@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::C
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::Nurbs::Ale2Nurbs(id, owner));
@@ -80,7 +80,7 @@ void Discret::ELEMENTS::Nurbs::Ale2Nurbs::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Nurbs::Ale2Nurbs::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Nurbs::Ale2Nurbs::shape() const
 {
   switch (num_node())
   {

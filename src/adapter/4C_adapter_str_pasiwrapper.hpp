@@ -57,10 +57,10 @@ namespace Adapter
     }
 
     //! communication object at the interface
-    virtual Teuchos::RCP<const Solid::MapExtractor> Interface() const { return interface_; }
+    virtual Teuchos::RCP<const Solid::MapExtractor> interface() const { return interface_; }
 
     //! apply interface force to structure interface
-    void ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce);
+    void apply_interface_force(Teuchos::RCP<const Epetra_Vector> intfforce);
 
    protected:
     //! The structural model evaluator object.

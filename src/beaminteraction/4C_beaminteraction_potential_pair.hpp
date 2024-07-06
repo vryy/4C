@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
     virtual void setup();
 
     //! return appropriate derived (templated) class (acts as a simple factory)
-    static Teuchos::RCP<BeamPotentialPair> Create(
+    static Teuchos::RCP<BeamPotentialPair> create(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
         BEAMINTERACTION::BeamPotentialParams const& beam_potential_params);
 
@@ -90,14 +90,14 @@ namespace BEAMINTERACTION
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
     elements
     */
-    virtual void ResetState(double time, std::vector<double> const& centerline_dofvec_ele1,
+    virtual void reset_state(double time, std::vector<double> const& centerline_dofvec_ele1,
         std::vector<double> const& centerline_dofvec_ele2) = 0;
 
     //@}
 
     //! @name Access methods
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> Params() const
+    inline Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params() const
     {
       return beam_potential_params_;
     }
@@ -105,12 +105,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Get first element
     */
-    inline Core::Elements::Element const* Element1() const { return element1_; };
+    inline Core::Elements::Element const* element1() const { return element1_; };
 
     /*!
     \brief Get second element
     */
-    inline Core::Elements::Element const* Element2() const { return element2_; };
+    inline Core::Elements::Element const* element2() const { return element2_; };
 
     /*!
     \brief Get coordinates of all interacting points on element1 and element2

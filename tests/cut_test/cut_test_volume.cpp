@@ -19,13 +19,13 @@
 void test_cut_volumes()
 {
   Core::Geo::Cut::Options options;
-  options.Init_for_Cuttests();
+  options.init_for_cuttests();
   // this is meant to be used with matching boundaries. Thus, no
   // inside/outside positions.
-  options.SetFindPositions(false);
+  options.set_find_positions(false);
 
   Core::Geo::Cut::Mesh mesh1(options);
-  Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.Points());
+  Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.points());
 
   create_hex8_mesh(mesh1, 4, 4, 4);
   create_hex8_mesh(mesh2, 3, 5, 2);
@@ -34,7 +34,7 @@ void test_cut_volumes()
 
   Core::Geo::Cut::plain_element_set elements_done;
 
-  mesh2.Cut(mesh1, elements_done);
+  mesh2.cut(mesh1, elements_done);
 
   cutmesh(mesh1);
 
@@ -50,13 +50,13 @@ void test_cut_volumes2()
       for (int k = 2; k < 5; ++k)
       {
         Core::Geo::Cut::Options options;
-        options.Init_for_Cuttests();
+        options.init_for_cuttests();
         // this is meant to be used with matching boundaries. Thus, no
         // inside/outside positions.
-        options.SetFindPositions(false);
+        options.set_find_positions(false);
 
         Core::Geo::Cut::Mesh mesh1(options);
-        Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.Points());
+        Core::Geo::Cut::Mesh mesh2(options, 1, mesh1.points());
 
         create_hex8_mesh(mesh1, 1, 1, 1);
         create_hex8_mesh(mesh2, i, j, k);
@@ -65,7 +65,7 @@ void test_cut_volumes2()
 
         Core::Geo::Cut::plain_element_set elements_done;
 
-        mesh2.Cut(mesh1, elements_done);
+        mesh2.cut(mesh1, elements_done);
 
         cutmesh(mesh1);
 
@@ -113,7 +113,7 @@ void test_cut_volumes3()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  w.CreateHex8(xyze);
+  w.create_hex8(xyze);
 
   xyze(0, 0) = 0;
   xyze(1, 0) = -1;
@@ -135,7 +135,7 @@ void test_cut_volumes3()
   xyze(1, 4) = 0;
   xyze(2, 4) = 0;
 
-  w.CreatePyramid5Sides(xyze);
+  w.create_pyramid5_sides(xyze);
 
-  w.CutTest_Cut();
+  w.cut_test_cut();
 }

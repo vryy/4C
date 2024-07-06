@@ -36,16 +36,16 @@ namespace ParticleInteraction
     struct Helper
     {
       static_assert(n >= 0, "The exponent must be positive!");
-      static constexpr T Pow(const T x)
+      static constexpr T pow(const T x)
       {
-        return ((n % 2) == 0 ? 1 : x) * Helper<T, (n / 2)>::Pow(x * x);
+        return ((n % 2) == 0 ? 1 : x) * Helper<T, (n / 2)>::pow(x * x);
       }
     };
 
     template <class T>
     struct Helper<T, 0>
     {
-      static constexpr T Pow(const T x) { return 1; }
+      static constexpr T pow(const T x) { return 1; }
     };
 
     /**
@@ -56,7 +56,7 @@ namespace ParticleInteraction
     template <int n, class T>
     T constexpr Pow(T const x)
     {
-      return Helper<T, n>::Pow(x);
+      return Helper<T, n>::pow(x);
     }
 
     //! @name collection of three dimensional vector operations

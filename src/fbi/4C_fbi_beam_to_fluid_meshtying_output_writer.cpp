@@ -76,9 +76,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("velocity", 3);
-      visualization_data.RegisterPointData<double>("displacement", 3);
-      visualization_data.RegisterPointData<double>("force", 3);
+      visualization_data.register_point_data<double>("velocity", 3);
+      visualization_data.register_point_data<double>("displacement", 3);
+      visualization_data.register_point_data<double>("force", 3);
     }
 
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
@@ -96,7 +96,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer("integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
-      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.register_point_data<double>("displacement", 3);
     }
   }
 
@@ -138,27 +138,28 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
   {
     // Add the reference geometry and displacement to the visualization.
     visualization->add_discretization_nodal_reference_position(
-        couplingenforcer->GetStructure()->get_discretization());
+        couplingenforcer->get_structure()->get_discretization());
     visualization->add_discretization_nodal_data(
-        "velocity", couplingenforcer->GetStructure()->Velnp());
+        "velocity", couplingenforcer->get_structure()->velnp());
     visualization->add_discretization_nodal_data(
-        "displacement", couplingenforcer->GetStructure()->Dispnp());
+        "displacement", couplingenforcer->get_structure()->dispnp());
 
     // Create maps with the GIDs of beam nodes
     std::vector<int> gid_beam_dof;
     std::vector<int> gid_node;
     for (int i_lid = 0;
-         i_lid < couplingenforcer->GetStructure()->get_discretization()->NumMyRowNodes(); i_lid++)
+         i_lid < couplingenforcer->get_structure()->get_discretization()->num_my_row_nodes();
+         i_lid++)
     {
       gid_node.clear();
       Core::Nodes::Node* current_node =
-          couplingenforcer->GetStructure()->get_discretization()->lRowNode(i_lid);
-      couplingenforcer->GetStructure()->get_discretization()->Dof(current_node, gid_node);
+          couplingenforcer->get_structure()->get_discretization()->l_row_node(i_lid);
+      couplingenforcer->get_structure()->get_discretization()->dof(current_node, gid_node);
       if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
         for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     }
     Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0,
-        couplingenforcer->GetStructure()->get_discretization()->Comm());
+        couplingenforcer->get_structure()->get_discretization()->get_comm());
 
     // Extract the forces and add them to the discretization.
     Teuchos::RCP<Epetra_Vector> force_beam =
@@ -170,12 +171,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
   }
 
   // Add the pair specific visualization by looping over the individual contact pairs.
-  for (const auto& pair : *couplingenforcer->GetBridge()->GetPairs())
+  for (const auto& pair : *couplingenforcer->get_bridge()->get_pairs())
     pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
 
 
   // Write the data to disc. The data will be cleared in this method.
-  output_writer_base_ptr_->Write(i_step, time);
+  output_writer_base_ptr_->write(i_step, time);
 }
 
 

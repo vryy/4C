@@ -43,11 +43,11 @@ FOUR_C_NAMESPACE_OPEN
 void dyn_fluid_drt(const int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
 
   // access to some parameter lists
-  // const Teuchos::ParameterList& probtype = Global::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
+  // const Teuchos::ParameterList& probtype = Global::Problem::instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
 
   // prepares a turbulent flow simulation with generation of turbulent inflow during the
   // actual simulation
@@ -78,11 +78,11 @@ void dyn_fluid_drt(const int restart)
     // transferred as dirichlet boundary condition to the problem domain of interest
     // this finally allows to get high quality turbulent inflow conditions during simulation of the
     // actual flow
-    turbfluidalgo->TimeLoop();
+    turbfluidalgo->time_loop();
 
     // perform result tests if required
-    Global::Problem::Instance()->AddFieldTest(turbfluidalgo->DoResultCheck());
-    Global::Problem::Instance()->TestAll(comm);
+    Global::Problem::instance()->add_field_test(turbfluidalgo->do_result_check());
+    Global::Problem::instance()->test_all(comm);
   }
   // solve a simple fluid problem
   else
@@ -96,11 +96,11 @@ void dyn_fluid_drt(const int restart)
 
     // run the simulation
     //    fluidalgo->fluid_field()->TimeLoop();
-    fluidalgo->fluid_field()->Integrate();
+    fluidalgo->fluid_field()->integrate();
 
     // perform result tests if required
-    Global::Problem::Instance()->AddFieldTest(fluidalgo->fluid_field()->CreateFieldTest());
-    Global::Problem::Instance()->TestAll(comm);
+    Global::Problem::instance()->add_field_test(fluidalgo->fluid_field()->create_field_test());
+    Global::Problem::instance()->test_all(comm);
   }
 
   // have fun with your results!

@@ -37,12 +37,12 @@ namespace Core::Geo
       /*!
       \brief Get the shape of this sides
        */
-      virtual Core::FE::CellType Shape() = 0;
+      virtual Core::FE::CellType shape() = 0;
 
       /*!
       \brief Get the coordinates of the nodes of this side
        */
-      virtual void Coordinates(Core::LinAlg::SerialDenseMatrix& xyze) = 0;
+      virtual void coordinates(Core::LinAlg::SerialDenseMatrix& xyze) = 0;
 
       /*!
       \brief Get the local coordinates "rst"from the global coordinates "xyz" with respect to this
@@ -54,13 +54,13 @@ namespace Core::Geo
       /*!
       \brief For a quadratic side, get the resulting linear sides
        */
-      virtual void CollectSides(plain_side_set& sides) = 0;
+      virtual void collect_sides(plain_side_set& sides) = 0;
 
 
       /*!
       \brief Gets all facets of a side
        */
-      virtual void Facets(std::vector<Facet*>& facets) = 0;
+      virtual void facets(std::vector<Facet*>& facets) = 0;
 
       /*!
       \brief Get the Gaussian rule projected on the side. Not used now
@@ -72,7 +72,7 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<2, nen> xie;
 
-        const std::vector<Core::Geo::Cut::Point*>& cpoints = bc->Points();
+        const std::vector<Core::Geo::Cut::Point*>& cpoints = bc->points();
         if (cpoints.size() != nen) FOUR_C_THROW("non-matching number of points");
 
         for (unsigned i = 0; i < nen; ++i)
@@ -83,7 +83,7 @@ namespace Core::Geo
         }
 
         Teuchos::RCP<Core::FE::GaussPoints> gp =
-            Core::FE::GaussIntegration::create_projected<distype>(xie, bc->CubatureDegree());
+            Core::FE::GaussIntegration::create_projected<distype>(xie, bc->cubature_degree());
         return gp;
       }
 
@@ -100,7 +100,7 @@ namespace Core::Geo
         }
         Core::LinAlg::Matrix<2, 1>& rst = local_coordinates_[p];
         Core::LinAlg::Matrix<3, 1> xyz;
-        p->Coordinates(xyz.data());
+        p->coordinates(xyz.data());
         local_coordinates(xyz, rst);
         return rst;
       }
@@ -112,7 +112,7 @@ namespace Core::Geo
       }
 
       /// Add the SubSidePointer of given side to this Sidehandle
-      virtual void AddSubSidePointer(Side* side)
+      virtual void add_sub_side_pointer(Side* side)
       {
         FOUR_C_THROW("AddSubSidePointer: Not available in base class!");
       }
@@ -124,7 +124,7 @@ namespace Core::Geo
       }
 
       /// Is this side and unphysical subside
-      virtual bool IsunphysicalSubSide(Side* side)
+      virtual bool isunphysical_sub_side(Side* side)
       {
         FOUR_C_THROW("IsunphysicalSubSide: Not available in base class!");
         return false;  // dummy
@@ -137,7 +137,7 @@ namespace Core::Geo
         return false;  // dummy
       }
 
-      virtual const std::vector<Node*>& GetNodes() const
+      virtual const std::vector<Node*>& get_nodes() const
       {
         FOUR_C_THROW("GetNodes: Not available in base class!");
         static const std::vector<Node*> dummy;
@@ -156,12 +156,12 @@ namespace Core::Geo
 
       explicit LinearSideHandle(Side* s) : side_(s) {}
 
-      Core::FE::CellType Shape() override { return side_->Shape(); }
+      Core::FE::CellType shape() override { return side_->shape(); }
 
-      void Coordinates(Core::LinAlg::SerialDenseMatrix& xyze) override
+      void coordinates(Core::LinAlg::SerialDenseMatrix& xyze) override
       {
-        xyze.reshape(3, side_->Nodes().size());
-        side_->Coordinates(xyze.values());
+        xyze.reshape(3, side_->nodes().size());
+        side_->coordinates(xyze.values());
       }
 
       void local_coordinates(
@@ -173,12 +173,12 @@ namespace Core::Geo
         rs(1) = rst(1);
       }
 
-      void CollectSides(plain_side_set& sides) override { sides.insert(side_); }
+      void collect_sides(plain_side_set& sides) override { sides.insert(side_); }
 
       /// gets all facets of a linear side
-      void Facets(std::vector<Facet*>& facets) override
+      void facets(std::vector<Facet*>& facets) override
       {
-        std::vector<Facet*> sidefacets = side_->Facets();
+        std::vector<Facet*> sidefacets = side_->facets();
         for (std::vector<Facet*>::iterator i = sidefacets.begin(); i != sidefacets.end(); ++i)
         {
           Facet* sidefacet = *i;
@@ -187,7 +187,7 @@ namespace Core::Geo
       }
 
       /// Get the nodes of the Sidehandle
-      const std::vector<Node*>& GetNodes() const override { return side_->Nodes(); }
+      const std::vector<Node*>& get_nodes() const override { return side_->nodes(); }
 
 
      private:
@@ -198,28 +198,28 @@ namespace Core::Geo
     class QuadraticSideHandle : public SideHandle
     {
      public:
-      void Coordinates(Core::LinAlg::SerialDenseMatrix& xyze) override
+      void coordinates(Core::LinAlg::SerialDenseMatrix& xyze) override
       {
         xyze.reshape(3, nodes_.size());
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
         {
           Node* n = *i;
-          n->Coordinates(&xyze(0, i - nodes_.begin()));
+          n->coordinates(&xyze(0, i - nodes_.begin()));
         }
       }
 
-      void CollectSides(plain_side_set& sides) override
+      void collect_sides(plain_side_set& sides) override
       {
         std::copy(subsides_.begin(), subsides_.end(), std::inserter(sides, sides.begin()));
       }
 
       /// gets all facets of a quadratic side
-      void Facets(std::vector<Facet*>& facets) override
+      void facets(std::vector<Facet*>& facets) override
       {
         for (std::vector<Side*>::iterator i = subsides_.begin(); i != subsides_.end(); ++i)
         {
           Side* subside = *i;
-          std::vector<Facet*> sidefacets = subside->Facets();
+          std::vector<Facet*> sidefacets = subside->facets();
           for (std::vector<Facet*>::iterator i = sidefacets.begin(); i != sidefacets.end(); ++i)
           {
             Facet* sidefacet = *i;
@@ -247,7 +247,7 @@ namespace Core::Geo
       }
 
       /// Add the SubSidePointer of given side to this Sidehandle
-      void AddSubSidePointer(Side* side) override
+      void add_sub_side_pointer(Side* side) override
       {
         std::vector<Side*>::iterator tmpssit = subsides_.end();
         for (std::vector<Side*>::iterator ssit = subsides_.begin(); ssit != subsides_.end(); ++ssit)
@@ -288,7 +288,7 @@ namespace Core::Geo
       }
 
       /// Is this side and unphysical subside
-      bool IsunphysicalSubSide(Side* side) override
+      bool isunphysical_sub_side(Side* side) override
       {
         for (std::vector<Side*>::iterator ssit = unphysical_subsides_.begin();
              ssit != unphysical_subsides_.end(); ++ssit)
@@ -302,7 +302,7 @@ namespace Core::Geo
       bool hasunphysical_sub_side() override { return unphysical_subsides_.size(); }
 
       /// Get the nodes of the Sidehandle
-      const std::vector<Node*>& GetNodes() const override { return nodes_; }
+      const std::vector<Node*>& get_nodes() const override { return nodes_; }
 
      protected:
       std::vector<Side*> subsides_;
@@ -318,7 +318,7 @@ namespace Core::Geo
      public:
       Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids);
 
-      Core::FE::CellType Shape() override { return Core::FE::CellType::tri6; }
+      Core::FE::CellType shape() override { return Core::FE::CellType::tri6; }
 
       void local_coordinates(
           const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;
@@ -333,7 +333,7 @@ namespace Core::Geo
      public:
       Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids);
 
-      Core::FE::CellType Shape() override { return Core::FE::CellType::quad4; }
+      Core::FE::CellType shape() override { return Core::FE::CellType::quad4; }
 
       void local_coordinates(
           const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;
@@ -345,7 +345,7 @@ namespace Core::Geo
      public:
       Quad8SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside = true);
 
-      Core::FE::CellType Shape() override { return Core::FE::CellType::quad8; }
+      Core::FE::CellType shape() override { return Core::FE::CellType::quad8; }
 
       void local_coordinates(
           const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;
@@ -357,7 +357,7 @@ namespace Core::Geo
      public:
       Quad9SideHandle(Mesh& mesh, int sid, const std::vector<int>& node_ids, bool iscutside = true);
 
-      Core::FE::CellType Shape() override { return Core::FE::CellType::quad9; }
+      Core::FE::CellType shape() override { return Core::FE::CellType::quad9; }
 
       void local_coordinates(
           const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<2, 1>& rst) override;

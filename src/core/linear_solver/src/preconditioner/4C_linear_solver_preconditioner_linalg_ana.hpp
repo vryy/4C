@@ -50,7 +50,7 @@ namespace Core::LinAlg
       /*!
       \brief Return the range space of the result of the linear combination
       */
-      virtual const Epetra_BlockMap& RangeMap() const = 0;
+      virtual const Epetra_BlockMap& range_map() const = 0;
 
       /*!
       \brief Perform " v += scale * " operation
@@ -60,7 +60,7 @@ namespace Core::LinAlg
       \param scale (in): a scaling factor for the linear combination
                          (usually -1.0 or 1.0, used for sign changes)
       */
-      virtual void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const = 0;
+      virtual void update(Core::LinAlg::Ana::Vector& v, const double& scale) const = 0;
 
       /*!
       \brief Perform " v = scale * " operation
@@ -97,61 +97,61 @@ namespace Core::LinAlg
       /*!
       \brief The derived class shall return a clone of itself by calling its own copy-ctor
       */
-      virtual Teuchos::RCP<LightWeightOperatorBase> Clone() const = 0;
+      virtual Teuchos::RCP<LightWeightOperatorBase> clone() const = 0;
 
       /*!
       \brief Use transpose of operator
       */
-      virtual int SetUseTranspose(bool UseTranspose) = 0;
+      virtual int set_use_transpose(bool UseTranspose) = 0;
 
       /*!
       \brief Apply operator to X and return result in Y
 
       \note X and Y might be in-place pointing to the same physical Epetra_MultiVector
       */
-      virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
+      virtual int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
 
       /*!
       \brief Apply the inverse of the operator to X and return result in Y
 
       \note X and Y might be in-place pointing to the same physical Epetra_MultiVector
       */
-      virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
+      virtual int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
 
       /*!
       \brief return inf-norm of operator
       */
-      virtual double NormInf() const = 0;
+      virtual double norm_inf() const = 0;
 
       /*!
       \brief return label of operator
       */
-      virtual const char* Label() const = 0;
+      virtual const char* label() const = 0;
 
       /*!
       \brief return flag indicating whether transposed of operator is used in Apply and ApplyInverse
       */
-      virtual bool UseTranspose() const = 0;
+      virtual bool use_transpose() const = 0;
 
       /*!
       \brief return flag indicating whether operator supports inf-norm
       */
-      virtual bool HasNormInf() const = 0;
+      virtual bool has_norm_inf() const = 0;
 
       /*!
       \brief return communicator
       */
-      virtual const Epetra_Comm& Comm() const = 0;
+      virtual const Epetra_Comm& get_comm() const = 0;
 
       /*!
       \brief return domain map of operator
       */
-      virtual const Epetra_Map& OperatorDomainMap() const = 0;
+      virtual const Epetra_Map& operator_domain_map() const = 0;
 
       /*!
       \brief return range map of operator
       */
-      virtual const Epetra_Map& OperatorRangeMap() const = 0;
+      virtual const Epetra_Map& operator_range_map() const = 0;
 
      private:
     };  // class LightWeightOperatorBase
@@ -179,40 +179,40 @@ namespace Core::LinAlg
       {
       }
 
-      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
         return Teuchos::rcp(new LightWeightOperator(*this));
       }
 
 
-      int SetUseTranspose(bool UseTranspose) override
+      int set_use_transpose(bool UseTranspose) override
       {
         return const_cast<Epetra_Operator&>(op_).SetUseTranspose(UseTranspose);
       }
 
-      int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
         return op_.Apply(X, Y);
       }
 
-      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
         return op_.ApplyInverse(X, Y);
       }
 
-      double NormInf() const override { return op_.NormInf(); }
+      double norm_inf() const override { return op_.NormInf(); }
 
-      const char* Label() const override { return "Core::LinAlg::Ana::LightWeightOperator"; }
+      const char* label() const override { return "Core::LinAlg::Ana::LightWeightOperator"; }
 
-      bool UseTranspose() const override { return op_.UseTranspose(); }
+      bool use_transpose() const override { return op_.UseTranspose(); }
 
-      bool HasNormInf() const override { return op_.HasNormInf(); }
+      bool has_norm_inf() const override { return op_.HasNormInf(); }
 
-      const Epetra_Comm& Comm() const override { return op_.Comm(); }
+      const Epetra_Comm& get_comm() const override { return op_.Comm(); }
 
-      const Epetra_Map& OperatorDomainMap() const override { return op_.OperatorDomainMap(); }
+      const Epetra_Map& operator_domain_map() const override { return op_.OperatorDomainMap(); }
 
-      const Epetra_Map& OperatorRangeMap() const override { return op_.OperatorRangeMap(); }
+      const Epetra_Map& operator_range_map() const override { return op_.OperatorRangeMap(); }
 
      private:
       const Epetra_Operator& op_;
@@ -234,59 +234,59 @@ namespace Core::LinAlg
     class OperatorTransposed : public LightWeightOperatorBase
     {
      public:
-      OperatorTransposed(const LightWeightOperatorBase& op) : op_(op.Clone()) {}
+      OperatorTransposed(const LightWeightOperatorBase& op) : op_(op.clone()) {}
 
       OperatorTransposed(const OperatorTransposed& old) : LightWeightOperatorBase(old), op_(old.op_)
       {
       }
 
 
-      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
         return Teuchos::rcp(new OperatorTransposed(*this));
       }
 
-      int SetUseTranspose(bool UseTranspose) override
+      int set_use_transpose(bool UseTranspose) override
       {
         // we are transposing the transposed operator
-        return const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!UseTranspose);
+        return const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!UseTranspose);
       }
 
-      int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {  // apply the transposed
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
-        int err = op_->Apply(X, Y);
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
+        int err = op_->apply(X, Y);
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         return err;
       }
 
-      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
-        int err = op_->ApplyInverse(X, Y);
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
+        int err = op_->apply_inverse(X, Y);
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         return err;
       }
 
-      double NormInf() const override
+      double norm_inf() const override
       {
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
-        double out = op_->NormInf();
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
+        double out = op_->norm_inf();
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         return out;
       }
 
-      const char* Label() const override { return "Core::LinAlg::Ana::OperatorTransposed"; }
+      const char* label() const override { return "Core::LinAlg::Ana::OperatorTransposed"; }
 
-      bool UseTranspose() const override { return (!op_->UseTranspose()); }
+      bool use_transpose() const override { return (!op_->use_transpose()); }
 
-      bool HasNormInf() const override { return op_->HasNormInf(); }
+      bool has_norm_inf() const override { return op_->has_norm_inf(); }
 
-      const Epetra_Comm& Comm() const override { return op_->Comm(); }
+      const Epetra_Comm& get_comm() const override { return op_->get_comm(); }
 
-      const Epetra_Map& OperatorDomainMap() const override { return op_->OperatorRangeMap(); }
+      const Epetra_Map& operator_domain_map() const override { return op_->operator_range_map(); }
 
-      const Epetra_Map& OperatorRangeMap() const override { return op_->OperatorDomainMap(); }
+      const Epetra_Map& operator_range_map() const override { return op_->operator_domain_map(); }
 
      private:
       const Teuchos::RCP<LightWeightOperatorBase> op_;
@@ -308,7 +308,7 @@ namespace Core::LinAlg
     {
      public:
       OperatorScaled(const LightWeightOperatorBase& op, const double& scalar)
-          : op_(op.Clone()), scalar_(scalar)
+          : op_(op.clone()), scalar_(scalar)
       {
       }
 
@@ -318,47 +318,47 @@ namespace Core::LinAlg
       }
 
 
-      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
         return Teuchos::rcp(new OperatorScaled(*this));
       }
 
-      int SetUseTranspose(bool UseTranspose) override
+      int set_use_transpose(bool UseTranspose) override
       {
-        return const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(UseTranspose);
+        return const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(UseTranspose);
       }
 
-      int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {  // apply the transposed
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
-        int err = op_->Apply(X, Y);
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
+        int err = op_->apply(X, Y);
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         Y.Scale(scalar_);
         return err;
       }
 
-      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
-        int err = op_->ApplyInverse(X, Y);
-        const_cast<LightWeightOperatorBase&>(*op_).SetUseTranspose(!op_->UseTranspose());
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
+        int err = op_->apply_inverse(X, Y);
+        const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         Y.Scale(1. / scalar_);
         return err;
       }
 
-      double NormInf() const override { return scalar_ * op_->NormInf(); }
+      double norm_inf() const override { return scalar_ * op_->norm_inf(); }
 
-      const char* Label() const override { return "Core::LinAlg::Ana::OperatorScaled"; }
+      const char* label() const override { return "Core::LinAlg::Ana::OperatorScaled"; }
 
-      bool UseTranspose() const override { return (op_->UseTranspose()); }
+      bool use_transpose() const override { return (op_->use_transpose()); }
 
-      bool HasNormInf() const override { return op_->HasNormInf(); }
+      bool has_norm_inf() const override { return op_->has_norm_inf(); }
 
-      const Epetra_Comm& Comm() const override { return op_->Comm(); }
+      const Epetra_Comm& get_comm() const override { return op_->get_comm(); }
 
-      const Epetra_Map& OperatorDomainMap() const override { return op_->OperatorDomainMap(); }
+      const Epetra_Map& operator_domain_map() const override { return op_->operator_domain_map(); }
 
-      const Epetra_Map& OperatorRangeMap() const override { return op_->OperatorRangeMap(); }
+      const Epetra_Map& operator_range_map() const override { return op_->operator_range_map(); }
 
      private:
       const Teuchos::RCP<LightWeightOperatorBase> op_;
@@ -382,7 +382,7 @@ namespace Core::LinAlg
     {
      public:
       OperatorProduct(const LightWeightOperatorBase& left, const LightWeightOperatorBase& right)
-          : usetransposed_(false), left_(left.Clone()), right_(right.Clone())
+          : usetransposed_(false), left_(left.clone()), right_(right.clone())
       {
       }
 
@@ -395,22 +395,22 @@ namespace Core::LinAlg
       }
 
 
-      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
         return Teuchos::rcp(new OperatorProduct(*this));
       }
 
-      int SetUseTranspose(bool UseTranspose) override
+      int set_use_transpose(bool UseTranspose) override
       {
         usetransposed_ = UseTranspose;
         return 0;
       }
 
-      int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
-      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
-      double NormInf() const override
+      double norm_inf() const override
       {
         FOUR_C_THROW(
             "Core::LinAlg::Ana::OperatorProduct does not implement "
@@ -418,28 +418,28 @@ namespace Core::LinAlg
         return -1.0;
       }
 
-      const char* Label() const override { return "Core::LinAlg::Ana::OperatorProduct"; }
+      const char* label() const override { return "Core::LinAlg::Ana::OperatorProduct"; }
 
-      bool UseTranspose() const override { return usetransposed_; }
+      bool use_transpose() const override { return usetransposed_; }
 
-      bool HasNormInf() const override { return false; }
+      bool has_norm_inf() const override { return false; }
 
-      const Epetra_Comm& Comm() const override { return left_->Comm(); }
+      const Epetra_Comm& get_comm() const override { return left_->get_comm(); }
 
-      const Epetra_Map& OperatorDomainMap() const override
+      const Epetra_Map& operator_domain_map() const override
       {
         if (usetransposed_)
-          return left_->OperatorRangeMap();
+          return left_->operator_range_map();
         else
-          return right_->OperatorDomainMap();
+          return right_->operator_domain_map();
       }
 
-      const Epetra_Map& OperatorRangeMap() const override
+      const Epetra_Map& operator_range_map() const override
       {
         if (usetransposed_)
-          return right_->OperatorDomainMap();
+          return right_->operator_domain_map();
         else
-          return left_->OperatorRangeMap();
+          return left_->operator_range_map();
       }
 
      private:
@@ -466,7 +466,7 @@ namespace Core::LinAlg
      public:
       OperatorSum(
           const LightWeightOperatorBase& left, const LightWeightOperatorBase& right, const int sign)
-          : sign_(sign), usetransposed_(false), left_(left.Clone()), right_(right.Clone())
+          : sign_(sign), usetransposed_(false), left_(left.clone()), right_(right.clone())
       {
         if (sign != 1 && sign != -1) FOUR_C_THROW("sign parameter has to be 1 or -1");
       }
@@ -481,20 +481,20 @@ namespace Core::LinAlg
       }
 
 
-      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
         return Teuchos::rcp(new OperatorSum(*this));
       }
 
-      int SetUseTranspose(bool UseTranspose) override
+      int set_use_transpose(bool UseTranspose) override
       {
         usetransposed_ = UseTranspose;
         return 0;
       }
 
-      int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
-      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
         FOUR_C_THROW(
             "Core::LinAlg::Ana::OperatorSum does not implement "
@@ -502,35 +502,35 @@ namespace Core::LinAlg
         return -1;
       }
 
-      double NormInf() const override
+      double norm_inf() const override
       {
         FOUR_C_THROW(
             "Core::LinAlg::Ana::OperatorSum does not implement LightWeightOperatorBase::NormInf()");
         return -1.0;
       }
 
-      const char* Label() const override { return "Core::LinAlg::Ana::OperatorSum"; }
+      const char* label() const override { return "Core::LinAlg::Ana::OperatorSum"; }
 
-      bool UseTranspose() const override { return usetransposed_; }
+      bool use_transpose() const override { return usetransposed_; }
 
-      bool HasNormInf() const override { return false; }
+      bool has_norm_inf() const override { return false; }
 
-      const Epetra_Comm& Comm() const override { return left_->Comm(); }
+      const Epetra_Comm& get_comm() const override { return left_->get_comm(); }
 
-      const Epetra_Map& OperatorDomainMap() const override
+      const Epetra_Map& operator_domain_map() const override
       {
         if (usetransposed_)
-          return left_->OperatorRangeMap();
+          return left_->operator_range_map();
         else
-          return left_->OperatorDomainMap();
+          return left_->operator_domain_map();
       }
 
-      const Epetra_Map& OperatorRangeMap() const override
+      const Epetra_Map& operator_range_map() const override
       {
         if (usetransposed_)
-          return left_->OperatorDomainMap();
+          return left_->operator_domain_map();
         else
-          return left_->OperatorRangeMap();
+          return left_->operator_range_map();
       }
 
      private:
@@ -569,7 +569,7 @@ namespace Core::LinAlg
           const Core::LinAlg::SparseOperator& op, Core::LinAlg::Solver& solver, bool reset = true)
           : reset_(reset),
             solver_(solver),
-            op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).EpetraOperator()))
+            op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).epetra_operator()))
       {
       }
 
@@ -601,7 +601,7 @@ namespace Core::LinAlg
                       solvparams, op.Comm(), nullptr, Core::IO::Verbositylevel::standard));
                 })),
             solver_(*defaultsolver_),
-            op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).EpetraOperator()))
+            op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).epetra_operator()))
       {
       }
 
@@ -615,20 +615,20 @@ namespace Core::LinAlg
       }
 
 
-      Teuchos::RCP<LightWeightOperatorBase> Clone() const override
+      Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
         return Teuchos::rcp(new OperatorInverse(*this));
       }
 
-      int SetUseTranspose(bool UseTranspose) override
+      int set_use_transpose(bool UseTranspose) override
       {
         FOUR_C_THROW("Core::LinAlg::Ana::OperatorInverse does not support transpose");
         return -1;
       }
 
-      int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
-      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
         FOUR_C_THROW(
             "Core::LinAlg::Ana::OperatorInverse does not support inverse of inverse of underlying "
@@ -636,27 +636,27 @@ namespace Core::LinAlg
         return -1;
       }
 
-      double NormInf() const override
+      double norm_inf() const override
       {
         FOUR_C_THROW(
             "Core::LinAlg::Ana::OperatorInverse does not support NormInf of inverse of operator");
         return -1.0;
       }
 
-      const char* Label() const override { return "Core::LinAlg::Ana::OperatorInverse"; }
+      const char* label() const override { return "Core::LinAlg::Ana::OperatorInverse"; }
 
-      bool UseTranspose() const override { return false; }
+      bool use_transpose() const override { return false; }
 
-      bool HasNormInf() const override { return false; }
+      bool has_norm_inf() const override { return false; }
 
-      const Epetra_Comm& Comm() const override { return op_.Comm(); }
+      const Epetra_Comm& get_comm() const override { return op_.Comm(); }
 
-      const Epetra_Map& OperatorRangeMap() const override  // no, this is NOT a bug
+      const Epetra_Map& operator_range_map() const override  // no, this is NOT a bug
       {
         return op_.OperatorDomainMap();
       }
 
-      const Epetra_Map& OperatorDomainMap() const override  // no, this is NOT a bug
+      const Epetra_Map& operator_domain_map() const override  // no, this is NOT a bug
       {
         return op_.OperatorRangeMap();
       }
@@ -816,7 +816,7 @@ namespace Core::LinAlg
         cout << "Vector::operator += (Core::LinAlg::Ana::LCBase& rhs)" << endl;
         fflush(stdout);
 #endif
-        rhs.Update(*this, 1.0);
+        rhs.update(*this, 1.0);
       }
 
       /*!
@@ -831,7 +831,7 @@ namespace Core::LinAlg
         cout << "Vector::operator -= (Core::LinAlg::Ana::LCBase& rhs)" << endl;
         fflush(stdout);
 #endif
-        rhs.Update(*this, -1.0);
+        rhs.update(*this, -1.0);
       }
 
      private:
@@ -867,18 +867,18 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        left_.Update(v, scale);
-        right_.Update(v, scale);
+        left_.update(v, scale);
+        right_.update(v, scale);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.set(v, scale);
-        right_.Update(v, scale);
+        right_.update(v, scale);
       }
 
      private:
@@ -916,18 +916,18 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        left_.Update(v, scale);
-        right_.Update(v, -scale);
+        left_.update(v, scale);
+        right_.update(v, -scale);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.set(v, scale);
-        right_.Update(v, -scale);
+        right_.update(v, -scale);
       }
 
      private:
@@ -965,18 +965,18 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 1.0);
-        right_.Update(v, scale);
+        right_.update(v, scale);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 0.0);
-        right_.Update(v, scale);
+        right_.update(v, scale);
       }
 
      private:
@@ -1015,18 +1015,18 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 1.0);
-        right_.Update(v, -scale);
+        right_.update(v, -scale);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 0.0);
-        right_.Update(v, -scale);
+        right_.update(v, -scale);
       }
 
      private:
@@ -1064,11 +1064,11 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        left_.Update(v, scale);
+        left_.update(v, scale);
         v.Update(-scale, vec_, 1.0);
       }
       // perform 'v =' operations
@@ -1113,9 +1113,9 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale * scalar_, vec_, 1.0);
       }
@@ -1126,9 +1126,9 @@ namespace Core::LinAlg
       }
 
       // give access to the scalar (for specialization LCs)
-      inline const double& Scalar() const { return scalar_; }
+      inline const double& scalar() const { return scalar_; }
       // give access to the vector (for specialization LCs)
-      inline const Core::LinAlg::Ana::Vector& Vector() const { return vec_; }
+      inline const Core::LinAlg::Ana::Vector& vector() const { return vec_; }
 
      private:
       const double scalar_;
@@ -1166,11 +1166,11 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return right_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return right_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        right_.Update(v, scale * scalar_);
+        right_.update(v, scale * scalar_);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
@@ -1215,18 +1215,18 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
-            scale * left_.Scalar(), left_.Vector(), scale * right_.Scalar(), right_.Vector(), 1.0);
+            scale * left_.scalar(), left_.vector(), scale * right_.scalar(), right_.vector(), 1.0);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
-            scale * left_.Scalar(), left_.Vector(), scale * right_.Scalar(), right_.Vector(), 0.0);
+            scale * left_.scalar(), left_.vector(), scale * right_.scalar(), right_.vector(), 0.0);
       }
 
      private:
@@ -1267,16 +1267,16 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Update(scale, vec_, scale * right_.Scalar(), right_.Vector(), 1.0);
+        v.Update(scale, vec_, scale * right_.scalar(), right_.vector(), 1.0);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Update(scale, vec_, scale * right_.Scalar(), right_.Vector(), 0.0);
+        v.Update(scale, vec_, scale * right_.scalar(), right_.vector(), 0.0);
       }
 
      private:
@@ -1315,18 +1315,18 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
-            scale * left_.Scalar(), left_.Vector(), -scale * right_.Scalar(), right_.Vector(), 1.0);
+            scale * left_.scalar(), left_.vector(), -scale * right_.scalar(), right_.vector(), 1.0);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
-            scale * left_.Scalar(), left_.Vector(), -scale * right_.Scalar(), right_.Vector(), 0.0);
+            scale * left_.scalar(), left_.vector(), -scale * right_.scalar(), right_.vector(), 0.0);
       }
 
      private:
@@ -1367,16 +1367,16 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Update(scale, vec_, -scale * right_.Scalar(), right_.Vector(), 1.0);
+        v.Update(scale, vec_, -scale * right_.scalar(), right_.vector(), 1.0);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Update(scale, vec_, -scale * right_.Scalar(), right_.Vector(), 0.0);
+        v.Update(scale, vec_, -scale * right_.scalar(), right_.vector(), 0.0);
       }
 
      private:
@@ -1416,16 +1416,16 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Update(-scale, vec_, scale * left_.Scalar(), left_.Vector(), 1.0);
+        v.Update(-scale, vec_, scale * left_.scalar(), left_.vector(), 1.0);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Update(-scale, vec_, scale * left_.Scalar(), left_.Vector(), 0.0);
+        v.Update(-scale, vec_, scale * left_.scalar(), left_.vector(), 0.0);
       }
 
      private:
@@ -1470,9 +1470,9 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec1_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec1_.Map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale, vec1_, vec2_, 1.0);
       }
@@ -1522,9 +1522,9 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
+      void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
@@ -1574,16 +1574,16 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
+      inline const Epetra_BlockMap& range_map() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Multiply(scale * right_.Scalar(), vec_, right_.Vector(), 1.0);
+        v.Multiply(scale * right_.scalar(), vec_, right_.vector(), 1.0);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Multiply(scale * right_.Scalar(), vec_, right_.Vector(), 0.0);
+        v.Multiply(scale * right_.scalar(), vec_, right_.vector(), 0.0);
       }
 
      private:
@@ -1627,9 +1627,9 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
+      void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
       void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
@@ -1674,16 +1674,16 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return left_.range_map(); }
       // perform 'v +=' operations
-      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
+      inline void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Multiply(scale * left_.Scalar() * right_.Scalar(), left_.Vector(), right_.Vector(), 1.0);
+        v.Multiply(scale * left_.scalar() * right_.scalar(), left_.vector(), right_.vector(), 1.0);
       }
       // perform 'v =' operations
       inline void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
-        v.Multiply(scale * left_.Scalar() * right_.Scalar(), left_.Vector(), right_.Vector(), 0.0);
+        v.Multiply(scale * left_.scalar() * right_.scalar(), left_.vector(), right_.vector(), 0.0);
       }
 
      private:
@@ -1706,7 +1706,7 @@ namespace Core::LinAlg
      public:
       LcOperatorTimesLcsv(
           const LightWeightOperatorBase& op, const Core::LinAlg::Ana::LCSTimesVec& right)
-          : LCBase(), op_(op.Clone()), right_(right)
+          : LCBase(), op_(op.clone()), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_Operator_times_lcsv(const LightWeightOperatorBase& op, const "
@@ -1725,9 +1725,9 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return op_->OperatorRangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return op_->operator_range_map(); }
       // perform 'v +=' operations
-      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
+      void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
       void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
@@ -1750,7 +1750,7 @@ namespace Core::LinAlg
     {
      public:
       LcOperatorTimesLc(const LightWeightOperatorBase& op, const Core::LinAlg::Ana::LCBase& right)
-          : LCBase(), op_(op.Clone()), right_(right)
+          : LCBase(), op_(op.clone()), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_Operator_times_lc(const LightWeightOperatorBase& op, const "
@@ -1769,9 +1769,9 @@ namespace Core::LinAlg
       }
 
       // return the range space of the result of the linear combination
-      inline const Epetra_BlockMap& RangeMap() const override { return op_->OperatorRangeMap(); }
+      inline const Epetra_BlockMap& range_map() const override { return op_->operator_range_map(); }
       // perform 'v +=' operations
-      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
+      void update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
       void set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
@@ -2283,15 +2283,15 @@ namespace Core::LinAlg
     double norminf(const Core::LinAlg::Ana::LCBase& lc);
     inline double norm2(const Core::LinAlg::Ana::LCSTimesVec& lc)
     {
-      return lc.Scalar() * norm2(lc.Vector());
+      return lc.scalar() * norm2(lc.vector());
     }
     inline double norm1(const Core::LinAlg::Ana::LCSTimesVec& lc)
     {
-      return lc.Scalar() * norm1(lc.Vector());
+      return lc.scalar() * norm1(lc.vector());
     }
     inline double norminf(const Core::LinAlg::Ana::LCSTimesVec& lc)
     {
-      return lc.Scalar() * norminf(lc.Vector());
+      return lc.scalar() * norminf(lc.vector());
     }
 
   }  // namespace Ana

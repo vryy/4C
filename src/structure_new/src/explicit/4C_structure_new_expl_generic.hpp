@@ -81,7 +81,7 @@ namespace Solid
       //! (derived)
       void update_constant_state_contributions() override;
 
-      virtual void OutputStepstate() { ; };
+      virtual void output_stepstate() { ; };
 
       //! Update everything on element level after time step and after output (derived)
       void update_step_element() override;

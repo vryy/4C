@@ -71,7 +71,7 @@ namespace NOX
         const std::string& name() const override;
 
         //! return the name of the merit function as enumerator
-        enum MeritFctName Type() const;
+        enum MeritFctName type() const;
 
        private:
         /// \brief Get a list of currently supported infeasibility merit function types

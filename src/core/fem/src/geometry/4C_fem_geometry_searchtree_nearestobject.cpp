@@ -56,7 +56,7 @@ void Core::Geo::NearestObject::clear()
 }
 
 
-void Core::Geo::NearestObject::setNodeObjectType(
+void Core::Geo::NearestObject::set_node_object_type(
     const int nodeId, const int label, const Core::LinAlg::Matrix<3, 1>& physcoord)
 {
   object_type_ = NODE_OBJECT;
@@ -70,7 +70,7 @@ void Core::Geo::NearestObject::setNodeObjectType(
 }
 
 
-void Core::Geo::NearestObject::setLineObjectType(const int lineId, const int surfId,
+void Core::Geo::NearestObject::set_line_object_type(const int lineId, const int surfId,
     const int label, const Core::LinAlg::Matrix<3, 1>& physcoord)
 {
   object_type_ = LINE_OBJECT;

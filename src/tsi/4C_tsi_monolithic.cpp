@@ -62,17 +62,19 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& sdynparams)
     : Algorithm(comm),
-      solveradapttol_(Core::UTILS::IntegralValue<int>(
-                          ((Global::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")),
-                          "ADAPTCONV") == 1),
-      solveradaptolbetter_(((Global::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC"))
-                               .get<double>("ADAPTCONV_BETTER")),
+      solveradapttol_(
+          Core::UTILS::IntegralValue<int>(
+              ((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC")),
+              "ADAPTCONV") == 1),
+      solveradaptolbetter_(
+          ((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC"))
+              .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(
           Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP")),
-      tsidyn_(Global::Problem::Instance()->TSIDynamicParams()),
-      tsidynmono_((Global::Problem::Instance()->TSIDynamicParams()).sublist("MONOLITHIC")),
+      tsidyn_(Global::Problem::instance()->tsi_dynamic_params()),
+      tsidynmono_((Global::Problem::instance()->tsi_dynamic_params()).sublist("MONOLITHIC")),
       blockrowdofmap_(Teuchos::null),
       systemmatrix_(Teuchos::null),
       k_st_(Teuchos::null),
@@ -95,17 +97,17 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   // another setup of structural time integration with the correct initial temperature is required,
   // so get the temperature
-  if (ThermoField()->Tempnp() == Teuchos::null) FOUR_C_THROW("this is nullptr");
+  if (thermo_field()->tempnp() == Teuchos::null) FOUR_C_THROW("this is nullptr");
 
   if (matchinggrid_)
-    structure_field()->discretization()->set_state(1, "temperature", ThermoField()->Tempnp());
+    structure_field()->discretization()->set_state(1, "temperature", thermo_field()->tempnp());
   else
     structure_field()->discretization()->set_state(
-        1, "temperature", volcoupl_->apply_vector_mapping12(ThermoField()->Tempnp()));
+        1, "temperature", volcoupl_->apply_vector_mapping12(thermo_field()->tempnp()));
 
   // setup structural time integrator with initial temperature
   structure_->setup();
-  structure_field()->discretization()->ClearState(true);
+  structure_field()->discretization()->clear_state(true);
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
 
@@ -120,33 +122,33 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   else  // (merge_tsi_blockmatrix_ == true)
   {
 #ifndef TFSI
-    if (Comm().MyPID() == 0) std::cout << "Merged TSI block matrix is used!\n" << std::endl;
+    if (get_comm().MyPID() == 0) std::cout << "Merged TSI block matrix is used!\n" << std::endl;
 #endif
 
     // get solver parameter list of linear TSI solver
     const int linsolvernumber = tsidynmono_.get<int>("LINEAR_SOLVER");
     const Teuchos::ParameterList& tsisolverparams =
-        Global::Problem::Instance()->SolverParams(linsolvernumber);
+        Global::Problem::instance()->solver_params(linsolvernumber);
 
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = tsisolverparams;
 
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Comm(),
-        Global::Problem::Instance()->solver_params_callback(),
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, get_comm(),
+        Global::Problem::instance()->solver_params_callback(),
         Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::Instance()->IOParams(), "VERBOSITY")));
+            Global::Problem::instance()->io_params(), "VERBOSITY")));
   }  // end BlockMatrixMerge
 
   // structure_field: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC
   {
     std::vector<Core::Conditions::Condition*> locsysconditions(0);
-    (structure_field()->discretization())->GetCondition("Locsys", locsysconditions);
+    (structure_field()->discretization())->get_condition("Locsys", locsysconditions);
 
     // if there are inclined structural Dirichlet BC, get the structural LocSysManager
     if (locsysconditions.size())
     {
-      locsysman_ = structure_field()->LocsysManager();
+      locsysman_ = structure_field()->locsys_manager();
     }
     else
       locsysman_ = Teuchos::null;
@@ -154,7 +156,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
 #ifndef TFSI
   if ((Core::UTILS::IntegralValue<bool>(tsidynmono_, "CALC_NECKING_TSI_VALUES") == true) and
-      (Comm().MyPID() == 0))
+      (get_comm().MyPID() == 0))
     std::cout
         << "CAUTION: calculation ONLY valid for necking of a cylindrical body!"
         << "\n Due to symmetry only 1/8 of the cylinder is simulated, i.e r/l = 6.413mm/53.334mm."
@@ -173,7 +175,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::read_restart(int step)
 {
-  ThermoField()->read_restart(step);
+  thermo_field()->read_restart(step);
   structure_field()->read_restart(step);
 
   // structure_field()->read_restart destroyed the old object and created
@@ -182,39 +184,39 @@ void TSI::Monolithic::read_restart(int step)
 
   // pass the current coupling variables to the respective field
   // second read_restart needed due to the coupling variables
-  apply_struct_coupling_state(structure_field()->Dispnp(), structure_field()->Velnp());
-  ThermoField()->read_restart(step);
-  ThermoField()->discretization()->ClearState(true);
+  apply_struct_coupling_state(structure_field()->dispnp(), structure_field()->velnp());
+  thermo_field()->read_restart(step);
+  thermo_field()->discretization()->clear_state(true);
 
-  apply_thermo_coupling_state(ThermoField()->Tempnp());
+  apply_thermo_coupling_state(thermo_field()->tempnp());
   structure_field()->read_restart(step);
-  structure_field()->discretization()->ClearState(true);
+  structure_field()->discretization()->clear_state(true);
 
   // structure_field()->read_restart destroyed the old object and created
   // a new one, so we update the pointers
   prepare_contact_strategy();
 
-  SetTimeStep(ThermoField()->TimeOld(), step);
+  set_time_step(thermo_field()->time_old(), step);
 
   // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
   if (matchinggrid_)
     TSI::UTILS::SetMaterialPointersMatchingGrid(
-        structure_field()->discretization(), ThermoField()->discretization());
+        structure_field()->discretization(), thermo_field()->discretization());
   else
   {
     Teuchos::RCP<TSI::UTILS::TSIMaterialStrategy> strategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
-    volcoupl_->AssignMaterials(structure_field()->discretization(), ThermoField()->discretization(),
-        Global::Problem::Instance()->VolmortarParams(),
-        Global::Problem::Instance()->CutGeneralParams(), strategy);
+    volcoupl_->assign_materials(structure_field()->discretization(),
+        thermo_field()->discretization(), Global::Problem::instance()->volmortar_params(),
+        Global::Problem::instance()->cut_general_params(), strategy);
   }
 
   Teuchos::ParameterList p;
   //! pointer to the model evaluator data container
   Teuchos::RCP<Core::Elements::ParamsMinimal> EvalData =
       Teuchos::rcp(new Core::Elements::ParamsMinimal());
-  EvalData->SetActionType(Core::Elements::struct_calc_reset_istep);
+  EvalData->set_action_type(Core::Elements::struct_calc_reset_istep);
   p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", EvalData);
   p.set<std::string>("action", "calc_struct_reset_istep");
   structure_field()->discretization()->evaluate(p);
@@ -231,7 +233,7 @@ void TSI::Monolithic::prepare_time_step()
 {
   // we may have changed the ghosting when redistributing contact
   // so we make sure all maps in the system are up to date
-  if (contact_strategy_nitsche_ != Teuchos::null) SetupSystem();
+  if (contact_strategy_nitsche_ != Teuchos::null) setup_system();
 
   // counter and print header
   // increment time and step counter
@@ -239,12 +241,12 @@ void TSI::Monolithic::prepare_time_step()
   print_header();
 
   // pass the current coupling variables to the respective fields
-  apply_struct_coupling_state(structure_field()->Dispnp(), structure_field()->Velnp());
-  apply_thermo_coupling_state(ThermoField()->Tempnp());
+  apply_struct_coupling_state(structure_field()->dispnp(), structure_field()->velnp());
+  apply_thermo_coupling_state(thermo_field()->tempnp());
 
   // call the predictor
   structure_field()->prepare_time_step();
-  ThermoField()->prepare_time_step();
+  thermo_field()->prepare_time_step();
 
 }  // prepare_time_step()
 
@@ -264,7 +266,7 @@ void TSI::Monolithic::create_linear_solver()
 
   // get solver parameter list of linear TSI solver
   const Teuchos::ParameterList& tsisolverparams =
-      Global::Problem::Instance()->SolverParams(linsolvernumber);
+      Global::Problem::instance()->solver_params(linsolvernumber);
 
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(tsisolverparams, "SOLVER");
@@ -282,10 +284,10 @@ void TSI::Monolithic::create_linear_solver()
   }
 
   // prepare linear solvers and preconditioners
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(tsisolverparams, Comm(),
-      Global::Problem::Instance()->solver_params_callback(),
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(tsisolverparams, get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
+          Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(tsisolverparams, "AZPREC");
@@ -296,7 +298,7 @@ void TSI::Monolithic::create_linear_solver()
     case Core::LinearSolver::PreconditionerType::cheap_simple:
     {
       // get parameter list of structural dynamics
-      const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+      const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
       // use solver blocks for structure
       // get the solver number used for structural solver
       const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -307,7 +309,7 @@ void TSI::Monolithic::create_linear_solver()
             "DYNAMIC to a valid number!");
 
       // get parameter list of thermal dynamics
-      const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
+      const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
       // use solver blocks for temperature (thermal field)
       // get the solver number used for thermal solver
       const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
@@ -320,31 +322,31 @@ void TSI::Monolithic::create_linear_solver()
 
       // use solver blocks for structure and temperature (thermal field)
       const Teuchos::ParameterList& ssolverparams =
-          Global::Problem::Instance()->SolverParams(slinsolvernumber);
+          Global::Problem::instance()->solver_params(slinsolvernumber);
       const Teuchos::ParameterList& tsolverparams =
-          Global::Problem::Instance()->SolverParams(tlinsolvernumber);
+          Global::Problem::instance()->solver_params(tlinsolvernumber);
 
       solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
-          Global::Problem::Instance()->solver_params_callback(),
+          Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
       solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams,
-          Global::Problem::Instance()->solver_params_callback(),
+          Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       // prescribe rigid body modes
       structure_field()->discretization()->compute_null_space_if_necessary(
-          solver_->Params().sublist("Inverse1"));
-      ThermoField()->discretization()->compute_null_space_if_necessary(
-          solver_->Params().sublist("Inverse2"));
+          solver_->params().sublist("Inverse1"));
+      thermo_field()->discretization()->compute_null_space_if_necessary(
+          solver_->params().sublist("Inverse2"));
 
 
       if (azprectype == Core::LinearSolver::PreconditionerType::cheap_simple)
       {
         // Tell to the Core::LinAlg::SOLVER::SimplePreconditioner that we use the general
         // implementation
-        solver_->Params().set<bool>("GENERAL", true);
+        solver_->params().set<bool>("GENERAL", true);
       }
 
       break;
@@ -352,18 +354,18 @@ void TSI::Monolithic::create_linear_solver()
     case Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi:
     {
       solver_->put_solver_params_to_sub_params("Inverse1", tsisolverparams,
-          Global::Problem::Instance()->solver_params_callback(),
+          Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
       structure_field()->discretization()->compute_null_space_if_necessary(
-          solver_->Params().sublist("Inverse1"));
+          solver_->params().sublist("Inverse1"));
 
       solver_->put_solver_params_to_sub_params("Inverse2", tsisolverparams,
-          Global::Problem::Instance()->solver_params_callback(),
+          Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY"));
-      ThermoField()->discretization()->compute_null_space_if_necessary(
-          solver_->Params().sublist("Inverse2"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      thermo_field()->discretization()->compute_null_space_if_necessary(
+          solver_->params().sublist("Inverse2"));
 
       break;
     }
@@ -380,18 +382,18 @@ void TSI::Monolithic::create_linear_solver()
 /*----------------------------------------------------------------------*
  | non-linear solve, i.e. (multiple) corrector (public)      dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::Solve()
+void TSI::Monolithic::solve()
 {
   // choose solution technique according to input file
   switch (soltech_)
   {
     // Newton-Raphson iteration
     case Inpar::TSI::soltech_newtonfull:
-      NewtonFull();
+      newton_full();
       break;
     // Pseudo-transient continuation
     case Inpar::TSI::soltech_ptc:
-      PTC();
+      ptc();
       break;
     // catch problems
     default:
@@ -407,17 +409,17 @@ void TSI::Monolithic::Solve()
 /*----------------------------------------------------------------------*
  | time loop of the monolithic system                        dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::TimeLoop()
+void TSI::Monolithic::time_loop()
 {
   // time loop
-  while (NotFinished())
+  while (not_finished())
   {
     // counter and print header
     // predict solution of both field (call the adapter)
     prepare_time_step();
 
     // integrate time step
-    Solve();
+    solve();
 
     // calculate stresses, strains, energies
     prepare_output();
@@ -444,7 +446,7 @@ void TSI::Monolithic::TimeLoop()
  | solution with full Newton-Raphson iteration               dano 10/10 |
  | in tsi_algorithm: NewtonFull()                                       |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::NewtonFull()
+void TSI::Monolithic::newton_full()
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -482,7 +484,7 @@ void TSI::Monolithic::NewtonFull()
   setup_system_matrix();
 
   // check whether we have a sanely filled tangent matrix
-  if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
+  if (not systemmatrix_->filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
   // create full monolithic rhs vector
   // make negative residual not necessary: rhs_ is already negative
@@ -492,15 +494,15 @@ void TSI::Monolithic::NewtonFull()
   // do the thermo contact modifications all at once
   if (contact_strategy_lagrange_ != Teuchos::null)
     contact_strategy_lagrange_->evaluate(
-        SystemMatrix(), rhs_, coupST_, structure_field()->Dispnp(), ThermoField()->Tempnp());
+        system_matrix(), rhs_, coupST_, structure_field()->dispnp(), thermo_field()->tempnp());
   apply_dbc();
 
   // initialize with predictor values
   normrhsiter0_ = normrhs_ = calculate_vector_norm(iternorm_, rhs_);
   normstrrhsiter0_ = normstrrhs_ = last_iter_res_.first =
-      calculate_vector_norm(iternormstr_, structure_field()->RHS());
+      calculate_vector_norm(iternormstr_, structure_field()->rhs());
   normthrrhsiter0_ = normthrrhs_ = last_iter_res_.second =
-      calculate_vector_norm(iternormthr_, ThermoField()->RHS());
+      calculate_vector_norm(iternormthr_, thermo_field()->rhs());
   ls_step_length_ = 1.;
   normdisi_ = normtempi_ = norminc_ = 0.;
   normstrrhsiter0_ = normstrrhs_;
@@ -512,7 +514,7 @@ void TSI::Monolithic::NewtonFull()
   //------------------------------------------------------ iteration loop
 
   // equilibrium iteration loop (loop over k)
-  while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
+  while (((not converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     // increment equilibrium loop index
     ++iter_;
@@ -535,7 +537,7 @@ void TSI::Monolithic::NewtonFull()
     if (contact_strategy_lagrange_ != Teuchos::null) recover_struct_therm_lm();
 
     // reset solver tolerance
-    solver_->ResetTolerance();
+    solver_->reset_tolerance();
 
     // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented
@@ -552,7 +554,7 @@ void TSI::Monolithic::NewtonFull()
     setup_system_matrix();
 
     // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
+    if (not systemmatrix_->filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
@@ -567,7 +569,7 @@ void TSI::Monolithic::NewtonFull()
       // *********** time measurement ***********
 
       contact_strategy_lagrange_->evaluate(
-          SystemMatrix(), rhs_, coupST_, structure_field()->Dispnp(), ThermoField()->Tempnp());
+          system_matrix(), rhs_, coupST_, structure_field()->dispnp(), thermo_field()->tempnp());
 
       // *********** time measurement ***********
       dtcmt_ = timernewton_.wallTime() - dtcpu;
@@ -585,8 +587,8 @@ void TSI::Monolithic::NewtonFull()
       case Inpar::TSI::LS_and:
       case Inpar::TSI::LS_or:
       {
-        normstrrhs_ = calculate_vector_norm(iternormstr_, structure_field()->RHS());
-        normthrrhs_ = calculate_vector_norm(iternormthr_, ThermoField()->RHS());
+        normstrrhs_ = calculate_vector_norm(iternormstr_, structure_field()->rhs());
+        normthrrhs_ = calculate_vector_norm(iternormthr_, thermo_field()->rhs());
         iterinc_->Scale(-1.);
 
         while (ls_step_length_ > 1.e-8 && !l_sadmissible())
@@ -594,12 +596,12 @@ void TSI::Monolithic::NewtonFull()
           iterinc_->Scale(.5);
           ls_step_length_ *= .5;
           evaluate(iterinc_);
-          normstrrhs_ = calculate_vector_norm(iternormstr_, structure_field()->RHS());
-          normthrrhs_ = calculate_vector_norm(iternormthr_, ThermoField()->RHS());
+          normstrrhs_ = calculate_vector_norm(iternormstr_, structure_field()->rhs());
+          normthrrhs_ = calculate_vector_norm(iternormthr_, thermo_field()->rhs());
         }
 
-        last_iter_res_.first = calculate_vector_norm(iternormstr_, structure_field()->RHS());
-        last_iter_res_.second = calculate_vector_norm(iternormthr_, ThermoField()->RHS());
+        last_iter_res_.first = calculate_vector_norm(iternormstr_, structure_field()->rhs());
+        last_iter_res_.second = calculate_vector_norm(iternormthr_, thermo_field()->rhs());
 
         if (ls_step_length_ < 1.)
         {
@@ -664,7 +666,7 @@ void TSI::Monolithic::NewtonFull()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((Converged()) and (Comm().MyPID() == 0))
+  if ((converged()) and (get_comm().MyPID() == 0))
   {
     print_newton_conv();
   }
@@ -686,7 +688,7 @@ void TSI::Monolithic::NewtonFull()
 /*----------------------------------------------------------------------*
  | solution with pseudo-transient continuation               dano 06/14 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::PTC()
+void TSI::Monolithic::ptc()
 {
   // do a PTC iteration here
   // implementation is based on the work of Gee, Kelley, Lehouq (2009):
@@ -727,7 +729,7 @@ void TSI::Monolithic::PTC()
   setup_system_matrix();
 
   // check whether we have a sanely filled tangent matrix
-  if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
+  if (not systemmatrix_->filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
   // create full monolithic rhs vector
   // make negative residual not necessary: rhs_ is already negative
@@ -739,9 +741,9 @@ void TSI::Monolithic::PTC()
   // initialize with predictor values
   normrhsiter0_ = normrhs_ = calculate_vector_norm(iternorm_, rhs_);
   normrhsiter0_ = normstrrhs_ = last_iter_res_.first =
-      calculate_vector_norm(iternormstr_, structure_field()->RHS());
+      calculate_vector_norm(iternormstr_, structure_field()->rhs());
   normthrrhsiter0_ = normthrrhs_ = last_iter_res_.second =
-      calculate_vector_norm(iternormthr_, ThermoField()->RHS());
+      calculate_vector_norm(iternormthr_, thermo_field()->rhs());
   ls_step_length_ = 1.;
   normdisi_ = normtempi_ = norminc_ = 0.;
   normstrrhsiter0_ = normstrrhs_;
@@ -769,7 +771,7 @@ void TSI::Monolithic::PTC()
   //------------------------------------------------------ iteration loop
 
   // equilibrium iteration loop (loop over k)
-  while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
+  while (((not converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     // increment equilibrium loop index
     ++iter_;
@@ -782,11 +784,11 @@ void TSI::Monolithic::PTC()
     // modify structural diagonal block k_ss
     {
       Teuchos::RCP<Epetra_Vector> tmp_SS =
-          Core::LinAlg::CreateVector(structure_field()->system_matrix()->RowMap(), false);
+          Core::LinAlg::CreateVector(structure_field()->system_matrix()->row_map(), false);
       tmp_SS->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag_SS =
-          Core::LinAlg::CreateVector(structure_field()->system_matrix()->RowMap(), false);
-      structure_field()->system_matrix()->ExtractDiagonalCopy(*diag_SS);
+          Core::LinAlg::CreateVector(structure_field()->system_matrix()->row_map(), false);
+      structure_field()->system_matrix()->extract_diagonal_copy(*diag_SS);
 
       diag_SS->Update(1.0, *tmp_SS, 1.0);
 
@@ -795,13 +797,13 @@ void TSI::Monolithic::PTC()
     // modify thermal diagonal block k_tt
     {
       Teuchos::RCP<Epetra_Vector> tmp_tt =
-          Core::LinAlg::CreateVector(ThermoField()->SystemMatrix()->RowMap(), false);
+          Core::LinAlg::CreateVector(thermo_field()->system_matrix()->row_map(), false);
       tmp_tt->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag_tt =
-          Core::LinAlg::CreateVector(ThermoField()->SystemMatrix()->RowMap(), false);
-      ThermoField()->SystemMatrix()->ExtractDiagonalCopy(*diag_tt);
+          Core::LinAlg::CreateVector(thermo_field()->system_matrix()->row_map(), false);
+      thermo_field()->system_matrix()->extract_diagonal_copy(*diag_tt);
       diag_tt->Update(1.0, *tmp_tt, 1.0);
-      ThermoField()->SystemMatrix()->replace_diagonal_values(*diag_tt);
+      thermo_field()->system_matrix()->replace_diagonal_values(*diag_tt);
     }
 
     // *********** time measurement ***********
@@ -815,7 +817,7 @@ void TSI::Monolithic::PTC()
     // *********** time measurement ***********
 
     // reset solver tolerance
-    solver_->ResetTolerance();
+    solver_->reset_tolerance();
 
     // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented
@@ -832,7 +834,7 @@ void TSI::Monolithic::PTC()
     setup_system_matrix();
 
     // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
+    if (not systemmatrix_->filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
@@ -909,7 +911,7 @@ void TSI::Monolithic::PTC()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((Converged()) and (Comm().MyPID() == 0))
+  if ((converged()) and (get_comm().MyPID() == 0))
   {
     print_newton_conv();
   }
@@ -962,7 +964,7 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   // Newton update of the thermo field
   // update temperature before passed to the structural field
   //   update_iter_incrementally(tx),
-  ThermoField()->UpdateNewton(tx);
+  thermo_field()->update_newton(tx);
 
 #ifdef TSIMONOLITHASOUTPUT
   std::cout << "Tempnp nach UpdateNewton\n" << *(ThermoField()->Tempnp()) << std::endl;
@@ -978,7 +980,7 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
 
 #ifndef MonTSIwithoutTHR
   // apply current temperature to structure
-  apply_thermo_coupling_state(ThermoField()->Tempnp(), tx);
+  apply_thermo_coupling_state(thermo_field()->tempnp(), tx);
 #endif
 
 #ifdef TSIPARALLEL
@@ -1006,7 +1008,7 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
     structure_field()->evaluate();
   else
     structure_field()->evaluate(sx);
-  structure_field()->discretization()->ClearState(true);
+  structure_field()->discretization()->clear_state(true);
 
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -1029,15 +1031,15 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   if (strmethodname_ == Inpar::Solid::dyna_statics)
   {
     // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
-    vel_ = calc_velocity(structure_field()->Dispnp());
+    vel_ = calc_velocity(structure_field()->dispnp());
   }
   // else: use velnp
   else
-    vel_ = structure_field()->Velnp();
+    vel_ = structure_field()->velnp();
 
 #ifndef MonTSIwithoutSTR
   // pass the structural values to the thermo field
-  apply_struct_coupling_state(structure_field()->Dispnp(), vel_);
+  apply_struct_coupling_state(structure_field()->dispnp(), vel_);
 #endif
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -1048,8 +1050,8 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   // monolithic TSI accesses the linearised thermo problem
   //   evaluate_rhs_tang_residual() and
   //   prepare_system_for_newton_solve()
-  ThermoField()->evaluate();
-  ThermoField()->discretization()->ClearState(true);
+  thermo_field()->evaluate();
+  thermo_field()->discretization()->clear_state(true);
 #ifdef TSI_DEBUG
 #ifndef TFSI
   std::cout << "  thermo time for calling Evaluate: " << timerthermo.totalElapsedTime(true) << "\n";
@@ -1081,14 +1083,14 @@ void TSI::Monolithic::extract_field_vectors(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> TSI::Monolithic::dof_row_map() const
 {
-  return extractor()->FullMap();
+  return extractor()->full_map();
 }  // dof_row_map()
 
 
 /*----------------------------------------------------------------------*
  | setup system (called in tsi_dyn)                          dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::SetupSystem()
+void TSI::Monolithic::setup_system()
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -1121,7 +1123,7 @@ void TSI::Monolithic::SetupSystem()
 
   // create empty matrix
   k_ts_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *(ThermoField()->discretization()->dof_row_map(0)), 81, false, true));
+      *(thermo_field()->discretization()->dof_row_map(0)), 81, false, true));
 
 }  // SetupSystem()
 
@@ -1136,7 +1138,7 @@ void TSI::Monolithic::set_dof_row_maps()
 
   // use its own dof_row_map, that is the 0th map of the discretization
   vecSpaces.push_back(structure_field()->dof_row_map(0));
-  vecSpaces.push_back(ThermoField()->dof_row_map(0));
+  vecSpaces.push_back(thermo_field()->dof_row_map(0));
 
   if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
   if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No temperature equation. Panic.");
@@ -1171,7 +1173,7 @@ void TSI::Monolithic::setup_system_matrix()
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss = structure_field()->system_matrix();
 
   // assign structure part to the TSI matrix
-  systemmatrix_->Assign(0, 0, Core::LinAlg::View, *k_ss);
+  systemmatrix_->assign(0, 0, Core::LinAlg::View, *k_ss);
 
   /*----------------------------------------------------------------------*/
   // structural block k_st (3nxn)
@@ -1183,15 +1185,15 @@ void TSI::Monolithic::setup_system_matrix()
   apply_str_coupl_matrix(k_st_);
 #endif  // MonTSIwithoutTHR
 
-  k_st_->Complete(*(structure_field()->discretization()->dof_row_map(1)),
+  k_st_->complete(*(structure_field()->discretization()->dof_row_map(1)),
       *(structure_field()->discretization()->dof_row_map(0)));
 
   if (!matchinggrid_) k_st_ = volcoupl_->apply_matrix_mapping12(k_st_);
 
-  k_st_->UnComplete();
+  k_st_->un_complete();
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(0, 1, Core::LinAlg::View, *(k_st_));
+  systemmatrix_->assign(0, 1, Core::LinAlg::View, *(k_st_));
 
   /*----------------------------------------------------------------------*/
   // pure thermo part k_tt (nxn)
@@ -1201,10 +1203,10 @@ void TSI::Monolithic::setup_system_matrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix systemmatrix_
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_tt = ThermoField()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_tt = thermo_field()->system_matrix();
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(1, 1, Core::LinAlg::View, *(k_tt));
+  systemmatrix_->assign(1, 1, Core::LinAlg::View, *(k_tt));
 
   /*----------------------------------------------------------------------*/
   // thermo part k_ts (nx3n)
@@ -1214,23 +1216,23 @@ void TSI::Monolithic::setup_system_matrix()
 
   // call the element and calculate the matrix block
 #if ((!defined(MonTSIwithoutSTR)) and (!defined(COUPLEINITTEMPERATURE)))
-  ApplyThrCouplMatrix(k_ts_);
+  apply_thr_coupl_matrix(k_ts_);
   apply_thr_coupl_matrix_conv_bc(k_ts_);
 #endif
 
-  k_ts_->Complete(*(ThermoField()->discretization()->dof_row_map(1)),
-      *(ThermoField()->discretization()->dof_row_map(0)));
+  k_ts_->complete(*(thermo_field()->discretization()->dof_row_map(1)),
+      *(thermo_field()->discretization()->dof_row_map(0)));
 
   if (!matchinggrid_) k_ts_ = volcoupl_->apply_matrix_mapping21(k_ts_);
 
-  systemmatrix_->Assign(1, 0, Core::LinAlg::View, *k_ts_);
+  systemmatrix_->assign(1, 0, Core::LinAlg::View, *k_ts_);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
-  systemmatrix_->Complete();
+  systemmatrix_->complete();
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->CondenseMatrix(systemmatrix_);
+  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->condense_matrix(systemmatrix_);
 
 }  // setup_system_matrix()
 
@@ -1252,18 +1254,18 @@ void TSI::Monolithic::setup_rhs()
   rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
   // get the structural rhs
-  Teuchos::RCP<Epetra_Vector> str_rhs = Teuchos::rcp(new Epetra_Vector(*structure_field()->RHS()));
+  Teuchos::RCP<Epetra_Vector> str_rhs = Teuchos::rcp(new Epetra_Vector(*structure_field()->rhs()));
   if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
-          Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") ==
+          Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") ==
       Inpar::Solid::int_standard)
     str_rhs->Scale(-1.);
 
   // insert vectors to tsi rhs
   extractor()->insert_vector(*str_rhs, 0, *rhs_);
-  extractor()->insert_vector(*ThermoField()->RHS(), 1, *rhs_);
+  extractor()->insert_vector(*thermo_field()->rhs(), 1, *rhs_);
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->CondenseRhs(rhs_);
+  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->condense_rhs(rhs_);
 
 }  // setup_rhs()
 
@@ -1315,7 +1317,7 @@ void TSI::Monolithic::linear_solve()
     // solve the problem, work is done here!
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
-    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
+    solver_->solve(systemmatrix_->epetra_operator(), iterinc_, rhs_, solver_params);
 
     // Infnormscaling: unscale system after solving
     unscale_solution(*systemmatrix_, *iterinc_, *rhs_);
@@ -1325,13 +1327,13 @@ void TSI::Monolithic::linear_solve()
   else  // (merge_tsi_blockmatrix_ == true)
   {
     // merge blockmatrix to SparseMatrix and solve
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 
     // standard solver call
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
+    solver_->solve(sparse->epetra_operator(), iterinc_, rhs_, solver_params);
   }  // MergeBlockMatrix
 
 #ifdef TSI_DEBUG
@@ -1344,7 +1346,7 @@ void TSI::Monolithic::linear_solve()
 #endif  // TSI_DEBUG
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->RecoverIncr(iterinc_);
+  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->recover_incr(iterinc_);
 
 }  // linear_solve()
 
@@ -1362,7 +1364,7 @@ void TSI::Monolithic::initial_guess(Teuchos::RCP<Epetra_Vector> ig)
       // returns residual displacements \f$\Delta D_{n+1}^{<k>}\f$ - disi_
       structure_field()->initial_guess(),
       // returns residual temperatures or iterative thermal increment - tempi_
-      ThermoField()->initial_guess());
+      thermo_field()->initial_guess());
 
 }  // initial_guess()
 
@@ -1385,7 +1387,7 @@ void TSI::Monolithic::setup_vector(
 /*----------------------------------------------------------------------*
  | check convergence of Newton iteration (public)            dano 11/10 |
  *----------------------------------------------------------------------*/
-bool TSI::Monolithic::Converged()
+bool TSI::Monolithic::converged()
 {
   // check for single norms
   bool convrhs = false;
@@ -1526,9 +1528,9 @@ bool TSI::Monolithic::Converged()
   if (contact_strategy_lagrange_ != Teuchos::null)
   {
     conv = conv && (contact_strategy_lagrange_->mech_contact_res_ <
-                       contact_strategy_lagrange_->Params().get<double>("TOLCONTCONSTR"));
+                       contact_strategy_lagrange_->params().get<double>("TOLCONTCONSTR"));
     conv = conv && (contact_strategy_lagrange_->mech_contact_incr_ <
-                       contact_strategy_lagrange_->Params().get<double>("TOLLAGR"));
+                       contact_strategy_lagrange_->params().get<double>("TOLLAGR"));
     conv = conv && contact_strategy_lagrange_->active_set_semi_smooth_converged();
   }
 
@@ -1546,7 +1548,7 @@ void TSI::Monolithic::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
-  if ((Comm().MyPID() == 0) and print_screen_evry() and (Step() % print_screen_evry() == 0) and
+  if ((get_comm().MyPID() == 0) and print_screen_evry() and (step() % print_screen_evry() == 0) and
       printiter_)
   {
     if (iter_ == 0) print_newton_iter_header(stdout);
@@ -1917,20 +1919,20 @@ void TSI::Monolithic::apply_str_coupl_matrix(
       Teuchos::rcp(new Core::Elements::ParamsMinimal());
 
   // set parameters needed for element evalutation
-  EvalData->SetActionType(Core::Elements::struct_calc_stifftemp);
-  EvalData->SetTotalTime(Time());
-  EvalData->SetDeltaTime(Dt());
+  EvalData->set_action_type(Core::Elements::struct_calc_stifftemp);
+  EvalData->set_total_time(time());
+  EvalData->set_delta_time(dt());
 
   const std::string action = "calc_struct_stifftemp";
   sparams.set("action", action);
   // other parameters that might be needed by the elements
-  sparams.set("delta time", Dt());
-  sparams.set("total time", Time());
+  sparams.set("delta time", dt());
+  sparams.set("total time", time());
 
-  structure_field()->discretization()->ClearState(true);
-  structure_field()->discretization()->set_state(0, "displacement", structure_field()->Dispnp());
+  structure_field()->discretization()->clear_state(true);
+  structure_field()->discretization()->set_state(0, "displacement", structure_field()->dispnp());
 
-  apply_thermo_coupling_state(ThermoField()->Tempnp());
+  apply_thermo_coupling_state(thermo_field()->tempnp());
 
   // build specific assemble strategy for mechanical-thermal system matrix
   // from the point of view of structure_field:
@@ -1944,11 +1946,11 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 
   sparams.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", EvalData);
   structure_field()->discretization()->evaluate(sparams, structuralstrategy);
-  structure_field()->discretization()->ClearState(true);
+  structure_field()->discretization()->clear_state(true);
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_st->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::displ_temp),
+    k_st->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::displ_temp),
         false, 1., 1.);
 
   // TODO 2013-11-11 move scaling to the so3_thermo element
@@ -1967,7 +1969,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
     {
       double theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
       // K_Teffdyn(T_n+1^i) = theta * k_st
-      k_st->Scale(theta);
+      k_st->scale(theta);
       break;
     }
     case Inpar::Solid::dyna_genalpha:
@@ -1975,7 +1977,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
       double alphaf = sdyn_.sublist("GENALPHA").get<double>("ALPHA_F");
       // K_Teffdyn(T_n+1) = (1-alphaf_) . kst
       // Lin(dT_n+1-alphaf_/ dT_n+1) = (1-alphaf_)
-      k_st->Scale(1.0 - alphaf);
+      k_st->scale(1.0 - alphaf);
       break;
     }
     default:
@@ -1989,7 +1991,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 /*----------------------------------------------------------------------*
  | evaluate thermal-mechanical system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::ApplyThrCouplMatrix(
+void TSI::Monolithic::apply_thr_coupl_matrix(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
 )
 {
@@ -2005,11 +2007,11 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   const THR::Action action = THR::calc_thermo_coupltang;
   tparams.set<int>("action", action);
   // other parameters that might be needed by the elements
-  tparams.set("delta time", Dt());
-  tparams.set("total time", Time());
+  tparams.set("delta time", dt());
+  tparams.set("total time", time());
 
   // create specific time integrator
-  const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
+  const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
   tparams.set<int>(
       "time integrator", Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP"));
   tparams.set<int>("structural time integrator", strmethodname_);
@@ -2078,11 +2080,11 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   }
 
 
-  ThermoField()->discretization()->ClearState(true);
+  thermo_field()->discretization()->clear_state(true);
   // set the variables that are needed by the elements
-  ThermoField()->discretization()->set_state(0, "temperature", ThermoField()->Tempnp());
+  thermo_field()->discretization()->set_state(0, "temperature", thermo_field()->tempnp());
 
-  apply_struct_coupling_state(structure_field()->Dispnp(), vel_);
+  apply_struct_coupling_state(structure_field()->dispnp(), vel_);
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
@@ -2094,12 +2096,12 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate the thermal-mechanical system matrix on the thermal element
-  ThermoField()->discretization()->evaluate(tparams, thermostrategy);
-  ThermoField()->discretization()->ClearState(true);
+  thermo_field()->discretization()->evaluate(tparams, thermostrategy);
+  thermo_field()->discretization()->clear_state(true);
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_ts->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_displ),
+    k_ts->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_displ),
         false, timefac, 1.);
 }  // ApplyThrCouplMatrix()
 
@@ -2120,7 +2122,7 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
 
   std::vector<Core::Conditions::Condition*> cond;
   std::string condstring("ThermoConvections");
-  ThermoField()->discretization()->GetCondition(condstring, cond);
+  thermo_field()->discretization()->get_condition(condstring, cond);
   if (cond.size() > 0)
   {
     // create the parameters for the discretization
@@ -2129,10 +2131,10 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
     const THR::BoundaryAction action = THR::calc_thermo_fextconvection_coupltang;
     tparams.set<int>("action", action);
     // other parameters that might be needed by the elements
-    tparams.set("delta time", Dt());
-    tparams.set("total time", Time());
+    tparams.set("delta time", dt());
+    tparams.set("total time", time());
     // create specific time integrator
-    const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
+    const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
     tparams.set<int>(
         "time integrator", Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP"));
     tparams.set<int>("structural time integrator", strmethodname_);
@@ -2175,10 +2177,10 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
       }
     }  // end(switch)
     // clear all states set in discretization
-    ThermoField()->discretization()->ClearState(true);
+    thermo_field()->discretization()->clear_state(true);
     // set the variables that are needed by the elements
-    ThermoField()->discretization()->set_state(0, "temperature", ThermoField()->Tempnp());
-    apply_struct_coupling_state(structure_field()->Dispnp(), vel_);
+    thermo_field()->discretization()->set_state(0, "temperature", thermo_field()->tempnp());
+    apply_struct_coupling_state(structure_field()->dispnp(), vel_);
 
     // build specific assemble strategy for the thermal-mechanical system matrix
     // from the point of view of ThermoField:
@@ -2190,9 +2192,9 @@ void TSI::Monolithic::apply_thr_coupl_matrix_conv_bc(
         Teuchos::null, Teuchos::null, Teuchos::null);
 
     // evaluate the thermal-mechanical system matrix on the thermal element
-    ThermoField()->discretization()->evaluate_condition(tparams, thermostrategy, condstring);
+    thermo_field()->discretization()->evaluate_condition(tparams, thermostrategy, condstring);
     // clear all states set in discretization
-    ThermoField()->discretization()->ClearState(true);
+    thermo_field()->discretization()->clear_state(true);
   }  // cond.size()>0
 
 }  // ApplyThrCouplMatrix()
@@ -2206,7 +2208,7 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::combined_dbc_map()
   const Teuchos::RCP<const Epetra_Map> scondmap =
       structure_field()->get_dbc_map_extractor()->cond_map();
   const Teuchos::RCP<const Epetra_Map> tcondmap =
-      ThermoField()->get_dbc_map_extractor()->cond_map();
+      thermo_field()->get_dbc_map_extractor()->cond_map();
   Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(scondmap, tcondmap, false);
   return condmap;
 
@@ -2230,7 +2232,7 @@ void TSI::Monolithic::recover_struct_therm_lm()
   // extract field vectors
   extract_field_vectors(iterinc_, sx, tx);
 
-  contact_strategy_lagrange_->RecoverCoupled(sx, tx, coupST_);
+  contact_strategy_lagrange_->recover_coupled(sx, tx, coupST_);
 
   return;
 }
@@ -2249,24 +2251,24 @@ void TSI::Monolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epe
   {
     // The matrices are modified here. Do we have to change them back later on?
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
     srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     A->InvRowSums(*srowsum_);
     A->InvColSums(*scolsum_);
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
-        (mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_)) or
-        (mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_)))
+        (mat.matrix(0, 1).epetra_matrix()->LeftScale(*srowsum_)) or
+        (mat.matrix(1, 0).epetra_matrix()->RightScale(*scolsum_)))
       FOUR_C_THROW("structure scaling failed");
 
-    A = mat.Matrix(1, 1).EpetraMatrix();
+    A = mat.matrix(1, 1).epetra_matrix();
     trowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     tcolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
     A->InvRowSums(*trowsum_);
     A->InvColSums(*tcolsum_);
     if ((A->LeftScale(*trowsum_)) or (A->RightScale(*tcolsum_)) or
-        (mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*trowsum_)) or
-        (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*tcolsum_)))
+        (mat.matrix(1, 0).epetra_matrix()->LeftScale(*trowsum_)) or
+        (mat.matrix(0, 1).epetra_matrix()->RightScale(*tcolsum_)))
       FOUR_C_THROW("thermo scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = extractor()->extract_vector(b, 0);
@@ -2309,20 +2311,20 @@ void TSI::Monolithic::unscale_solution(
     extractor()->insert_vector(*sx, 0, b);
     extractor()->insert_vector(*tx, 1, b);
 
-    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
     srowsum_->Reciprocal(*srowsum_);
     scolsum_->Reciprocal(*scolsum_);
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
-        (mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_)) or
-        (mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_)))
+        (mat.matrix(0, 1).epetra_matrix()->LeftScale(*srowsum_)) or
+        (mat.matrix(1, 0).epetra_matrix()->RightScale(*scolsum_)))
       FOUR_C_THROW("structure scaling failed");
 
-    A = mat.Matrix(1, 1).EpetraMatrix();
+    A = mat.matrix(1, 1).epetra_matrix();
     trowsum_->Reciprocal(*trowsum_);
     tcolsum_->Reciprocal(*tcolsum_);
     if ((A->LeftScale(*trowsum_)) or (A->RightScale(*tcolsum_)) or
-        (mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*trowsum_)) or
-        (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*tcolsum_)))
+        (mat.matrix(1, 0).epetra_matrix()->LeftScale(*trowsum_)) or
+        (mat.matrix(0, 1).epetra_matrix()->RightScale(*tcolsum_)))
       FOUR_C_THROW("thermo scaling failed");
 
   }  // if (scaling_infnorm)
@@ -2391,7 +2393,7 @@ void TSI::Monolithic::set_default_parameters()
 {
   // time parameters
   // call the TSI parameter list
-  const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
+  const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
   // get the parameters for the Newton iteration
   itermax_ = tsidyn_.get<int>("ITEMAX");
@@ -2417,40 +2419,40 @@ void TSI::Monolithic::set_default_parameters()
   {
     case Inpar::TSI::bop_and:
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Convergence test of TSI:\n res, inc with 'AND'." << std::endl;
       break;
     }
     case Inpar::TSI::bop_or:
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Convergence test of TSI:\n res, inc with 'OR'." << std::endl;
       break;
     }
     case Inpar::TSI::bop_coupl_and_singl:
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Convergence test of TSI:\n res, inc, str-res, thr-res, dis, temp with 'AND'."
                   << std::endl;
       break;
     }
     case Inpar::TSI::bop_coupl_or_singl:
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Convergence test of TSI:\n (res, inc) or (str-res, thr-res, dis, temp)."
                   << std::endl;
       break;
     }
     case Inpar::TSI::bop_and_singl:
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'AND'."
                   << std::endl;
       break;
     }
     case Inpar::TSI::bop_or_singl:
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'OR'."
                   << std::endl;
       break;
@@ -2578,7 +2580,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
 
   // initialise a vector containing all structural DBC
   std::vector<Core::Conditions::Condition*> dbc(0);
-  structure_field()->discretization()->GetCondition("Dirichlet", dbc);
+  structure_field()->discretization()->get_condition("Dirichlet", dbc);
 
   // initialise a vector contatining all DBC in a special direction (here: in z)
   std::vector<int> one_dof_in_dbc(1);
@@ -2593,7 +2595,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   for (int i = 0; i < (int)dbc.size(); ++i)
   {
     // get nodes which have DBCs
-    const std::vector<int>* nodeids_withdbc = dbc[i]->GetNodes();
+    const std::vector<int>* nodeids_withdbc = dbc[i]->get_nodes();
     if (!nodeids_withdbc) FOUR_C_THROW("Condition does not have Node Ids");
 
     // loop over DBC nodes
@@ -2601,14 +2603,14 @@ void TSI::Monolithic::calculate_necking_tsi_results()
     {
       int gid = (*nodeids_withdbc)[k];
       // do only nodes which are in my discretisation
-      if (structure_field()->discretization()->NodeRowMap()->MyGID(gid) == false) continue;
+      if (structure_field()->discretization()->node_row_map()->MyGID(gid) == false) continue;
 
       // -------------------- evaluation in special direction, here z-direction
       // get node with global id gid
-      Core::Nodes::Node* node = structure_field()->discretization()->gNode(gid);
+      Core::Nodes::Node* node = structure_field()->discretization()->g_node(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       // check coordinates in z-direction, i.e. third value of X()
-      double zcoord = node->X()[2];
+      double zcoord = node->x()[2];
       // possible push-back
       bool this_is_new_gid = true;
       // get the z-displacement DOFS located at the top surface (z=13.3335mm)
@@ -2616,18 +2618,18 @@ void TSI::Monolithic::calculate_necking_tsi_results()
       {
         for (unsigned j = 0; j < sdata.size(); j++)
         {
-          if (sdata.at(j) == structure_field()->discretization()->Dof(0, node, 2))
+          if (sdata.at(j) == structure_field()->discretization()->dof(0, node, 2))
             this_is_new_gid = false;
         }
-        if (this_is_new_gid) sdata.push_back(structure_field()->discretization()->Dof(0, node, 2));
-        one_dof_in_dbc.at(0) = structure_field()->discretization()->Dof(0, node, 2);
+        if (this_is_new_gid) sdata.push_back(structure_field()->discretization()->dof(0, node, 2));
+        one_dof_in_dbc.at(0) = structure_field()->discretization()->dof(0, node, 2);
       }  // top surface
     }    // loop over DBC nodes
   }      // loop over all STRUCTURAL DBC conditions
 
   // map containing all z-displacement DOFs which have a DBC
   Teuchos::RCP<Epetra_Map> newdofmap = Teuchos::rcp(new Epetra_Map(
-      -1, (int)sdata.size(), sdata.data(), 0, structure_field()->discretization()->Comm()));
+      -1, (int)sdata.size(), sdata.data(), 0, structure_field()->discretization()->get_comm()));
 
   //---------------------------------------------------------------------------
   // ------------------------------------ initialse STRUCTURAL output variables
@@ -2648,7 +2650,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   double top_force_global = 0.0;
 
   // sum all nodal forces (top_force_local) in one global vector (top_force_global)
-  structure_field()->discretization()->Comm().SumAll(&top_force_local, &top_force_global, 1);
+  structure_field()->discretization()->get_comm().SumAll(&top_force_local, &top_force_global, 1);
 
   // --------------------------------------------- reaction force of whole body
   // due to symmetry only 1/8 is simulated, i.e. only 1/4 of the surface is considered
@@ -2666,20 +2668,21 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   std::vector<int> one_dof_in_dbc_global(1);
   one_dof_in_dbc_global.at(0) = -1;
 
-  structure_field()->discretization()->Comm().MaxAll(
+  structure_field()->discretization()->get_comm().MaxAll(
       &one_dof_in_dbc.at(0), &one_dof_in_dbc_global.at(0), 1);
 
   // extract axial displacements (here z-displacements) of top surface
   if (structure_field()->discretization()->dof_row_map()->MyGID(one_dof_in_dbc_global.at(0)))
   {
     Core::FE::ExtractMyValues(
-        *(structure_field()->Dispnp()), top_disp_local, one_dof_in_dbc_global);
+        *(structure_field()->dispnp()), top_disp_local, one_dof_in_dbc_global);
   }
 
   // initialse the top displacement
   double top_disp_global = 0.0;
   // sum all nodal displacements (top_disp_local) in one global vector (top_disp_global)
-  structure_field()->discretization()->Comm().SumAll(&top_disp_local.at(0), &top_disp_global, 1);
+  structure_field()->discretization()->get_comm().SumAll(
+      &top_disp_local.at(0), &top_disp_global, 1);
 
   // ------------------------------------------------ necking radius at point A
   // necking, i.e. radial displacements in centre plane (here: xy-plane)
@@ -2688,17 +2691,18 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   // i.e. displacement-DOFs of the xy-plane in the middle of the body
   std::vector<int> necking_radius_dof(1);
   necking_radius_dof.at(0) = -1.;
-  for (int k = 0; k < (int)structure_field()->discretization()->NodeRowMap()->NumMyElements(); k++)
+  for (int k = 0; k < (int)structure_field()->discretization()->node_row_map()->NumMyElements();
+       k++)
   {
-    Core::Nodes::Node* node = structure_field()->discretization()->lRowNode(k);
+    Core::Nodes::Node* node = structure_field()->discretization()->l_row_node(k);
     // change here value for different geometries
-    if ((abs(node->X()[0] - necking_x) < 1.e-8)      // x-direction
-        and (abs(node->X()[1] - necking_y) < 1.e-8)  // y-direction
-        and (abs(node->X()[2] - necking_z) < 1.e-8)  // z-direction
+    if ((abs(node->x()[0] - necking_x) < 1.e-8)      // x-direction
+        and (abs(node->x()[1] - necking_y) < 1.e-8)  // y-direction
+        and (abs(node->x()[2] - necking_z) < 1.e-8)  // z-direction
     )
     {
       // we choose point A (6.413mm / 0mm / -13.3335mm)
-      necking_radius_dof.at(0) = structure_field()->discretization()->Dof(0, node, 0);
+      necking_radius_dof.at(0) = structure_field()->discretization()->dof(0, node, 0);
       break;  // we only look for one specific node, if we have found it: stop
 
     }  // end point A(6.413/0/-13.3335)
@@ -2707,12 +2711,12 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   necking_radius.at(0) = 0.0;
   if (necking_radius_dof.at(0) != -1)
   {
-    Core::FE::ExtractMyValues(*(structure_field()->Dispnp()), necking_radius, necking_radius_dof);
+    Core::FE::ExtractMyValues(*(structure_field()->dispnp()), necking_radius, necking_radius_dof);
   }
 
   // sum necking deformations in the global variable necking_radius_global
   double necking_radius_global = 0.0;
-  structure_field()->discretization()->Comm().SumAll(
+  structure_field()->discretization()->get_comm().SumAll(
       &necking_radius.at(0), &necking_radius_global, 1);
 
   //---------------------------------------------------------------------------
@@ -2725,16 +2729,16 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   // A (6.413mm / 0.0mm / 13.3335mm)
   std::vector<int> neck_temperature_dof(1);
   neck_temperature_dof.at(0) = -1.0;
-  for (int k = 0; k < (int)ThermoField()->discretization()->NodeRowMap()->NumMyElements(); k++)
+  for (int k = 0; k < (int)thermo_field()->discretization()->node_row_map()->NumMyElements(); k++)
   {
-    Core::Nodes::Node* node = ThermoField()->discretization()->lRowNode(k);
+    Core::Nodes::Node* node = thermo_field()->discretization()->l_row_node(k);
     // change here value for different geometries
-    if ((abs(node->X()[0] - necking_x) < 1.e-8)      // x-direction
-        and (abs(node->X()[1] - necking_y) < 1.e-8)  // y-direction
-        and (abs(node->X()[2] - necking_z) < 1.e-8)  // z-direction
+    if ((abs(node->x()[0] - necking_x) < 1.e-8)      // x-direction
+        and (abs(node->x()[1] - necking_y) < 1.e-8)  // y-direction
+        and (abs(node->x()[2] - necking_z) < 1.e-8)  // z-direction
     )
     {
-      neck_temperature_dof.at(0) = ThermoField()->discretization()->Dof(0, node, 0);
+      neck_temperature_dof.at(0) = thermo_field()->discretization()->dof(0, node, 0);
       break;  // we only look for one specific node, if we have found it: stop
     }
   }
@@ -2742,14 +2746,14 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   temperature.at(0) = 0.0;
   if (neck_temperature_dof.at(0) != -1)
   {
-    Core::FE::ExtractMyValues(*(ThermoField()->Tempnp()),  // global (i)
-        temperature,                                       // local (o)
-        neck_temperature_dof                               // global ids to be extracted
+    Core::FE::ExtractMyValues(*(thermo_field()->tempnp()),  // global (i)
+        temperature,                                        // local (o)
+        neck_temperature_dof                                // global ids to be extracted
     );
   }
   // sum necking temperatures in the variable temperature_global
   double necking_temperature_global = 0.0;
-  ThermoField()->discretization()->Comm().SumAll(
+  thermo_field()->discretization()->get_comm().SumAll(
       &temperature.at(0), &necking_temperature_global, 1);
 
   // -----------------------------------------temperatures at top, i.e. point B
@@ -2758,16 +2762,16 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   // B (6.413mm / 0.0mm / -13.3335mm)
   std::vector<int> top_temperature_dof(1);
   top_temperature_dof.at(0) = -1.0;
-  for (int k = 0; k < (int)ThermoField()->discretization()->NodeRowMap()->NumMyElements(); k++)
+  for (int k = 0; k < (int)thermo_field()->discretization()->node_row_map()->NumMyElements(); k++)
   {
-    Core::Nodes::Node* node = ThermoField()->discretization()->lRowNode(k);
+    Core::Nodes::Node* node = thermo_field()->discretization()->l_row_node(k);
     // change here value for different geometries
-    if ((abs(node->X()[0] - top_x) < 1.e-8)      // x-direction
-        and (abs(node->X()[1] - top_y) < 1.e-8)  // y-direction
-        and (abs(node->X()[2] - top_z) < 1.e-8)  // z-direction
+    if ((abs(node->x()[0] - top_x) < 1.e-8)      // x-direction
+        and (abs(node->x()[1] - top_y) < 1.e-8)  // y-direction
+        and (abs(node->x()[2] - top_z) < 1.e-8)  // z-direction
     )
     {
-      top_temperature_dof.at(0) = ThermoField()->discretization()->Dof(0, node, 0);
+      top_temperature_dof.at(0) = thermo_field()->discretization()->dof(0, node, 0);
       break;  // we only look for one specific node, if we have found it: stop
     }
   }  // loop over thermal nodes
@@ -2777,22 +2781,22 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   top_temperature_local.at(0) = 0.0;
   if (top_temperature_dof.at(0) != -1.)
   {
-    Core::FE::ExtractMyValues(*(ThermoField()->Tempnp()),  // global vector (i)
-        top_temperature_local,                             // local, i.e. at specific position (o)
-        top_temperature_dof                                // global ids to be extracted
+    Core::FE::ExtractMyValues(*(thermo_field()->tempnp()),  // global vector (i)
+        top_temperature_local,                              // local, i.e. at specific position (o)
+        top_temperature_dof                                 // global ids to be extracted
     );
   }
 
   // sum top-temperatures in the variable top_temperature_global
   double top_temperature_global = 0.0;
-  ThermoField()->discretization()->Comm().SumAll(
+  thermo_field()->discretization()->get_comm().SumAll(
       &top_temperature_local.at(0), &top_temperature_global, 1);
 
   // -------------------------------------------------- print results to screen
   std::cout.precision(7);
   std::cout << std::scientific;
   std::cout << std::fixed;
-  if (ThermoField()->discretization()->Comm().MyPID() == 0)
+  if (thermo_field()->discretization()->get_comm().MyPID() == 0)
   {
     std::cout << "OUTPUT:\ttop-disp \ttop-freact \tneck-disp \tneck-tempi \ttop-tempi \ttop-force\n"
               << "\t" << top_disp_global << "\t" << top_reaction_force << "\t"
@@ -2808,13 +2812,13 @@ void TSI::Monolithic::calculate_necking_tsi_results()
 void TSI::Monolithic::prepare_output()
 {
   // set temperatures on structure field for evaluating stresses
-  apply_thermo_coupling_state(ThermoField()->Tempnp());
+  apply_thermo_coupling_state(thermo_field()->tempnp());
   // prepare output (i.e. calculate stresses, strains, energies)
   constexpr bool force_prepare = false;
   structure_field()->prepare_output(force_prepare);
 
   // reset states
-  structure_field()->discretization()->ClearState(true);
+  structure_field()->discretization()->clear_state(true);
 }
 
 /*----------------------------------------------------------------------*
@@ -2826,11 +2830,11 @@ void TSI::Monolithic::prepare_contact_strategy()
 
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
-    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::Solid::model_structure);
-    const auto cparams = model_eval.eval_data().ContactPtr();
+    const auto& model_eval = structure_field()->model_evaluator(Inpar::Solid::model_structure);
+    const auto cparams = model_eval.eval_data().contact_ptr();
     auto cparams_new = cparams;
     cparams_new->set_coupling_scheme(Inpar::CONTACT::CouplingScheme::monolithic);
-    ThermoField()->set_nitsche_contact_parameters(cparams_new);
+    thermo_field()->set_nitsche_contact_parameters(cparams_new);
   }
 }
 
@@ -2842,16 +2846,16 @@ void TSI::Monolithic::apply_struct_coupling_state(
 {
   if (matchinggrid_)
   {
-    if (disp != Teuchos::null) ThermoField()->discretization()->set_state(1, "displacement", disp);
-    if (vel != Teuchos::null) ThermoField()->discretization()->set_state(1, "velocity", vel);
+    if (disp != Teuchos::null) thermo_field()->discretization()->set_state(1, "displacement", disp);
+    if (vel != Teuchos::null) thermo_field()->discretization()->set_state(1, "velocity", vel);
   }
   else
   {
     if (disp != Teuchos::null)
-      ThermoField()->discretization()->set_state(
+      thermo_field()->discretization()->set_state(
           1, "displacement", volcoupl_->apply_vector_mapping21(disp));
     if (vel != Teuchos::null)
-      ThermoField()->discretization()->set_state(
+      thermo_field()->discretization()->set_state(
           1, "velocity", volcoupl_->apply_vector_mapping21(vel));
   }
 }  // apply_struct_coupling_state()
@@ -2864,11 +2868,11 @@ void TSI::Monolithic::apply_struct_coupling_state(
 void TSI::Monolithic::fix_time_integration_params()
 {
   if (Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(
-          Global::Problem::Instance()->thermal_dynamic_params(), "DYNAMICTYP") ==
+          Global::Problem::instance()->thermal_dynamic_params(), "DYNAMICTYP") ==
       Inpar::THR::dyna_genalpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
-        Global::Problem::Instance()->thermal_dynamic_params().sublist("GENALPHA"));
+        Global::Problem::instance()->thermal_dynamic_params().sublist("GENALPHA"));
     double rhoinf = ga.get<double>("RHO_INF");
 
     if (rhoinf != -1.)
@@ -2884,11 +2888,11 @@ void TSI::Monolithic::fix_time_integration_params()
   }
 
   if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(
-          Global::Problem::Instance()->structural_dynamic_params(), "DYNAMICTYP") ==
+          Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYP") ==
       Inpar::Solid::dyna_genalpha)
   {
     Teuchos::ParameterList& ga = const_cast<Teuchos::ParameterList&>(
-        Global::Problem::Instance()->structural_dynamic_params().sublist("GENALPHA"));
+        Global::Problem::instance()->structural_dynamic_params().sublist("GENALPHA"));
     double rhoinf = ga.get<double>("RHO_INF");
 
     if (rhoinf != -1.)
@@ -2912,57 +2916,57 @@ void TSI::Monolithic::fix_time_integration_params()
 void TSI::Monolithic::apply_dbc()
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(0, 0).EpetraMatrix(),
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(0, 0).epetra_matrix(),
           Core::LinAlg::Copy, true, false, Core::LinAlg::SparseMatrix::CRS_MATRIX));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(0, 1)));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(0, 1)));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(1, 0)));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(1, 0)));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_tt =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->Matrix(1, 1)));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(1, 1)));
   if (locsysman_ != Teuchos::null)
   {
     {
-      locsysman_->RotateGlobalToLocal(k_ss);
+      locsysman_->rotate_global_to_local(k_ss);
       k_ss->apply_dirichlet_with_trafo(
-          *locsysman_->Trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), true);
-      locsysman_->RotateLocalToGlobal(k_ss);
+          *locsysman_->trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), true);
+      locsysman_->rotate_local_to_global(k_ss);
     }
     {
-      locsysman_->RotateGlobalToLocal(k_st);
+      locsysman_->rotate_global_to_local(k_st);
       k_st->apply_dirichlet_with_trafo(
-          *locsysman_->Trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), false);
-      locsysman_->RotateLocalToGlobal(k_st);
+          *locsysman_->trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), false);
+      locsysman_->rotate_local_to_global(k_st);
     }
   }
   else
   {
-    k_ss->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), true);
-    k_st->ApplyDirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), false);
+    k_ss->apply_dirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), true);
+    k_st->apply_dirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), false);
   }
-  k_ts->ApplyDirichlet(*ThermoField()->get_dbc_map_extractor()->cond_map(), false);
-  k_tt->ApplyDirichlet(*ThermoField()->get_dbc_map_extractor()->cond_map(), true);
+  k_ts->apply_dirichlet(*thermo_field()->get_dbc_map_extractor()->cond_map(), false);
+  k_tt->apply_dirichlet(*thermo_field()->get_dbc_map_extractor()->cond_map(), true);
 
 
-  systemmatrix_->UnComplete();
-  systemmatrix_->Assign(0, 0, Core::LinAlg::View, *k_ss);
-  systemmatrix_->Assign(0, 1, Core::LinAlg::View, *k_st);
-  systemmatrix_->Assign(1, 0, Core::LinAlg::View, *k_ts);
-  systemmatrix_->Assign(1, 1, Core::LinAlg::View, *k_tt);
-  systemmatrix_->Complete();
+  systemmatrix_->un_complete();
+  systemmatrix_->assign(0, 0, Core::LinAlg::View, *k_ss);
+  systemmatrix_->assign(0, 1, Core::LinAlg::View, *k_st);
+  systemmatrix_->assign(1, 0, Core::LinAlg::View, *k_ts);
+  systemmatrix_->assign(1, 1, Core::LinAlg::View, *k_tt);
+  systemmatrix_->complete();
 
 
   if (locsysman_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> s_rhs, t_rhs;
     extract_field_vectors(rhs_, s_rhs, t_rhs);
-    locsysman_->RotateGlobalToLocal(s_rhs);
+    locsysman_->rotate_global_to_local(s_rhs);
     Core::LinAlg::apply_dirichlet_to_system(
         *s_rhs, *zeros_, *structure_field()->get_dbc_map_extractor()->cond_map());
-    locsysman_->RotateLocalToGlobal(s_rhs);
+    locsysman_->rotate_local_to_global(s_rhs);
 
     Core::LinAlg::apply_dirichlet_to_system(
-        *t_rhs, *zeros_, *ThermoField()->get_dbc_map_extractor()->cond_map());
+        *t_rhs, *zeros_, *thermo_field()->get_dbc_map_extractor()->cond_map());
 
     extractor()->insert_vector(*s_rhs, 0, *rhs_);
     extractor()->insert_vector(*t_rhs, 1, *rhs_);
@@ -2972,7 +2976,7 @@ void TSI::Monolithic::apply_dbc()
     Core::LinAlg::apply_dirichlet_to_system(
         *rhs_, *zeros_, *structure_field()->get_dbc_map_extractor()->cond_map());
     Core::LinAlg::apply_dirichlet_to_system(
-        *rhs_, *zeros_, *ThermoField()->get_dbc_map_extractor()->cond_map());
+        *rhs_, *zeros_, *thermo_field()->get_dbc_map_extractor()->cond_map());
   }
 }
 

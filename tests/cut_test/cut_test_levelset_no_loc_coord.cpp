@@ -75,17 +75,17 @@ Core::Geo::Cut::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
 {
   // non-planar cut surface
   Core::Geo::Cut::CombIntersection ci(-1);
-  ci.GetOptions().Init_for_Cuttests();
-  ci.AddLevelSetSide(1);
+  ci.get_options().init_for_cuttests();
+  ci.add_level_set_side(1);
 
   ci.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0], false);
 
-  ci.Cut(true);
+  ci.cut(true);
 
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets(true);
+  ci.normal_mesh().find_ls_node_positions();
+  ci.normal_mesh().find_nodal_dof_sets(true);
 
-  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
+  ci.cut_finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
       Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "TESSELATION, Cut without error." << std::endl;
 
@@ -104,17 +104,17 @@ Core::Geo::Cut::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids
 {
   // non-planar cut surface
   Core::Geo::Cut::CombIntersection ci(-1);
-  ci.GetOptions().Init_for_Cuttests();
-  ci.AddLevelSetSide(1);
+  ci.get_options().init_for_cuttests();
+  ci.add_level_set_side(1);
 
   ci.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0], false);
 
-  ci.Cut(true);
+  ci.cut(true);
 
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets(true);
+  ci.normal_mesh().find_ls_node_positions();
+  ci.normal_mesh().find_nodal_dof_sets(true);
 
-  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+  ci.cut_finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
       Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "DIRECT DIVERGENCE, Cut without error." << std::endl;
 
@@ -134,27 +134,27 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 {
   // non-planar cut surface
   Core::Geo::Cut::CombIntersection ci(-1);
-  ci.GetOptions().Init_for_Cuttests();
+  ci.get_options().init_for_cuttests();
   Core::Geo::Cut::CombIntersection cidd(-1);
-  cidd.GetOptions().Init_for_Cuttests();
-  ci.AddLevelSetSide(1);
-  cidd.AddLevelSetSide(1);
+  cidd.get_options().init_for_cuttests();
+  ci.add_level_set_side(1);
+  cidd.add_level_set_side(1);
 
   ci.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0], false);
   cidd.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0], false);
 
-  ci.Cut(true);
-  cidd.Cut(true);
+  ci.cut(true);
+  cidd.cut(true);
 
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets(true);
-  cidd.NormalMesh().FindLSNodePositions();
-  cidd.NormalMesh().FindNodalDOFSets(true);
+  ci.normal_mesh().find_ls_node_positions();
+  ci.normal_mesh().find_nodal_dof_sets(true);
+  cidd.normal_mesh().find_ls_node_positions();
+  cidd.normal_mesh().find_nodal_dof_sets(true);
 
-  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
+  ci.cut_finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
       Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "TESSELATION, Cut without error." << std::endl;
-  cidd.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+  cidd.cut_finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
       Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "DIRECT DIVERGENCE, Cut without error." << std::endl;
 
@@ -176,21 +176,21 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 
   // Sum Tessellation volume of test
   const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells =
-      ci.NormalMesh().VolumeCells();
+      ci.normal_mesh().volume_cells();
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
   for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Core::Geo::Cut::VolumeCell* vc = &**i;
-    tessVol.push_back(vc->Volume());
+    tessVol.push_back(vc->volume());
 
     // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
     //++++++++++++++++++++
     iteration_VC++;
     std::cout << "VC(" << iteration_VC << "):" << std::endl;
 
-    const Core::Geo::Cut::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
+    const Core::Geo::Cut::plain_integrationcell_set& integrationcells = vc->integration_cells();
     std::cout << "Has #IC=" << integrationcells.size() << std::endl;
 
     if (integrationcells.size() == 0)
@@ -203,14 +203,14 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 
   // Sum Direct Divergence of test
   const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cellsdd =
-      cidd.NormalMesh().VolumeCells();
+      cidd.normal_mesh().volume_cells();
   std::cout << "# Volume Cells Direct Divergence: " << other_cellsdd.size() << std::endl;
   for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator idd =
            other_cellsdd.begin();
        idd != other_cellsdd.end(); ++idd)
   {
     Core::Geo::Cut::VolumeCell* vc = &**idd;
-    dirDivVol.push_back(vc->Volume());
+    dirDivVol.push_back(vc->volume());
   }
   //------------------------------------------------------
 
@@ -245,21 +245,21 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
 
   // Sum Tessellation volume of test
   const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells =
-      ci.NormalMesh().VolumeCells();
+      ci.normal_mesh().volume_cells();
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
   for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Core::Geo::Cut::VolumeCell* vc = &**i;
-    tessVol.push_back(vc->Volume());
+    tessVol.push_back(vc->volume());
 
     // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
     //++++++++++++++++++++
     iteration_VC++;
     std::cout << "VC(" << iteration_VC << "):" << std::endl;
 
-    const Core::Geo::Cut::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
+    const Core::Geo::Cut::plain_integrationcell_set& integrationcells = vc->integration_cells();
     std::cout << "Has #IC=" << integrationcells.size() << std::endl;
 
     if (integrationcells.size() == 0)
@@ -279,11 +279,11 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
     //    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL #" << counter <<  ".....!" << std::endl;
     //    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
     vc->direct_divergence_gauss_rule(
-        vc->parent_element(), ci.NormalMesh(), true, Core::Geo::Cut::BCellGaussPts_Tessellation);
+        vc->parent_element(), ci.normal_mesh(), true, Core::Geo::Cut::BCellGaussPts_Tessellation);
     //    std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL #" << counter <<  " WITHOUT ERROR!" <<
     //    std::endl << std::endl;
     counter++;
-    dirDivVol.push_back(vc->Volume());
+    dirDivVol.push_back(vc->volume());
   }
 
   // Test Direct Divergence against Tesselation
@@ -1240,7 +1240,7 @@ void test_ls_mesh_hex8_simple()
 
 
   Core::Geo::Cut::MeshIntersection intersection;
-  intersection.GetOptions().Init_for_Cuttests();  // use full cln
+  intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids_mesh;
 
   int sidecount = 0;
@@ -1260,7 +1260,7 @@ void test_ls_mesh_hex8_simple()
     nids_mesh.push_back(761);
     nids_mesh.push_back(857);
     nids_mesh.push_back(859);
-    intersection.AddCutSide(++sidecount, nids_mesh, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids_mesh, tri3_xyze, Core::FE::CellType::tri3);
   }
 
   for (int i = 0; i < 8; ++i)
@@ -1270,17 +1270,17 @@ void test_ls_mesh_hex8_simple()
 
   // CUT WITH MESH
   intersection.add_element(1, nids, GetLocalHex8Coords(), Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
+  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 
   std::vector<double> tessVol, dirDivVol;
 
-  Core::Geo::Cut::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells = mesh.VolumeCells();
+  Core::Geo::Cut::Mesh mesh = intersection.normal_mesh();
+  const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells = mesh.volume_cells();
   for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Core::Geo::Cut::VolumeCell* vc = &**i;
-    tessVol.push_back(vc->Volume());
+    tessVol.push_back(vc->volume());
   }
 
   int counter = 1;
@@ -1290,14 +1290,14 @@ void test_ls_mesh_hex8_simple()
     Core::Geo::Cut::VolumeCell* vc = &**i;
     std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL USING MESH #" << counter << ".....!"
               << std::endl;
-    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
+    std::cout << "Volumecell Position: " << vc->position() << std::endl;
     vc->direct_divergence_gauss_rule(
         vc->parent_element(), mesh, true, Core::Geo::Cut::BCellGaussPts_Tessellation);
     std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL USING MESH #" << counter << " WITHOUT ERROR!"
               << std::endl
               << std::endl;
     counter++;
-    dirDivVol.push_back(vc->Volume());
+    dirDivVol.push_back(vc->volume());
   }
 
   // Test Direct Divergence against Tesselation
@@ -1334,8 +1334,8 @@ void test_ls_mesh_hex8_simple()
 void test_ls_hex8_experiment_magnus()
 {
   Core::Geo::Cut::CombIntersection ci(-1);
-  ci.GetOptions().Init_for_Cuttests();
-  ci.AddLevelSetSide(1);
+  ci.get_options().init_for_cuttests();
+  ci.add_level_set_side(1);
 
   // simple hex8 element
   std::vector<int> nids(8);
@@ -1405,16 +1405,16 @@ void test_ls_hex8_experiment_magnus()
 
   ci.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0], false);
 
-  ci.Cut(true);
+  ci.cut(true);
   // ci.print_cell_stats();
 
   //  ci.NormalMesh().FindLSNodePositions();
   //  ci.NormalMesh().FindNodalDOFSets( true );
 
-  ci.FindNodePositions();
+  ci.find_node_positions();
 
   // Changed to DD
-  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
+  ci.cut_finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
       Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   // ci.Cut_Finalize( true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
   // Core::Geo::Cut::BCellGaussPts_Tessellation, false, true );
@@ -1422,13 +1422,13 @@ void test_ls_hex8_experiment_magnus()
 
   // #ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
   //  Gmsh-output
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus6.CUT.pos");
-  ci.NormalMesh().dump_gmsh_volume_cells("xxx_cut_test_ls_hex8_magnus6.CUT_volumecells.pos", true);
+  ci.normal_mesh().dump_gmsh("xxx_cut_test_ls_hex8_magnus6.CUT.pos");
+  ci.normal_mesh().dump_gmsh_volume_cells("xxx_cut_test_ls_hex8_magnus6.CUT_volumecells.pos", true);
   ci.dump_gmsh_integration_cells("xxx_cut_test_ls_hex8_magnus6.CUT_integrationcells.pos");
   // #endif
 
   const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells =
-      ci.NormalMesh().VolumeCells();
+      ci.normal_mesh().volume_cells();
   std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
 
   int iteration_VC = 0;
@@ -1439,7 +1439,7 @@ void test_ls_hex8_experiment_magnus()
     std::cout << "VC(" << iteration_VC << "):" << std::endl;
     Core::Geo::Cut::VolumeCell* vc = &**i;
 
-    const Core::Geo::Cut::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
+    const Core::Geo::Cut::plain_integrationcell_set& integrationcells = vc->integration_cells();
     std::cout << "Has #IC=" << integrationcells.size() << std::endl;
 
     if (integrationcells.size() == 0)

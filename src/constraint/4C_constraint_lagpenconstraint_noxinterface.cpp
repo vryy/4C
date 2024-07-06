@@ -205,12 +205,12 @@ bool LAGPENCONSTRAINT::NoxInterfacePrec::is_saddle_point_system() const
   std::vector<Core::Conditions::Condition*> lagcond_mpconline2d(0);
   std::vector<Core::Conditions::Condition*> lagcond_mpconplane3d(0);
   std::vector<Core::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
-  dis->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
-  dis->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
-  dis->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);
-  dis->GetCondition("MPC_NodeOnLine_2D", lagcond_mpconline2d);
-  dis->GetCondition("MPC_NodeOnPlane_3D", lagcond_mpconplane3d);
-  dis->GetCondition("MPC_NormalComponent_3D", lagcond_mpcnormcomp3d);
+  dis->get_condition("VolumeConstraint_3D", lagcond_volconstr3d);
+  dis->get_condition("AreaConstraint_3D", lagcond_areaconstr3d);
+  dis->get_condition("AreaConstraint_2D", lagcond_areaconstr2d);
+  dis->get_condition("MPC_NodeOnLine_2D", lagcond_mpconline2d);
+  dis->get_condition("MPC_NodeOnPlane_3D", lagcond_mpconplane3d);
+  dis->get_condition("MPC_NormalComponent_3D", lagcond_mpcnormcomp3d);
   if (lagcond_volconstr3d.size() or lagcond_areaconstr3d.size() or lagcond_areaconstr2d.size() or
       lagcond_mpconline2d.size() or lagcond_mpconplane3d.size() or lagcond_mpcnormcomp3d.size())
     have_lag_constraint = true;

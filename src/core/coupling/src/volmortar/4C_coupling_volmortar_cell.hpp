@@ -52,19 +52,19 @@ namespace Core::VolMortar
     \brief calc jacobian
 
     */
-    double CalcJac(const double* xi);
+    double calc_jac(const double* xi);
 
     /*!
     \brief get cell id
 
     */
-    int Id() const { return id_; }
+    int id() const { return id_; }
 
     /*!
     \brief mapping between para space and global space
 
     */
-    void LocalToGlobal(double* local, double* global);
+    void local_to_global(double* local, double* global);
 
     /*!
     \brief output for coordinates
@@ -76,13 +76,13 @@ namespace Core::VolMortar
     \brief get shape
 
     */
-    virtual Core::FE::CellType Shape() const { return shape_; }
+    virtual Core::FE::CellType shape() const { return shape_; }
 
     /*!
     \brief get cell volume
 
     */
-    virtual double Vol() { return vol_; }
+    virtual double vol() { return vol_; }
 
     //@}
    protected:

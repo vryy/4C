@@ -67,8 +67,8 @@ void Solid::MODELEVALUATOR::Cardiovascular0D::setup()
   // time-integration dies ...
   // initialize 0D cardiovascular manager
   cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(dis, disnp_ptr_,
-      Global::Problem::Instance()->structural_dynamic_params(),
-      Global::Problem::Instance()->cardiovascular0_d_structural_params(), *dummysolver,
+      Global::Problem::instance()->structural_dynamic_params(),
+      Global::Problem::instance()->cardiovascular0_d_structural_params(), *dummysolver,
       Teuchos::null));
 
   // set flag
@@ -85,7 +85,7 @@ void Solid::MODELEVALUATOR::Cardiovascular0D::reset(const Epetra_Vector& x)
   disnp_ptr_ = global_state().get_dis_np();
 
   fstructcardio_np_ptr_->PutScalar(0.0);
-  stiff_cardio_ptr_->Zero();
+  stiff_cardio_ptr_->zero();
 
   return;
 }
@@ -121,7 +121,7 @@ bool Solid::MODELEVALUATOR::Cardiovascular0D::evaluate_stiff()
   cardvasc0dman_->evaluate_force_stiff(
       time_np, disnp_ptr_, Teuchos::null, stiff_cardio_ptr_, pcardvasc0d);
 
-  if (not stiff_cardio_ptr_->Filled()) stiff_cardio_ptr_->Complete();
+  if (not stiff_cardio_ptr_->filled()) stiff_cardio_ptr_->complete();
 
   return true;
 }
@@ -139,7 +139,7 @@ bool Solid::MODELEVALUATOR::Cardiovascular0D::evaluate_force_stiff()
   cardvasc0dman_->evaluate_force_stiff(
       time_np, disnp_ptr_, fstructcardio_np_ptr_, stiff_cardio_ptr_, pcardvasc0d);
 
-  if (not stiff_cardio_ptr_->Filled()) stiff_cardio_ptr_->Complete();
+  if (not stiff_cardio_ptr_->filled()) stiff_cardio_ptr_->complete();
 
   return true;
 }
@@ -181,27 +181,27 @@ bool Solid::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
 
   // --- Kdd - block - scale with str time-integrator dependent value---
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
-  jac_dd_ptr->Add(*stiff_cardio_ptr_, false, timefac_np, 1.0);
+  jac_dd_ptr->add(*stiff_cardio_ptr_, false, timefac_np, 1.0);
   // no need to keep it
-  stiff_cardio_ptr_->Zero();
+  stiff_cardio_ptr_->zero();
 
   // --- Kdz - block ---------------------------------------------------
   block_ptr = cardvasc0dman_->get_mat_dstruct_dcv0ddof();
   // scale with str time-integrator dependent value
-  block_ptr->Scale(timefac_np);
-  global_state().assign_model_block(jac, *block_ptr, Type(), MatBlockType::displ_lm);
+  block_ptr->scale(timefac_np);
+  global_state().assign_model_block(jac, *block_ptr, type(), MatBlockType::displ_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
   // --- Kzd - block - already scaled correctly by 0D model !-----------
-  block_ptr = cardvasc0dman_->GetMatDcardvasc0dDd()->Transpose();
-  global_state().assign_model_block(jac, *block_ptr, Type(), MatBlockType::lm_displ);
+  block_ptr = cardvasc0dman_->get_mat_dcardvasc0d_dd()->transpose();
+  global_state().assign_model_block(jac, *block_ptr, type(), MatBlockType::lm_displ);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
   // --- Kzz - block - already scaled with 0D theta by 0D model !-------
   block_ptr = cardvasc0dman_->get_cardiovascular0_d_stiffness();
-  global_state().assign_model_block(jac, *block_ptr, Type(), MatBlockType::lm_lm);
+  global_state().assign_model_block(jac, *block_ptr, type(), MatBlockType::lm_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
@@ -213,11 +213,11 @@ bool Solid::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
 void Solid::MODELEVALUATOR::Cardiovascular0D::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  iowriter.write_vector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
-  iowriter.write_vector("cv0d_f_np", cardvasc0dman_->Get0D_f_np());
+  iowriter.write_vector("cv0d_df_np", cardvasc0dman_->get0_d_df_np());
+  iowriter.write_vector("cv0d_f_np", cardvasc0dman_->get0_d_f_np());
 
-  iowriter.write_vector("cv0d_dof_np", cardvasc0dman_->Get0D_dof_np());
-  iowriter.write_vector("vol_np", cardvasc0dman_->Get0D_vol_np());
+  iowriter.write_vector("cv0d_dof_np", cardvasc0dman_->get0_d_dof_np());
+  iowriter.write_vector("vol_np", cardvasc0dman_->get0_d_vol_np());
 
   return;
 }
@@ -242,7 +242,7 @@ void Solid::MODELEVALUATOR::Cardiovascular0D::run_post_compute_x(
   Teuchos::RCP<Epetra_Vector> cv0d_incr =
       global_state().extract_model_entries(Inpar::Solid::model_cardiovascular0d, dir);
 
-  cardvasc0dman_->UpdateCv0DDof(cv0d_incr);
+  cardvasc0dman_->update_cv0_d_dof(cv0d_incr);
 
   return;
 }
@@ -253,12 +253,12 @@ void Solid::MODELEVALUATOR::Cardiovascular0D::update_step_state(const double& ti
 {
   // only update 0D model at the end of the time step!
   if (eval_data().get_total_time() == global_state().get_time_np())
-    cardvasc0dman_->UpdateTimeStep();
+    cardvasc0dman_->update_time_step();
 
   // only print state variables after a finished time step, not when we're
   // in the equilibriate initial state routine
   if (eval_data().get_total_time() == global_state().get_time_np())
-    cardvasc0dman_->PrintPresFlux(false);
+    cardvasc0dman_->print_pres_flux(false);
 
   // add the 0D cardiovascular force contributions to the old structural
   // residual state vector

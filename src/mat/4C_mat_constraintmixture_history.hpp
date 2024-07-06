@@ -24,11 +24,11 @@ namespace Mat
   class ConstraintMixtureHistoryType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ConstraintMixtureHistoryType"; }
+    std::string name() const override { return "ConstraintMixtureHistoryType"; }
 
-    static ConstraintMixtureHistoryType& Instance() { return instance_; };
+    static ConstraintMixtureHistoryType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ConstraintMixtureHistoryType instance_;
@@ -45,9 +45,9 @@ namespace Mat
     ConstraintMixtureHistory() { ; }
 
     //! @name Packing and Unpacking
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ConstraintMixtureHistoryType::Instance().UniqueParObjectId();
+      return ConstraintMixtureHistoryType::instance().unique_par_object_id();
     }
     void pack(Core::Communication::PackBuffer& data) const override;
     void unpack(const std::vector<char>& data) override;

@@ -54,7 +54,7 @@ namespace Solid
 
       //! @name Derived public Solid::MODELEVALUATOR::Generic methods
       //! @{
-      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_constraints; }
+      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_constraints; }
 
       void reset(const Epetra_Vector& x) override;
 
@@ -90,7 +90,7 @@ namespace Solid
 
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override {}
 
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override;
+      void predict(const Inpar::Solid::PredEnum& pred_type) override;
 
       void update_step_state(const double& timefac_n) override;
 

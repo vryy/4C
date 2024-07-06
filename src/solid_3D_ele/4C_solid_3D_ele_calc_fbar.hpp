@@ -51,7 +51,7 @@ namespace Discret::ELEMENTS
     using PreparationData = FBarPreparationData<celltype>;
 
 
-    static FBarPreparationData<celltype> Prepare(
+    static FBarPreparationData<celltype> prepare(
         const Core::Elements::Element& ele, const ElementNodes<celltype>& nodal_coordinates)
     {
       const JacobianMapping<celltype> jacobian_mapping_centroid =

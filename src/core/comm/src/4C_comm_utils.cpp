@@ -306,7 +306,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | local proc id  of global proc id is returned             ghamm 03/12 |
    *----------------------------------------------------------------------*/
-  int Communicators::LPID(int GPID)
+  int Communicators::lpid(int GPID)
   {
     std::map<int, int>::iterator it = lpidgpid_.begin();
     while (it != lpidgpid_.end())
@@ -325,7 +325,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | set sub communicator                                     ghamm 04/12 |
    *----------------------------------------------------------------------*/
-  void Communicators::SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm)
+  void Communicators::set_sub_comm(Teuchos::RCP<Epetra_Comm> subcomm)
   {
     subcomm_ = subcomm;
     return;
@@ -337,8 +337,8 @@ namespace Core::Communication
       Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol /*= 1.0e-14*/
   )
   {
-    Teuchos::RCP<Epetra_Comm> lcomm = communicators.LocalComm();
-    Teuchos::RCP<Epetra_Comm> gcomm = communicators.GlobalComm();
+    Teuchos::RCP<Epetra_Comm> lcomm = communicators.local_comm();
+    Teuchos::RCP<Epetra_Comm> gcomm = communicators.global_comm();
     MPI_Comm mpi_lcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
     MPI_Comm mpi_gcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
 
@@ -479,8 +479,8 @@ namespace Core::Communication
       Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol /*= 1.0e-14*/
   )
   {
-    Teuchos::RCP<Epetra_Comm> lcomm = communicators.LocalComm();
-    Teuchos::RCP<Epetra_Comm> gcomm = communicators.GlobalComm();
+    Teuchos::RCP<Epetra_Comm> lcomm = communicators.local_comm();
+    Teuchos::RCP<Epetra_Comm> gcomm = communicators.global_comm();
     MPI_Comm mpi_lcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
     MPI_Comm mpi_gcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
     const int myglobalrank = gcomm->MyPID();

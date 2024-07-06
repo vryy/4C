@@ -48,12 +48,12 @@ namespace Adapter
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface() const;
 
     //! add ALE wear condition vector
     void apply_interface_displacements(Teuchos::RCP<Epetra_Vector> idisp)
     {
-      interface_->add_ale_wear_cond_vector(idisp, WriteAccessDispnp());
+      interface_->add_ale_wear_cond_vector(idisp, write_access_dispnp());
     }
 
    private:

@@ -107,7 +107,7 @@ void Solid::Nln::SOLVER::SingleStep::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::SingleStep::Solve()
+enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::SingleStep::solve()
 {
   check_init_setup();
 

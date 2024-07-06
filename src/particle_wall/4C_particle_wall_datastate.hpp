@@ -72,7 +72,7 @@ namespace PARTICLEWALL
      *
      * \author Sebastian Fuchs \date 05/2019
      */
-    void CheckForCorrectMaps();
+    void check_for_correct_maps();
 
     /*!
      * \brief update maps of state vectors
@@ -85,10 +85,10 @@ namespace PARTICLEWALL
     //! @{
 
     //! get wall displacements (row map based)
-    inline Teuchos::RCP<const Epetra_Vector> GetDispRow() const { return disp_row_; };
+    inline Teuchos::RCP<const Epetra_Vector> get_disp_row() const { return disp_row_; };
 
     //! get wall displacements (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> GetDispCol() const { return disp_col_; };
+    inline Teuchos::RCP<const Epetra_Vector> get_disp_col() const { return disp_col_; };
 
     //! get wall displacements (row map based) after last transfer
     inline Teuchos::RCP<const Epetra_Vector> get_disp_row_last_transfer() const
@@ -97,13 +97,13 @@ namespace PARTICLEWALL
     };
 
     //! get wall velocities (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> GetVelCol() const { return vel_col_; };
+    inline Teuchos::RCP<const Epetra_Vector> get_vel_col() const { return vel_col_; };
 
     //! get wall accelerations (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> GetAccCol() const { return acc_col_; };
+    inline Teuchos::RCP<const Epetra_Vector> get_acc_col() const { return acc_col_; };
 
     //! get wall forces (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> GetForceCol() const { return force_col_; };
+    inline Teuchos::RCP<const Epetra_Vector> get_force_col() const { return force_col_; };
 
     //! @}
 
@@ -111,12 +111,12 @@ namespace PARTICLEWALL
     //! @{
 
     //! get wall displacements (row map based)
-    inline Teuchos::RCP<Epetra_Vector> GetDispRow() { return disp_row_; };
-    inline Teuchos::RCP<Epetra_Vector>& GetRefDispRow() { return disp_row_; };
+    inline Teuchos::RCP<Epetra_Vector> get_disp_row() { return disp_row_; };
+    inline Teuchos::RCP<Epetra_Vector>& get_ref_disp_row() { return disp_row_; };
 
     //! get wall displacements (column map based)
-    inline Teuchos::RCP<Epetra_Vector> GetDispCol() { return disp_col_; };
-    inline Teuchos::RCP<Epetra_Vector>& GetRefDispCol() { return disp_col_; };
+    inline Teuchos::RCP<Epetra_Vector> get_disp_col() { return disp_col_; };
+    inline Teuchos::RCP<Epetra_Vector>& get_ref_disp_col() { return disp_col_; };
 
     //! get wall displacements (row map based) after last transfer
     inline Teuchos::RCP<Epetra_Vector> get_disp_row_last_transfer()
@@ -125,13 +125,13 @@ namespace PARTICLEWALL
     };
 
     //! get wall velocities (column map based)
-    inline Teuchos::RCP<Epetra_Vector> GetVelCol() { return vel_col_; };
+    inline Teuchos::RCP<Epetra_Vector> get_vel_col() { return vel_col_; };
 
     //! get wall accelerations (column map based)
-    inline Teuchos::RCP<Epetra_Vector> GetAccCol() { return acc_col_; };
+    inline Teuchos::RCP<Epetra_Vector> get_acc_col() { return acc_col_; };
 
     //! get wall forces (column map based)
-    inline Teuchos::RCP<Epetra_Vector> GetForceCol() { return force_col_; };
+    inline Teuchos::RCP<Epetra_Vector> get_force_col() { return force_col_; };
 
     //! @}
 

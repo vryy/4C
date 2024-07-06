@@ -53,7 +53,7 @@ namespace PoroElastScaTra
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
     //! Main time loop.
-    void Timeloop() override;
+    void timeloop() override;
 
     //! read and set fields needed for restart
     void read_restart(int restart) override;
@@ -62,7 +62,7 @@ namespace PoroElastScaTra
     void prepare_time_step(bool printheader = true) override;
 
     //! is convergence reached of iterative solution technique?
-    bool Converged();
+    bool converged();
 
     /*! do the setup for the monolithic system
 
@@ -78,7 +78,7 @@ namespace PoroElastScaTra
      read_mesh is called), the dofmaps for the blocks might get invalid.
      */
     //! Setup the monolithic Poroelasticity system
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! setup composed right hand side from field solvers
     virtual void setup_rhs(bool firstcall = false);
@@ -92,7 +92,7 @@ namespace PoroElastScaTra
     );
 
     //! solve one time step
-    void Solve() override;
+    void solve() override;
 
     //! take current results for converged and save for next time step
     void update() override;
@@ -101,15 +101,15 @@ namespace PoroElastScaTra
     void output() override;
 
     // Setup solver for monolithic system
-    bool SetupSolver() override;
+    bool setup_solver() override;
 
     //! @name Access methods
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix();
 
     //! right hand side vector
-    Teuchos::RCP<Epetra_Vector> RHS() { return rhs_; };
+    Teuchos::RCP<Epetra_Vector> rhs() { return rhs_; };
 
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map() const;

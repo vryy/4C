@@ -138,12 +138,12 @@ std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::getNormF() const { return norm_f_; }
+double NOX::FSI::GenericNormF::get_norm_f() const { return norm_f_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::getTrueTolerance() const { return true_tolerance_; }
+double NOX::FSI::GenericNormF::get_true_tolerance() const { return true_tolerance_; }
 
 
 /*----------------------------------------------------------------------*/
@@ -153,7 +153,7 @@ double NOX::FSI::GenericNormF::get_specified_tolerance() const { return specifie
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormF::getInitialTolerance() const { return initial_tolerance_; }
+double NOX::FSI::GenericNormF::get_initial_tolerance() const { return initial_tolerance_; }
 
 
 /*----------------------------------------------------------------------*/
@@ -187,7 +187,7 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 
   if (newton() != Teuchos::null)
   {
-    newton()->Residual(norm, tolerance());
+    newton()->residual(norm, tolerance());
   }
 
   return norm;
@@ -226,14 +226,14 @@ double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp
   Teuchos::RCP<Epetra_Vector> v1 = extractor1_.extract_cond_vector(f.getEpetraVector());
   Teuchos::RCP<Epetra_Vector> v2 = extractor2_.extract_cond_vector(f.getEpetraVector());
 
-  Teuchos::RCP<Epetra_Vector> v = converter_->SrcToDst(v2);
+  Teuchos::RCP<Epetra_Vector> v = converter_->src_to_dst(v2);
   v->Update(scale1_, *v1, scale2_);
 
   double norm = FSI::GenericNormF::compute_norm(*v);
 
   if (newton() != Teuchos::null)
   {
-    newton()->Residual(norm, tolerance());
+    newton()->residual(norm, tolerance());
   }
 
   return norm;
@@ -385,12 +385,12 @@ std::ostream& NOX::FSI::GenericNormUpdate::print(std::ostream& stream, int inden
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormUpdate::getNormUpdate() const { return norm_update_; }
+double NOX::FSI::GenericNormUpdate::get_norm_update() const { return norm_update_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double NOX::FSI::GenericNormUpdate::getTolerance() const { return tolerance_; }
+double NOX::FSI::GenericNormUpdate::get_tolerance() const { return tolerance_; }
 
 
 /*----------------------------------------------------------------------*/
@@ -474,11 +474,11 @@ std::ostream& NOX::FSI::MinIters::print(std::ostream& stream, int indent) const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int NOX::FSI::MinIters::getMinIters() const { return miniters_; }
+int NOX::FSI::MinIters::get_min_iters() const { return miniters_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int NOX::FSI::MinIters::getNumIters() const { return niters_; }
+int NOX::FSI::MinIters::get_num_iters() const { return niters_; }
 
 FOUR_C_NAMESPACE_CLOSE

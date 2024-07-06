@@ -76,7 +76,7 @@ namespace Mat
       IsoOgden(Mat::Elastic::PAR::IsoOgden* params);
 
       /// Provide the material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_isoogden;
       }
@@ -97,7 +97,7 @@ namespace Mat
           ) override;
 
       /// Specify the formulation as isochoric in terms of modified principal invariants
-      void SpecifyFormulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,
+      void specify_formulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,
           bool& viscogeneral) override
       {
         isomod = true;

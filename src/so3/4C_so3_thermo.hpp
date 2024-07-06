@@ -91,15 +91,15 @@ namespace Discret
 
       //! Deep copy this instance of Solid3 and return pointer to the copy
       //!
-      //! The Clone() method is used from the virtual base class Element in cases
+      //! The clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       //! Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      int UniqueParObjectId() const override;
+      int unique_par_object_id() const override;
 
       //! Pack this class so it can be communicated
       //! Pack and \ref unpack are used to communicate this element
@@ -117,7 +117,7 @@ namespace Discret
       void print(std::ostream& os) const override;
 
       //! return elementtype thermo element
-      Core::Elements::ElementType& ElementType() const override;
+      Core::Elements::ElementType& element_type() const override;
 
       //@}
 
@@ -142,7 +142,7 @@ namespace Discret
       //!  names (out): On return, the derived class has filled names with key
       //!               names of data it wants to visualize and with int dimensions
       //!               of that data.
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       //!  Query data to be visualized using BINIO of a given name
       //!
@@ -156,12 +156,12 @@ namespace Discret
       //!
       //!  name (in):   Name of data that is currently processed for visualization
       //! \param data (out):  data to be filled by element if element recognizes the name
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
       //! read input for this element
-      bool ReadElement(const std::string& eletype,  //!< so3thermo
-          const std::string& eledistype,            //!< hex8,tet4,...
-          Input::LineDefinition* linedef            //!< what parameters have to be read
+      bool read_element(const std::string& eletype,  //!< so3thermo
+          const std::string& eledistype,             //!< hex8,tet4,...
+          Input::LineDefinition* linedef             //!< what parameters have to be read
           ) override;
 
       //@}
@@ -384,7 +384,7 @@ namespace Discret
       //@}
 
      private:
-      Core::Nodes::Node** Nodes() override;
+      Core::Nodes::Node** nodes() override;
 
       Teuchos::RCP<Core::Mat::Material> material() const;
 

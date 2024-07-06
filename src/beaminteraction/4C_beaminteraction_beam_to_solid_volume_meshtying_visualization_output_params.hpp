@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the output flag.
      */
-    bool GetOutputFlag() const { return output_flag_; }
+    bool get_output_flag() const { return output_flag_; }
 
     /**
      * \brief Return the nodal forces flag.

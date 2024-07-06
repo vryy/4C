@@ -21,10 +21,10 @@ PoroElast::Partitioned::Partitioned(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
-      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(fluid_field()->Velnp())))),
-      structincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_field()->Dispnp()))))
+      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(fluid_field()->velnp())))),
+      structincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_field()->dispnp()))))
 {
-  const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
+  const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
   // Get the parameters for the convergence_check
   itmax_ = porodyn.get<int>("ITEMAX");     // default: =10
   ittol_ = porodyn.get<double>("INCTOL");  // default: =1e-6
@@ -37,12 +37,12 @@ void PoroElast::Partitioned::do_time_step()
 {
   prepare_time_step();
 
-  Solve();
+  solve();
 
   update_and_output();
 }
 
-void PoroElast::Partitioned::SetupSystem() {}  // SetupSystem()
+void PoroElast::Partitioned::setup_system() {}  // SetupSystem()
 
 void PoroElast::Partitioned::update_and_output()
 {
@@ -54,20 +54,20 @@ void PoroElast::Partitioned::update_and_output()
   output();
 }
 
-void PoroElast::Partitioned::Solve()
+void PoroElast::Partitioned::solve()
 {
   int itnum = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n****************************************\n          OUTER ITERATION "
                  "LOOP\n****************************************\n";
   }
 
-  if (Step() == 1)
+  if (step() == 1)
   {
-    fluidveln_->Update(1.0, *(fluid_field()->Veln()), 0.0);
+    fluidveln_->Update(1.0, *(fluid_field()->veln()), 0.0);
   }
 
   while (!stopnonliniter)
@@ -76,19 +76,19 @@ void PoroElast::Partitioned::Solve()
 
     // store increment from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    fluidincnp_->Update(1.0, *fluid_field()->Velnp(), 0.0);
-    structincnp_->Update(1.0, *structure_field()->Dispnp(), 0.0);
+    fluidincnp_->Update(1.0, *fluid_field()->velnp(), 0.0);
+    structincnp_->Update(1.0, *structure_field()->dispnp(), 0.0);
 
     // get current fluid velocities due to solve fluid step, like predictor in FSI
     // 1. iteration: get velocities of old time step (T_n)
     if (itnum == 1)
     {
-      fluidveln_->Update(1.0, *(fluid_field()->Veln()), 0.0);
+      fluidveln_->Update(1.0, *(fluid_field()->veln()), 0.0);
     }
     else  // itnum > 1
     {
       // save velocity solution of old iteration step T_{n+1}^i
-      fluidveln_->Update(1.0, *(fluid_field()->Velnp()), 0.0);
+      fluidveln_->Update(1.0, *(fluid_field()->velnp()), 0.0);
     }
 
     // set fluid- and structure-based scalar transport values required in FSI
@@ -112,25 +112,25 @@ void PoroElast::Partitioned::Solve()
 
 void PoroElast::Partitioned::do_struct_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
   // Newton-Raphson iteration
-  structure_field()->Solve();
+  structure_field()->solve();
 }
 
 void PoroElast::Partitioned::do_fluid_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n FLUID SOLVER \n***********************\n";
   }
 
   // fluid_field()->PrepareSolve();
   // Newton-Raphson iteration
-  fluid_field()->Solve();
+  fluid_field()->solve();
 }
 
 void PoroElast::Partitioned::prepare_time_step()
@@ -157,21 +157,21 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
   double structnorm_L2(0.0);
 
   // build the current increment
-  fluidincnp_->Update(1.0, *(fluid_field()->Velnp()), -1.0);
-  structincnp_->Update(1.0, *(structure_field()->Dispnp()), -1.0);
+  fluidincnp_->Update(1.0, *(fluid_field()->velnp()), -1.0);
+  structincnp_->Update(1.0, *(structure_field()->dispnp()), -1.0);
 
   // build the L2-norm of the increment and the solution
   fluidincnp_->Norm2(&fluidincnorm_L2);
-  fluid_field()->Velnp()->Norm2(&fluidnorm_L2);
+  fluid_field()->velnp()->Norm2(&fluidnorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
-  structure_field()->Dispnp()->Norm2(&structnorm_L2);
+  structure_field()->dispnp()->Norm2(&structnorm_L2);
 
   // care for the case that there is (almost) zero solution
   if (fluidnorm_L2 < 1e-6) fluidnorm_L2 = 1.0;
   if (structnorm_L2 < 1e-6) structnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout
@@ -192,7 +192,7 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
   if ((fluidincnorm_L2 / fluidnorm_L2 <= ittol_) && (dispincnorm_L2 / structnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       printf("\n");
       printf(
@@ -209,7 +209,7 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
       ((fluidincnorm_L2 / fluidnorm_L2 > ittol_) || (dispincnorm_L2 / structnorm_L2 > ittol_)))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))  // and print_screen_evry() and (Step()%print_screen_evry()==0))
+    if ((get_comm().MyPID() == 0))  // and print_screen_evry() and (Step()%print_screen_evry()==0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                       |\n");
@@ -223,12 +223,12 @@ bool PoroElast::Partitioned::convergence_check(int itnum)
   return stopnonliniter;
 }
 
-Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::DofRowMapStructure()
+Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::dof_row_map_structure()
 {
   return structure_field()->dof_row_map();
 }
 
-Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::DofRowMapFluid()
+Teuchos::RCP<const Epetra_Map> PoroElast::Partitioned::dof_row_map_fluid()
 {
   return fluid_field()->dof_row_map();
 }

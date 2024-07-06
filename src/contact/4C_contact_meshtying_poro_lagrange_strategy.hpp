@@ -36,7 +36,7 @@ namespace CONTACT
     /*!
     /brief initial Poro Meshtying calculations
     */
-    void InitializePoroMt(Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffoffdiag);
+    void initialize_poro_mt(Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffoffdiag);
 
     /*!
     /brief modify off diagonal system matrix for structural displacement meshtying

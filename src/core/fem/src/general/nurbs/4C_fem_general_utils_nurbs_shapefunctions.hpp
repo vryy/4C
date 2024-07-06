@@ -201,7 +201,7 @@ namespace Core::FE::Nurbs
       // in first direction:
 
       // get bsplinevalue
-      bspline_xi.EvaluateBspline(bspline_xi_value, xi, rr);
+      bspline_xi.evaluate_bspline(bspline_xi_value, xi, rr);
 
       // add value to bezier_shape_funct
       bezier_shape_funct(rr) = bspline_xi_value;
@@ -970,14 +970,14 @@ namespace Core::FE::Nurbs
       // in first direction:
 
       // get bsplinevalue and derivative
-      bspline_xi.EvaluateBspline(bspline_xi_value, xi, rr);
+      bspline_xi.evaluate_bspline(bspline_xi_value, xi, rr);
 
       for (int mm = 0; mm < degree + 1; ++mm)
       {
         // in second direction:
 
         // get bsplinevalue and derivative
-        bspline_eta.EvaluateBspline(bspline_eta_value, eta, mm);
+        bspline_eta.evaluate_bspline(bspline_eta_value, eta, mm);
 
         // get the number of the basis function
         id = rr + mm * (degree + 1);
@@ -2340,21 +2340,21 @@ namespace Core::FE::Nurbs
       // in first direction:
 
       // get bsplinevalue and derivative
-      bspline_xi.EvaluateBspline(bspline_xi_value, xi, rr);
+      bspline_xi.evaluate_bspline(bspline_xi_value, xi, rr);
 
       for (int mm = 0; mm < degree + 1; ++mm)
       {
         // in second direction:
 
         // get bsplinevalue and derivative
-        bspline_eta.EvaluateBspline(bspline_eta_value, eta, mm);
+        bspline_eta.evaluate_bspline(bspline_eta_value, eta, mm);
 
         for (int nn = 0; nn < degree + 1; ++nn)
         {
           // in third direction:
 
           // get bsplinevalue and derivative
-          bspline_nu.EvaluateBspline(bspline_nu_value, nu, nn);
+          bspline_nu.evaluate_bspline(bspline_nu_value, nu, nn);
 
           // get the number of the basis function
           id = rr + (degree + 1) * (mm + nn * (degree + 1));

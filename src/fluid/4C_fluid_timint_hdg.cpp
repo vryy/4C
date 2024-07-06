@@ -47,30 +47,30 @@ void FLD::TimIntHDG::init()
   Core::FE::DiscretizationHDG* hdgdis = dynamic_cast<Core::FE::DiscretizationHDG*>(discret_.get());
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
-  int elementndof = hdgdis->NumMyRowElements() > 0
-                        ? dynamic_cast<Discret::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
+  int elementndof = hdgdis->num_my_row_elements() > 0
+                        ? dynamic_cast<Discret::ELEMENTS::FluidHDG*>(hdgdis->l_row_element(0))
                               ->num_dof_per_element_auxiliary()
                         : 0;
 
   // set degrees of freedom in the discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
       Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
-  discret_->AddDofSet(dofsetaux);
+  discret_->add_dof_set(dofsetaux);
   discret_->fill_complete();
 
   // build velocity/pressure splitting
   std::set<int> conddofset;
   std::set<int> otherdofset;
 
-  for (int j = 0; j < hdgdis->NumMyRowElements(); ++j)
+  for (int j = 0; j < hdgdis->num_my_row_elements(); ++j)
   {
-    std::vector<int> dof = hdgdis->Dof(0, hdgdis->lRowElement(j));
+    std::vector<int> dof = hdgdis->dof(0, hdgdis->l_row_element(j));
     FOUR_C_ASSERT(dof.size() >= 1, "Internal error: could not find HDG pressure dof");
     for (unsigned int i = 0; i < dof.size(); ++i) conddofset.insert(dof[i]);
   }
-  for (int i = 0; i < hdgdis->NumMyRowFaces(); ++i)
+  for (int i = 0; i < hdgdis->num_my_row_faces(); ++i)
   {
-    std::vector<int> dof = hdgdis->Dof(0, hdgdis->lRowFace(i));
+    std::vector<int> dof = hdgdis->dof(0, hdgdis->l_row_face(i));
     for (unsigned int j = 0; j < dof.size(); ++j) otherdofset.insert(dof[j]);
   }
 
@@ -79,13 +79,13 @@ void FLD::TimIntHDG::init()
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
   Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
-      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->Comm()));
+      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm()));
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
   Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->Comm()));
+      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm()));
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
@@ -117,7 +117,7 @@ void FLD::TimIntHDG::init()
 /*----------------------------------------------------------------------*
 | calculate pseudo-theta for startalgo_, modified for HDG  kronbi 05/14 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDG::SetTheta()
+void FLD::TimIntHDG::set_theta()
 {
   // -------------------------------------------------------------------
   //  For af-generalized-alpha time-integration scheme:
@@ -275,7 +275,7 @@ void FLD::TimIntHDG::gen_alpha_intermediate_values()
 /*----------------------------------------------------------------------*
 | set HDG state vectors                               kronbichler 05/14 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDG::SetStateTimInt()
+void FLD::TimIntHDG::set_state_tim_int()
 {
   discret_->set_state(0, "velaf", velaf_);
   discret_->set_state(1, "intvelaf", intvelaf_);
@@ -300,7 +300,7 @@ void FLD::TimIntHDG::clear_state_assemble_mat_and_rhs()
   {
     // Wrote into the state vector during element calls, need to transfer the
     // data back before it disappears when clearing the state (at least for nproc>1)
-    const Epetra_Vector& intvelnpGhosted = *discret_->GetState(1, "intvelnp");
+    const Epetra_Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->MyLength(); ++i)
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
@@ -312,9 +312,9 @@ void FLD::TimIntHDG::clear_state_assemble_mat_and_rhs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::TimeUpdate()
+void FLD::TimIntHDG::time_update()
 {
-  FluidImplicitTimeInt::TimeUpdate();
+  FluidImplicitTimeInt::time_update();
 
   // velocities/pressures of this step become most recent
   // velocities/pressures of the last step
@@ -330,7 +330,7 @@ void FLD::TimIntHDG::TimeUpdate()
 /*----------------------------------------------------------------------*
  |  set initial flow field for test cases              kronbichler 05/14|
  *----------------------------------------------------------------------*/
-void FLD::TimIntHDG::SetInitialFlowField(
+void FLD::TimIntHDG::set_initial_flow_field(
     const Inpar::FLUID::InitialField initfield, const int startfuncno)
 {
   if (initfield == Inpar::FLUID::initfield_hit_comte_bellot_corrsin or
@@ -348,7 +348,7 @@ void FLD::TimIntHDG::SetInitialFlowField(
     call_statistics_manager();
 
     // initialize  forcing depending on initial field
-    forcing_interface_->SetInitialSpectrum(initfield);
+    forcing_interface_->set_initial_spectrum(initfield);
   }
   else
   {
@@ -363,14 +363,14 @@ void FLD::TimIntHDG::SetInitialFlowField(
     // loop over all elements on the processor
     Core::Elements::Element::LocationArray la(2);
     double error = 0;
-    for (int el = 0; el < discret_->NumMyColElements(); ++el)
+    for (int el = 0; el < discret_->num_my_col_elements(); ++el)
     {
-      Core::Elements::Element* ele = discret_->lColElement(el);
+      Core::Elements::Element* ele = discret_->l_col_element(el);
 
-      ele->LocationVector(*discret_, la, false);
+      ele->location_vector(*discret_, la, false);
       if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
         elevec1.size(la[0].lm_.size());
-      if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
+      if (elevec2.numRows() != discret_->num_dof(1, ele)) elevec2.size(discret_->num_dof(1, ele));
 
       ele->evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
@@ -387,9 +387,9 @@ void FLD::TimIntHDG::SetInitialFlowField(
         }
       }
 
-      if (ele->Owner() == discret_->Comm().MyPID())
+      if (ele->owner() == discret_->get_comm().MyPID())
       {
-        std::vector<int> localDofs = discret_->Dof(1, ele);
+        std::vector<int> localDofs = discret_->dof(1, ele);
         FOUR_C_ASSERT(
             localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
         for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -400,8 +400,8 @@ void FLD::TimIntHDG::SetInitialFlowField(
       }
     }
     double globerror = 0;
-    discret_->Comm().SumAll(&error, &globerror, 1);
-    if (discret_->Comm().MyPID() == 0)
+    discret_->get_comm().SumAll(&error, &globerror, 1);
+    if (discret_->get_comm().MyPID() == 0)
       std::cout << "Error project when setting face twice: " << globerror << std::endl;
   }
 }
@@ -451,7 +451,7 @@ void FLD::TimIntHDG::reset(bool completeReset, int numsteps, int iter)
   intaccam_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
   intaccnm_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
   intaccn_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
 }
@@ -468,13 +468,13 @@ namespace
       Teuchos::RCP<Epetra_MultiVector>& tracevel, Teuchos::RCP<Epetra_Vector>& cellPres)
   {
     // create dofsets for velocity and pressure at nodes
-    if (pressure.get() == nullptr || pressure->GlobalLength() != dis.NumGlobalNodes())
+    if (pressure.get() == nullptr || pressure->GlobalLength() != dis.num_global_nodes())
     {
-      velocity.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
-      pressure.reset(new Epetra_Vector(*dis.NodeRowMap()));
+      velocity.reset(new Epetra_MultiVector(*dis.node_row_map(), ndim));
+      pressure.reset(new Epetra_Vector(*dis.node_row_map()));
     }
     tracevel.reset(new Epetra_MultiVector(velocity->Map(), ndim));
-    cellPres.reset(new Epetra_Vector(*dis.ElementRowMap()));
+    cellPres.reset(new Epetra_Vector(*dis.element_row_map()));
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -485,12 +485,12 @@ namespace
     Core::LinAlg::SerialDenseMatrix dummyMat;
     Core::LinAlg::SerialDenseVector dummyVec;
     Core::LinAlg::SerialDenseVector interpolVec;
-    std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
+    std::vector<unsigned char> touchCount(dis.num_my_row_nodes());
     velocity->PutScalar(0.);
     pressure->PutScalar(0.);
-    for (int el = 0; el < dis.NumMyColElements(); ++el)
+    for (int el = 0; el < dis.num_my_col_elements(); ++el)
     {
-      Core::Elements::Element* ele = dis.lColElement(el);
+      Core::Elements::Element* ele = dis.l_col_element(el);
       if (interpolVec.numRows() == 0) interpolVec.resize(ele->num_node() * (2 * ndim + 1) + 1);
 
       ele->evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
@@ -498,8 +498,8 @@ namespace
       // sum values on nodes into vectors and record the touch count (build average of values)
       for (int i = 0; i < ele->num_node(); ++i)
       {
-        Core::Nodes::Node* node = ele->Nodes()[i];
-        const int localIndex = dis.NodeRowMap()->LID(node->Id());
+        Core::Nodes::Node* node = ele->nodes()[i];
+        const int localIndex = dis.node_row_map()->LID(node->id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int d = 0; d < ndim; ++d)
@@ -508,7 +508,7 @@ namespace
         for (int d = 0; d < ndim; ++d)
           (*tracevel)[d][localIndex] += interpolVec(i + (ndim + 1 + d) * ele->num_node());
       }
-      const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
+      const int eleIndex = dis.element_row_map()->LID(ele->id());
       if (eleIndex >= 0) (*cellPres)[eleIndex] += interpolVec((2 * ndim + 1) * ele->num_node());
     }
 
@@ -518,7 +518,7 @@ namespace
       for (int d = 0; d < ndim; ++d) (*velocity)[d][i] /= touchCount[i];
       for (int d = 0; d < ndim; ++d) (*tracevel)[d][i] /= touchCount[i];
     }
-    dis.ClearState();
+    dis.clear_state();
   }
 }  // namespace
 

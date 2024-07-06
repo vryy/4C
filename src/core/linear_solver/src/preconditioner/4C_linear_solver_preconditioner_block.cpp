@@ -65,7 +65,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         // Schur complement system (1 degree per "node") -> standard nullspace
         inv2.sublist("ML Parameters").set("PDE equations", 1);
         inv2.sublist("ML Parameters").set("null space: dimension", 1);
-        const int plength = (*A)(1, 1).RowMap().NumMyElements();
+        const int plength = (*A)(1, 1).row_map().NumMyElements();
         Teuchos::RCP<std::vector<double>> pnewns =
             Teuchos::rcp(new std::vector<double>(plength, 1.0));
         // TODO: std::vector<double> has zero length for particular cases (e.g. no Lagrange
@@ -139,7 +139,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         inv1.sublist("ML Parameters").set("PDE equations", nv);
         inv1.sublist("ML Parameters").set("null space: dimension", nv);
 
-        const int vlength = A->Matrix(0, 0).RowMap().NumMyElements();
+        const int vlength = A->matrix(0, 0).row_map().NumMyElements();
         Teuchos::RCP<std::vector<double>> vnewns =
             Teuchos::rcp(new std::vector<double>(nv * vlength, 0.0));
 
@@ -151,7 +151,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         }
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
-            Teuchos::rcp(new Epetra_MultiVector(A->Matrix(0, 0).RowMap(), nv, true));
+            Teuchos::rcp(new Epetra_MultiVector(A->matrix(0, 0).row_map(), nv, true));
         Core::LinAlg::StdVectorToEpetraMultiVector(*vnewns, nullspace, nv);
 
         inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
@@ -168,7 +168,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         inv2.sublist("ML Parameters").set("null space: dimension", 1);
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
-            Teuchos::rcp(new Epetra_MultiVector(A->Matrix(1, 1).RowMap(), 1, true));
+            Teuchos::rcp(new Epetra_MultiVector(A->matrix(1, 1).row_map(), 1, true));
         nullspace->PutScalar(1.0);
 
         inv2.sublist("ML Parameters").set("null space: vectors", nullspace->Values());

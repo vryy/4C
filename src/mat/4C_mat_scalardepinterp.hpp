@@ -66,11 +66,11 @@ namespace Mat
   class ScalarDepInterpType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ScalarDepInterpType"; }
+    std::string name() const override { return "ScalarDepInterpType"; }
 
-    static ScalarDepInterpType& Instance() { return instance_; };
+    static ScalarDepInterpType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScalarDepInterpType instance_;
@@ -121,16 +121,16 @@ namespace Mat
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScalarDepInterpType::Instance().UniqueParObjectId();
+      return ScalarDepInterpType::instance().unique_par_object_id();
     }
 
     /// \brief Pack this class so it can be communicated
     ///
     /// Resizes the vector data and stores all information of a class in it.
     /// The first information to be stored in data has to be the
-    /// unique parobject id delivered by UniqueParObjectId() which will then
+    /// unique parobject id delivered by unique_par_object_id() which will then
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
@@ -142,7 +142,7 @@ namespace Mat
     /// exact copy of an instance of a class on a different processor.
     /// The first entry in data has to be an integer which is the unique
     /// parobject id defined at the top of this file and delivered by
-    /// UniqueParObjectId().
+    /// unique_par_object_id().
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
@@ -151,20 +151,20 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_sc_dep_interp;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScalarDepInterp(*this));
     }
@@ -178,10 +178,10 @@ namespace Mat
     /// Reset time step
     void reset_step() override;
 
-    double Density() const override
+    double density() const override
     {
       // Note: we have already check that both densities are equal in Setuo()
-      return lambda_zero_mat_->Density();
+      return lambda_zero_mat_->density();
     };
 
     /// provide access to material by its ID
@@ -203,19 +203,20 @@ namespace Mat
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// Return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Reading material weights (lambda) from input file
-    void ReadLambda(Input::LineDefinition* linedef, std::string specifier, double& lambda);
+    void read_lambda(Input::LineDefinition* linedef, std::string specifier, double& lambda);
 
     /// evaluate strain energy function
-    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
+    void strain_energy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
         const int eleGID) override;
 
    private:

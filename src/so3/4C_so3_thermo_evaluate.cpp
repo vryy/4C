@@ -34,21 +34,21 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pre_evaluate(Teuchos::Parame
   // if the coupling variables are required before evaluate() is called the 1st
   // time
   // here for Robinson's material
-  if (la.Size() > 1)
+  if (la.size() > 1)
   {
     // the temperature field has only one dof per node, disregarded by the
     // dimension of the problem
-    const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
+    const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
 
-    if (discretization.HasState(1, "temperature"))
+    if (discretization.has_state(1, "temperature"))
     {
-      if (la[1].Size() != nen_ * numdofpernode_thr)
+      if (la[1].size() != nen_ * numdofpernode_thr)
         FOUR_C_THROW(
             "Location vector length for temperatures does not match!\n"
             "la[1].Size()= %i\tnen_*numdofpernode_thr= %i",
-            la[1].Size(), nen_ * numdofpernode_thr);
+            la[1].size(), nen_ * numdofpernode_thr);
       // check if you can get the temperature state
-      Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+      Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
       if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'.");
 
       // extract local values of the global vectors
@@ -105,7 +105,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate(Teuchos::ParameterLi
     // coupling terms K_dT in stiffness matrix K^{TSI} for monolithic TSI
     case So3Thermo::calc_struct_stifftemp:
     {
-      if (la.Size() > 1)
+      if (la.size() > 1)
       {
         evaluate_coupl_with_thr(params, discretization, la, elemat1_epetra, elemat2_epetra,
             elevec1_epetra, elevec2_epetra, elevec3_epetra);
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate(Teuchos::ParameterLi
 
       // add the temperature-dependent terms to the structural field, i.e.
       // it's a TSI problem
-      if (la.Size() > 1)
+      if (la.size() > 1)
       {
         evaluate_coupl_with_thr(params, discretization,
             la,  // coupled TSI is considered, i.e. pass the compled location array
@@ -200,8 +200,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1+2, elevec2+3 are not used anyway
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0, "residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state(0, "residual displacement");
 
       if ((disp == Teuchos::null) or (res == Teuchos::null))
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
@@ -220,22 +220,22 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       // need current temperature state, call the temperature discretization
       // disassemble temperature
-      if (discretization.HasState(1, "temperature"))
+      if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
-        const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-        if (la[1].Size() != nen_ * numdofpernode_thr)
+        const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+        if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
+        if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> elemat1(
               elemat1_epetra.values(), true);
@@ -275,7 +275,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         }    // (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
         // geometric Inpar::Solid::KinemType::linear
-        else if (So3Ele::KinematicType() == Inpar::Solid::KinemType::linear)
+        else if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::linear)
         {
           // calculate the THERMOmechanical term for fint
           lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::Solid::stress_none);
@@ -294,7 +294,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1 only for geometrically nonlinear analysis
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
 
@@ -310,22 +310,22 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       // need current temperature state, call the temperature discretization
       // disassemble temperature
-      if (discretization.HasState(1, "temperature"))
+      if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
-        const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-        if (la[1].Size() != nen_ * numdofpernode_thr)
+        const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+        if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
+        if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           // stiffness
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> elemat1(
@@ -369,7 +369,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         }    // (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
         // geometric linear
-        else if (So3Ele::KinematicType() == Inpar::Solid::KinemType::linear)
+        else if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::linear)
         {
           // calculate the THERMOmechanical term for fint
           lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::Solid::stress_none);
@@ -390,7 +390,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1 only for geometrically nonlinear analysis
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
@@ -407,22 +407,22 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       // need current temperature state, call the temperature discretization
       // disassemble temperature
-      if (discretization.HasState(1, "temperature"))
+      if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
-        const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-        if (la[1].Size() != nen_ * numdofpernode_thr)
+        const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+        if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
+        if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           // stiffness
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> elemat1(
@@ -464,7 +464,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         }  // (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
         // geometric linear
-        else if (So3Ele::KinematicType() == Inpar::Solid::KinemType::linear)
+        else if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::linear)
         {
           // build the current temperature vector
           Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp(&(mytempnp[1]), true);  // view only!
@@ -481,7 +481,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
     case calc_struct_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
@@ -489,7 +489,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       Teuchos::RCP<std::vector<char>> couplstressdata;
       Inpar::Solid::StressType iocouplstress;
-      if (this->IsParamsInterface())
+      if (this->is_params_interface())
       {
         couplstressdata = this->str_params_interface().coupling_stress_data_ptr();
         iocouplstress = this->str_params_interface().get_coupling_stress_output_type();
@@ -513,23 +513,23 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // need current temperature state,
       // call the temperature discretization: thermo equates 2nd dofset
       // disassemble temperature
-      if (discretization.HasState(1, "temperature"))
+      if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
-        const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-        if (la[1].Size() != nen_ * numdofpernode_thr)
+        const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+        if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
 
         // extract the current temperatures
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
+        if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
@@ -577,7 +577,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         }  // (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
         // geometric linear
-        else if (So3Ele::KinematicType() == Inpar::Solid::KinemType::linear)
+        else if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::linear)
         {
           // purely structural method, this is the coupled routine, i.e., a 2nd
           // discretisation exists, i.e., --> we always have a temperature state
@@ -631,16 +631,16 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (thermoSolid != Teuchos::null)
       {
         std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
-        if (discretization.HasState(1, "temperature"))
+        if (discretization.has_state(1, "temperature"))
         {
           // check if you can get the temperature state
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the
           // dimension of the problem
-          const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-          if (la[1].Size() != nen_ * numdofpernode_thr)
+          const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+          if (la[1].size() != nen_ * numdofpernode_thr)
             FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
@@ -656,7 +656,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         Core::LinAlg::Matrix<27, 1> weights;
 
         // get nurbs specific infos
-        if (So3Ele::Shape() == Core::FE::CellType::nurbs27)
+        if (So3Ele::shape() == Core::FE::CellType::nurbs27)
         {
           // cast to nurbs discretization
           Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
@@ -665,16 +665,16 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
             FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
           // zero-sized element
-          if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return 1;
+          if ((*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id())) return 1;
 
           // get weights from cp's
           for (int inode = 0; inode < nen_; inode++)
-            weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+            weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode])->w();
         }
 
         for (int gp = 0; gp < numgpt_; ++gp)
         {
-          if (So3Ele::Shape() != Core::FE::CellType::nurbs27)
+          if (So3Ele::shape() != Core::FE::CellType::nurbs27)
           {
             Core::FE::shape_function<distype>(xsi_[gp], shapefunct);
           }
@@ -687,8 +687,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
           Core::LinAlg::Matrix<1, 1> NT(false);
           NT.multiply_tn(shapefunct, etemp);
 
-          thermoSolid->Reinit(nullptr, nullptr, NT(0), map_my_gp_to_so_hex8(gp));
-          thermoSolid->CommitCurrentState();
+          thermoSolid->reinit(nullptr, nullptr, NT(0), map_my_gp_to_so_hex8(gp));
+          thermoSolid->commit_current_state();
         }
       }
 
@@ -703,7 +703,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       Core::LinAlg::Matrix<numdofperelement_, nen_> stiffmatrix_kdT(elemat1_epetra.values(), true);
       // elemat2,elevec1-3 are not used anyway
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp((la[0].lm_).size());
       // build the location vector only for the structure field
@@ -718,22 +718,22 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       // need current temperature state, call the temperature discretization
       // disassemble temperature
-      if (discretization.HasState(1, "temperature"))
+      if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
-        const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
-        if (la[1].Size() != nen_ * numdofpernode_thr)
+        const int numdofpernode_thr = discretization.num_dof(1, nodes()[0]);
+        if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
       }
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (So3Ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
+      if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
       {
         // in case we have a finite strain thermoplastic material use hex8fbar element
         // to cirucumvent volumetric locking
@@ -754,7 +754,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       }    // (So3Ele::KinematicType() == nonlinear)
 
       // geometric linear
-      else if (So3Ele::KinematicType() == Inpar::Solid::KinemType::linear)
+      else if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::linear)
       {
         // calculate the mechanical-thermal sub matrix k_dT of K_TSI
         lin_kd_t_tsi(la, mydisp, mytempnp, &stiffmatrix_kdT, params);
@@ -801,10 +801,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_fint_tsi(
   // vector of the current element temperatures
   Core::LinAlg::Matrix<nen_, 1> etemp;
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < nen_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -879,7 +879,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_fint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if (material()->MaterialType() != Core::Materials::m_vp_robinson)
+    if (material()->material_type() != Core::Materials::m_vp_robinson)
       materialize(&couplstress, &ctemp, &NT, &cmat, &glstrain, params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -922,7 +922,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_fint_tsi(
     if (force != nullptr)
     {
       // old implementation hex8_thermo double detJ_w = detJ*gpweights[gp];
-      double detJ_w = detJ * intpoints_.Weight(gp);  // gpweights[gp];
+      double detJ_w = detJ * intpoints_.weight(gp);  // gpweights[gp];
       force->multiply_tn(detJ_w, boplin, couplstress, 1.0);
     }  // if (force != nullptr)
 
@@ -949,10 +949,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
   // update element geometry (8x3)
   Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
   Core::LinAlg::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1025,10 +1024,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
 
       Core::LinAlg::Matrix<1, 1> NT(false);
       NT.multiply_tn(shapefunct, etemp);  // (1x1)
-      thermoSolidMaterial->Reinit(nullptr, &strain, NT(0), map_my_gp_to_so_hex8(gp));
+      thermoSolidMaterial->reinit(nullptr, &strain, NT(0), map_my_gp_to_so_hex8(gp));
       // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
       // with shape functions)
-      thermoSolidMaterial->GetdSdT(&ctemp);
+      thermoSolidMaterial->getd_sd_t(&ctemp);
     }
     // get thermal material tangent
     else
@@ -1037,7 +1036,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
     }
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    double detJ_w = detJ * intpoints_.Weight(gp);
+    double detJ_w = detJ * intpoints_.weight(gp);
     // update linear coupling matrix K_dT
     if (stiffmatrix_kdT != nullptr)
     {
@@ -1093,10 +1092,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
   // vector of the current element temperatures
   Core::LinAlg::Matrix<nen_, 1> etemp;
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < nen_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1123,7 +1122,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
   Core::LinAlg::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (So3Ele::Shape() == Core::FE::CellType::nurbs27)
+  if (So3Ele::shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
     Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
@@ -1131,11 +1130,11 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
-    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return;
+    if ((*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id())) return;
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
-      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode])->w();
   }
 
   /* =========================================================================*/
@@ -1144,7 +1143,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    if (So3Ele::Shape() != Core::FE::CellType::nurbs27)
+    if (So3Ele::shape() != Core::FE::CellType::nurbs27)
     {
       Core::FE::shape_function<distype>(xsi_[gp], shapefunct);
       Core::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
@@ -1220,7 +1219,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if (material()->MaterialType() != Core::Materials::m_vp_robinson)
+    if (material()->material_type() != Core::Materials::m_vp_robinson)
       materialize(&couplstress, &ctemp, &NT, &cmat_T, &glstrain, params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1260,7 +1259,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
 
     // integrate internal force vector r_d
     // f = f + (B^T . sigma_temp) . detJ . w(gp)
-    double detJ_w = detJ * intpoints_.Weight(gp);
+    double detJ_w = detJ * intpoints_.weight(gp);
     // update internal force vector
     if (force != nullptr)
     {
@@ -1345,10 +1344,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
   // update element geometry (8x3)
   Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
   Core::LinAlg::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < nen_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1389,7 +1387,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
   Core::LinAlg::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (So3Ele::Shape() == Core::FE::CellType::nurbs27)
+  if (So3Ele::shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
     Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
@@ -1397,11 +1395,11 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
-    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return;
+    if ((*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id())) return;
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
-      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode])->w();
   }
 
   /* =========================================================================*/
@@ -1410,7 +1408,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    if (So3Ele::Shape() != Core::FE::CellType::nurbs27)
+    if (So3Ele::shape() != Core::FE::CellType::nurbs27)
     {
       Core::FE::shape_function<distype>(xsi_[gp], shapefunct);
       Core::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
@@ -1460,12 +1458,12 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
 
       Core::LinAlg::Matrix<1, 1> NT(false);
       NT.multiply_tn(shapefunct, etemp);  // (1x1)
-      thermoSolidMaterial->Reinit(nullptr, &glstrain, NT(0), map_my_gp_to_so_hex8(gp));
+      thermoSolidMaterial->reinit(nullptr, &glstrain, NT(0), map_my_gp_to_so_hex8(gp));
       // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
       // with shape functions)
-      thermoSolidMaterial->GetdSdT(&ctemp);
+      thermoSolidMaterial->getd_sd_t(&ctemp);
     }
-    else if (material()->MaterialType() == Core::Materials::m_thermoplhyperelast)
+    else if (material()->material_type() == Core::Materials::m_thermoplhyperelast)
     {
       // inverse of Right Cauchy-Green tensor = F^{-1} . F^{-T}
       Core::LinAlg::Matrix<nsd_, nsd_> Cinv(false);
@@ -1492,7 +1490,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    double detJ_w = detJ * intpoints_.Weight(gp);
+    double detJ_w = detJ * intpoints_.weight(gp);
     // update linear coupling matrix K_dT
     if (stiffmatrix_kdT != nullptr)
     {
@@ -1505,7 +1503,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
-      if ((material()->MaterialType() == Core::Materials::m_thermostvenant))
+      if ((material()->material_type() == Core::Materials::m_thermostvenant))
       {
         // k_dT += B_d^T . stress_T . N_T
         stiffmatrix_kdT->multiply_nt(detJ_w, Bstress_T, shapefunct, 1.0);
@@ -1557,10 +1555,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
     // vector of the current element temperatures
     Core::LinAlg::Matrix<nen_, 1> etemp(false);
 
-    Core::Nodes::Node** nodes = Nodes();
+
     for (int i = 0; i < nen_; ++i)
     {
-      const auto& x = nodes[i]->X();
+      const auto& x = nodes()[i]->x();
       xrefe(i, 0) = x[0];
       xrefe(i, 1) = x[1];
       xrefe(i, 2) = x[2];
@@ -1715,7 +1713,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
       //            in the material: 1.) Delta T = subtract (N . T - T_0)
       //                             2.) couplstress = C . Delta T
       // do not call the material for Robinson's material
-      if (material()->MaterialType() != Core::Materials::m_vp_robinson)
+      if (material()->material_type() != Core::Materials::m_vp_robinson)
         materialize(&couplstress_bar,
             &ctemp_bar,  // is not filled! pass an empty matrix
             &NT, &cmat_T_bar, &glstrain_bar, params);
@@ -1757,7 +1755,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
       // integrate internal force vector r_d
       // f = f + (B^T . sigma_temp) . detJ_bar . w(gp)
       // with detJ_bar = detJ/f_bar_factor
-      double detJ_w = detJ * intpoints_.Weight(gp);
+      double detJ_w = detJ * intpoints_.weight(gp);
       // update internal force vector
       if (force != nullptr)
       {
@@ -1906,10 +1904,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
     Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
     Core::LinAlg::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
     Core::LinAlg::Matrix<nen_, 1> etemp(true);
-    Core::Nodes::Node** nodes = Nodes();
+
     for (int i = 0; i < nen_; ++i)
     {
-      const auto& x = nodes[i]->X();
+      const auto& x = nodes()[i]->x();
       xrefe(i, 0) = x[0];
       xrefe(i, 1) = x[1];
       xrefe(i, 2) = x[2];
@@ -2011,7 +2009,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
       // --------------------------------------------------------------
       // in case of thermo-elasto-plastic material we get additional terms due
       // to temperature-dependence of the plastic multiplier Dgamma
-      if (material()->MaterialType() == Core::Materials::m_thermoplhyperelast)
+      if (material()->material_type() == Core::Materials::m_thermoplhyperelast)
       {
         params.set<Core::LinAlg::Matrix<nsd_, nsd_>>("defgrd", defgrd_bar);
         params.set<Core::LinAlg::Matrix<numstr_, 1>>("Cinv_vct", Cinv_barvct);
@@ -2022,7 +2020,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
         //          = - 2 . mubar . 1/Dt . dDgamma/dT . N_bar
         // with dDgamma/dT= - sqrt(2/3) . dsigma_y(astrain_p^{n+1},T_{n+1})/dT
         //                  . 1/(2 . mubar . beta0)
-        Cmat_kdT.update(thermoplhyperelast->CMat_kdT(gp));
+        Cmat_kdT.update(thermoplhyperelast->c_mat_kd_t(gp));
       }
       Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolidMaterial =
           Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
@@ -2036,10 +2034,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
         glstrain(4) = cauchygreen_bar(1, 2);
         glstrain(5) = cauchygreen_bar(2, 0);
 
-        thermoSolidMaterial->Reinit(nullptr, &glstrain, NT(0), map_my_gp_to_so_hex8(gp));
+        thermoSolidMaterial->reinit(nullptr, &glstrain, NT(0), map_my_gp_to_so_hex8(gp));
         // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
         // with shape functions)
-        thermoSolidMaterial->GetdSdT(&ctemp);
+        thermoSolidMaterial->getd_sd_t(&ctemp);
       }
       else
         // get temperature-dependent material tangent
@@ -2048,7 +2046,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
 
-      double detJ_w = detJ * intpoints_.Weight(gp);
+      double detJ_w = detJ * intpoints_.weight(gp);
       // update linear coupling matrix K_dT
       if (stiffmatrix_kdT != nullptr)
       {
@@ -2059,7 +2057,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
         // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . C_T . N_T) . detJ . w(gp)
         stiffmatrix_kdT->multiply_tn((detJ_w / f_bar_factor), bop, cn, 1.0);
 
-        if (material()->MaterialType() == Core::Materials::m_thermoplhyperelast)
+        if (material()->material_type() == Core::Materials::m_thermoplhyperelast)
         {
           // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . dCmat/dT . N_temp) . detJ . w(gp)
           // (24x8)                            (24x6)         (6x1)    (1x8)
@@ -2114,7 +2112,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::materialize(
   // interface go to the material law here.
   // the old interface does not exist anymore...
   Teuchos::RCP<Core::Mat::Material> mat = material();
-  switch (mat->MaterialType())
+  switch (mat->material_type())
   {
     // small strain von Mises thermoelastoplastic material
     case Core::Materials::m_thermopllinelast:
@@ -2145,7 +2143,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::materialize(
     default:
       FOUR_C_THROW("Unknown type of temperature dependent material");
       break;
-  }  // switch (mat->MaterialType())
+  }  // switch (mat->material_type())
 
   return;
 }  // Materialize()
@@ -2158,7 +2156,7 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::compute_ctemp(
     Core::LinAlg::Matrix<numstr_, 1>* ctemp, Teuchos::ParameterList& params)
 {
-  switch (material()->MaterialType())
+  switch (material()->material_type())
   {
     // thermo st.venant-kirchhoff-material
     case Core::Materials::m_thermostvenant:
@@ -2193,7 +2191,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::compute_ctemp(
     default:
       FOUR_C_THROW("Cannot ask material for the temperature-dependent material tangent");
       break;
-  }  // switch (mat->MaterialType())
+  }  // switch (mat->material_type())
 
 }  // Ctemp()
 
@@ -2434,11 +2432,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::init_jacobian_mapping_specia
   Core::LinAlg::Matrix<nen_, nsd_> xrefe;
   for (int i = 0; i < nen_; ++i)
   {
-    Core::Nodes::Node** nodes = Nodes();
-    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
+    xrefe(i, 0) = nodes()[i]->x()[0];
+    xrefe(i, 1) = nodes()[i]->x()[1];
+    xrefe(i, 2) = nodes()[i]->x()[2];
   }
   invJ_.resize(numgpt_);
   detJ_.resize(numgpt_);
@@ -2454,7 +2450,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::init_jacobian_mapping_specia
   Core::LinAlg::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (So3Ele::Shape() == Core::FE::CellType::nurbs27)
+  if (So3Ele::shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
     Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
@@ -2462,24 +2458,24 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::init_jacobian_mapping_specia
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
-    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, id())) return;
+    if ((*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id())) return;
 
     // get weights from cp's
     for (int inode = 0; inode < nen_; inode++)
-      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode])->W();
+      weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode])->w();
   }
 
   // coordinates of the current integration point (xsi_)
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // get the coordinates of Gauss points, here use intrepid
-    const double* gpcoord = intpoints_.Point(gp);
+    const double* gpcoord = intpoints_.point(gp);
     for (int idim = 0; idim < nsd_; idim++)
     {
       xsi_[gp](idim) = gpcoord[idim];
     }
     // first derivatives of shape functions (deriv)
-    if (So3Ele::Shape() != Core::FE::CellType::nurbs27)
+    if (So3Ele::shape() != Core::FE::CellType::nurbs27)
       Core::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
     else
       Core::FE::Nurbs::nurbs_get_3D_funct_deriv(

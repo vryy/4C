@@ -49,7 +49,7 @@ namespace
     double speccoeff_ij = 0.0;
     double speccoeff_ji = 0.0;
 
-    momentumformulation_->SpecificCoefficient(
+    momentumformulation_->specific_coefficient(
         &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, &speccoeff_ij, &speccoeff_ji);
 
     // compute reference solution
@@ -77,7 +77,7 @@ namespace
     double acc_i[3] = {};
     double acc_j[3] = {};
 
-    momentumformulation_->PressureGradient(
+    momentumformulation_->pressure_gradient(
         &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
@@ -108,7 +108,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->PressureGradient(
+    momentumformulation_->pressure_gradient(
         &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -136,7 +136,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->PressureGradient(
+    momentumformulation_->pressure_gradient(
         &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution
@@ -178,7 +178,7 @@ namespace
     double acc_i[3] = {};
     double acc_j[3] = {};
 
-    momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
+    momentumformulation_->shear_forces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
         bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
@@ -247,7 +247,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
+    momentumformulation_->shear_forces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
         bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -310,7 +310,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
+    momentumformulation_->shear_forces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
         bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution
@@ -849,7 +849,7 @@ namespace
     double speccoeff_ij = 0.0;
     double speccoeff_ji = 0.0;
 
-    momentumformulation_->SpecificCoefficient(
+    momentumformulation_->specific_coefficient(
         &dens_i, &dens_j, &mass_i, &mass_j, dWdrij, dWdrji, &speccoeff_ij, &speccoeff_ji);
 
     // compute reference solution
@@ -878,7 +878,7 @@ namespace
     double acc_i[3] = {};
     double acc_j[3] = {};
 
-    momentumformulation_->PressureGradient(
+    momentumformulation_->pressure_gradient(
         &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
@@ -909,7 +909,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->PressureGradient(
+    momentumformulation_->pressure_gradient(
         &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -937,7 +937,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->PressureGradient(
+    momentumformulation_->pressure_gradient(
         &dens_i, &dens_j, &press_i, &press_j, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution
@@ -979,7 +979,7 @@ namespace
     double acc_i[3] = {};
     double acc_j[3] = {};
 
-    momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
+    momentumformulation_->shear_forces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
         bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, acc_i, acc_j);
 
     // compute reference solution
@@ -1027,7 +1027,7 @@ namespace
 
     double acc_j[3] = {};
 
-    momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
+    momentumformulation_->shear_forces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
         bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, nullptr, acc_j);
 
     // compute reference solution
@@ -1072,7 +1072,7 @@ namespace
 
     double acc_i[3] = {};
 
-    momentumformulation_->ShearForces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
+    momentumformulation_->shear_forces(&dens_i, &dens_j, vel_i, vel_j, kernelfac, visc_i, visc_j,
         bulk_visc_i, bulk_visc_j, abs_rij, speccoeff_ij, speccoeff_ji, e_ij, acc_i, nullptr);
 
     // compute reference solution

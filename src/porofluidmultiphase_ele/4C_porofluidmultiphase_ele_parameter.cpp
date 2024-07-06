@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter*
-Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
+Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -29,7 +29,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
             new PoroFluidMultiPhaseEleParameter(disname));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 

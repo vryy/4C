@@ -43,17 +43,17 @@ void Adapter::FluidFBI::set_coupling_contributions(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void Adapter::FluidFBI::ResetExternalForces()
+void Adapter::FluidFBI::reset_external_forces()
 {
-  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->ResetExternalForces();
+  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->reset_external_forces();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<const FLD::Meshtying> Adapter::FluidFBI::GetMeshtying()
+Teuchos::RCP<const FLD::Meshtying> Adapter::FluidFBI::get_meshtying()
 {
-  return Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->GetMeshtying();
+  return Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->get_meshtying();
 }
 
 FOUR_C_NAMESPACE_CLOSE

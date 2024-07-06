@@ -56,13 +56,13 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       //--------------------------------------------------------------------------------
 
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = my::scatrapara_->NdsVel();
+      const int ndsvel = my::scatrapara_->nds_vel();
 
       // get velocity values at nodes
       const Teuchos::RCP<const Epetra_Vector> convel =
-          discretization.GetState(ndsvel, "convective velocity field");
+          discretization.get_state(ndsvel, "convective velocity field");
       const Teuchos::RCP<const Epetra_Vector> vel =
-          discretization.GetState(ndsvel, "velocity field");
+          discretization.get_state(ndsvel, "velocity field");
 
       // safety check
       if (convel == Teuchos::null or vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector");
@@ -86,7 +86,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
 
       // need current values of transported scalar
       // -> extract local values from global vectors
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
@@ -109,7 +109,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       double visc(0.0);
 
       // material parameter at the element center
-      if (not my::scatrapara_->MatGP())
+      if (not my::scatrapara_->mat_gp())
       {
         set_internal_variables_for_mat_and_rhs();
 
@@ -123,7 +123,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
       {
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -133,11 +133,11 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
         //----------------------------------------------------------------------
         // get material parameters (evaluation at integration point)
         //----------------------------------------------------------------------
-        if (my::scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
+        if (my::scatrapara_->mat_gp()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
         // access control parameter for flux calculation
-        Inpar::ScaTra::FluxType fluxtype = my::scatrapara_->CalcFluxDomain();
-        Teuchos::RCP<std::vector<int>> writefluxids = my::scatrapara_->WriteFluxIds();
+        Inpar::ScaTra::FluxType fluxtype = my::scatrapara_->calc_flux_domain();
+        Teuchos::RCP<std::vector<int>> writefluxids = my::scatrapara_->write_flux_ids();
 
         // do a loop for systems of transported scalars
         for (int& writefluxid : *writefluxids)
@@ -186,7 +186,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
@@ -209,7 +209,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       // elevec1_epetra(numscal_-1): conductivity of ionic species (numscal_-1)
       // elevec1_epetra(numscal_):   conductivity of the electrolyte solution (sum_k sigma(k))
       // elevec1_epetra(numscal_+1): domain integral
-      calculate_conductivity(ele, elchparams_->EquPot(), elevec1_epetra, effCond, specresist);
+      calculate_conductivity(ele, elchparams_->equ_pot(), elevec1_epetra, effCond, specresist);
       break;
     }
 
@@ -262,7 +262,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calculate_conductiv
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -332,7 +332,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
 )
 {
   // get actual values of transported scalars
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from the global vector
@@ -341,7 +341,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get history variable (needed for double layer modeling)
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+  Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // extract local values from the global vector
@@ -398,12 +398,12 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   }
 
   // access input parameter
-  const double frt = elchparams_->FRT();
+  const double frt = elchparams_->frt();
   if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
   // get control parameter from parameter list
-  const bool is_stationary = my::scatraparatimint_->IsStationary();
-  const double time = my::scatraparatimint_->Time();
+  const bool is_stationary = my::scatraparatimint_->is_stationary();
+  const double time = my::scatraparatimint_->time();
   double timefac = 1.0;
   double rhsfac = 1.0;
   // find out whether we shell use a time curve and get the factor
@@ -411,7 +411,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   if (functnum >= 0)
   {
     const double functfac =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(functnum).evaluate(
+        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfTime>(functnum).evaluate(
             time);
 
     // adjust potential at metal side accordingly
@@ -426,10 +426,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
       // One-step-Theta:    timefac = theta*dt
       // BDF2:              timefac = 2/3 * dt
       // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-      timefac = my::scatraparatimint_->TimeFac();
+      timefac = my::scatraparatimint_->time_fac();
       if (timefac < 0.0) FOUR_C_THROW("time factor is negative.");
       // for correct scaling of rhs contribution (see below)
-      rhsfac = 1 / my::scatraparatimint_->AlphaF();
+      rhsfac = 1 / my::scatraparatimint_->alpha_f();
     }
 
     if (zerocur == 0)
@@ -447,7 +447,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   else
   {
     // get actual values of transported scalars
-    Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+    Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.get_state("phidtnp");
     if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     // extract local values from the global vector
     std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
@@ -459,7 +459,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
       // One-step-Theta:    timefacrhs = theta*dt
       // BDF2:              timefacrhs = 2/3 * dt
       // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
-      timefac = my::scatraparatimint_->TimeFacRhs();
+      timefac = my::scatraparatimint_->time_fac_rhs();
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
@@ -498,7 +498,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_bound
     FOUR_C_THROW("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   // extract nodal cloud of current condition
-  const std::vector<int>* nodeids = cond->GetNodes();
+  const std::vector<int>* nodeids = cond->get_nodes();
 
   // safety checks
   if (!nodeids)
@@ -519,9 +519,9 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_bound
   // find out whether conditioned node is the leftmost (position 0) or rightmost (position 1) node
   // of the current line element
   int position(-1);
-  if (nodeid == ele->Nodes()[0]->Id())
+  if (nodeid == ele->nodes()[0]->id())
     position = 0;
-  else if (nodeid == ele->Nodes()[1]->Id())
+  else if (nodeid == ele->nodes()[1]->id())
     position = 1;
   else
   {
@@ -544,12 +544,12 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_bound
     //                    |_______fns_________________|
     // see, e.g. in Ehrl et al., "A computational approach for the simulation of natural convection
     // in electrochemical cells", JCP, 2012
-    double fns = -1.0 / elchparams_->Faraday() / nume;
+    double fns = -1.0 / elchparams_->faraday() / nume;
     // stoichiometry as a consequence of the reaction convention
     fns *= stoich[k];
 
     // get valence of the single reactant
-    const double valence_k = diff_manager()->GetValence(k);
+    const double valence_k = diff_manager()->get_valence(k);
 
     // call utility class for evaluation of electrode boundary kinetics point condition
     utils_->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac, 1.,
@@ -601,7 +601,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
   bool statistics = false;
 
   // extract nodal cloud of current condition
-  const std::vector<int>* nodeids = cond->GetNodes();
+  const std::vector<int>* nodeids = cond->get_nodes();
 
   // safety checks
   if (!nodeids)
@@ -622,9 +622,9 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
   // find out whether conditioned node is the leftmost (position 0) or rightmost (position 1) node
   // of the current line element
   int position(-1);
-  if (nodeid == ele->Nodes()[0]->Id())
+  if (nodeid == ele->nodes()[0]->id())
     position = 0;
-  else if (nodeid == ele->Nodes()[1]->Id())
+  else if (nodeid == ele->nodes()[1]->id())
     position = 1;
   else
   {
@@ -674,7 +674,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
     Core::LinAlg::SerialDenseVector& subgrdiff)
 {
   // screen output
-  std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
+  std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->id();
 
   // make a copy of state variables to undo perturbations later
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp_original(my::numdofpernode_);
@@ -683,7 +683,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
 
   // generalized-alpha time integration requires a copy of history variables as well
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ehist_original(my::numscal_);
-  if (my::scatraparatimint_->IsGenAlpha())
+  if (my::scatraparatimint_->is_gen_alpha())
   {
     for (int k = 0; k < my::numscal_; ++k)
       for (unsigned i = 0; i < nen_; ++i) ehist_original[k](i, 0) = my::ehist_[k](i, 0);
@@ -717,28 +717,28 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
       // fill state vectors with original state variables
       for (int k = 0; k < my::numdofpernode_; ++k)
         for (unsigned i = 0; i < nen_; ++i) my::ephinp_[k](i, 0) = ephinp_original[k](i, 0);
-      if (my::scatraparatimint_->IsGenAlpha())
+      if (my::scatraparatimint_->is_gen_alpha())
         for (int k = 0; k < my::numscal_; ++k)
           for (unsigned i = 0; i < nen_; ++i) my::ehist_[k](i, 0) = ehist_original[k](i, 0);
 
       // impose perturbation
-      if (my::scatraparatimint_->IsGenAlpha())
+      if (my::scatraparatimint_->is_gen_alpha())
       {
         // perturbation of phi(n+alphaF), not of phi(n+1) => scale epsilon by factor alphaF
         my::ephinp_[idof](inode, 0) +=
-            my::scatraparatimint_->AlphaF() * my::scatrapara_->FDCheckEps();
+            my::scatraparatimint_->alpha_f() * my::scatrapara_->fd_check_eps();
 
         // perturbation of phi(n+alphaF) by alphaF*epsilon corresponds to perturbation of phidtam
         // (stored in ehist_) by alphaM*epsilon/(gamma*dt); note: alphaF/timefac = alphaM/(gamma*dt)
         if (idof < my::numscal_)
         {
-          my::ehist_[idof](inode, 0) += my::scatraparatimint_->AlphaF() /
-                                        my::scatraparatimint_->TimeFac() *
-                                        my::scatrapara_->FDCheckEps();
+          my::ehist_[idof](inode, 0) += my::scatraparatimint_->alpha_f() /
+                                        my::scatraparatimint_->time_fac() *
+                                        my::scatrapara_->fd_check_eps();
         }
       }
       else
-        my::ephinp_[idof](inode, 0) += my::scatrapara_->FDCheckEps();
+        my::ephinp_[idof](inode, 0) += my::scatrapara_->fd_check_eps();
 
       // calculate element right-hand side vector for perturbed state
       sysmat(ele, emat_dummy, erhs_perturbed, subgrdiff_dummy);
@@ -761,8 +761,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
 
         // finite difference suggestion (first divide by epsilon and then subtract for better
         // conditioning)
-        const double fdval = -erhs_perturbed(row) / my::scatrapara_->FDCheckEps() +
-                             erhs(row) / my::scatrapara_->FDCheckEps();
+        const double fdval = -erhs_perturbed(row) / my::scatrapara_->fd_check_eps() +
+                             erhs(row) / my::scatrapara_->fd_check_eps();
 
         // confirm accuracy of first comparison
         if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
@@ -779,7 +779,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
         if (abs(relerr1) > abs(maxrelerr)) maxrelerr = relerr1;
 
         // evaluate first comparison
-        if (abs(relerr1) > my::scatrapara_->FDCheckTol())
+        if (abs(relerr1) > my::scatrapara_->fd_check_tol())
         {
           if (!counter) std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
           std::cout << "emat[" << row << "," << col << "]:  " << entry << "   ";
@@ -794,10 +794,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
         else
         {
           // left-hand side in second comparison
-          const double left = entry - erhs(row) / my::scatrapara_->FDCheckEps();
+          const double left = entry - erhs(row) / my::scatrapara_->fd_check_eps();
 
           // right-hand side in second comparison
-          const double right = -erhs_perturbed(row) / my::scatrapara_->FDCheckEps();
+          const double right = -erhs_perturbed(row) / my::scatrapara_->fd_check_eps();
 
           // confirm accuracy of second comparison
           if (abs(right) > 1.e-17 and abs(right) < 1.e-15)
@@ -814,7 +814,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
           if (abs(relerr2) > abs(maxrelerr)) maxrelerr = relerr2;
 
           // evaluate second comparison
-          if (abs(relerr2) > my::scatrapara_->FDCheckTol())
+          if (abs(relerr2) > my::scatrapara_->fd_check_tol())
           {
             if (!counter) std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
             std::cout << "emat[" << row << "," << col << "]-erhs[" << row << "]/eps:  " << left
@@ -838,7 +838,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::fd_check(Core::Elem
   // undo perturbations of state variables
   for (int k = 0; k < my::numdofpernode_; ++k)
     for (unsigned i = 0; i < nen_; ++i) my::ephinp_[k](i, 0) = ephinp_original[k](i, 0);
-  if (my::scatraparatimint_->IsGenAlpha())
+  if (my::scatraparatimint_->is_gen_alpha())
     for (int k = 0; k < my::numscal_; ++k)
       for (unsigned i = 0; i < nen_; ++i) my::ehist_[k](i, 0) = ehist_original[k](i, 0);
 }

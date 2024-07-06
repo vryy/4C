@@ -87,7 +87,7 @@ namespace
     double acc_j_ref[3];
     ParticleInteraction::UTILS::VecSetScale(acc_j_ref, (-artvisc_j * mass_i * dWdrji * fac), e_ij);
 
-    artificialviscosity_->ArtificialViscosity(vel_i, vel_j, &mass_i, &mass_j, artvisc_i, artvisc_j,
+    artificialviscosity_->artificial_viscosity(vel_i, vel_j, &mass_i, &mass_j, artvisc_i, artvisc_j,
         dWdrij, dWdrji, dens_ij, h_ij, c_ij, abs_rij, e_ij, acc_i, acc_j);
 
     // compare results

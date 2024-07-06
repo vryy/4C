@@ -109,11 +109,11 @@ namespace XFEM
     );
 
     //! prepares edge based stabilization for standard fluid
-    void EvaluateEdgeStabStd(Teuchos::ParameterList& eleparams,  ///< element parameter list
-        Teuchos::RCP<Core::FE::Discretization> discret,          ///< discretization
-        Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector                 ///< systemvector
+    void evaluate_edge_stab_std(Teuchos::ParameterList& eleparams,  ///< element parameter list
+        Teuchos::RCP<Core::FE::Discretization> discret,             ///< discretization
+        Discret::ELEMENTS::FluidIntFace* faceele,                   ///< face element
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,      ///< systemmatrix
+        Teuchos::RCP<Epetra_Vector> systemvector                    ///< systemvector
     );
 
     //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
@@ -129,10 +129,10 @@ namespace XFEM
     );
 
     //! returns a map containing the ghost penalty stabilized internal face elements
-    std::map<int, int>& GetGhostPenaltyMap() { return ghost_penalty_stab_; }
+    std::map<int, int>& get_ghost_penalty_map() { return ghost_penalty_stab_; }
 
     //! returns a map containing the edge based stabilized internal face elements
-    std::map<int, int>& GetEdgeBasedMap() { return edge_based_stab_; }
+    std::map<int, int>& get_edge_based_map() { return edge_based_stab_; }
 
 
    private:

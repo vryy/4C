@@ -75,9 +75,9 @@ namespace Mat
      * \return true
      * \return false
      */
-    bool IsDefined() const { return is_defined_; }
+    bool is_defined() const { return is_defined_; }
 
-    const Core::LinAlg::Matrix<3, 1>& GetRad() const override
+    const Core::LinAlg::Matrix<3, 1>& get_rad() const override
     {
       if (!is_defined_)
       {
@@ -86,7 +86,7 @@ namespace Mat
       return radial_;
     };
 
-    const Core::LinAlg::Matrix<3, 1>& GetAxi() const override
+    const Core::LinAlg::Matrix<3, 1>& get_axi() const override
     {
       if (!is_defined_)
       {
@@ -95,7 +95,7 @@ namespace Mat
       return axial_;
     }
 
-    const Core::LinAlg::Matrix<3, 1>& GetCir() const override
+    const Core::LinAlg::Matrix<3, 1>& get_cir() const override
     {
       if (!is_defined_)
       {

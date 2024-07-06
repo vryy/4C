@@ -53,25 +53,25 @@ namespace ScaTra
     void compute_therm_pressure_time_derivative() override;
 
     /// update thermodynamic pressure and time derivative for low-Mach-number flow
-    void UpdateThermPressure() override;
+    void update_therm_pressure() override;
 
     /// read restart data
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
-    double ThermPressAf() override { return thermpressaf_; }
+    double therm_press_af() override { return thermpressaf_; }
 
     /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
-    double ThermPressAm() override { return thermpressam_; }
+    double therm_press_am() override { return thermpressam_; }
 
     /// routine to return time derivative of thermo. press. at time step n+alpha_F for
     /// low-Mach-number flow
-    double ThermPressDtAf() override { return thermpressdtaf_; }
+    double therm_press_dt_af() override { return thermpressdtaf_; }
 
     /// routine to return time derivative of thermo. press. at time step n+alpha_M for
     /// low-Mach-number flow
-    double ThermPressDtAm() override { return thermpressdtam_; }
+    double therm_press_dt_am() override { return thermpressdtam_; }
 
    protected:
     void write_restart() const override;

@@ -118,15 +118,15 @@ namespace UTILS
     /*!
          \brief Update cardiovascular0d dofs
     */
-    void UpdateTimeStep();
+    void update_time_step();
 
     /*!
          \brief check periodic state of cardiovascular model
     */
-    void CheckPeriodic();
+    void check_periodic();
 
 
-    bool IsRealtiveEqualTo(const double A, const double B, const double Ref);
+    bool is_realtive_equal_to(const double A, const double B, const double Ref);
 
     bool modulo_is_realtive_zero(const double value, const double modulo, const double Ref);
 
@@ -136,7 +136,7 @@ namespace UTILS
     void reset_step();
 
     /// Add a vector as residual increment to the cardiovascular0d dof vector
-    void UpdateCv0DDof(Teuchos::RCP<Epetra_Vector> cv0ddofincrement  ///< vector to add
+    void update_cv0_d_dof(Teuchos::RCP<Epetra_Vector> cv0ddofincrement  ///< vector to add
     );
 
     ///
@@ -161,7 +161,7 @@ namespace UTILS
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatDcardvasc0dDd()  // const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mat_dcardvasc0d_dd()  // const
     {
       return mat_dcardvasc0d_dd_;
     };
@@ -181,37 +181,37 @@ namespace UTILS
     /*!
       \brief Return dof vector
     */
-    Teuchos::RCP<Epetra_Vector> Get0D_dof_np() const { return cv0ddof_np_; };
+    Teuchos::RCP<Epetra_Vector> get0_d_dof_np() const { return cv0ddof_np_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> Get0D_dof_n() const { return cv0ddof_n_; };
+    Teuchos::RCP<Epetra_Vector> get0_d_dof_n() const { return cv0ddof_n_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> Get0D_dof_m() const { return cv0ddof_m_; };
+    Teuchos::RCP<Epetra_Vector> get0_d_dof_m() const { return cv0ddof_m_; };
 
     /*!
       \brief Return vol vector
     */
-    Teuchos::RCP<Epetra_Vector> Get0D_vol_np() const { return v_np_; };
+    Teuchos::RCP<Epetra_Vector> get0_d_vol_np() const { return v_np_; };
 
 
-    Teuchos::RCP<Epetra_Vector> Get0D_df_np() const { return cardvasc0d_df_np_; };
-
-    /*!
-      \brief Return dof vector of last converged step
-    */
-    Teuchos::RCP<Epetra_Vector> Get0D_df_n() const { return cardvasc0d_df_n_; };
-
-    Teuchos::RCP<Epetra_Vector> Get0D_f_np() const { return cardvasc0d_f_np_; };
+    Teuchos::RCP<Epetra_Vector> get0_d_df_np() const { return cardvasc0d_df_np_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> Get0D_f_n() const { return cardvasc0d_f_n_; };
+    Teuchos::RCP<Epetra_Vector> get0_d_df_n() const { return cardvasc0d_df_n_; };
+
+    Teuchos::RCP<Epetra_Vector> get0_d_f_np() const { return cardvasc0d_f_np_; };
+
+    /*!
+      \brief Return dof vector of last converged step
+    */
+    Teuchos::RCP<Epetra_Vector> get0_d_f_n() const { return cardvasc0d_f_n_; };
 
     /*!
      \brief Return if there are Cardiovascular0Ds
@@ -226,30 +226,30 @@ namespace UTILS
     /*!
      \brief Return structural input parameter list
     */
-    Teuchos::ParameterList& StrParams() { return strparams_; }
+    Teuchos::ParameterList& str_params() { return strparams_; }
 
     /*!
      \brief Return cardiovascular0d input parameter list
     */
-    Teuchos::ParameterList& Cardvasc0DParams() { return cv0dparams_; }
+    Teuchos::ParameterList& cardvasc0_d_params() { return cv0dparams_; }
 
-    Teuchos::RCP<Core::LinAlg::Solver>& GetSolver() { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver>& get_solver() { return solver_; }
 
     /// Reset reference base values for restart computations
-    void Set0D_v_n(Teuchos::RCP<Epetra_Vector> newval  ///< new reference base values
+    void set0_d_v_n(Teuchos::RCP<Epetra_Vector> newval  ///< new reference base values
     )
     {
       v_n_->Update(1.0, *newval, 0.0);
     }
 
     /// set df_n, f_n
-    void Set0D_df_n(Teuchos::RCP<Epetra_Vector> newval  ///< new Cardiovascular0D dofs
+    void set0_d_df_n(Teuchos::RCP<Epetra_Vector> newval  ///< new Cardiovascular0D dofs
     )
     {
       cardvasc0d_df_n_->Update(1.0, *newval, 0.0);
       return;
     }
-    void Set0D_f_n(Teuchos::RCP<Epetra_Vector> newval  ///< new Cardiovascular0D dofs
+    void set0_d_f_n(Teuchos::RCP<Epetra_Vector> newval  ///< new Cardiovascular0D dofs
     )
     {
       cardvasc0d_f_n_->Update(1.0, *newval, 0.0);
@@ -257,7 +257,7 @@ namespace UTILS
     }
 
     /// Reset dofs
-    void Set0D_dof_n(Teuchos::RCP<Epetra_Vector> newdof  ///< new Cardiovascular0D dofs
+    void set0_d_dof_n(Teuchos::RCP<Epetra_Vector> newdof  ///< new Cardiovascular0D dofs
     )
     {
       cv0ddof_np_->Update(1.0, *newdof, 0.0);
@@ -265,7 +265,7 @@ namespace UTILS
       return;
     }
 
-    void PrintPresFlux(bool init) const;
+    void print_pres_flux(bool init) const;
 
 
 
@@ -274,10 +274,10 @@ namespace UTILS
         Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps);
 
 
-    void SolverSetup(Core::LinAlg::Solver& solver, Teuchos::ParameterList params);
+    void solver_setup(Core::LinAlg::Solver& solver, Teuchos::ParameterList params);
 
 
-    int Solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
+    int solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
         Teuchos::RCP<Epetra_Vector> dispinc,          ///< displacement increment to compute
         const Teuchos::RCP<Epetra_Vector> rhsstruct,  ///< standard right hand side
         const double k_ptc                            ///< for 3D-0D PTC
@@ -303,11 +303,11 @@ namespace UTILS
       return cardvascrespir0d_syspulperiphcirculation_;
     }
 
-    bool GetIsPeriodic() const { return is_periodic_; };
+    bool get_is_periodic() const { return is_periodic_; };
 
-    double Get_k_ptc() const { return k_ptc_; };
+    double get_k_ptc() const { return k_ptc_; };
 
-    void Modify_k_ptc(const double sum, const double fac)
+    void modify_k_ptc(const double sum, const double fac)
     {
       // increase PTC factor
       if (k_ptc_ == 0.0)
@@ -316,7 +316,7 @@ namespace UTILS
         k_ptc_ *= fac;
     };
 
-    void Reset_k_ptc()
+    void reset_k_ptc()
     {
       // reset PTC factor - for adaptivity, if divcont flag is set to "adapt_3D0Dptc_ele_err"
       k_ptc_ = 0.0;

@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
-    Surface>::EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
+    Surface>::evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, B
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-        stiffness_matrix->FEAssemble(Core::FADUtils::CastToDouble(potential.dx(i_dof).dx(j_dof)),
+        stiffness_matrix->fe_assemble(Core::FADUtils::CastToDouble(potential.dx(i_dof).dx(j_dof)),
             pair_gid[i_dof], pair_gid[j_dof]);
 }
 

@@ -60,11 +60,11 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate");
 
-  if (!discret.Filled()) FOUR_C_THROW("fill_complete() was not called");
-  if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!discret.filled()) FOUR_C_THROW("fill_complete() was not called");
+  if (!discret.have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  int row = strategy.FirstDofSet();
-  int col = strategy.SecondDofSet();
+  int row = strategy.first_dof_set();
+  int col = strategy.second_dof_set();
 
   // call the element's register class pre-evaluation method
   // for each type of element
@@ -72,16 +72,16 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
   // that does nothing
   {
     TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate pre_evaluate");
-    Core::Communication::ParObjectFactory::Instance().pre_evaluate(discret, eparams,
-        strategy.Systemmatrix1(), strategy.Systemmatrix2(), strategy.Systemvector1(),
-        strategy.Systemvector2(), strategy.Systemvector3());
+    Core::Communication::ParObjectFactory::instance().pre_evaluate(discret, eparams,
+        strategy.systemmatrix1(), strategy.systemmatrix2(), strategy.systemvector1(),
+        strategy.systemvector2(), strategy.systemvector3());
   }
 
-  Core::Elements::Element::LocationArray la(discret.NumDofSets());
+  Core::Elements::Element::LocationArray la(discret.num_dof_sets());
 
   bool is_subset = false;
   if (not col_ele_map)
-    col_ele_map = discret.ElementColMap();
+    col_ele_map = discret.element_col_map();
   else
     is_subset = true;
 
@@ -95,15 +95,15 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
     if (is_subset)
     {
       const int egid = ele_gids[i];
-      actele = discret.gElement(egid);
+      actele = discret.g_element(egid);
     }
     else
-      actele = discret.lColElement(i);
+      actele = discret.l_col_element(i);
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate LocationVector");
       // get element location vector, dirichlet flags and ownerships
-      actele->LocationVector(discret, la, false);
+      actele->location_vector(discret, la, false);
     }
 
     {
@@ -111,27 +111,27 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      strategy.ClearElementStorage(la[row].Size(), la[col].Size());
+      strategy.clear_element_storage(la[row].size(), la[col].size());
     }
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate elements");
       // call the element evaluate method
-      int err = actele->evaluate(eparams, discret, la, strategy.Elematrix1(), strategy.Elematrix2(),
-          strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
+      int err = actele->evaluate(eparams, discret, la, strategy.elematrix1(), strategy.elematrix2(),
+          strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
       if (err)
         FOUR_C_THROW(
-            "Proc %d: Element %d returned err=%d", discret.Comm().MyPID(), actele->Id(), err);
+            "Proc %d: Element %d returned err=%d", discret.get_comm().MyPID(), actele->id(), err);
     }
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate assemble");
-      int eid = actele->Id();
-      strategy.AssembleMatrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
-      strategy.AssembleMatrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
-      strategy.AssembleVector1(la[row].lm_, la[row].lmowner_);
-      strategy.AssembleVector2(la[row].lm_, la[row].lmowner_);
-      strategy.AssembleVector3(la[row].lm_, la[row].lmowner_);
+      int eid = actele->id();
+      strategy.assemble_matrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
+      strategy.assemble_matrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
+      strategy.assemble_vector1(la[row].lm_, la[row].lmowner_);
+      strategy.assemble_vector2(la[row].lm_, la[row].lmowner_);
+      strategy.assemble_vector3(la[row].lm_, la[row].lmowner_);
     }
 
   }  // loop over all considered elements

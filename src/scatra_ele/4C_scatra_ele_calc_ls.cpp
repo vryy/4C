@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcLS<distype>* Discret::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcLS<distype>* Discret::ELEMENTS::ScaTraEleCalcLS<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -27,7 +27,7 @@ Discret::ELEMENTS::ScaTraEleCalcLS<distype>* Discret::ELEMENTS::ScaTraEleCalcLS<
             new ScaTraEleCalcLS<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -41,7 +41,7 @@ Discret::ELEMENTS::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(
     : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname)
 {
   // safety check
-  if (my::scatrapara_->RBSubGrVel())
+  if (my::scatrapara_->rb_sub_gr_vel())
     FOUR_C_THROW("CalcSubgrVelocityLevelSet not available anymore");
 
   return;

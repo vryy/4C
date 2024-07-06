@@ -51,7 +51,7 @@ namespace Solid
       //! @{
 
       //! derived
-      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_structure; }
+      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_structure; }
 
       //! derived
       void reset(const Epetra_Vector& x) override;
@@ -109,7 +109,7 @@ namespace Solid
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override;
+      void predict(const Inpar::Solid::PredEnum& pred_type) override;
 
       //! derived
       void update_step_state(const double& timefac_n) override;
@@ -132,7 +132,7 @@ namespace Solid
        *  \param velnp (in): Current velocity vector
        *  \param global (in): If true, sum and share the result over all procs and
        *                      save the global result. */
-      void DetermineEnergy(
+      void determine_energy(
           const Epetra_Vector& disnp, const Epetra_Vector* velnp, const bool global);
 
       /*! \brief determine the strain energy

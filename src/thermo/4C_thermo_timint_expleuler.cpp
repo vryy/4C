@@ -53,7 +53,7 @@ THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
 /*----------------------------------------------------------------------*
  | integrate step                                            dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::IntegrateStep()
+void THR::TimIntExplEuler::integrate_step()
 {
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
 
@@ -95,7 +95,7 @@ void THR::TimIntExplEuler::IntegrateStep()
 
   // obtain new temperature rates \f$R_{n+1}\f$
   {
-    FOUR_C_ASSERT(tang_->Filled(), "capacity matrix has to be completed");
+    FOUR_C_ASSERT(tang_->filled(), "capacity matrix has to be completed");
     // get accelerations
     raten_->PutScalar(0.0);
   }
@@ -108,15 +108,15 @@ void THR::TimIntExplEuler::IntegrateStep()
     // in TimInt::determine_capa_consist_temp_rate
     Core::LinAlg::SolverParams solver_params;
     solver_params.reset = true;
-    solver_->Solve(tang_->EpetraOperator(), raten_, frimpn, solver_params);
+    solver_->solve(tang_->epetra_operator(), raten_, frimpn, solver_params);
   }
   // direct inversion based on lumped capacity matrix
   else
   {
     // extract the diagonal values of the mass matrix
     Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(
-        (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->RowMap(), false);
-    (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
+        (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->row_map(), false);
+    (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->extract_diagonal_copy(*diag);
     // R_{n+1} = C^{-1} . ( -fint + fext )
     raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
   }
@@ -133,14 +133,14 @@ void THR::TimIntExplEuler::IntegrateStep()
 /*----------------------------------------------------------------------*
  | update step                                               dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::UpdateStepState()
+void THR::TimIntExplEuler::update_step_state()
 {
   // new temperatures at t_{n+1} -> t_n
   // T_n := T_{n+1}
-  temp_->UpdateSteps(*tempn_);
+  temp_->update_steps(*tempn_);
   // new temperature rates at t_{n+1} -> t_n
   // R_n := R_{n+1}
-  rate_->UpdateSteps(*raten_);
+  rate_->update_steps(*raten_);
 
   // bye
   return;
@@ -151,7 +151,7 @@ void THR::TimIntExplEuler::UpdateStepState()
  | update after time step after output on element level      dano 01/12 |
  | update anything that needs to be updated at the element level        |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::UpdateStepElement()
+void THR::TimIntExplEuler::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -170,7 +170,7 @@ void THR::TimIntExplEuler::UpdateStepElement()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 01/12 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::ReadRestartForce()
+void THR::TimIntExplEuler::read_restart_force()
 {
   // do nothing
   return;
@@ -181,7 +181,7 @@ void THR::TimIntExplEuler::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void THR::TimIntExplEuler::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

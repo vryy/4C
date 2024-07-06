@@ -36,22 +36,22 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
       cardiovascular0dstructcoupcond_(0),
       cardiovascular0dtype_(none),
       atrium_model_(Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DAtriumModel>(
-          Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+          Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
               "SYS-PUL CIRCULATION PARAMETERS"),
           "ATRIUM_MODEL")),
       ventricle_model_(
           Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(
-              Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+              Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
                   "SYS-PUL CIRCULATION PARAMETERS"),
               "VENTRICLE_MODEL")),
       respiratory_model_(
           Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(
-              Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+              Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
                   "RESPIRATORY PARAMETERS"),
               "RESPIRATORY_MODEL")),
       gaussrule_(Core::FE::GaussRule2D::undefined)
 {
-  actdisc_->GetCondition(conditionname, cardiovascular0dcond_);
+  actdisc_->get_condition(conditionname, cardiovascular0dcond_);
   if (cardiovascular0dcond_.size())
   {
     cardiovascular0dtype_ = get_cardiovascular0_d_type(conditionname);
@@ -62,11 +62,11 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
     }
 
     Teuchos::RCP<Core::FE::Discretization> structdis =
-        Global::Problem::Instance()->GetDis("structure");
+        Global::Problem::instance()->get_dis("structure");
     if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
 
     // first get all Neumann conditions on structure
-    structdis->GetCondition("SurfaceNeumannCardiovascular0D", cardiovascular0dstructcoupcond_);
+    structdis->get_condition("SurfaceNeumannCardiovascular0D", cardiovascular0dstructcoupcond_);
 
     unsigned int numcoupcond = cardiovascular0dstructcoupcond_.size();
     if (numcoupcond == 0) FOUR_C_THROW("no coupling conditions found");
@@ -168,12 +168,12 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
       coupcondID[i] = cardiovascular0dstructcoupcond_[i]->parameters().get<int>("coupling_id");
 
       std::string type = "neum_orthopressure";
-      cardiovascular0dstructcoupcond_[i]->parameters().Add("type", type);
+      cardiovascular0dstructcoupcond_[i]->parameters().add("type", type);
       std::vector<int> onoff(6, 0);
       onoff[0] = 1;
-      cardiovascular0dstructcoupcond_[i]->parameters().Add("onoff", onoff);
+      cardiovascular0dstructcoupcond_[i]->parameters().add("onoff", onoff);
       std::vector<double> val(6, 0.0);
-      cardiovascular0dstructcoupcond_[i]->parameters().Add("val", val);
+      cardiovascular0dstructcoupcond_[i]->parameters().add("val", val);
     }
 
     if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size())
@@ -253,7 +253,7 @@ void UTILS::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
 }
 
 
-void UTILS::Cardiovascular0D::EvaluateDStructDp(
+void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
 {
   // get structural time-integrator dependent values
@@ -310,7 +310,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     gindex[0] = numdof_per_cond * coupcondID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = coupcond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = coupcond->geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
@@ -322,7 +322,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+      curr->second->location_vector(*actdisc_, lm, lmowner, lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -342,21 +342,21 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       xc.shape(numnode, 3);
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
-      Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->get_state("displacement");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*curdispl, mydisp, lm);
 
       for (int j = 0; j < numnode; ++j)
       {
-        xc(j, 0) = element->Nodes()[j]->X()[0] + mydisp[j * 3 + 0];
-        xc(j, 1) = element->Nodes()[j]->X()[1] + mydisp[j * 3 + 1];
-        xc(j, 2) = element->Nodes()[j]->X()[2] + mydisp[j * 3 + 2];
+        xc(j, 0) = element->nodes()[j]->x()[0] + mydisp[j * 3 + 0];
+        xc(j, 1) = element->nodes()[j]->x()[1] + mydisp[j * 3 + 1];
+        xc(j, 2) = element->nodes()[j]->x()[2] + mydisp[j * 3 + 2];
       }
 
       /*----------------------------------------------------------------------*
       |               start loop over integration points                     |
       *----------------------------------------------------------------------*/
-      Core::FE::CellType shape = element->Shape();
+      Core::FE::CellType shape = element->shape();
       // type of gaussian integration
       switch (shape)
       {
@@ -417,7 +417,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
             elevector[node * 3 + dim] += funct[node] * normal[dim] * fac;
       }
 
-      int eid = curr->second->Id();
+      int eid = curr->second->id();
 
       // assemble the offdiagonal stiffness block (0,1 block) arising from dR_struct/dcvdof
       // assemble to rectangular matrix. The col corresponds to the Cardiovascular0D ID.
@@ -481,7 +481,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       }
 
       elevector.scale(sc_strtimint);
-      sysmat->Assemble(eid, lmstride, elevector, lm, lmowner, colvec);
+      sysmat->assemble(eid, lmstride, elevector, lm, lmowner, colvec);
     }
   }
 

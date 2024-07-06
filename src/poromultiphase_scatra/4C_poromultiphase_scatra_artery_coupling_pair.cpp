@@ -115,14 +115,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   element2_ = elements[1];
 
   // set coupling type
-  if (element1_->ElementType().Name() == "ArteryType" &&
-      element2_->ElementType().Name() == "PoroFluidMultiPhaseType")
+  if (element1_->element_type().name() == "ArteryType" &&
+      element2_->element_type().name() == "PoroFluidMultiPhaseType")
   {
     coupltype_ = type_porofluid;
     nds_porofluid_ = 0;
   }
-  else if (element1_->ElementType().Name() == "TransportType" &&
-           element2_->ElementType().Name() == "TransportType")
+  else if (element1_->element_type().name() == "TransportType" &&
+           element2_->element_type().name() == "TransportType")
   {
     coupltype_ = type_scatra;
     nds_porofluid_ = 2;
@@ -130,8 +130,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   else
   {
     FOUR_C_THROW("Your selected coupling is not possible, type of element1: " +
-                 element1_->ElementType().Name() +
-                 ", type of element2: " + element2_->ElementType().Name());
+                 element1_->element_type().name() +
+                 ", type of element2: " + element2_->element_type().name());
   }
 
   if (couplmethod_ == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
@@ -168,21 +168,21 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
 
   // get number of DOFs of artery or artery-scatra
   const Core::Nodes::Node* const* artnodes;
-  artnodes = element1_->Nodes();
+  artnodes = element1_->nodes();
 
-  numdof_art_ = element1_->NumDofPerNode(*artnodes[0]);
+  numdof_art_ = element1_->num_dof_per_node(*artnodes[0]);
   for (int i = 1; i < element1_->num_node(); i++)
-    if (numdof_art_ != element1_->NumDofPerNode(*artnodes[i]))
+    if (numdof_art_ != element1_->num_dof_per_node(*artnodes[i]))
       FOUR_C_THROW("It is not possible to have different number of Dofs in artery discretization");
   dim1_ = numdof_art_ * element1_->num_node();
 
   // get number of DOFs of continuous ele (scatra or porofluid)
   const Core::Nodes::Node* const* contnodes;
-  contnodes = element2_->Nodes();
+  contnodes = element2_->nodes();
 
-  numdof_cont_ = element2_->NumDofPerNode(*contnodes[0]);
+  numdof_cont_ = element2_->num_dof_per_node(*contnodes[0]);
   for (int i = 1; i < element2_->num_node(); i++)
-    if (numdof_cont_ != element2_->NumDofPerNode(*contnodes[i]))
+    if (numdof_cont_ != element2_->num_dof_per_node(*contnodes[i]))
       FOUR_C_THROW(
           "It is not possible to have different number of Dofs in continuos discretization");
   dim2_ = numdof_cont_ * element2_->num_node();
@@ -249,8 +249,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // Set reference nodal positions for artery element
   for (unsigned int n = 0; n < numnodesart_; ++n)
   {
-    const Core::Nodes::Node* node = element1_->Nodes()[n];
-    for (unsigned int d = 0; d < numdim_; ++d) ele1posref_(numdim_ * n + d) = node->X()[d];
+    const Core::Nodes::Node* node = element1_->nodes()[n];
+    for (unsigned int d = 0; d < numdim_; ++d) ele1posref_(numdim_ * n + d) = node->x()[d];
   }
 
   // get length of 1D element
@@ -269,8 +269,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // Set reference nodal positions for continuous discretization element
   for (unsigned int inode = 0; inode < numnodescont_; ++inode)
   {
-    const Core::Nodes::Node* node = element2_->Nodes()[inode];
-    for (unsigned int idim = 0; idim < numdim_; ++idim) ele2posref_(idim, inode) = node->X()[idim];
+    const Core::Nodes::Node* node = element2_->nodes()[inode];
+    for (unsigned int idim = 0; idim < numdim_; ++idim) ele2posref_(idim, inode) = node->x()[idim];
   }
 
   // set current nodal positions to reference nodal positions for continuous discretization
@@ -293,7 +293,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
 {
   // dummy parameter list
   Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* para =
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(disname);
+      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(disname);
 
   double arterydens = 0.0;
 
@@ -304,118 +304,118 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     case type_porofluid:
     {
       multiphasemat =
-          Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(element2_->Material(nds_porofluid_));
+          Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(element2_->material(nds_porofluid_));
       if (multiphasemat == Teuchos::null)
         FOUR_C_THROW("cast to Mat::FluidPoroMultiPhase failed for artery-porofluid coupling!");
       for (int idof = 0; idof < numcoupleddofs_; idof++)
       {
-        const int matid = multiphasemat->MatID(coupleddofs_cont_[idof]);
-        Teuchos::RCP<Core::Mat::Material> singlemat = multiphasemat->MaterialById(matid);
+        const int matid = multiphasemat->mat_id(coupleddofs_cont_[idof]);
+        Teuchos::RCP<Core::Mat::Material> singlemat = multiphasemat->material_by_id(matid);
 
         // safety check
-        if (singlemat->MaterialType() != Core::Materials::m_fluidporo_volfracpressure &&
-            singlemat->MaterialType() != Core::Materials::m_fluidporo_singlephase)
+        if (singlemat->material_type() != Core::Materials::m_fluidporo_volfracpressure &&
+            singlemat->material_type() != Core::Materials::m_fluidporo_singlephase)
         {
           FOUR_C_THROW(
               "You can only couple volume fraction pressures or fluid phases in multiphase "
               "porespace, your material is of type %d",
-              singlemat->MaterialType());
+              singlemat->material_type());
         }
       }
       // we have a coupling with scatra -> the scatra-material is the third material in the 2D/3D
       // element
-      if (element2_->NumMaterial() == 3)
+      if (element2_->num_material() == 3)
       {
-        if (element2_->Material(2)->MaterialType() == Core::Materials::m_matlist or
-            element2_->Material(2)->MaterialType() == Core::Materials::m_matlist_reactions)
+        if (element2_->material(2)->material_type() == Core::Materials::m_matlist or
+            element2_->material(2)->material_type() == Core::Materials::m_matlist_reactions)
         {
           Teuchos::RCP<Mat::MatList> scatramat =
-              Teuchos::rcp_static_cast<Mat::MatList>(element2_->Material(2));
-          numscalcont_ = scatramat->NumMat();
+              Teuchos::rcp_static_cast<Mat::MatList>(element2_->material(2));
+          numscalcont_ = scatramat->num_mat();
         }
         else
           FOUR_C_THROW("Only MAT_matlist is valid for poromultiphase-scatra material");
       }
       // we have a coupling with artery-scatra -> the artery-scatra-material is the second
       // material in the artery element
-      if (element1_->NumMaterial() == 2)
+      if (element1_->num_material() == 2)
       {
-        if (element1_->Material(1)->MaterialType() == Core::Materials::m_matlist)
+        if (element1_->material(1)->material_type() == Core::Materials::m_matlist)
         {
           Teuchos::RCP<Mat::MatList> artscatramat =
-              Teuchos::rcp_static_cast<Mat::MatList>(element1_->Material(1));
-          numscalart_ = artscatramat->NumMat();
+              Teuchos::rcp_static_cast<Mat::MatList>(element1_->material(1));
+          numscalart_ = artscatramat->num_mat();
         }
-        else if (element1_->Material(1)->MaterialType() == Core::Materials::m_scatra)
+        else if (element1_->material(1)->material_type() == Core::Materials::m_scatra)
           numscalart_ = 1;
         else
           FOUR_C_THROW("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
       }
 
-      arterymat_ = Teuchos::rcp_static_cast<Mat::Cnst1dArt>(element1_->Material(0));
+      arterymat_ = Teuchos::rcp_static_cast<Mat::Cnst1dArt>(element1_->material(0));
       if (arterymat_ == Teuchos::null)
         FOUR_C_THROW("cast to artery material failed for porofluid-artery coupling!");
-      arterydiam_at_gp_ = arterymat_->Diam();
-      arterydiamref_ = arterymat_->DiamInitial();
-      arterydens = arterymat_->Density();
+      arterydiam_at_gp_ = arterymat_->diam();
+      arterydiamref_ = arterymat_->diam_initial();
+      arterydens = arterymat_->density();
 
       break;
     }
     case type_scatra:
     {
       // check if we actually have three materials
-      if (element2_->NumMaterial() < 3) FOUR_C_THROW("no third material available");
+      if (element2_->num_material() < 3) FOUR_C_THROW("no third material available");
 
       multiphasemat =
-          Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(element2_->Material(nds_porofluid_));
+          Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(element2_->material(nds_porofluid_));
 
       if (multiphasemat == Teuchos::null)
         FOUR_C_THROW("cast to Mat::FluidPoroMultiPhase failed for arteryscatra-scatra coupling!");
 
-      contscatramat = Teuchos::rcp_static_cast<Mat::MatList>(element2_->Material(0));
+      contscatramat = Teuchos::rcp_static_cast<Mat::MatList>(element2_->material(0));
       if (contscatramat == Teuchos::null)
         FOUR_C_THROW("cast to ScatraMat failed for arteryscatra-scatra coupling!");
 
       for (int idof = 0; idof < numcoupleddofs_; idof++)
       {
-        const int matid = contscatramat->MatID(coupleddofs_cont_[idof]);
-        Teuchos::RCP<Core::Mat::Material> singlemat = contscatramat->MaterialById(matid);
+        const int matid = contscatramat->mat_id(coupleddofs_cont_[idof]);
+        Teuchos::RCP<Core::Mat::Material> singlemat = contscatramat->material_by_id(matid);
 
         // safety check
-        if (singlemat->MaterialType() != Core::Materials::m_scatra_multiporo_volfrac &&
-            singlemat->MaterialType() != Core::Materials::m_scatra_multiporo_fluid)
+        if (singlemat->material_type() != Core::Materials::m_scatra_multiporo_volfrac &&
+            singlemat->material_type() != Core::Materials::m_scatra_multiporo_fluid)
         {
           FOUR_C_THROW(
               "You can only couple Mat::ScatraMatMultiPoroVolFrac or Mat::ScatraMatMultiPoroFluid, "
               "your material is of type %d",
-              singlemat->MaterialType());
+              singlemat->material_type());
         }
 
-        if (singlemat->MaterialType() == Core::Materials::m_scatra_multiporo_volfrac)
+        if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
         {
           const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
               Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
-          volfracpressid_[idof] = poromat->PhaseID() + multiphasemat->NumVolFrac();
+          volfracpressid_[idof] = poromat->phase_id() + multiphasemat->num_vol_frac();
         }
       }
       // get the artery scatra-material
-      if (element1_->Material(0)->MaterialType() == Core::Materials::m_matlist)
+      if (element1_->material(0)->material_type() == Core::Materials::m_matlist)
       {
         Teuchos::RCP<Mat::MatList> artscatramat =
-            Teuchos::rcp_static_cast<Mat::MatList>(element1_->Material(0));
-        numscalart_ = artscatramat->NumMat();
+            Teuchos::rcp_static_cast<Mat::MatList>(element1_->material(0));
+        numscalart_ = artscatramat->num_mat();
       }
-      else if (element1_->Material(0)->MaterialType() == Core::Materials::m_scatra)
+      else if (element1_->material(0)->material_type() == Core::Materials::m_scatra)
         numscalart_ = 1;
       else
         FOUR_C_THROW("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
       numscalcont_ = numdof_cont_;
-      arterymat_ = Teuchos::rcp_static_cast<Mat::Cnst1dArt>(element1_->Material(1));
+      arterymat_ = Teuchos::rcp_static_cast<Mat::Cnst1dArt>(element1_->material(1));
       if (arterymat_ == Teuchos::null)
         FOUR_C_THROW("cast to artery material failed for arteryscatra-scatra coupling!");
-      arterydiam_at_gp_ = arterymat_->Diam();
-      arterydiamref_ = arterymat_->DiamInitial();
-      arterydens = arterymat_->Density();
+      arterydiam_at_gp_ = arterymat_->diam();
+      arterydiamref_ = arterymat_->diam_initial();
+      arterydens = arterymat_->density();
       break;
     }
     default:
@@ -424,7 +424,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   }
 
   // take care of diameter function
-  const int diam_funct_num = arterymat_->DiameterFunction();
+  const int diam_funct_num = arterymat_->diameter_function();
   if (diam_funct_num > -1)
   {
     // no real use-case without function coupling
@@ -434,7 +434,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
           "currently not possible, if you still want a varying diameter without any exchange "
           "terms, you can still define a zero exchange term");
     diam_funct_active_ = true;
-    artdiam_funct_ = &Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfAnything>(
+    artdiam_funct_ = &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(
         diam_funct_num - 1);
     if (coupltype_ == type_porofluid)
     {
@@ -460,14 +460,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       FOUR_C_THROW("Only TET4 and HEX8 elements possible for lateral surface coupling");
   }
 
-  numfluidphases_ = multiphasemat->NumFluidPhases();
-  numvolfrac_ = multiphasemat->NumVolFrac();
+  numfluidphases_ = multiphasemat->num_fluid_phases();
+  numvolfrac_ = multiphasemat->num_vol_frac();
 
   // create phase-manager
-  phasemanager_ =
-      Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::CreatePhaseManager(*para, numdim_,
-          multiphasemat->MaterialType(), POROFLUIDMULTIPHASE::Action::get_access_from_artcoupling,
-          multiphasemat->NumMat(), multiphasemat->NumFluidPhases());
+  phasemanager_ = Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
+      *para, numdim_, multiphasemat->material_type(),
+      POROFLUIDMULTIPHASE::Action::get_access_from_artcoupling, multiphasemat->num_mat(),
+      multiphasemat->num_fluid_phases());
 
   // setup phasemanager
   phasemanager_->setup(element2_, nds_porofluid_);
@@ -476,7 +476,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<numdim_,
       numnodescont_>::create_variable_manager(*para,
       POROFLUIDMULTIPHASE::Action::get_access_from_artcoupling, multiphasemat,
-      multiphasemat->NumMat(), multiphasemat->NumFluidPhases());
+      multiphasemat->num_mat(), multiphasemat->num_fluid_phases());
 
   // initialize the names used in functions
   initialize_function_names();
@@ -525,9 +525,9 @@ template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int d
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
     dim>::pre_evaluate_lateral_surface_coupling(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
-  const int pid = Global::Problem::Instance()->GetDis("artery")->Comm().MyPID();
-  const int mylid = element1_->LID();
-  if (element2_->Owner() != pid) return;
+  const int pid = Global::Problem::instance()->get_dis("artery")->get_comm().MyPID();
+  const int mylid = element1_->lid();
+  if (element2_->owner() != pid) return;
 
   // unit radial basis vectors
   Core::LinAlg::Matrix<3, 1> unit_rad_1;
@@ -542,10 +542,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // get radius
   const int artelematerial = coupltype_ == type_scatra ? 1 : 0;
   Teuchos::RCP<Mat::Cnst1dArt> arterymat =
-      Teuchos::rcp_static_cast<Mat::Cnst1dArt>(element1_->Material(artelematerial));
+      Teuchos::rcp_static_cast<Mat::Cnst1dArt>(element1_->material(artelematerial));
   if (arterymat == Teuchos::null)
     FOUR_C_THROW("cast to artery material failed for porofluid-artery coupling!");
-  double radius = arterymat->Diam() / 2.0;
+  double radius = arterymat->diam() / 2.0;
 
   // size of one integration patch: 2*pi*R/numpatch_rad_*L/numpatch_axi_
   const double patch_size =
@@ -744,7 +744,7 @@ template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int d
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
     dim>::delete_unnecessary_g_ps(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
-  const int mylid = element1_->LID();
+  const int mylid = element1_->lid();
   n_gp_ = 0;
   for (int igp = 0; igp < n_gp_per_patch_ * numpatch_axi_ * numpatch_rad_; igp++)
     if (wgp_[igp] > 1e-12) n_gp_++;
@@ -780,18 +780,18 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::ResetState(Teuchos::RCP<Core::FE::Discretization> contdis,
+    dim>::reset_state(Teuchos::RCP<Core::FE::Discretization> contdis,
     Teuchos::RCP<Core::FE::Discretization> artdis)
 {
   if (!ispreevaluated_) FOUR_C_THROW("MeshTying Pair has not yet been pre-evaluated");
 
   // get location array for continuous ele
-  Core::Elements::Element::LocationArray la_cont(contdis->NumDofSets());
-  element2_->LocationVector(*contdis, la_cont, false);
+  Core::Elements::Element::LocationArray la_cont(contdis->num_dof_sets());
+  element2_->location_vector(*contdis, la_cont, false);
 
   // get location array for artery ele
-  Core::Elements::Element::LocationArray la_art(artdis->NumDofSets());
-  element1_->LocationVector(*artdis, la_art, false);
+  Core::Elements::Element::LocationArray la_art(artdis->num_dof_sets());
+  element1_->location_vector(*artdis, la_art, false);
 
   switch (coupltype_)
   {
@@ -801,9 +801,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       variablemanager_->extract_element_and_node_values(*element2_, *contdis, la_cont, ele2pos_, 0);
 
       // get contelephinp_ and artelephinp_
-      Core::FE::ExtractMyValues(*contdis->GetState("phinp_fluid"), contelephinp_, la_cont[0].lm_);
+      Core::FE::ExtractMyValues(*contdis->get_state("phinp_fluid"), contelephinp_, la_cont[0].lm_);
       Core::FE::ExtractMyValues(
-          *artdis->GetState("one_d_artery_pressure"), artelephinp_, la_art[0].lm_);
+          *artdis->get_state("one_d_artery_pressure"), artelephinp_, la_art[0].lm_);
 
       // extract velocity of solid phase
       extract_solid_vel(contdis);
@@ -812,11 +812,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       if (numscalart_ > 0)
       {
         Teuchos::RCP<const Epetra_Vector> artscalarnp =
-            artdis->GetState(ndsartery_scatra_, "one_d_artery_phinp");
+            artdis->get_state(ndsartery_scatra_, "one_d_artery_phinp");
         if (artscalarnp != Teuchos::null)
         {
-          Core::Elements::Element::LocationArray la(artdis->NumDofSets());
-          element1_->LocationVector(*artdis, la, false);
+          Core::Elements::Element::LocationArray la(artdis->num_dof_sets());
+          element1_->location_vector(*artdis, la, false);
           // rebuild scalar vector
           eartscalarnp_.clear();
           eartscalarnp_.resize(numscalart_, Core::LinAlg::Matrix<numnodesart_, 1>(true));
@@ -831,11 +831,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       if (numscalcont_ > 0)
       {
         // get state vector from discretization
-        Teuchos::RCP<const Epetra_Vector> contscalarnp = contdis->GetState(3, "scalars");
+        Teuchos::RCP<const Epetra_Vector> contscalarnp = contdis->get_state(3, "scalars");
         if (contscalarnp != Teuchos::null)
         {
-          Core::Elements::Element::LocationArray la(contdis->NumDofSets());
-          element2_->LocationVector(*contdis, la, false);
+          Core::Elements::Element::LocationArray la(contdis->num_dof_sets());
+          element2_->location_vector(*contdis, la, false);
           // rebuild scalar vector
           econtscalarnp_.clear();
           econtscalarnp_.resize(numscalcont_, Core::LinAlg::Matrix<numnodescont_, 1>(true));
@@ -854,17 +854,17 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       variablemanager_->extract_element_and_node_values(*element2_, *contdis, la_cont, ele2pos_, 2);
 
       // get contelephinp_ and artelephinp_
-      Core::FE::ExtractMyValues(*contdis->GetState("phinp"), contelephinp_, la_cont[0].lm_);
+      Core::FE::ExtractMyValues(*contdis->get_state("phinp"), contelephinp_, la_cont[0].lm_);
       Core::FE::ExtractMyValues(
-          *artdis->GetState("one_d_artery_phinp"), artelephinp_, la_art[0].lm_);
+          *artdis->get_state("one_d_artery_phinp"), artelephinp_, la_art[0].lm_);
 
       // extract artery pressure
       Teuchos::RCP<const Epetra_Vector> artpressnp =
-          artdis->GetState(ndsscatra_artery_, "one_d_artery_pressure");
+          artdis->get_state(ndsscatra_artery_, "one_d_artery_pressure");
       if (artpressnp != Teuchos::null)
       {
-        Core::Elements::Element::LocationArray la(artdis->NumDofSets());
-        element1_->LocationVector(*artdis, la, false);
+        Core::Elements::Element::LocationArray la(artdis->num_dof_sets());
+        element1_->location_vector(*artdis, la, false);
         Core::FE::ExtractMyValues<Core::LinAlg::Matrix<numnodesart_, 1>>(
             *artpressnp, earterypressurenp_, la[ndsscatra_artery_].lm_);
       }
@@ -900,7 +900,7 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art,
   if (stiffmat21 != nullptr) stiffmat21->shape(dim2_, dim1_);
   if (stiffmat22 != nullptr) stiffmat22->shape(dim2_, dim2_);
 
-  if (arterymat_->IsCollapsed()) return 0.0;
+  if (arterymat_->is_collapsed()) return 0.0;
 
   std::vector<double> myEta;
   std::vector<std::vector<double>> myXi;
@@ -980,11 +980,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   if (stiffmat12 != nullptr) stiffmat12->shape(dim1_, dim2_);
 
   // do not evaluate if element is collapsed
-  if (arterymat_->IsCollapsed()) return;
+  if (arterymat_->is_collapsed()) return;
 
   // this is the integrated diameter over the entire element (all segments)
-  const double arterydiam = arterymat_->Diam();
-  const double prefac = M_PI * std::pow(arterydiam, 3) / 32.0 / arterymat_->Viscosity();
+  const double arterydiam = arterymat_->diam();
+  const double prefac = M_PI * std::pow(arterydiam, 3) / 32.0 / arterymat_->viscosity();
   // TODO: for viscosity law blood, viscosity depends on diameter, this linearization is still
   // missing
 
@@ -996,25 +996,25 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 int PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::Ele1GID() const
+    dim>::ele1_gid() const
 {
-  return element1_->Id();
+  return element1_->id();
 }
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 int PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::Ele2GID() const
+    dim>::ele2_gid() const
 {
-  return element2_->Id();
+  return element2_->id();
 }
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 int PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::GetSegmentID() const
+    dim>::get_segment_id() const
 {
   return segmentid_;
 }
@@ -1023,14 +1023,14 @@ int PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, di
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::CalculateVol2D3D() const
+    dim>::calculate_vol2_d3_d() const
 {
   // use one-point Gauss rule
   Core::FE::IntPointsAndWeights<numdim_> intpoints_stab(
       Discret::ELEMENTS::DisTypeToStabGaussRule<distype_cont>::rule);
 
-  const double* gpcoord = intpoints_stab.IP().qxg[0];   // actual integration point (coords)
-  const double gpweight = intpoints_stab.IP().qwgt[0];  // actual integration point (weight)
+  const double* gpcoord = intpoints_stab.ip().qxg[0];   // actual integration point (coords)
+  const double gpweight = intpoints_stab.ip().qwgt[0];  // actual integration point (weight)
 
   Core::LinAlg::Matrix<numdim_, 1> xsi(gpcoord, true);
   static Core::LinAlg::Matrix<numnodescont_, 1> funct;
@@ -1074,7 +1074,7 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art,
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::SetSegmentID(const int& segmentid)
+    dim>::set_segment_id(const int& segmentid)
 {
   segmentid_ = segmentid;
 }
@@ -1083,16 +1083,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::ApplyMeshMovement(const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis)
+    dim>::apply_mesh_movement(const bool firstcall, Teuchos::RCP<Core::FE::Discretization> contdis)
 {
   // nodal displacement values for ALE
   Core::LinAlg::Matrix<numdim_, numnodescont_> edispnp(true);
 
   if (!firstcall)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = contdis->GetState(1, "dispnp");
-    Core::Elements::Element::LocationArray la(contdis->NumDofSets());
-    element2_->LocationVector(*contdis, la, false);
+    Teuchos::RCP<const Epetra_Vector> dispnp = contdis->get_state(1, "dispnp");
+    Core::Elements::Element::LocationArray la(contdis->num_dof_sets());
+    element2_->location_vector(*contdis, la, false);
 
     // construct location vector for displacement related dofs
     std::vector<int> lmdisp(numdim_ * numnodescont_, -1);
@@ -1487,10 +1487,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     const double JacobianDefGradient = det / det0;
 
     // clear current gauss point data for safety
-    phasemanager_->ClearGPState();
-    variablemanager_->EvaluateGPVariables(N2_transpose, derxy);
+    phasemanager_->clear_gp_state();
+    variablemanager_->evaluate_gp_variables(N2_transpose, derxy);
 
-    phasemanager_->EvaluateGPState(JacobianDefGradient, *variablemanager_, nds_porofluid_);
+    phasemanager_->evaluate_gp_state(JacobianDefGradient, *variablemanager_, nds_porofluid_);
 
     evaluate_function_coupling(w_gp, N1, N2, jac, *forcevec1, *forcevec2, *stiffmat11, *stiffmat12,
         *stiffmat21, *stiffmat22, integrated_diam);
@@ -1941,7 +1941,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   if (coupltype_ == type_porofluid)
   {
     // function derivatives
-    std::vector<double> curderivs(artdiam_funct_->EvaluateDerivative(variables, constants, 0));
+    std::vector<double> curderivs(artdiam_funct_->evaluate_derivative(variables, constants, 0));
     // derivatives w.r.t. primary variables
     std::fill(diamderivs_.begin(), diamderivs_.end(), 0.0);
 
@@ -1950,11 +1950,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     {
       for (int idof = 0; idof < numfluidphases_; idof++)
         diamderivs_[doftoderive] +=
-            curderivs[idof] * phasemanager_->PressureDeriv(idof, doftoderive) +
-            curderivs[idof + numfluidphases_] * phasemanager_->SaturationDeriv(idof, doftoderive);
+            curderivs[idof] * phasemanager_->pressure_deriv(idof, doftoderive) +
+            curderivs[idof + numfluidphases_] * phasemanager_->saturation_deriv(idof, doftoderive);
       if (phasemanager_->porosity_depends_on_fluid())
         diamderivs_[doftoderive] +=
-            curderivs[2 * numfluidphases_] * phasemanager_->PorosityDeriv(doftoderive);
+            curderivs[2 * numfluidphases_] * phasemanager_->porosity_deriv(doftoderive);
     }
     // diameter derivs w.r.t. to volume fraction phases
     for (int doftoderive = numfluidphases_; doftoderive < numdof_cont_ - numvolfrac_; doftoderive++)
@@ -1963,7 +1963,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       //                             and porosity (since it depends on volfrac)
       diamderivs_[doftoderive] +=
           curderivs[doftoderive + numfluidphases_ + 1] +
-          curderivs[2 * numfluidphases_] * phasemanager_->PorosityDeriv(doftoderive);
+          curderivs[2 * numfluidphases_] * phasemanager_->porosity_deriv(doftoderive);
     }
     // diameter derivs w.r.t. to volume fraction pressures
     for (int doftoderive = numfluidphases_ + numvolfrac_; doftoderive < numdof_cont_; doftoderive++)
@@ -2018,12 +2018,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // fill fluid densities vector
   std::vector<double> fluiddensities(numfluidphases_ + 2 * numvolfrac_);
   for (int ifluidphase = 0; ifluidphase < numfluidphases_; ifluidphase++)
-    fluiddensities[ifluidphase] = phasemanager_->Density(ifluidphase);
+    fluiddensities[ifluidphase] = phasemanager_->density(ifluidphase);
   for (int ivolfrac = 0; ivolfrac < numvolfrac_; ivolfrac++)
   {
-    fluiddensities[numfluidphases_ + ivolfrac] = phasemanager_->VolFracDensity(ivolfrac);
+    fluiddensities[numfluidphases_ + ivolfrac] = phasemanager_->vol_frac_density(ivolfrac);
     fluiddensities[numfluidphases_ + numvolfrac_ + ivolfrac] =
-        phasemanager_->VolFracDensity(ivolfrac);
+        phasemanager_->vol_frac_density(ivolfrac);
   }
 
   switch (coupltype_)
@@ -2045,27 +2045,27 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       // continuous
       for (int idof = 0; idof < numdof_cont_; idof++)
       {
-        const int matid = contscatramat->MatID(idof);
-        Teuchos::RCP<Core::Mat::Material> singlemat = contscatramat->MaterialById(matid);
+        const int matid = contscatramat->mat_id(idof);
+        Teuchos::RCP<Core::Mat::Material> singlemat = contscatramat->material_by_id(matid);
         int phaseid = -1;
-        if (singlemat->MaterialType() == Core::Materials::m_scatra_multiporo_fluid)
+        if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_fluid)
         {
           const Teuchos::RCP<const Mat::ScatraMatMultiPoroFluid>& poromat =
               Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroFluid>(singlemat);
-          phaseid = poromat->PhaseID();
+          phaseid = poromat->phase_id();
         }
-        else if (singlemat->MaterialType() == Core::Materials::m_scatra_multiporo_volfrac)
+        else if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
         {
           const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
               Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
-          phaseid = poromat->PhaseID();
+          phaseid = poromat->phase_id();
         }
         else
           FOUR_C_THROW(
               "Only Mat::ScatraMatMultiPoroVolFrac and Mat::ScatraMatMultiPoroFluid, your "
               "material "
               "is of type %d",
-              singlemat->MaterialType());
+              singlemat->material_type());
         timefacrhs_cont_dens_[idof] = timefacrhs_cont_ / fluiddensities[phaseid];
       }
       break;
@@ -2085,9 +2085,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // no need for this
   if (evaluate_in_ref_config_) return;
 
-  Teuchos::RCP<const Epetra_Vector> velocity = contdis->GetState(1, "velocity field");
-  Core::Elements::Element::LocationArray la(contdis->NumDofSets());
-  element2_->LocationVector(*contdis, la, false);
+  Teuchos::RCP<const Epetra_Vector> velocity = contdis->get_state(1, "velocity field");
+  Core::Elements::Element::LocationArray la(contdis->num_dof_sets());
+  element2_->location_vector(*contdis, la, false);
 
   // construct location vector for displacement related dofs
   std::vector<int> lmdisp(numdim_ * numnodescont_, -1);
@@ -2364,7 +2364,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       // evaluate the reaction term
       functval = funct.evaluate(variables, constants, 0);
       // evaluate derivatives
-      std::vector<double> curderivs(funct.EvaluateDerivative(variables, constants, 0));
+      std::vector<double> curderivs(funct.evaluate_derivative(variables, constants, 0));
 
       evaluate_fluid_derivs(artderivs, contderivs, curderivs);
 
@@ -2388,7 +2388,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       // evaluate the reaction term
       functval = funct.evaluate(variables, constants, 0);
       // evaluate derivatives
-      std::vector<double> curderivs(funct.EvaluateDerivative(variables, constants, 0));
+      std::vector<double> curderivs(funct.evaluate_derivative(variables, constants, 0));
 
       evaluate_scalar_derivs(artderivs, contderivs, curderivs);
 
@@ -2426,25 +2426,25 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // set pressure values as variable
   for (int k = 0; k < numfluidphases_; k++)
     variables.push_back(
-        std::pair<std::string, double>(pressurenames_[k], phasemanager_->Pressure(k)));
+        std::pair<std::string, double>(pressurenames_[k], phasemanager_->pressure(k)));
 
   // set saturation values as variable
   for (int k = 0; k < numfluidphases_; k++)
     variables.push_back(
-        std::pair<std::string, double>(saturationnames_[k], phasemanager_->Saturation(k)));
+        std::pair<std::string, double>(saturationnames_[k], phasemanager_->saturation(k)));
 
   // set porosity value as variable
-  variables.push_back(std::pair<std::string, double>(porosityname_, phasemanager_->Porosity()));
+  variables.push_back(std::pair<std::string, double>(porosityname_, phasemanager_->porosity()));
 
   // set volfrac values as variables
   for (int k = 0; k < numvolfrac_; k++)
     variables.push_back(
-        std::pair<std::string, double>(volfracnames_[k], phasemanager_->VolFrac(k)));
+        std::pair<std::string, double>(volfracnames_[k], phasemanager_->vol_frac(k)));
 
   // set volfrac pressure values as variables
   for (int k = 0; k < numvolfrac_; k++)
     variables.push_back(std::pair<std::string, double>(
-        volfracpressurenames_[k], phasemanager_->VolFracPressure(k)));
+        volfracpressurenames_[k], phasemanager_->vol_frac_pressure(k)));
 
   // set artery pressure as variable
   variables.push_back(std::pair<std::string, double>(artpressname_, artpressnpAtGP));
@@ -2460,25 +2460,25 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // set pressure values as constants
   for (int k = 0; k < numfluidphases_; k++)
     constants.push_back(
-        std::pair<std::string, double>(pressurenames_[k], phasemanager_->Pressure(k)));
+        std::pair<std::string, double>(pressurenames_[k], phasemanager_->pressure(k)));
 
   // set saturation values as constants
   for (int k = 0; k < numfluidphases_; k++)
     constants.push_back(
-        std::pair<std::string, double>(saturationnames_[k], phasemanager_->Saturation(k)));
+        std::pair<std::string, double>(saturationnames_[k], phasemanager_->saturation(k)));
 
   // set porosity value as constants
-  constants.push_back(std::pair<std::string, double>(porosityname_, phasemanager_->Porosity()));
+  constants.push_back(std::pair<std::string, double>(porosityname_, phasemanager_->porosity()));
 
   // set volfrac values as constants
   for (int k = 0; k < numvolfrac_; k++)
     constants.push_back(
-        std::pair<std::string, double>(volfracnames_[k], phasemanager_->VolFrac(k)));
+        std::pair<std::string, double>(volfracnames_[k], phasemanager_->vol_frac(k)));
 
   // set volfrac pressure values as constants
   for (int k = 0; k < numvolfrac_; k++)
     constants.push_back(std::pair<std::string, double>(
-        volfracpressurenames_[k], phasemanager_->VolFracPressure(k)));
+        volfracpressurenames_[k], phasemanager_->vol_frac_pressure(k)));
 
   // set artery pressure as constant
   constants.push_back(std::pair<std::string, double>(artpressname_, artpressnpAtGP));
@@ -2526,11 +2526,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   {
     for (int idof = 0; idof < numfluidphases_; idof++)
       contderivs[doftoderive] +=
-          functderivs[idof] * phasemanager_->PressureDeriv(idof, doftoderive) +
-          functderivs[idof + numfluidphases_] * phasemanager_->SaturationDeriv(idof, doftoderive);
+          functderivs[idof] * phasemanager_->pressure_deriv(idof, doftoderive) +
+          functderivs[idof + numfluidphases_] * phasemanager_->saturation_deriv(idof, doftoderive);
     if (phasemanager_->porosity_depends_on_fluid())
       contderivs[doftoderive] +=
-          functderivs[2 * numfluidphases_] * phasemanager_->PorosityDeriv(doftoderive);
+          functderivs[2 * numfluidphases_] * phasemanager_->porosity_deriv(doftoderive);
   }
   // function derivs w.r.t. to volume fraction phases
   for (int doftoderive = numfluidphases_; doftoderive < numdof_cont_ - numvolfrac_; doftoderive++)
@@ -2539,7 +2539,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     //                and porosity (since it depends on volfrac)
     contderivs[doftoderive] +=
         functderivs[doftoderive + numfluidphases_ + 1] +
-        functderivs[2 * numfluidphases_] * phasemanager_->PorosityDeriv(doftoderive);
+        functderivs[2 * numfluidphases_] * phasemanager_->porosity_deriv(doftoderive);
   }
   // function derivs w.r.t. to volume fraction pressures
   for (int doftoderive = numfluidphases_ + numvolfrac_; doftoderive < numdof_cont_; doftoderive++)
@@ -2588,7 +2588,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
 {
   if (PROJOUTPUT)
   {
-    std::cout << "========================= getting intersection for artery ele " << Ele1GID()
+    std::cout << "========================= getting intersection for artery ele " << ele1_gid()
               << std::endl;
   }
 
@@ -2656,7 +2656,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
         if (PROJOUTPUT)
         {
           std::cout << "probably found a very small integration segment for artery element "
-                    << Ele1GID() << " and 3D element " << Ele2GID() << " which is sorted out!"
+                    << ele1_gid() << " and 3D element " << ele2_gid() << " which is sorted out!"
                     << std::endl;
         }
         isactive_ = false;
@@ -2681,7 +2681,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
         if (PROJOUTPUT)
         {
           std::cout << "probably found a very small integration segment for artery element "
-                    << Ele1GID() << " and 3D element " << Ele2GID() << " which is sorted out!"
+                    << ele1_gid() << " and 3D element " << ele2_gid() << " which is sorted out!"
                     << std::endl;
         }
         isactive_ = false;
@@ -2735,7 +2735,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
         "Found more than two intersections for artery element %d and 2D/3D element %d, this "
         "should "
         "not be possible",
-        Ele1GID(), Ele2GID());
+        ele1_gid(), ele2_gid());
 
   // safety checks
   if (isactive_)
@@ -2744,12 +2744,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       FOUR_C_THROW(
           "something went terribly wrong for artery element %d and 2D/3D element %d, eta_a is "
           "bigger than eta_b",
-          Ele1GID(), Ele2GID());
+          ele1_gid(), ele2_gid());
     if (fabs(eta_a_ - eta_b_) < XIETATOL)
       FOUR_C_THROW(
           "something went terribly wrong for artery element %d and 2D/3D element %d, found "
           "extremely small integration segment",
-          Ele1GID(), Ele2GID());
+          ele1_gid(), ele2_gid());
   }
 
   return;
@@ -2766,7 +2766,7 @@ std::vector<double> PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair
   double eta = 0.0;
   bool projection_valid = true;
 
-  switch (element2_->Shape())
+  switch (element2_->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -2856,7 +2856,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
 
   // reset iteration variables
   eta = 0.0;
-  switch (element2_->Shape())
+  switch (element2_->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -2938,7 +2938,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   {
     std::cout << "Projection output:" << std::endl;
     std::cout << "Start parameters eta: " << eta;
-    switch (element2_->Shape())
+    switch (element2_->shape())
     {
         // 2D case
       case Core::FE::CellType::quad4:
@@ -3014,7 +3014,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     }
     else if (fixedPar == 1)  // xi2 fixed --> we need x_{,xi1} (and x_{,xi3} in case of 3D)
     {
-      switch (element2_->Shape())
+      switch (element2_->shape())
       {
           // 2D case
         case Core::FE::CellType::quad4:
@@ -3110,7 +3110,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     }
     else if (fixedPar == 1)  // xi2 fixed --> we have to update xi1 (and xi3 in case of 3D)
     {
-      switch (element2_->Shape())
+      switch (element2_->shape())
       {
           // 2D case
         case Core::FE::CellType::quad4:
@@ -3165,7 +3165,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
                 << std::endl;
   }
 
-  switch (element2_->Shape())
+  switch (element2_->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -3214,7 +3214,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // Initialize limit for parameter values (interval [-limit, limit])
   const double limit = 1.0 + XIETATOL;
 
-  switch (element2_->Shape())
+  switch (element2_->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -3251,7 +3251,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   {
     std::cout << "Projection output:" << std::endl;
     std::cout << "Start parameters ";
-    switch (element2_->Shape())
+    switch (element2_->shape())
     {
         // 2D case
       case Core::FE::CellType::quad4:
@@ -3336,7 +3336,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
         std::cout << "Local Newton iteration converged after " << iter << " iterations"
                   << std::endl;
         std::cout << "Found point at ";
-        switch (element2_->Shape())
+        switch (element2_->shape())
         {
             // 2D case
           case Core::FE::CellType::quad4:
@@ -3364,7 +3364,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     else if (PROJOUTPUT && iter > 0)
     {
       std::cout << "New point at xi1: ";
-      switch (element2_->Shape())
+      switch (element2_->shape())
       {
           // 2D case
         case Core::FE::CellType::quad4:
@@ -3418,7 +3418,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   }
 
   // check if xi lies inside element
-  switch (element2_->Shape())
+  switch (element2_->shape())
   {
     case Core::FE::CellType::quad4:
     {
@@ -3473,7 +3473,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   N1_eta.clear();
 
   // Get discretization type
-  const Core::FE::CellType distype = element1_->Shape();
+  const Core::FE::CellType distype = element1_->shape();
 
   // Get values and derivatives of shape functions
   Core::FE::shape_function_1D(N1, eta, distype);
@@ -3494,7 +3494,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   N2.clear();
   N2_xi.clear();
 
-  switch (element2_->Shape())
+  switch (element2_->shape())
   {
       // 2D case
     case Core::FE::CellType::quad4:
@@ -3580,7 +3580,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     if (funct_vec[i] >= 0 && abs(scale_vec[i]) > 0)
     {
       my_funct_vec.at(i) =
-          &Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfAnything>(funct_vec[i]);
+          &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(
+              funct_vec[i]);
       funct_coupl_active_ = true;
     }
     else
@@ -3595,7 +3596,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     dim>::initialize_function(const Core::UTILS::FunctionOfAnything& funct)
 {
   // safety check
-  if (funct.NumberComponents() != 1)
+  if (funct.number_components() != 1)
     FOUR_C_THROW("expected only one component for coupling function!");
 }
 

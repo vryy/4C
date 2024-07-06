@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
-    : dofset_(dofset), isassigned_(dofset->Filled())
+    : dofset_(dofset), isassigned_(dofset->filled())
 {
   dofset->Register(this);
 }
@@ -30,13 +30,13 @@ Core::DOFSets::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetProxy::~DofSetProxy()
 {
-  if (dofset_ != nullptr) dofset_->Unregister(this);
+  if (dofset_ != nullptr) dofset_->unregister(this);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetProxy::AddDofSettoList()
+void Core::DOFSets::DofSetProxy::add_dof_setto_list()
 {
   // We do nothing here as a proxy does not show up in the dof set list.
   return;
@@ -53,21 +53,21 @@ int Core::DOFSets::DofSetProxy::assign_degrees_of_freedom(
   // This invokes the call to assign_degrees_of_freedom on the original dofset. In
   // assign_degrees_of_freedom NotifyAssigned() is called. This calls NotifyAssigned() on all
   // registered proxies.
-  NotifyAssigned();
+  notify_assigned();
   return start;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetProxy::NotifyAssigned()
+void Core::DOFSets::DofSetProxy::notify_assigned()
 {
   if (dofset_ == nullptr)
     FOUR_C_THROW("dofset_ pointer is nullptr");
   else
-    isassigned_ = dofset_->Filled();
+    isassigned_ = dofset_->filled();
 
-  DofSetBase::NotifyAssigned();
+  DofSetBase::notify_assigned();
   return;
 }
 
@@ -76,12 +76,12 @@ void Core::DOFSets::DofSetProxy::NotifyAssigned()
 void Core::DOFSets::DofSetProxy::reset()
 {
   isassigned_ = false;
-  NotifyReset();
+  notify_reset();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetProxy::Disconnect(DofSetInterface* dofset)
+void Core::DOFSets::DofSetProxy::disconnect(DofSetInterface* dofset)
 {
   if (dofset == dofset_)
     dofset_ = nullptr;
@@ -95,9 +95,9 @@ void Core::DOFSets::DofSetProxy::Disconnect(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::DOFSets::DofSetProxy::Filled() const
+bool Core::DOFSets::DofSetProxy::filled() const
 {
-  if (dofset_) return dofset_->Filled();
+  if (dofset_) return dofset_->filled();
 
   return false;
 }

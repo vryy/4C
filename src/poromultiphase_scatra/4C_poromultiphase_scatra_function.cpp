@@ -90,7 +90,7 @@ namespace
 
   auto TryCreatePoroFunctionDispatch(const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    switch (Global::Problem::Instance()->NDim())
+    switch (Global::Problem::instance()->n_dim())
     {
       case 1:
         return TryCreatePoroFunction<1>(function_line_defs);
@@ -99,7 +99,7 @@ namespace
       case 3:
         return TryCreatePoroFunction<3>(function_line_defs);
       default:
-        FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+        FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
     }
   }
 }  // namespace
@@ -139,7 +139,7 @@ PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::TumorGrowthLawHeaviside(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -169,7 +169,7 @@ double PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   // read variables and constants (order is crucial)
   const double p2 = variables[1].second;
@@ -193,7 +193,7 @@ double PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-std::vector<double> PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::EvaluateDerivative(
+std::vector<double> PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -250,7 +250,7 @@ PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::NecrosisLawHeaviside(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -280,7 +280,7 @@ double PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
@@ -305,7 +305,7 @@ double PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-std::vector<double> PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::EvaluateDerivative(
+std::vector<double> PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -385,7 +385,7 @@ PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::OxygenConsumptionLawHe
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -415,7 +415,7 @@ double PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   // read variables and constants (order is crucial)
   const double S2 = constants[4].second;
@@ -442,7 +442,7 @@ double PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-std::vector<double> PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::EvaluateDerivative(
+std::vector<double> PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -527,7 +527,7 @@ PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::TumorGrowthLawHeavisideOx
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -557,7 +557,7 @@ double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
@@ -583,7 +583,7 @@ double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-std::vector<double> PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::EvaluateDerivative(
+std::vector<double> PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -664,7 +664,7 @@ PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::TumorGrowthLawHeaviside
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -694,7 +694,7 @@ double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
@@ -721,7 +721,7 @@ double PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-std::vector<double> PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::EvaluateDerivative(
+std::vector<double> PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -806,7 +806,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::OxygenTransvascul
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -836,7 +836,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   const double fac_if = parameter_.rho_oxy / parameter_.rho_if * parameter_.alpha_IF;
 
@@ -865,7 +865,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 template <int dim>
 std::vector<double>
-PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivative(
+PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -935,7 +935,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::OxygenTransvascul
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -977,7 +977,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   const double fac_if = parameter_.rho_oxy / parameter_.rho_if * parameter_.alpha_IF;
 
@@ -1007,7 +1007,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 template <int dim>
 std::vector<double>
-PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivative(
+PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
@@ -1055,7 +1055,7 @@ PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::LungOxygenExchangeLaw(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -1105,11 +1105,11 @@ double PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order of variables and constants vector only once (since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
     // In debug mode, check order of variables and constants vector on every call
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  CheckOrder(variables, constants);
+  check_order(variables, constants);
 #endif
 
   // read variables (order is crucial)
@@ -1145,16 +1145,16 @@ double PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-std::vector<double> PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::EvaluateDerivative(
+std::vector<double> PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
 // In debug mode, check order of variables and constants vector on every call
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  CheckOrder(variables, constants);
+  check_order(variables, constants);
 #endif
   // Check order of variables and constants vector only once (since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -1236,7 +1236,7 @@ PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::LungCarbonDioxideExchan
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-void PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::CheckOrder(
+void PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::check_order(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants) const
 {
@@ -1286,11 +1286,11 @@ double PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::evaluate(
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order of variables and constants vector only once (since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
     // In debug mode, check order of variables and constants vector on every call
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  CheckOrder(variables, constants);
+  check_order(variables, constants);
 #endif
 
   // read variables (order is crucial)
@@ -1342,17 +1342,17 @@ double PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
-std::vector<double> PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::EvaluateDerivative(
+std::vector<double> PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
 // In debug mode, check order of variables and constants vector on every call
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  CheckOrder(variables, constants);
+  check_order(variables, constants);
 #endif
 
   // Check order of variables and constants vector only once (since it does not change)
-  if (not this->order_checked_) CheckOrder(variables, constants);
+  if (not this->order_checked_) check_order(variables, constants);
 
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);

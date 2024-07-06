@@ -26,25 +26,25 @@ Mat::PAR::FluidPoroPhaseDof::FluidPoroPhaseDof(const Core::Mat::PAR::Parameter::
 /*----------------------------------------------------------------------*
  *  factory method for phase dof                       vuong 08/16      |
  *----------------------------------------------------------------------*/
-Mat::PAR::FluidPoroPhaseDof* Mat::PAR::FluidPoroPhaseDof::CreatePhaseDof(int phasedofId)
+Mat::PAR::FluidPoroPhaseDof* Mat::PAR::FluidPoroPhaseDof::create_phase_dof(int phasedofId)
 {
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::instance(probinst)->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(phasedofId);
+  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(phasedofId);
 
   // phase law
   Mat::PAR::FluidPoroPhaseDof* phasedof = nullptr;
 
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::m_fluidporo_phasedof_diffpressure:
     {
@@ -62,7 +62,7 @@ Mat::PAR::FluidPoroPhaseDof* Mat::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
       break;
     }
     default:
-      FOUR_C_THROW("invalid pressure-saturation law for material %d", curmat->Type());
+      FOUR_C_THROW("invalid pressure-saturation law for material %d", curmat->type());
       break;
   }
 
@@ -80,7 +80,7 @@ Mat::PAR::FluidPoroPhaseDofDiffPressure::FluidPoroPhaseDofDiffPressure(
       diffpresCoeffs_(matdata.parameters.get<std::vector<int>>("PRESCOEFF")),
       phaselawId_(matdata.parameters.get<int>("PHASELAWID"))
 {
-  phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
+  phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::create_phase_law(phaselawId_);
 }
 
 /*----------------------------------------------------------------------*
@@ -95,15 +95,15 @@ void Mat::PAR::FluidPoroPhaseDofDiffPressure::initialize()
 /*----------------------------------------------------------------------*
  *  return phase law type                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-Core::Materials::MaterialType Mat::PAR::FluidPoroPhaseDofDiffPressure::PoroPhaseLawType() const
+Core::Materials::MaterialType Mat::PAR::FluidPoroPhaseDofDiffPressure::poro_phase_law_type() const
 {
-  return phaselaw_->Type();
+  return phaselaw_->type();
 }
 
 /*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
+void Mat::PAR::FluidPoroPhaseDofDiffPressure::fill_do_f_matrix(
     Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const
 {
   // safety check
@@ -111,7 +111,7 @@ void Mat::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
     FOUR_C_THROW(
         "Number of phases given by the poro singlephase material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
-        phaselaw_->Id(), diffpresCoeffs_.size(), dofmat.numCols());
+        phaselaw_->id(), diffpresCoeffs_.size(), dofmat.numCols());
 
   // fill pressure coefficients into matrix
   for (size_t i = 0; i < diffpresCoeffs_.size(); i++)
@@ -124,7 +124,7 @@ void Mat::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
 /*----------------------------------------------------------------------*
  *  Evaluate generalized pressure of a phase                vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Mat::PAR::FluidPoroPhaseDofDiffPressure::EvaluateGenPressure(
+double Mat::PAR::FluidPoroPhaseDofDiffPressure::evaluate_gen_pressure(
     int phasenum, const std::vector<double>& state) const
 {
   // return the corresponding dof value
@@ -135,11 +135,11 @@ double Mat::PAR::FluidPoroPhaseDofDiffPressure::EvaluateGenPressure(
 /*----------------------------------------------------------------------*
  *   Evaluate saturation of the phase                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Mat::PAR::FluidPoroPhaseDofDiffPressure::EvaluateSaturation(
+double Mat::PAR::FluidPoroPhaseDofDiffPressure::evaluate_saturation(
     int phasenum, const std::vector<double>& state, const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateSaturation(pressure);
+  return phaselaw_->evaluate_saturation(pressure);
 }
 
 
@@ -184,7 +184,7 @@ Mat::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.get<int>("PHASELAWID"))
 {
-  phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
+  phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::create_phase_law(phaselawId_);
   return;
 }
 
@@ -200,15 +200,15 @@ void Mat::PAR::FluidPoroPhaseDofPressure::initialize()
 /*----------------------------------------------------------------------*
  *  return phase law type                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-Core::Materials::MaterialType Mat::PAR::FluidPoroPhaseDofPressure::PoroPhaseLawType() const
+Core::Materials::MaterialType Mat::PAR::FluidPoroPhaseDofPressure::poro_phase_law_type() const
 {
-  return phaselaw_->Type();
+  return phaselaw_->type();
 }
 
 /*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseDofPressure::FillDoFMatrix(
+void Mat::PAR::FluidPoroPhaseDofPressure::fill_do_f_matrix(
     Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const
 {
   // just mark the corresponding entry in the matrix
@@ -218,7 +218,7 @@ void Mat::PAR::FluidPoroPhaseDofPressure::FillDoFMatrix(
 /*----------------------------------------------------------------------*
  *  Evaluate generalized pressure of a phase                vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Mat::PAR::FluidPoroPhaseDofPressure::EvaluateGenPressure(
+double Mat::PAR::FluidPoroPhaseDofPressure::evaluate_gen_pressure(
     int phasenum, const std::vector<double>& state) const
 {
   // return the corresponding dof value
@@ -229,11 +229,11 @@ double Mat::PAR::FluidPoroPhaseDofPressure::EvaluateGenPressure(
 /*----------------------------------------------------------------------*
  *   Evaluate saturation of the phase                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Mat::PAR::FluidPoroPhaseDofPressure::EvaluateSaturation(
+double Mat::PAR::FluidPoroPhaseDofPressure::evaluate_saturation(
     int phasenum, const std::vector<double>& state, const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateSaturation(pressure);
+  return phaselaw_->evaluate_saturation(pressure);
 }
 
 
@@ -282,7 +282,7 @@ Mat::PAR::FluidPoroPhaseDofSaturation::FluidPoroPhaseDofSaturation(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : FluidPoroPhaseDof(matdata), phaselawId_(matdata.parameters.get<int>("PHASELAWID"))
 {
-  phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
+  phaselaw_ = Mat::PAR::FluidPoroPhaseLaw::create_phase_law(phaselawId_);
   return;
 }
 
@@ -298,26 +298,26 @@ void Mat::PAR::FluidPoroPhaseDofSaturation::initialize()
 /*----------------------------------------------------------------------*
  *  return phase law type                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-Core::Materials::MaterialType Mat::PAR::FluidPoroPhaseDofSaturation::PoroPhaseLawType() const
+Core::Materials::MaterialType Mat::PAR::FluidPoroPhaseDofSaturation::poro_phase_law_type() const
 {
-  return phaselaw_->Type();
+  return phaselaw_->type();
 }
 
 /*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::PAR::FluidPoroPhaseDofSaturation::FillDoFMatrix(
+void Mat::PAR::FluidPoroPhaseDofSaturation::fill_do_f_matrix(
     Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const
 {
   // get pressure coefficients of phase law
-  const std::vector<int>* presIDs = phaselaw_->PresIds();
+  const std::vector<int>* presIDs = phaselaw_->pres_ids();
 
   // safety check
   if ((int)presIDs->size() != dofmat.numCols())
     FOUR_C_THROW(
         "Number of phases given by the poro phase law material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
-        phaselaw_->Id(), presIDs->size(), dofmat.numCols());
+        phaselaw_->id(), presIDs->size(), dofmat.numCols());
 
   // fill pressure coefficients of phase law into matrix
   for (size_t i = 0; i < presIDs->size(); i++)
@@ -330,19 +330,19 @@ void Mat::PAR::FluidPoroPhaseDofSaturation::FillDoFMatrix(
 /*----------------------------------------------------------------------*
  *  Evaluate generalized pressure of a phase                vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Mat::PAR::FluidPoroPhaseDofSaturation::EvaluateGenPressure(
+double Mat::PAR::FluidPoroPhaseDofSaturation::evaluate_gen_pressure(
     int phasenum, const std::vector<double>& state) const
 {
   // evaluate the phase law for the generalized (i.e. some differential pressure)
   // the phase law depends on
-  return phaselaw_->EvaluateGenPressure(state[phasenum]);
+  return phaselaw_->evaluate_gen_pressure(state[phasenum]);
 }
 
 
 /*----------------------------------------------------------------------*
  *   Evaluate saturation of the phase                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Mat::PAR::FluidPoroPhaseDofSaturation::EvaluateSaturation(
+double Mat::PAR::FluidPoroPhaseDofSaturation::evaluate_saturation(
     int phasenum, const std::vector<double>& state, const std::vector<double>& pressure) const
 {
   // get the corresponding dof value

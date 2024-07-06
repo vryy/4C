@@ -108,8 +108,8 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -127,8 +127,8 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -146,8 +146,8 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -173,14 +173,14 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_struct_update_istep:
     {
       // Update of history for materials
-      SolidMaterial()->update();
+      solid_material()->update();
     }
     break;
 
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
 
@@ -217,7 +217,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -253,7 +253,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
     FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
-  bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
+  bool zero_ele = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
   // there is nothing to be done for zero sized elements in knotspan
   if (zero_ele)
@@ -262,12 +262,11 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
   }
 
   Core::LinAlg::Matrix<27, 1> weights;
-  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-    weights(inode) = cp->W();
+    weights(inode) = cp->w();
   }
 
 
@@ -296,7 +295,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
       double val = 0;
       for (int inode = 0; inode < 27; ++inode)
       {
-        val += (((nodes[inode])->X())[isd]) * funct(inode);
+        val += (((nodes()[inode])->x())[isd]) * funct(inode);
       }
       x0(isd) = val;
     }
@@ -315,7 +314,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
       double val = 0;
       for (int inode = 0; inode < 27; ++inode)
       {
-        val += (((nodes[inode])->X())[isd]) * funct(inode);
+        val += (((nodes()[inode])->x())[isd]) * funct(inode);
       }
       x2(isd) = val;
     }
@@ -333,7 +332,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
       double val = 0;
       for (int inode = 0; inode < 27; ++inode)
       {
-        val += (((nodes[inode])->X())[isd]) * funct(inode);
+        val += (((nodes()[inode])->x())[isd]) * funct(inode);
       }
       x6(isd) = val;
     }
@@ -351,7 +350,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
       double val = 0;
       for (int inode = 0; inode < 27; ++inode)
       {
-        val += (((nodes[inode])->X())[isd]) * funct(inode);
+        val += (((nodes()[inode])->x())[isd]) * funct(inode);
       }
       x18(isd) = val;
     }
@@ -455,7 +454,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
 
   for (int i = 0; i < 27; i++)
   {
-    adjele(i, 0) = nodes[i]->NumElement();
+    adjele(i, 0) = nodes()[i]->num_element();
   }
   /*
     // loop row midnode
@@ -554,7 +553,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
    */
   // find out whether we will use a time curve
   double time = -1.0;
-  if (IsParamsInterface())
+  if (is_params_interface())
     time = params_interface().get_total_time();
   else
     time = params.get("total time", -1.0);
@@ -590,12 +589,11 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   // there is nothing to be done for zero sized elements in knotspan
-  if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return (0);
+  if ((*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id())) return (0);
 
   Core::LinAlg::Matrix<27, 1> weights;
-  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
-    weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode])->W();
+    weights(inode) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode])->w();
 
   /*------------------------------------------------------------------*/
   /*                   update element geometry                        */
@@ -605,7 +603,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
   Core::LinAlg::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -660,8 +658,8 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? Global::Problem::Instance()
-                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            (functnum > 0) ? Global::Problem::instance()
+                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -697,7 +695,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Core::FE::Discre
     FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
-  bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
+  bool zero_ele = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
   // there is nothing to be done for zero sized elements in knotspan
   if (zero_ele)
@@ -706,21 +704,20 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Core::FE::Discre
   }
 
   Core::LinAlg::Matrix<27, 1> weights;
-  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-    weights(inode) = cp->W();
+    weights(inode) = cp->w();
   }
 
   const static std::vector<Core::LinAlg::Matrix<3, 27>> derivs = sonurbs27_derivs(myknots, weights);
   Core::LinAlg::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
+    xrefe(i, 0) = nodes()[i]->x()[0];
+    xrefe(i, 1) = nodes()[i]->x()[1];
+    xrefe(i, 2) = nodes()[i]->x()[2];
   }
 
   const int numgp = 27;
@@ -735,7 +732,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Core::FE::Discre
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ_[gp] < 0.0)
       FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",
-          detJ_[gp], Id(), gp);
+          detJ_[gp], id(), gp);
   }
   return;
 }  // Discret::ELEMENTS::So_nurbs27::init_jacobian_mapping()
@@ -767,7 +764,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
     FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
-  bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
+  bool zero_ele = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
   // there is nothing to be done for zero sized elements in knotspan
   if (zero_ele)
@@ -776,12 +773,11 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
   }
 
   Core::LinAlg::Matrix<27, 1> weights;
-  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-    weights(inode) = cp->W();
+    weights(inode) = cp->w();
   }
 
   // update element geometry
@@ -789,7 +785,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
   Core::LinAlg::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -841,7 +837,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
       FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",
-          detJ_[gp], Id(), gp);
+          detJ_[gp], id(), gp);
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
@@ -913,7 +909,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
     Core::LinAlg::Matrix<6, 6> cmat(true);
     Core::LinAlg::Matrix<6, 1> stress(true);
     UTILS::get_temperature_for_structural_material<Core::FE::CellType::nurbs27>(funct, params);
-    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law
 
     double detJ_w = detJ * intpoints.qwgt[gp];
@@ -960,7 +956,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
 
     if (massmatrix != nullptr)  // evaluate mass matrix
     {
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -1062,10 +1058,10 @@ std::vector<double> Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_gpweights()
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Nurbs::SoNurbs27Type::initialize(Core::FE::Discretization& dis)
 {
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::Nurbs::SoNurbs27*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::Nurbs::SoNurbs27*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_nurbs27* failed");
     actele->init_jacobian_mapping(dis);
   }
@@ -1093,18 +1089,17 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
   auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
-  bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
+  bool zero_ele = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
   // there is nothing to be done for zero sized elements in knotspan
   if (zero_ele) return 0.;
 
   Core::LinAlg::Matrix<27, 1> weights;
-  Core::Nodes::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-    weights(inode) = cp->W();
+    weights(inode) = cp->w();
   }
 
   // update element geometry
@@ -1112,7 +1107,7 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
   Core::LinAlg::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1163,7 +1158,7 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
       FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",
-          detJ_[gp], Id(), gp);
+          detJ_[gp], id(), gp);
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
@@ -1188,7 +1183,7 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
     glstrain(5) = cauchygreen(2, 0);
 
     double psi = 0.0;
-    SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
+    solid_material()->strain_energy(glstrain, psi, gp, id());
 
     double detJ_w = detJ * intpoints.qwgt[gp];
     energy += detJ_w * psi;
@@ -1207,10 +1202,10 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::lumpmass(
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned int c = 0; c < (*emass).numCols(); ++c)  // parse columns
+    for (unsigned int c = 0; c < (*emass).num_cols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned int r = 0; r < (*emass).numRows(); ++r)  // parse rows
+      for (unsigned int r = 0; r < (*emass).num_rows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;

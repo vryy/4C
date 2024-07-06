@@ -30,7 +30,7 @@ Adapter::AleFsiMshtWrapper::AleFsiMshtWrapper(Teuchos::RCP<Ale> ale) : AleFsiWra
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> Adapter::AleFsiMshtWrapper::FsiInterface() const
+Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> Adapter::AleFsiMshtWrapper::fsi_interface() const
 {
   return fsiinterface_;
 }

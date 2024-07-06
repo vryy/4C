@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 bool Core::Geo::Cut::ColoredGraph::ForkFinder::operator()(
     const std::pair<const int, plain_int_set>& point)
 {
-  if (point.first < graph_.Split()) return false;
+  if (point.first < graph_.split()) return false;
 
   plain_int_set& row = graph_[point.first];
   if (row.size() > 2)
@@ -45,7 +45,7 @@ bool Core::Geo::Cut::ColoredGraph::ForkFinder::operator()(
 }
 
 // add connection in the graph
-void Core::Geo::Cut::ColoredGraph::Graph::Add(int row, int col)
+void Core::Geo::Cut::ColoredGraph::Graph::add(int row, int col)
 {
   if (row >= color_split_ and col >= color_split_) FOUR_C_THROW("two lines connected");
   if (row < color_split_ and col < color_split_) FOUR_C_THROW("two facets connected");
@@ -53,15 +53,15 @@ void Core::Geo::Cut::ColoredGraph::Graph::Add(int row, int col)
   graph_[col].insert(row);
 }
 
-void Core::Geo::Cut::ColoredGraph::Graph::Add(int p, const plain_int_set& row)
+void Core::Geo::Cut::ColoredGraph::Graph::add(int p, const plain_int_set& row)
 {
   for (plain_int_set::const_iterator i = row.begin(); i != row.end(); ++i)
   {
-    Add(p, *i);
+    add(p, *i);
   }
 }
 
-int Core::Geo::Cut::ColoredGraph::Graph::FindNext(
+int Core::Geo::Cut::ColoredGraph::Graph::find_next(
     Graph& used, int point, Graph& cycle, const plain_int_set& free)
 {
   // find current connections of the point
@@ -84,7 +84,7 @@ int Core::Geo::Cut::ColoredGraph::Graph::FindNext(
 }
 
 // get all number of the graph in the plain int set
-void Core::Geo::Cut::ColoredGraph::Graph::GetAll(plain_int_set& all)
+void Core::Geo::Cut::ColoredGraph::Graph::get_all(plain_int_set& all)
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
@@ -93,7 +93,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::GetAll(plain_int_set& all)
   }
 }
 
-void Core::Geo::Cut::ColoredGraph::Graph::FixSingleLines()
+void Core::Geo::Cut::ColoredGraph::Graph::fix_single_lines()
 {
   for (;;)
   {
@@ -120,7 +120,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::FixSingleLines()
 
 
 // Test if all edges of the graph has more than 1 connection (then it is closed)
-void Core::Geo::Cut::ColoredGraph::Graph::TestClosed()
+void Core::Geo::Cut::ColoredGraph::Graph::test_closed()
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
@@ -153,7 +153,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::TestClosed()
   }
 }
 
-void Core::Geo::Cut::ColoredGraph::Graph::TestFacets()
+void Core::Geo::Cut::ColoredGraph::Graph::test_facets()
 {
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
@@ -205,7 +205,7 @@ namespace Core::Geo
         for (plain_int_set::iterator i = free.begin(); i != free.end(); ++i)
         {
           int facet = *i;
-          if (facet >= graph.Split())
+          if (facet >= graph.split())
           {
             FOUR_C_THROW("no free facet but free lines");
           }
@@ -243,7 +243,7 @@ namespace Core::Geo
           std::vector<int>& visited, int& num_split_lines)
       {
         // mark facet and lines
-        if (facet >= used.Split())  // means this is a line
+        if (facet >= used.split())  // means this is a line
         {
           FOUR_C_THROW("This should not happen");
         }
@@ -323,7 +323,7 @@ namespace Core::Geo
                   // build split_trace
 
                   // iterate over all visited lines
-                  for (std::vector<int>::iterator i = visited.begin() + graph.Split();
+                  for (std::vector<int>::iterator i = visited.begin() + graph.split();
                        i != visited.end(); ++i)
                   {
                     // if it was visited only once, meaning no other facet visited this line, means
@@ -417,7 +417,7 @@ namespace Core::Geo
             section_name << "Facet" << facet_id;
             Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
             Core::Geo::Cut::Output::GmshFacetDump(file,
-                static_cast<Core::Geo::Cut::Facet*>(graph.GetPointer(facet_id)), "lines", true,
+                static_cast<Core::Geo::Cut::Facet*>(graph.get_pointer(facet_id)), "lines", true,
                 false, nullptr);
             Core::Geo::Cut::Output::GmshEndSection(file, false);
           }
@@ -426,16 +426,16 @@ namespace Core::Geo
           std::ofstream filenext("facetgraph_failed_last_facet.pos");
           Core::Geo::Cut::Output::GmshNewSection(filenext, "Facets");
           Core::Geo::Cut::Output::GmshFacetDump(filenext,
-              static_cast<Core::Geo::Cut::Facet*>(graph.GetPointer(facet)), "lines", true, false,
+              static_cast<Core::Geo::Cut::Facet*>(graph.get_pointer(facet)), "lines", true, false,
               nullptr);
           Core::Geo::Cut::Output::GmshEndSection(filenext, true);
 
 
           std::cout << "Point IDs of failed facet are " << std::endl;
-          static_cast<Core::Geo::Cut::Facet*>(graph.GetPointer(facet))->PrintPointIds();
+          static_cast<Core::Geo::Cut::Facet*>(graph.get_pointer(facet))->print_point_ids();
 
           std::ofstream filevisited("facetgraph_visited_facets.pos");
-          for (std::vector<int>::iterator i = visited.begin(); i != visited.begin() + graph.Split();
+          for (std::vector<int>::iterator i = visited.begin(); i != visited.begin() + graph.split();
                ++i)
           {
             if (*i == 1)
@@ -443,7 +443,7 @@ namespace Core::Geo
               int facet = i - visited.begin();
               Core::Geo::Cut::Output::GmshNewSection(filevisited, "Facets");
               Core::Geo::Cut::Output::GmshFacetDump(filevisited,
-                  static_cast<Core::Geo::Cut::Facet*>(graph.GetPointer(facet)), "lines", true,
+                  static_cast<Core::Geo::Cut::Facet*>(graph.get_pointer(facet)), "lines", true,
                   false, nullptr);
               Core::Geo::Cut::Output::GmshEndSection(filevisited, false);
             }
@@ -458,7 +458,7 @@ namespace Core::Geo
   }    // namespace Cut
 }  // namespace Core::Geo
 
-void Core::Geo::Cut::ColoredGraph::Graph::FindFreeFacets(Graph& graph, Graph& used,
+void Core::Geo::Cut::ColoredGraph::Graph::find_free_facets(Graph& graph, Graph& used,
     plain_int_set& free, const std::vector<std::pair<Point*, Point*>>& all_lines,
     std::vector<int>& split_trace)
 {
@@ -472,7 +472,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::FindFreeFacets(Graph& graph, Graph& us
   }
 
   // iterate over all facets that are visited and check ( only internal should be visited )
-  for (std::vector<int>::iterator i = visited.begin(); i != visited.begin() + graph.Split(); ++i)
+  for (std::vector<int>::iterator i = visited.begin(); i != visited.begin() + graph.split(); ++i)
   {
     if (*i == 1)
     {
@@ -480,8 +480,8 @@ void Core::Geo::Cut::ColoredGraph::Graph::FindFreeFacets(Graph& graph, Graph& us
       plain_int_set& row = graph[facet];
       for (const int& line : row)
       {
-        used.Add(line, facet);
-        Add(line, facet);
+        used.add(line, facet);
+        add(line, facet);
         free.erase(line);
       }
       // erased from internal free facets
@@ -496,13 +496,13 @@ void Core::Geo::Cut::ColoredGraph::Graph::FindFreeFacets(Graph& graph, Graph& us
 
 
 // find set of lines which are connected only to one facet
-void Core::Geo::Cut::ColoredGraph::Graph::FindSplitTrace(std::vector<int>& split_trace)
+void Core::Geo::Cut::ColoredGraph::Graph::find_split_trace(std::vector<int>& split_trace)
 {
   for (Graph::const_iterator i = begin(); i != end(); ++i)
   {
     int p = i->first;
     const plain_int_set& row = i->second;
-    if (p >= Split())
+    if (p >= split())
     {
       if (row.size() == 1)
       {
@@ -513,7 +513,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::FindSplitTrace(std::vector<int>& split
 }
 
 // check if the graph contain given set of edges
-bool Core::Geo::Cut::ColoredGraph::Graph::ContainsTrace(const std::vector<int>& split_trace)
+bool Core::Geo::Cut::ColoredGraph::Graph::contains_trace(const std::vector<int>& split_trace)
 {
   for (std::vector<int>::const_iterator i = split_trace.begin(); i != split_trace.end(); ++i)
   {
@@ -531,7 +531,7 @@ void Core::Geo::Cut::ColoredGraph::Cycle::print() const
 }
 
 // splits splittrace into isolated components, and pushes it into splitted_trace
-void Core::Geo::Cut::ColoredGraph::Graph::SplitSplittrace(const std::vector<int>& split_trace,
+void Core::Geo::Cut::ColoredGraph::Graph::split_splittrace(const std::vector<int>& split_trace,
     Graph& datagraph, std::vector<std::vector<int>>& isolated_components)
 {
   // first construct point -> line relations from the datagraph
@@ -539,7 +539,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::SplitSplittrace(const std::vector<int>
   for (std::vector<int>::const_iterator it = split_trace.begin(); it != split_trace.end(); ++it)
   {
     int line_id = *it;
-    if (line_id < Split())
+    if (line_id < split())
     {
       FOUR_C_THROW("Only lines are allowed in the split trace!");
     }
@@ -547,7 +547,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::SplitSplittrace(const std::vector<int>
     {
       // get our lines to the map
       std::pair<Point*, Point*> line =
-          *static_cast<std::pair<Point*, Point*>*>(datagraph.GetPointer(line_id));
+          *static_cast<std::pair<Point*, Point*>*>(datagraph.get_pointer(line_id));
       point_line_map[line.first].push_back(line_id);
       point_line_map[line.second].push_back(line_id);
     }
@@ -577,7 +577,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::SplitSplittrace(const std::vector<int>
       lines_to_explore.pop();
       // get our line
       std::pair<Point*, Point*> line =
-          *static_cast<std::pair<Point*, Point*>*>(datagraph.GetPointer(l));
+          *static_cast<std::pair<Point*, Point*>*>(datagraph.get_pointer(l));
       // get lines connected to it
       const std::vector<int>& end_lines = point_line_map[line.second];
       const std::vector<int>& front_lines = point_line_map[line.first];
@@ -649,7 +649,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::SplitSplittrace(const std::vector<int>
 #endif
 }
 
-void Core::Geo::Cut::ColoredGraph::Graph::Split(Graph& used, plain_int_set& free, Graph& connection,
+void Core::Geo::Cut::ColoredGraph::Graph::split(Graph& used, plain_int_set& free, Graph& connection,
     const std::vector<int>& split_trace, Graph& c1, Graph& c2, Graph& datagraph)
 {
   // find lhs and rhs starting from split trace
@@ -691,7 +691,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::Split(Graph& used, plain_int_set& free
     // it might happen, when we have holes in the split trace , we try to generate corresponding
     // cycles as well
     std::vector<std::vector<int>> isolated_components;
-    SplitSplittrace(split_trace, datagraph, isolated_components);
+    split_splittrace(split_trace, datagraph, isolated_components);
 
     unsigned int n_components = isolated_components.size();
     if (n_components == 1)
@@ -799,7 +799,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::fill(const std::vector<int>& split_tra
     plain_int_set& lines_row = at(f);
     for (const int& line : lines_row)
     {
-      c.Add(f, line);
+      c.add(f, line);
       // if we have not come to split trace again ( finished )
       if (visited.count(line) == 0)  // and IsFree( used, free, line ) )
       {
@@ -821,11 +821,11 @@ void Core::Geo::Cut::ColoredGraph::Graph::fill(const std::vector<int>& split_tra
   {
     int line = i->first;
     const plain_int_set& facets = i->second;
-    c.Add(line, facets);
+    c.add(line, facets);
   }
 }
 
-void Core::Geo::Cut::ColoredGraph::CycleList::AddPoints(Graph& graph, Graph& used, Graph& cycle,
+void Core::Geo::Cut::ColoredGraph::CycleList::add_points(Graph& graph, Graph& used, Graph& cycle,
     plain_int_set& free, const std::vector<std::pair<Point*, Point*>>& all_lines)
 {
   push_back(cycle);
@@ -834,11 +834,11 @@ void Core::Geo::Cut::ColoredGraph::CycleList::AddPoints(Graph& graph, Graph& use
   while (free.size() > 0)
   {
     // create new graph with the same separation of line and facets
-    Graph connection(graph.Split());
+    Graph connection(graph.split());
 
     // find connection graph and trace lines
     std::vector<int> split_trace;
-    connection.FindFreeFacets(graph, used, free, all_lines, split_trace);
+    connection.find_free_facets(graph, used, free, all_lines, split_trace);
 
     // There might be multiple matches. Only one of those is the one we are
     // looking for.
@@ -846,7 +846,7 @@ void Core::Geo::Cut::ColoredGraph::CycleList::AddPoints(Graph& graph, Graph& use
     for (std::list<Cycle>::iterator i = cycles_.begin(); i != cycles_.end(); ++i)
     {
       Cycle& c = *i;
-      if (c.ContainsTrace(split_trace))
+      if (c.contains_trace(split_trace))
       {
         matching.push_back(i);
       }
@@ -859,11 +859,11 @@ void Core::Geo::Cut::ColoredGraph::CycleList::AddPoints(Graph& graph, Graph& use
     {
       Cycle& c = **ilist;
 
-      Graph c1(graph.Split());
-      Graph c2(graph.Split());
+      Graph c1(graph.split());
+      Graph c2(graph.split());
 
       // split the cycle into two cycles based on 'split trace'
-      c.Split(used, free, connection, split_trace, c1, c2, graph);
+      c.split(used, free, connection, split_trace, c1, c2, graph);
 
       if (c1 == c2)
       {
@@ -886,7 +886,7 @@ void Core::Geo::Cut::ColoredGraph::CycleList::AddPoints(Graph& graph, Graph& use
         for (Graph::const_iterator i = c().begin(); i != c().end(); ++i)
         {
           int f = i->first;
-          if (f >= c().Split()) break;
+          if (f >= c().split()) break;
           if (connection.count(f) == 0 and c1.count(f) > 0 and c2.count(f) > 0)
           {
             FOUR_C_THROW("not a valid split");
@@ -910,9 +910,9 @@ void Core::Geo::Cut::ColoredGraph::CycleList::AddPoints(Graph& graph, Graph& use
 
 void Core::Geo::Cut::ColoredGraph::CycleList::push_back(Graph& g)
 {
-  cycles_.push_back(Cycle(g.Split()));
+  cycles_.push_back(Cycle(g.split()));
   Cycle& c = cycles_.back();
-  c.Assign(g);
+  c.assign(g);
 }
 
 void Core::Geo::Cut::ColoredGraph::CycleList::print() const
@@ -920,10 +920,10 @@ void Core::Geo::Cut::ColoredGraph::CycleList::print() const
   for (const Cycle& c : cycles_) c.print();
 }
 
-void Core::Geo::Cut::ColoredGraph::Graph::DumpGraph(const std::string& name)
+void Core::Geo::Cut::ColoredGraph::Graph::dump_graph(const std::string& name)
 {
   std::ofstream file(name.c_str());
-  file << "color_split = " << Split() << "\n";
+  file << "color_split = " << split() << "\n";
   file << "graph = [";
   for (const_iterator i = begin(); i != end(); ++i)
   {

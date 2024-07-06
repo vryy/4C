@@ -42,7 +42,7 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override;
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override;
 
     //@}
 
@@ -71,7 +71,7 @@ namespace Adapter
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
     //@}
 
@@ -103,10 +103,10 @@ namespace Adapter
     /// Not used for IMMERSED yet !
 
     /// get the maximum number of iterations from the fluid field
-    int Itemax() const override { return fluidadapter_->Itemax(); }
+    int itemax() const override { return fluidadapter_->itemax(); }
 
     /// set the maximum number of iterations for the fluid field
-    void SetItemax(int itemax) override { fluid_field()->SetItemax(itemax); }
+    void set_itemax(int itemax) override { fluid_field()->set_itemax(itemax); }
 
     /// add dirichlet conditions to dirichlet condmap before next fluid solve
     virtual void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd);
@@ -124,7 +124,7 @@ namespace Adapter
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
 
    private:

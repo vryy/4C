@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 //    definition of the instance
 //----------------------------------------------------------------------*/
 Discret::ELEMENTS::ScaTraEleParameterLsReinit*
-Discret::ELEMENTS::ScaTraEleParameterLsReinit::Instance(
+Discret::ELEMENTS::ScaTraEleParameterLsReinit::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -34,7 +34,7 @@ Discret::ELEMENTS::ScaTraEleParameterLsReinit::Instance(
         return std::unique_ptr<ScaTraEleParameterLsReinit>(new ScaTraEleParameterLsReinit(disname));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 //----------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ Discret::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
 //----------------------------------------------------------------------*
 //  set parameters                                      rasthofer 12/13 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
+void Discret::ELEMENTS::ScaTraEleParameterLsReinit::set_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

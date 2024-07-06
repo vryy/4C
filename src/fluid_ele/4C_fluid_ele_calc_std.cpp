@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcStd<distype>* Discret::ELEMENTS::FluidEleCalcStd<distype>::Instance(
+Discret::ELEMENTS::FluidEleCalcStd<distype>* Discret::ELEMENTS::FluidEleCalcStd<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -27,7 +27,7 @@ Discret::ELEMENTS::FluidEleCalcStd<distype>* Discret::ELEMENTS::FluidEleCalcStd<
             new Discret::ELEMENTS::FluidEleCalcStd<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 

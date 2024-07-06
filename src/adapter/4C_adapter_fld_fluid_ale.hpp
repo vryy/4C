@@ -59,9 +59,9 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
     /// fluid interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
     {
-      return fluid_->Interface();
+      return fluid_->interface();
     }
 
     /// Prepare a single time step
@@ -86,19 +86,19 @@ namespace Adapter
     void apply_interface_values(
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
 
     Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
     Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
     Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
 
-    int Itemax() const override { return fluid_->Itemax(); }
-    void SetItemax(int itemax) override { fluid_->SetItemax(itemax); }
+    int itemax() const override { return fluid_->itemax(); }
+    void set_itemax(int itemax) override { fluid_->set_itemax(itemax); }
 
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
    protected:
     //! @name Transfer helpers

@@ -38,7 +38,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Check if a combination of beam ids is in this condition.
      */
-    bool IdsInCondition(const int id_line, const int id_other) const override;
+    bool ids_in_condition(const int id_line, const int id_other) const override;
 
     /**
      * \brief Clear not reusable data (derived).
@@ -48,14 +48,14 @@ namespace BEAMINTERACTION
     /**
      * \brief Create the beam contact pairs needed for this condition (derived).
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    void BuildIdSets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
+    void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
 
 
    private:

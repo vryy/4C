@@ -80,7 +80,7 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_isoratedep;
       }
@@ -97,7 +97,7 @@ namespace Mat
           int eleGID) override;
 
       /// Indicator for formulation
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation

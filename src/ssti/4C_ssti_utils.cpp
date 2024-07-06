@@ -38,12 +38,12 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
 {
   // setup maps containing dofs of subproblems
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(3, Teuchos::null);
-  partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::scalar_transport)] =
-      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ScaTraField()->dof_row_map()));
-  partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::structure)] =
+  partial_maps[ssti_mono_algorithm.get_problem_position(Subproblem::scalar_transport)] =
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.sca_tra_field()->dof_row_map()));
+  partial_maps[ssti_mono_algorithm.get_problem_position(Subproblem::structure)] =
       Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.structure_field()->dof_row_map()));
-  partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::thermo)] =
-      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ThermoField()->dof_row_map()));
+  partial_maps[ssti_mono_algorithm.get_problem_position(Subproblem::thermo)] =
+      Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.thermo_field()->dof_row_map()));
   Teuchos::RCP<const Epetra_Map> temp_map =
       Core::LinAlg::MergeMap(partial_maps[0], partial_maps[1], false);
   Teuchos::RCP<const Epetra_Map> merged_map =
@@ -58,24 +58,24 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
       new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.structure_field()->dof_row_map(),
           std::vector<Teuchos::RCP<const Epetra_Map>>(
               1, ssti_mono_algorithm.structure_field()->dof_row_map())));
-  switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
+  switch (ssti_mono_algorithm.sca_tra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::sparse:
     {
       block_map_scatra_ = Teuchos::rcp(
-          new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.ScaTraField()->dof_row_map(),
+          new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.sca_tra_field()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
-                  1, ssti_mono_algorithm.ScaTraField()->dof_row_map())));
+                  1, ssti_mono_algorithm.sca_tra_field()->dof_row_map())));
       block_map_thermo_ = Teuchos::rcp(
-          new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.ThermoField()->dof_row_map(),
+          new Core::LinAlg::MultiMapExtractor(*ssti_mono_algorithm.thermo_field()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
-                  1, ssti_mono_algorithm.ThermoField()->dof_row_map())));
+                  1, ssti_mono_algorithm.thermo_field()->dof_row_map())));
       break;
     }
     case Core::LinAlg::MatrixType::block_condition:
     {
-      block_map_scatra_ = ssti_mono_algorithm.ScaTraField()->BlockMaps();
-      block_map_thermo_ = ssti_mono_algorithm.ThermoField()->BlockMaps();
+      block_map_scatra_ = ssti_mono_algorithm.sca_tra_field()->block_maps();
+      block_map_thermo_ = ssti_mono_algorithm.thermo_field()->block_maps();
       break;
     }
     default:
@@ -92,12 +92,12 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
+Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::map_interface(
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy) const
 {
   auto mergedInterfaceMap = Core::LinAlg::MultiMapExtractor::merge_maps(
-      {meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
-          meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
+      {meshtyingstrategy->coupling_adapter()->master_dof_map(),
+          meshtyingstrategy->coupling_adapter()->slave_dof_map()});
   if (not mergedInterfaceMap->UniqueGIDs()) FOUR_C_THROW("Map not unique");
   return mergedInterfaceMap;
 }
@@ -105,13 +105,13 @@ Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocks(
+Teuchos::RCP<Core::LinAlg::MultiMapExtractor> SSTI::SSTIMaps::maps_interface_blocks(
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy,
     Core::LinAlg::MatrixType scatramatrixtype, unsigned nummaps) const
 {
   Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmapinterface(Teuchos::null);
 
-  Teuchos::RCP<Epetra_Map> interfacemap = MapInterface(meshtyingstrategy);
+  Teuchos::RCP<Epetra_Map> interfacemap = map_interface(meshtyingstrategy);
 
   switch (scatramatrixtype)
   {
@@ -127,8 +127,8 @@ Teuchos::RCP<Core::LinAlg::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlock
       for (int iblockmap = 0; iblockmap < static_cast<int>(nummaps); ++iblockmap)
       {
         partial_blockmapinterface[iblockmap] = Core::LinAlg::MultiMapExtractor::merge_maps(
-            {meshtyingstrategy->BlockMapsSlave().Map(iblockmap),
-                meshtyingstrategy->BlockMapsMaster().Map(iblockmap)});
+            {meshtyingstrategy->block_maps_slave().Map(iblockmap),
+                meshtyingstrategy->block_maps_master().Map(iblockmap)});
       }
       blockmapinterface = Teuchos::rcp(
           new Core::LinAlg::MultiMapExtractor(*interfacemap, partial_blockmapinterface));
@@ -158,7 +158,7 @@ Teuchos::RCP<Core::LinAlg::MultiMapExtractor> SSTI::SSTIMaps::maps_interface_blo
   {
     case Core::LinAlg::MatrixType::sparse:
     {
-      const auto slavedofmap = meshtyingstrategy->CouplingAdapter()->SlaveDofMap();
+      const auto slavedofmap = meshtyingstrategy->coupling_adapter()->slave_dof_map();
       blockmapinterfaceslave = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
           *slavedofmap, std::vector<Teuchos::RCP<const Epetra_Map>>(1, slavedofmap)));
       break;
@@ -166,7 +166,7 @@ Teuchos::RCP<Core::LinAlg::MultiMapExtractor> SSTI::SSTIMaps::maps_interface_blo
     case Core::LinAlg::MatrixType::block_condition:
     {
       blockmapinterfaceslave =
-          Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(meshtyingstrategy->BlockMapsSlave()));
+          Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(meshtyingstrategy->block_maps_slave()));
       break;
     }
     default:
@@ -187,38 +187,39 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
     : SSTIMaps(ssti_mono_algorithm), block_map_system_matrix_(Teuchos::null)
 {
   // initialize map extractors associated with blocks of global system matrix
-  switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
+  switch (ssti_mono_algorithm.sca_tra_field()->matrix_type())
   {
     // one single main-diagonal matrix block associated with scalar transport field
     case Core::LinAlg::MatrixType::sparse:
     {
-      block_map_system_matrix_ = MapsSubProblems();
+      block_map_system_matrix_ = maps_sub_problems();
       break;
     }
       // many main-diagonal matrix blocks associated with scalar transport field
     case Core::LinAlg::MatrixType::block_condition:
     {
       auto block_positions_scatra =
-          ssti_mono_algorithm.GetBlockPositions(Subproblem::scalar_transport);
-      auto block_positions_structure = ssti_mono_algorithm.GetBlockPositions(Subproblem::structure);
-      auto block_positions_thermo = ssti_mono_algorithm.GetBlockPositions(Subproblem::thermo);
+          ssti_mono_algorithm.get_block_positions(Subproblem::scalar_transport);
+      auto block_positions_structure =
+          ssti_mono_algorithm.get_block_positions(Subproblem::structure);
+      auto block_positions_thermo = ssti_mono_algorithm.get_block_positions(Subproblem::thermo);
 
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(
           block_positions_scatra.size() + block_positions_structure.size() +
           block_positions_thermo.size());
       for (int imap = 0; imap < static_cast<int>(block_positions_scatra.size()); ++imap)
-        maps_systemmatrix[block_positions_scatra.at(imap)] = BlockMapScatra()->Map(imap);
+        maps_systemmatrix[block_positions_scatra.at(imap)] = block_map_scatra()->Map(imap);
 
       // extract map underlying single main-diagonal matrix block associated with structural
       // field
-      maps_systemmatrix[block_positions_structure.at(0)] = BlockMapStructure()->FullMap();
+      maps_systemmatrix[block_positions_structure.at(0)] = block_map_structure()->full_map();
 
       for (int imap = 0; imap < static_cast<int>(block_positions_thermo.size()); ++imap)
         maps_systemmatrix[block_positions_thermo.at(imap)] = block_map_thermo()->Map(imap);
 
       // initialize map extractor associated with blocks of global system matrix
       block_map_system_matrix_ = Teuchos::rcp(
-          new Core::LinAlg::MultiMapExtractor(*MapsSubProblems()->FullMap(), maps_systemmatrix));
+          new Core::LinAlg::MultiMapExtractor(*maps_sub_problems()->full_map(), maps_systemmatrix));
 
       break;
     }
@@ -263,7 +264,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
 
     case Core::LinAlg::MatrixType::sparse:
     {
-      systemmatrix_ = setup_sparse_matrix(ssti_maps_mono->MapsSubProblems()->FullMap());
+      systemmatrix_ = setup_sparse_matrix(ssti_maps_mono->maps_sub_problems()->full_map());
       break;
     }
 
@@ -279,49 +280,53 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      scatrastructuredomain_ =
-          setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
-      structurescatradomain_ =
-          setup_block_matrix(ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->BlockMapScatra());
+      scatrastructuredomain_ = setup_block_matrix(
+          ssti_maps_mono->block_map_scatra(), ssti_maps_mono->block_map_structure());
+      structurescatradomain_ = setup_block_matrix(
+          ssti_maps_mono->block_map_structure(), ssti_maps_mono->block_map_scatra());
       structurethermodomain_ = setup_block_matrix(
-          ssti_maps_mono->BlockMapStructure(), ssti_maps_mono->block_map_thermo());
+          ssti_maps_mono->block_map_structure(), ssti_maps_mono->block_map_thermo());
       thermostructuredomain_ = setup_block_matrix(
-          ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapStructure());
-      scatrathermodomain_ =
-          setup_block_matrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->block_map_thermo());
-      thermoscatradomain_ =
-          setup_block_matrix(ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapScatra());
+          ssti_maps_mono->block_map_thermo(), ssti_maps_mono->block_map_structure());
+      scatrathermodomain_ = setup_block_matrix(
+          ssti_maps_mono->block_map_scatra(), ssti_maps_mono->block_map_thermo());
+      thermoscatradomain_ = setup_block_matrix(
+          ssti_maps_mono->block_map_thermo(), ssti_maps_mono->block_map_scatra());
 
       if (interfacemeshtying_)
       {
         scatrastructureinterface_ = setup_block_matrix(
-            ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
+            ssti_maps_mono->block_map_scatra(), ssti_maps_mono->block_map_structure());
         thermostructureinterface_ = setup_block_matrix(
-            ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapStructure());
+            ssti_maps_mono->block_map_thermo(), ssti_maps_mono->block_map_structure());
         scatrathermointerface_ = setup_block_matrix(
-            ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->block_map_thermo());
+            ssti_maps_mono->block_map_scatra(), ssti_maps_mono->block_map_thermo());
         thermoscatrainterface_ = setup_block_matrix(
-            ssti_maps_mono->block_map_thermo(), ssti_maps_mono->BlockMapScatra());
+            ssti_maps_mono->block_map_thermo(), ssti_maps_mono->block_map_scatra());
       }
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      scatrastructuredomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-      structurescatradomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapStructure()->FullMap());
-      structurethermodomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapStructure()->FullMap());
-      thermostructuredomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
-      scatrathermodomain_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-      thermoscatradomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
+      scatrastructuredomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_scatra()->full_map());
+      structurescatradomain_ =
+          setup_sparse_matrix(ssti_maps_mono->block_map_structure()->full_map());
+      structurethermodomain_ =
+          setup_sparse_matrix(ssti_maps_mono->block_map_structure()->full_map());
+      thermostructuredomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->full_map());
+      scatrathermodomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_scatra()->full_map());
+      thermoscatradomain_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->full_map());
 
       if (interfacemeshtying_)
       {
         scatrastructureinterface_ =
-            setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
+            setup_sparse_matrix(ssti_maps_mono->block_map_scatra()->full_map());
         thermostructureinterface_ =
-            setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
-        scatrathermointerface_ = setup_sparse_matrix(ssti_maps_mono->BlockMapScatra()->FullMap());
-        thermoscatrainterface_ = setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->FullMap());
+            setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->full_map());
+        scatrathermointerface_ =
+            setup_sparse_matrix(ssti_maps_mono->block_map_scatra()->full_map());
+        thermoscatrainterface_ =
+            setup_sparse_matrix(ssti_maps_mono->block_map_thermo()->full_map());
       }
       break;
     }
@@ -335,22 +340,22 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSTI::SSTIMatrices::ClearMatrices()
+void SSTI::SSTIMatrices::clear_matrices()
 {
-  systemmatrix_->Zero();
-  scatrastructuredomain_->Zero();
-  scatrathermodomain_->Zero();
-  structurescatradomain_->Zero();
-  structurethermodomain_->Zero();
-  thermoscatradomain_->Zero();
-  thermostructuredomain_->Zero();
+  systemmatrix_->zero();
+  scatrastructuredomain_->zero();
+  scatrathermodomain_->zero();
+  structurescatradomain_->zero();
+  structurethermodomain_->zero();
+  thermoscatradomain_->zero();
+  thermostructuredomain_->zero();
 
   if (interfacemeshtying_)
   {
-    scatrastructureinterface_->Zero();
-    scatrathermointerface_->Zero();
-    thermoscatrainterface_->Zero();
-    thermostructureinterface_->Zero();
+    scatrastructureinterface_->zero();
+    scatrathermointerface_->zero();
+    thermoscatrainterface_->zero();
+    thermostructureinterface_->zero();
   }
 }
 
@@ -363,48 +368,48 @@ void SSTI::SSTIMatrices::complete_coupling_matrices()
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      scatrastructuredomain_->Complete();
-      scatrathermodomain_->Complete();
-      structurescatradomain_->Complete();
-      structurethermodomain_->Complete();
-      thermoscatradomain_->Complete();
-      thermostructuredomain_->Complete();
+      scatrastructuredomain_->complete();
+      scatrathermodomain_->complete();
+      structurescatradomain_->complete();
+      structurethermodomain_->complete();
+      thermoscatradomain_->complete();
+      thermostructuredomain_->complete();
 
       if (interfacemeshtying_)
       {
-        scatrastructureinterface_->Complete();
-        scatrathermointerface_->Complete();
-        thermoscatrainterface_->Complete();
-        thermostructureinterface_->Complete();
+        scatrastructureinterface_->complete();
+        scatrathermointerface_->complete();
+        thermoscatrainterface_->complete();
+        thermostructureinterface_->complete();
       }
       break;
     }
 
     case Core::LinAlg::MatrixType::sparse:
     {
-      scatrastructuredomain_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
-          *ssti_maps_mono_->BlockMapScatra()->FullMap());
-      scatrathermodomain_->Complete(*ssti_maps_mono_->block_map_thermo()->FullMap(),
-          *ssti_maps_mono_->BlockMapScatra()->FullMap());
-      structurescatradomain_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
-          *ssti_maps_mono_->BlockMapStructure()->FullMap());
-      structurethermodomain_->Complete(*ssti_maps_mono_->block_map_thermo()->FullMap(),
-          *ssti_maps_mono_->BlockMapStructure()->FullMap());
-      thermoscatradomain_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
-          *ssti_maps_mono_->block_map_thermo()->FullMap());
-      thermostructuredomain_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
-          *ssti_maps_mono_->block_map_thermo()->FullMap());
+      scatrastructuredomain_->complete(*ssti_maps_mono_->block_map_structure()->full_map(),
+          *ssti_maps_mono_->block_map_scatra()->full_map());
+      scatrathermodomain_->complete(*ssti_maps_mono_->block_map_thermo()->full_map(),
+          *ssti_maps_mono_->block_map_scatra()->full_map());
+      structurescatradomain_->complete(*ssti_maps_mono_->block_map_scatra()->full_map(),
+          *ssti_maps_mono_->block_map_structure()->full_map());
+      structurethermodomain_->complete(*ssti_maps_mono_->block_map_thermo()->full_map(),
+          *ssti_maps_mono_->block_map_structure()->full_map());
+      thermoscatradomain_->complete(*ssti_maps_mono_->block_map_scatra()->full_map(),
+          *ssti_maps_mono_->block_map_thermo()->full_map());
+      thermostructuredomain_->complete(*ssti_maps_mono_->block_map_structure()->full_map(),
+          *ssti_maps_mono_->block_map_thermo()->full_map());
 
       if (interfacemeshtying_)
       {
-        scatrastructureinterface_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
-            *ssti_maps_mono_->BlockMapScatra()->FullMap());
-        scatrathermointerface_->Complete(*ssti_maps_mono_->block_map_thermo()->FullMap(),
-            *ssti_maps_mono_->BlockMapScatra()->FullMap());
-        thermoscatrainterface_->Complete(*ssti_maps_mono_->BlockMapScatra()->FullMap(),
-            *ssti_maps_mono_->block_map_thermo()->FullMap());
-        thermostructureinterface_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
-            *ssti_maps_mono_->block_map_thermo()->FullMap());
+        scatrastructureinterface_->complete(*ssti_maps_mono_->block_map_structure()->full_map(),
+            *ssti_maps_mono_->block_map_scatra()->full_map());
+        scatrathermointerface_->complete(*ssti_maps_mono_->block_map_thermo()->full_map(),
+            *ssti_maps_mono_->block_map_scatra()->full_map());
+        thermoscatrainterface_->complete(*ssti_maps_mono_->block_map_scatra()->full_map(),
+            *ssti_maps_mono_->block_map_thermo()->full_map());
+        thermostructureinterface_->complete(*ssti_maps_mono_->block_map_structure()->full_map(),
+            *ssti_maps_mono_->block_map_thermo()->full_map());
       }
       break;
     }
@@ -421,19 +426,19 @@ void SSTI::SSTIMatrices::complete_coupling_matrices()
  *---------------------------------------------------------------------------------*/
 void SSTI::SSTIMatrices::un_complete_coupling_matrices()
 {
-  scatrastructuredomain_->UnComplete();
-  scatrathermodomain_->UnComplete();
-  structurescatradomain_->UnComplete();
-  structurethermodomain_->UnComplete();
-  thermoscatradomain_->UnComplete();
-  thermostructuredomain_->UnComplete();
+  scatrastructuredomain_->un_complete();
+  scatrathermodomain_->un_complete();
+  structurescatradomain_->un_complete();
+  structurethermodomain_->un_complete();
+  thermoscatradomain_->un_complete();
+  thermostructuredomain_->un_complete();
 
   if (interfacemeshtying_)
   {
-    scatrastructureinterface_->UnComplete();
-    scatrathermointerface_->UnComplete();
-    thermoscatrainterface_->UnComplete();
-    thermostructureinterface_->UnComplete();
+    scatrastructureinterface_->un_complete();
+    scatrathermointerface_->un_complete();
+    thermoscatrainterface_->un_complete();
+    thermostructureinterface_->un_complete();
   }
 }
 
@@ -475,95 +480,95 @@ SSTI::ConvCheckMono::ConvCheckMono(Teuchos::ParameterList params)
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
+bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
 {
   bool exit(false);
 
   // compute L2 norm of concentration state vector
   double concdofnorm(0.0);
-  ssti_mono.ScaTraField()
-      ->Splitter()
-      ->extract_other_vector(ssti_mono.ScaTraField()->Phinp())
+  ssti_mono.sca_tra_field()
+      ->splitter()
+      ->extract_other_vector(ssti_mono.sca_tra_field()->phinp())
       ->Norm2(&concdofnorm);
 
   // compute L2 norm of concentration increment vector
   double concincnorm(0.0);
-  ssti_mono.ScaTraField()
-      ->Splitter()
-      ->extract_other_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
-          ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
+  ssti_mono.sca_tra_field()
+      ->splitter()
+      ->extract_other_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&concincnorm);
 
   // compute L2 norm of concentration residual vector
   double concresnorm(0.0);
-  ssti_mono.ScaTraField()
-      ->Splitter()
-      ->extract_other_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
-          ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
+  ssti_mono.sca_tra_field()
+      ->splitter()
+      ->extract_other_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&concresnorm);
 
   // compute L2 norm of potential state vector
   double potdofnorm(0.0);
-  ssti_mono.ScaTraField()
-      ->Splitter()
-      ->extract_cond_vector(ssti_mono.ScaTraField()->Phinp())
+  ssti_mono.sca_tra_field()
+      ->splitter()
+      ->extract_cond_vector(ssti_mono.sca_tra_field()->phinp())
       ->Norm2(&potdofnorm);
 
   // compute L2 norm of potential increment vector
   double potincnorm(0.0);
-  ssti_mono.ScaTraField()
-      ->Splitter()
-      ->extract_cond_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
-          ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
+  ssti_mono.sca_tra_field()
+      ->splitter()
+      ->extract_cond_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&potincnorm);
 
   // compute L2 norm of potential residual vector
   double potresnorm(0.0);
-  ssti_mono.ScaTraField()
-      ->Splitter()
-      ->extract_cond_vector(ssti_mono.AllMaps()->MapsSubProblems()->extract_vector(
-          ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::scalar_transport)))
+  ssti_mono.sca_tra_field()
+      ->splitter()
+      ->extract_cond_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&potresnorm);
 
   // compute L2 norm of structural state vector
   double structuredofnorm(0.0);
-  ssti_mono.structure_field()->Dispnp()->Norm2(&structuredofnorm);
+  ssti_mono.structure_field()->dispnp()->Norm2(&structuredofnorm);
 
   // compute L2 norm of structural residual vector
   double structureresnorm(0.0);
-  ssti_mono.AllMaps()
-      ->MapsSubProblems()
-      ->extract_vector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::structure))
+  ssti_mono.all_maps()
+      ->maps_sub_problems()
+      ->extract_vector(ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::structure))
       ->Norm2(&structureresnorm);
 
   // compute L2 norm of structural increment vector
   double structureincnorm(0.0);
-  ssti_mono.AllMaps()
-      ->MapsSubProblems()
-      ->extract_vector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::structure))
+  ssti_mono.all_maps()
+      ->maps_sub_problems()
+      ->extract_vector(ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::structure))
       ->Norm2(&structureincnorm);
 
   // compute L2 norm of thermo state vector
   double thermodofnorm(0.0);
-  ssti_mono.ThermoField()->Phinp()->Norm2(&thermodofnorm);
+  ssti_mono.thermo_field()->phinp()->Norm2(&thermodofnorm);
 
   // compute L2 norm of thermo residual vector
   double thermoresnorm(0.0);
-  ssti_mono.AllMaps()
-      ->MapsSubProblems()
-      ->extract_vector(ssti_mono.Residual(), ssti_mono.GetProblemPosition(Subproblem::thermo))
+  ssti_mono.all_maps()
+      ->maps_sub_problems()
+      ->extract_vector(ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::thermo))
       ->Norm2(&thermoresnorm);
 
   // compute L2 norm of thermo increment vector
   double thermoincnorm(0.0);
-  ssti_mono.AllMaps()
-      ->MapsSubProblems()
-      ->extract_vector(ssti_mono.Increment(), ssti_mono.GetProblemPosition(Subproblem::thermo))
+  ssti_mono.all_maps()
+      ->maps_sub_problems()
+      ->extract_vector(ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::thermo))
       ->Norm2(&thermoincnorm);
 
   // compute L2 norm of total residual vector
   double totresnorm(0.0);
-  ssti_mono.Residual()->Norm2(&totresnorm);
+  ssti_mono.residual()->Norm2(&totresnorm);
 
   // safety checks
   if (std::isnan(concdofnorm) or std::isnan(concresnorm) or std::isnan(concincnorm) or
@@ -586,9 +591,9 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   if (thermodofnorm < 1.e-10) thermodofnorm = 1.e-10;
 
   // first Newton-Raphson iteration
-  if (ssti_mono.NewtonIteration() == 1)
+  if (ssti_mono.newton_iteration() == 1)
   {
-    if (ssti_mono.Comm().MyPID() == 0)
+    if (ssti_mono.get_comm().MyPID() == 0)
     {
       // print header of convergence table to screen
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
@@ -602,7 +607,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
 
       // print first line of convergence table to screen
       // solution increment not yet available during first Newton-Raphson iteration
-      std::cout << "|  " << std::setw(3) << ssti_mono.NewtonIteration() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssti_mono.newton_iteration() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << concresnorm << "   |      --      | " << std::setw(10)
@@ -612,7 +617,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
                 << std::scientific << thermoresnorm << "   |      --      | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << totresnorm << "   |    | "
                 << "(       --      , te = " << std::setw(10) << std::setprecision(3)
-                << ssti_mono.TimeStatistics()[0] << ")" << std::endl;
+                << ssti_mono.time_statistics()[0] << ")" << std::endl;
     }
   }
 
@@ -620,9 +625,9 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
   else
   {
     // print current line of convergence table to screen
-    if (ssti_mono.Comm().MyPID() == 0)
+    if (ssti_mono.get_comm().MyPID() == 0)
     {
-      std::cout << "|  " << std::setw(3) << ssti_mono.NewtonIteration() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssti_mono.newton_iteration() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << concresnorm << "   | " << std::setw(10)
@@ -637,8 +642,8 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
                 << std::scientific << thermoincnorm / thermodofnorm << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << totresnorm << "   | "
                 << "   | (ts = " << std::setw(10) << std::setprecision(3)
-                << ssti_mono.TimeStatistics()[1] << ", te = " << std::setw(10)
-                << std::setprecision(3) << ssti_mono.TimeStatistics()[0] << ")" << std::endl;
+                << ssti_mono.time_statistics()[1] << ", te = " << std::setw(10)
+                << std::setprecision(3) << ssti_mono.time_statistics()[0] << ")" << std::endl;
     }
 
     // convergence check
@@ -658,9 +663,9 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (ssti_mono.NewtonIteration() == itermax_ and !exit)
+  if (ssti_mono.newton_iteration() == itermax_ and !exit)
   {
-    if (ssti_mono.Comm().MyPID() == 0)
+    if (ssti_mono.get_comm().MyPID() == 0)
     {
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
                    "--------------+--------------+--------------+--------------+--------------+----"
@@ -714,10 +719,10 @@ void SSTI::SSTIScatraStructureCloneStrategy::set_element_data(
   if (trans != nullptr)
   {
     // set distype as well!
-    trans->SetDisType(oldele->Shape());
+    trans->set_dis_type(oldele->shape());
 
     // now check whether ImplType is reasonable and if set the ImplType
-    Inpar::ScaTra::ImplType impltype = SSI::ScatraStructureCloneStrategy::GetImplType(oldele);
+    Inpar::ScaTra::ImplType impltype = SSI::ScatraStructureCloneStrategy::get_impl_type(oldele);
 
     if (impltype == Inpar::ScaTra::impltype_undefined)
     {
@@ -732,15 +737,15 @@ void SSTI::SSTIScatraStructureCloneStrategy::set_element_data(
     {
       // find the appropriate thermo type
       if (impltype == Inpar::ScaTra::impltype_elch_electrode)
-        trans->SetImplType(Inpar::ScaTra::impltype_elch_electrode_thermo);
+        trans->set_impl_type(Inpar::ScaTra::impltype_elch_electrode_thermo);
       else if (impltype == Inpar::ScaTra::impltype_elch_diffcond)
-        trans->SetImplType(Inpar::ScaTra::impltype_elch_diffcond_thermo);
+        trans->set_impl_type(Inpar::ScaTra::impltype_elch_diffcond_thermo);
       else
         FOUR_C_THROW("Something went wrong");
     }
 
     // set material
-    trans->SetMaterial(matid, oldele);
+    trans->set_material(matid, oldele);
   }
   else
   {

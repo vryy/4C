@@ -111,7 +111,7 @@ namespace Solid
      *  \param[out] uneval_test_count  updated number of unevaluated tests
      *
      *  \author hiermeier \date 11/17 */
-    void TestSpecial(
+    void test_special(
         Input::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count) override;
 
    protected:

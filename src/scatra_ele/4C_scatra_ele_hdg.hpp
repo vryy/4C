@@ -40,21 +40,21 @@ namespace Discret
     class ScaTraHDGType : public TransportType
     {
      public:
-      std::string Name() const override { return "ScaTraHDGType"; }
+      std::string name() const override { return "ScaTraHDGType"; }
 
-      static ScaTraHDGType& Instance();
+      static ScaTraHDGType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -87,11 +87,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of scatra and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
 
       /*!
@@ -100,9 +100,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ScaTraHDGType::Instance().UniqueParObjectId();
+        return ScaTraHDGType::instance().unique_par_object_id();
       }
 
       /*!
@@ -142,7 +142,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -153,16 +153,19 @@ namespace Discret
 
       HDG element: No dofs are associated with nodes
       */
-      int NumDofPerNode(const Core::Nodes::Node&) const override { return 0; }
+      int num_dof_per_node(const Core::Nodes::Node&) const override { return 0; }
 
       //! Get number of degrees of freedom per face
-      int num_dof_per_face(const unsigned face) const override { return NumDofPerComponent(face); }
+      int num_dof_per_face(const unsigned face) const override
+      {
+        return num_dof_per_component(face);
+      }
 
       //! Get number of dofs per component per face
-      int NumDofPerComponent(const unsigned face) const override
+      int num_dof_per_component(const unsigned face) const override
       {
         return Core::FE::getBasisSize(Core::FE::getEleFaceShapeType(this->distype_),
-            (this->Faces()[face])->Degree(), completepol_);
+            (this->faces()[face])->degree(), completepol_);
       }
 
       //! Get number of degrees of freedom per element, zero for the primary dof set
@@ -170,13 +173,13 @@ namespace Discret
       int num_dof_per_element() const override { return 0; }
 
       //! Returns the degree of the element
-      int Degree() const override { return degree_; }
+      int degree() const override { return degree_; }
 
       //! Returns the degree of the element
-      int DegreeOld() const { return degree_old_; }
+      int degree_old() const { return degree_old_; }
 
       //! Sets the degree of the element
-      void SetDegree(int degree)
+      void set_degree(int degree)
       {
         degree_old_ = degree_;
         degree_ = degree;
@@ -184,10 +187,10 @@ namespace Discret
       }
 
       //! Sets the number of all interior dofs of the element
-      void SetDofs(int ndofs) { ndofs_ = ndofs; }
+      void set_dofs(int ndofs) { ndofs_ = ndofs; }
 
       //! Sets the number of all dofs on faces of the element
-      void SetOnfDofs(int onfdofs)
+      void set_onf_dofs(int onfdofs)
       {
         onfdofs_old_ = onfdofs_;
         onfdofs_ = onfdofs;
@@ -200,24 +203,24 @@ namespace Discret
       int uses_complete_polynomial_space() const { return completepol_; }
 
       //! Sets bool to false if degree of element changes after p-adaption
-      void SetPadaptEle(bool adapt)
+      void set_padapt_ele(bool adapt)
       {
         padpatele_ = adapt;
         return;
       }
 
       //! Returns bool if degree of element changes after p-adaption (true if degree changes)
-      bool PadaptEle() const { return padpatele_; }
+      bool padapt_ele() const { return padpatele_; }
 
       //! Sets bool if element matrices are initialized
-      void SetMatInit(bool matinit)
+      void set_mat_init(bool matinit)
       {
         matinit_ = matinit;
         return;
       }
 
       //! Returns bool if element matrices are initialized
-      bool MatInit() const { return matinit_; }
+      bool mat_init() const { return matinit_; }
 
       //! Returns the degree of the element for the interior DG space
       int num_dof_per_element_auxiliary() const
@@ -227,14 +230,14 @@ namespace Discret
       }
 
       //! Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       //! Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //! Get Teuchos::RCP to the internal face adjacent to this element as master element and the
       //! parent_slave element
-      Teuchos::RCP<Core::Elements::Element> CreateFaceElement(
+      Teuchos::RCP<Core::Elements::Element> create_face_element(
           Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
@@ -290,9 +293,9 @@ namespace Discret
       //! Print this element
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ScaTraHDGType::Instance();
+        return ScaTraHDGType::instance();
       }
 
       // element matrices are stored to save calculation time, since they stay the same in the pure
@@ -379,18 +382,18 @@ namespace Discret
     class ScaTraHDGBoundaryType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "ScaTraHDGBoundaryType"; }
+      std::string name() const override { return "ScaTraHDGBoundaryType"; }
 
-      static ScaTraHDGBoundaryType& Instance();
+      static ScaTraHDGBoundaryType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -435,36 +438,36 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return Core::FE::getNumberOfElementLines(Shape()); }
+      int num_line() const override { return Core::FE::getNumberOfElementLines(shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(Shape()); }
+      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -472,9 +475,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ScaTraHDGBoundaryType::Instance().UniqueParObjectId();
+        return ScaTraHDGBoundaryType::instance().unique_par_object_id();
       }
 
       /*!
@@ -508,9 +511,9 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return parent_element()->NumDofPerNode(node);
+        return parent_element()->num_dof_per_node(node);
       }
 
       int num_dof_per_element() const override { return 0; }
@@ -520,9 +523,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ScaTraHDGBoundaryType::Instance();
+        return ScaTraHDGBoundaryType::instance();
       }
 
       //@}
@@ -610,7 +613,7 @@ namespace Discret
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
+      void location_vector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
       /*!
@@ -639,7 +642,7 @@ namespace Discret
                              matches dofs in lm.
 
       */
-      void LocationVector(const Core::FE::Discretization& dis, std::vector<int>& lm,
+      void location_vector(const Core::FE::Discretization& dis, std::vector<int>& lm,
           std::vector<int>& lmowner, std::vector<int>& lmstride) const override;
 
      private:
@@ -655,18 +658,18 @@ namespace Discret
     class ScaTraHDGIntFaceType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "ScaTraHDGIntFaceType"; }
+      std::string name() const override { return "ScaTraHDGIntFaceType"; }
 
-      static ScaTraHDGIntFaceType& Instance();
+      static ScaTraHDGIntFaceType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -718,31 +721,31 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return Core::FE::getNumberOfElementLines(Shape()); }
+      int num_line() const override { return Core::FE::getNumberOfElementLines(shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(Shape()); }
+      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -750,7 +753,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -758,9 +761,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ScaTraHDGIntFaceType::Instance().UniqueParObjectId();
+        return ScaTraHDGIntFaceType::instance().unique_par_object_id();
       }
 
       /*!
@@ -792,10 +795,10 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return std::max(
-            ParentMasterElement()->NumDofPerNode(node), ParentSlaveElement()->NumDofPerNode(node));
+        return std::max(parent_master_element()->num_dof_per_node(node),
+            parent_slave_element()->num_dof_per_node(node));
       }
 
       /*!
@@ -814,14 +817,14 @@ namespace Discret
       /*!
        \brief Returns the degree of the element
        */
-      int Degree() const override { return degree_; }
+      int degree() const override { return degree_; }
 
       /*!
        \brief Returns the old degree of the element
        */
-      virtual int DegreeOld() const { return degree_old_; }
+      virtual int degree_old() const { return degree_old_; }
 
-      void SetDegree(int degree)
+      void set_degree(int degree)
       {
         degree_old_ = degree_;
         degree_ = degree;
@@ -834,7 +837,7 @@ namespace Discret
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(Core::FE::Discretization& discretization,  //!< discretization
+      void patch_location_vector(Core::FE::Discretization& discretization,  //!< discretization
           std::vector<int>& nds_master,        //!< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         //!< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           //!< local map for gdof ids for patch of elements
@@ -855,9 +858,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ScaTraHDGIntFaceType::Instance();
+        return ScaTraHDGIntFaceType::instance();
       }
 
       //@}
@@ -916,9 +919,10 @@ namespace Discret
       /*!
       \brief return the master parent ScaTraHDG element
       */
-      Discret::ELEMENTS::ScaTraHDG* ParentMasterElement() const
+      Discret::ELEMENTS::ScaTraHDG* parent_master_element() const
       {
-        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentMasterElement();
+        Core::Elements::Element* parent =
+            this->Core::Elements::FaceElement::parent_master_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(parent) != nullptr,
             "Master element is no ScaTraHDG element");
@@ -928,9 +932,9 @@ namespace Discret
       /*!
       \brief return the slave parent ScaTraHDG element
       */
-      Discret::ELEMENTS::ScaTraHDG* ParentSlaveElement() const
+      Discret::ELEMENTS::ScaTraHDG* parent_slave_element() const
       {
-        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentSlaveElement();
+        Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_slave_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(parent) != nullptr,
             "Slave element is no ScaTraHDG element");

@@ -85,7 +85,7 @@ namespace CONTACT
     \brief Return L2-norm of slip constraints
 
     */
-    double ConstraintNormTan() { return constrnormtan_; }
+    double constraint_norm_tan() { return constrnormtan_; }
 
 
     /*!
@@ -98,7 +98,7 @@ namespace CONTACT
     \brief Return initial penalty parameter for tangential direction
 
     */
-    double InitialPenaltyTan() { return initialpenaltytan_; }
+    double initial_penalty_tan() { return initialpenaltytan_; }
 
 
     //@}
@@ -224,7 +224,7 @@ namespace CONTACT
     void evaluate_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Assemble force and stiffness terms to global vector and matrix */
-    void Assemble();
+    void assemble();
 
     /*! \brief Run at the beginning of the evaluate() routine
      *         set force evaluation flag
@@ -305,7 +305,7 @@ namespace CONTACT
     }
     bool is_saddle_point_system() const override { return false; }
     bool is_condensed_system() const override { return false; }
-    bool IsNitsche() const override { return false; }
+    bool is_nitsche() const override { return false; }
 
     /*! \brief recover the current state
      *

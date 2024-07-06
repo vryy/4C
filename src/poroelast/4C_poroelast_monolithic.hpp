@@ -60,7 +60,7 @@ namespace PoroElast
      read_mesh is called), the dofmaps for the blocks might get invalid.
      */
     //! Setup the monolithic Poroelasticity system
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! setup composed right hand side from field solvers
     void setup_rhs(bool firstcall = false) override;
@@ -75,10 +75,10 @@ namespace PoroElast
     virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat);
 
     //! setup equilibration of system matrix
-    void SetupEquilibration();
+    void setup_equilibration();
 
     //! setup newton solver
-    virtual void SetupNewton();
+    virtual void setup_newton();
 
 
     //! build the combined dirichletbcmap
@@ -87,7 +87,7 @@ namespace PoroElast
     //! @name Access methods for subclasses
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const override
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const override
     {
       return blockrowdofmap_;
     }
@@ -113,34 +113,34 @@ namespace PoroElast
     Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
     //! dof row map of Structure field
-    Teuchos::RCP<const Epetra_Map> DofRowMapStructure() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map_structure() override;
 
     //! dof row map of Fluid field
-    Teuchos::RCP<const Epetra_Map> DofRowMapFluid() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map_fluid() override;
 
     //! unique map of all dofs that should be constrained with DBC
     Teuchos::RCP<const Epetra_Map> combined_dbc_map() const override { return combinedDBCMap_; }
 
     //! right hand side vector
-    Teuchos::RCP<const Epetra_Vector> RHS() override { return rhs_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() override { return rhs_; }
 
     //! zero all entries in iterinc vector
-    void ClearPoroIterinc();
+    void clear_poro_iterinc();
 
     //! replaces the iterinc with poroinc
-    void UpdatePoroIterinc(Teuchos::RCP<const Epetra_Vector> poroinc);
+    void update_poro_iterinc(Teuchos::RCP<const Epetra_Vector> poroinc);
 
     //! iter_ += 1
-    void IncrementPoroIter();
+    void increment_poro_iter();
 
     //! fluid_field()->system_matrix()->RangeMap()
-    const Epetra_Map& FluidRangeMap();
+    const Epetra_Map& fluid_range_map();
 
     //! fluid_field()->system_matrix()->DomainMap()
-    const Epetra_Map& FluidDomainMap();
+    const Epetra_Map& fluid_domain_map();
 
     //! structure_field()->system_matrix()->DomainMap()
-    const Epetra_Map& StructureDomainMap();
+    const Epetra_Map& structure_domain_map();
 
     //!@}
 
@@ -175,10 +175,10 @@ namespace PoroElast
         bool firstiter) override;
 
     //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void EvaluateFields(Teuchos::RCP<const Epetra_Vector> iterinc);
+    virtual void evaluate_fields(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! evaluate fields seperately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void EvaluateFields(
+    virtual void evaluate_fields(
         Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc);
 
     //! extract initial guess from fields
@@ -187,10 +187,10 @@ namespace PoroElast
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
-    virtual bool Converged();
+    virtual bool converged();
 
     //! inner newton iteration
-    void Solve() override;
+    void solve() override;
 
     //! perform one time step (setup + solve + output)
     void do_time_step() override;
@@ -220,7 +220,7 @@ namespace PoroElast
     //!@}
 
     //! finite difference check of stiffness matrix
-    [[maybe_unused]] void PoroFDCheck();
+    [[maybe_unused]] void poro_fd_check();
 
     //! Evaluate no penetration condition
     void evaluate_condition(Teuchos::RCP<Core::LinAlg::SparseOperator> Sysmat,
@@ -236,7 +236,7 @@ namespace PoroElast
         Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! Setup solver for monolithic system
-    bool SetupSolver() override;
+    bool setup_solver() override;
 
     //! read restart data
     void read_restart(const int step) override;

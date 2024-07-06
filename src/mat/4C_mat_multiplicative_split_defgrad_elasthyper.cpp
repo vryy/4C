@@ -56,7 +56,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MultiplicativeSplitDefgradElastHyper
 Mat::MultiplicativeSplitDefgradElastHyperType
     Mat::MultiplicativeSplitDefgradElastHyperType::instance_;
 
-Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::Create(
+Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::create(
     const std::vector<char>& data)
 {
   auto* splitdefgrad_elhy = new Mat::MultiplicativeSplitDefgradElastHyper();
@@ -87,7 +87,7 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
   // elastic materials
   for (int matid_elastic : params_->matids_elast_)
   {
-    auto elastic_summand = Mat::Elastic::Summand::Factory(matid_elastic);
+    auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
     if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsumel_.push_back(elastic_summand);
     elastic_summand->register_anisotropy_extensions(*anisotropy_);
@@ -103,11 +103,11 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBu
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   anisotropy_->pack_anisotropy(data);
@@ -115,7 +115,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBu
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
-    for (const auto& p : potsumel_) p->PackSummand(data);
+    for (const auto& p : potsumel_) p->pack_summand(data);
   }
 }
 
@@ -129,22 +129,22 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& 
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
-      auto* mat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
+      auto* mat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = dynamic_cast<Mat::PAR::MultiplicativeSplitDefgradElastHyper*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -155,14 +155,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& 
     // elastic materials
     for (const auto& matid_elastic : params_->matids_elast_)
     {
-      auto elastic_summand = Mat::Elastic::Summand::Factory(matid_elastic);
+      auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
       if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsumel_.push_back(elastic_summand);
     }
     // loop map of associated potential summands
     for (const auto& elastic_summand : potsumel_)
     {
-      elastic_summand->UnpackSummand(data, position);
+      elastic_summand->unpack_summand(data, position);
       elastic_summand->register_anisotropy_extensions(*anisotropy_);
     }
 
@@ -219,8 +219,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   CalculateGammaDelta(gamma, delta, prinv, dPIe, ddPIIe);
 
   // evaluate dSdiFin
-  EvaluatedSdiFin(gamma, delta, iFinM, iCinCM, iCinV, CiFin9x1, CiFinCe9x1, iCinCiCinV, CiFiniCe9x1,
-      iCV, iFinCeM, detFin, dSdiFin);
+  evaluated_sdi_fin(gamma, delta, iFinM, iCinCM, iCinV, CiFin9x1, CiFinCe9x1, iCinCiCinV,
+      CiFiniCe9x1, iCV, iFinCeM, detFin, dSdiFin);
 
   // if cmat != nullptr, we are evaluating the structural residual and linearizations, so we need to
   // calculate the stresses and the cmat if you like to evaluate the off-diagonal block of your
@@ -253,7 +253,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
     else
       FOUR_C_THROW("unknown scalaratype");
 
-    EvaluateODStiffMat(source, defgrad, dSdiFin, *stress);
+    evaluate_od_stiff_mat(source, defgrad, dSdiFin, *stress);
   }
 }
 
@@ -269,7 +269,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
     const double* concentration, const double* temp, double* d_cauchyndir_dT,
     Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT)
 {
-  if (concentration != nullptr) SetConcentrationGP(*concentration);
+  if (concentration != nullptr) set_concentration_gp(*concentration);
 
   // reset sigma contracted with n and dir
   cauchy_n_dir = 0.0;
@@ -432,13 +432,13 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_linearization_od(
     const Core::LinAlg::Matrix<3, 3>& defgrd, const double concentration,
     Core::LinAlg::Matrix<9, 1>* d_F_dx)
 {
-  SetConcentrationGP(concentration);
+  set_concentration_gp(concentration);
 
   // References to vector of inelastic contributions and inelastic deformation gradients
-  auto facdefgradin = inelastic_->FacDefGradIn();
+  auto facdefgradin = inelastic_->fac_def_grad_in();
 
   // number of contributions for this source
-  const int num_contributions = inelastic_->NumInelasticDefGrad();
+  const int num_contributions = inelastic_->num_inelastic_def_grad();
 
   // build inverse inelastic deformation gradient
   static Core::LinAlg::Matrix<3, 3> iFinM(true);
@@ -584,7 +584,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_invariant_derivatives(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::EvaluatedSdiFin(
+void Mat::MultiplicativeSplitDefgradElastHyper::evaluated_sdi_fin(
     const Core::LinAlg::Matrix<3, 1>& gamma, const Core::LinAlg::Matrix<8, 1>& delta,
     const Core::LinAlg::Matrix<3, 3>& iFinM, const Core::LinAlg::Matrix<3, 3>& iCinCM,
     const Core::LinAlg::Matrix<6, 1>& iCinV, const Core::LinAlg::Matrix<9, 1>& CiFin9x1,
@@ -646,9 +646,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
   // clear variable
   cmatadd.clear();
 
-  const auto& facdefgradin = inelastic_->FacDefGradIn();
-  const auto& iFinjM = inelastic_->GetiFinj();
-  const int num_contributions = inelastic_->NumInelasticDefGrad();
+  const auto& facdefgradin = inelastic_->fac_def_grad_in();
+  const auto& iFinjM = inelastic_->geti_finj();
+  const int num_contributions = inelastic_->num_inelastic_def_grad();
 
   // check amount of factors the inelastic deformation gradient consists of and choose
   // implementation accordingly
@@ -737,7 +737,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::update()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::InelasticSource source,
+void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_od_stiff_mat(PAR::InelasticSource source,
     const Core::LinAlg::Matrix<3, 3>* const defgrad, const Core::LinAlg::Matrix<6, 9>& dSdiFin,
     Core::LinAlg::Matrix<6, 1>& dstressdx)
 {
@@ -745,17 +745,17 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
   dstressdx.clear();
 
   // References to vector of inelastic contributions and inelastic deformation gradients
-  const auto& facdefgradin = inelastic_->FacDefGradIn();
-  const auto& iFinjM = inelastic_->GetiFinj();
+  const auto& facdefgradin = inelastic_->fac_def_grad_in();
+  const auto& iFinjM = inelastic_->geti_finj();
 
   // number of contributions for this source
-  const int num_contributions = inelastic_->NumInelasticDefGrad();
+  const int num_contributions = inelastic_->num_inelastic_def_grad();
 
   // check number of factors the inelastic deformation gradient consists of and choose
   // implementation accordingly
   if (num_contributions == 1)
   {
-    facdefgradin[0].second->EvaluateODStiffMat(defgrad, iFinjM[0].second, dSdiFin, dstressdx);
+    facdefgradin[0].second->evaluate_od_stiff_mat(defgrad, iFinjM[0].second, dSdiFin, dstressdx);
   }
   else if (num_contributions > 1)
   {
@@ -810,7 +810,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
         // evaluate additional contribution to OD block by applying chain rule
         add_non_symmetric_product(1.0, producta, productb, diFindiFinj);
         dSdiFinj.multiply(1.0, dSdiFin, diFindiFinj, 0.0);
-        facdefgradin[i].second->EvaluateODStiffMat(defgrad, iFinjM[i].second, dSdiFinj, dstressdx);
+        facdefgradin[i].second->evaluate_od_stiff_mat(
+            defgrad, iFinjM[i].second, dSdiFinj, dstressdx);
       }
     }
   }
@@ -824,16 +825,16 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pre_evaluate(
     Teuchos::ParameterList& params, const int gp) const
 {
   // loop over all inelastic contributions
-  for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
-    inelastic_->FacDefGradIn()[p].second->pre_evaluate(params, gp);
+  for (int p = 0; p < inelastic_->num_inelastic_def_grad(); ++p)
+    inelastic_->fac_def_grad_in()[p].second->pre_evaluate(params, gp);
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::SetConcentrationGP(const double concentration)
+void Mat::MultiplicativeSplitDefgradElastHyper::set_concentration_gp(const double concentration)
 {
-  for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
-    inelastic_->FacDefGradIn()[p].second->SetConcentrationGP(concentration);
+  for (int p = 0; p < inelastic_->num_inelastic_def_grad(); ++p)
+    inelastic_->fac_def_grad_in()[p].second->set_concentration_gp(concentration);
 }
 
 /*--------------------------------------------------------------------*
@@ -846,10 +847,10 @@ void Mat::InelasticFactorsHandler::setup(Mat::PAR::MultiplicativeSplitDefgradEla
   // get inelastic deformation gradient factors and assign them to their source
   for (int inelastic_matnum : params->inel_defgradfacids_)
   {
-    auto inelastic_factor = Mat::InelasticDefgradFactors::Factory(inelastic_matnum);
+    auto inelastic_factor = Mat::InelasticDefgradFactors::factory(inelastic_matnum);
     if (inelastic_factor == Teuchos::null) FOUR_C_THROW("Failed to allocate!");
     std::pair<PAR::InelasticSource, Teuchos::RCP<Mat::InelasticDefgradFactors>> temppair(
-        inelastic_factor->GetInelasticSource(), inelastic_factor);
+        inelastic_factor->get_inelastic_source(), inelastic_factor);
     facdefgradin_.push_back(temppair);
   }
 
@@ -857,13 +858,13 @@ void Mat::InelasticFactorsHandler::setup(Mat::PAR::MultiplicativeSplitDefgradEla
 
   // safety checks
   // get the scatra structure control parameter list
-  const auto& ssicontrol = Global::Problem::Instance()->SSIControlParams();
+  const auto& ssicontrol = Global::Problem::instance()->ssi_control_params();
   if (Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
       Inpar::SSI::SolutionSchemeOverFields::ssi_Monolithic)
   {
     for (const auto& inelasitc_factor : facdefgradin_)
     {
-      const auto materialtype = inelasitc_factor.second->MaterialType();
+      const auto materialtype = inelasitc_factor.second->material_type();
       if ((materialtype != Core::Materials::mfi_lin_scalar_aniso) and
           (materialtype != Core::Materials::mfi_lin_scalar_iso) and
           (materialtype != Core::Materials::mfi_lin_temp_iso) and
@@ -896,7 +897,7 @@ void Mat::InelasticFactorsHandler::evaluate_inverse_inelastic_def_grad(
 
   for (int i = 0; i < 3; ++i) iFin_init_store(i, i) = 1.0;
 
-  for (int i = 0; i < NumInelasticDefGrad(); ++i)
+  for (int i = 0; i < num_inelastic_def_grad(); ++i)
   {
     // clear tmp variable
     iFinp.clear();

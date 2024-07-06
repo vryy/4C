@@ -140,14 +140,14 @@ namespace Discret
       };
 
       /// whether to write the element reference length
-      bool IsWriteRefLength() const
+      bool is_write_ref_length() const
       {
         check_init_setup();
         return write_ref_length_;
       };
 
       /// whether to write beam element GIDs.
-      bool IsWriteElementGID() const
+      bool is_write_element_gid() const
       {
         check_init_setup();
         return write_element_gid_;

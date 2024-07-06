@@ -80,7 +80,7 @@ namespace FSI
       /// empty destructor
       virtual ~SlideAleUtils() = default;
       /// remesh ALE corresponding
-      void Remeshing(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
+      void remeshing(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
           Teuchos::RCP<Core::FE::Discretization> fluiddis,     ///< fluid discretization
           Teuchos::RCP<Epetra_Vector> idispale,      ///< standard ALE interface displacement
           Teuchos::RCP<Epetra_Vector> iprojdispale,  ///< projected ALE interface displacement
@@ -89,19 +89,19 @@ namespace FSI
       );
 
       /// Compute new coupling matrices D and M for solid/fluid
-      void EvaluateMortar(Teuchos::RCP<Epetra_Vector> idispstruct,  ///< displacement of structure
-          Teuchos::RCP<Epetra_Vector> idispfluid,                   ///< (proj.) displacement of ale
-          Core::Adapter::CouplingMortar& coupsf                     ///< mortar adapter
+      void evaluate_mortar(Teuchos::RCP<Epetra_Vector> idispstruct,  ///< displacement of structure
+          Teuchos::RCP<Epetra_Vector> idispfluid,  ///< (proj.) displacement of ale
+          Core::Adapter::CouplingMortar& coupsf    ///< mortar adapter
       );
 
       /// Compute new coupling matrices D and M for solid/ale coupling
-      void EvaluateFluidMortar(Teuchos::RCP<Epetra_Vector> ima,  ///< displacement of structure
-          Teuchos::RCP<Epetra_Vector> isl                        ///< (proj.) displacement of ale
+      void evaluate_fluid_mortar(Teuchos::RCP<Epetra_Vector> ima,  ///< displacement of structure
+          Teuchos::RCP<Epetra_Vector> isl                          ///< (proj.) displacement of ale
       );
 
       /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after
       /// sliding
-      Teuchos::RCP<Epetra_Vector> InterpolateFluid(Teuchos::RCP<const Epetra_Vector>
+      Teuchos::RCP<Epetra_Vector> interpolate_fluid(Teuchos::RCP<const Epetra_Vector>
               uold  ///< fluid velocity in configuration before sliding
       );
 

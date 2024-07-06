@@ -37,7 +37,7 @@ void PARTICLEALGORITHM::ParticleResultTest::setup(
   particleengineinterface_ = particleengineinterface;
 }
 
-void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
+void PARTICLEALGORITHM::ParticleResultTest::test_special(
     Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract global particle id
@@ -191,15 +191,15 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
         FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
       // container contains current particle state
-      if (not container->HaveStoredState(particleState))
+      if (not container->have_stored_state(particleState))
         FOUR_C_THROW("state '%s' not found in container!",
             PARTICLEENGINE::EnumToStateName(particleState).c_str());
 
       // get pointer to particle state
-      const double* state = container->GetPtrToState(particleState, 0);
+      const double* state = container->get_ptr_to_state(particleState, 0);
 
       // get particle state dimension
-      int statedim = container->GetStateDim(particleState);
+      int statedim = container->get_state_dim(particleState);
 
       // get actual result
       actresult = state[statedim * index + dim];

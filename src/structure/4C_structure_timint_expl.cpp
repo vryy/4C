@@ -71,7 +71,7 @@ void Solid::TimIntExpl::setup()
   Solid::TimInt::setup();
 
   // explicit time integrators cannot handle constraints
-  if (conman_->HaveConstraint())
+  if (conman_->have_constraint())
     FOUR_C_THROW("Currently, constraints cannot be done with explicit time integration.");
 
   // explicit time integrators can only handle penalty contact / meshtying
@@ -79,7 +79,7 @@ void Solid::TimIntExpl::setup()
   {
     Inpar::CONTACT::SolvingStrategy soltype =
         Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
-            cmtbridge_->GetStrategy().Params(), "STRATEGY");
+            cmtbridge_->get_strategy().params(), "STRATEGY");
     if (soltype != Inpar::CONTACT::solution_penalty &&
         (soltype != Inpar::CONTACT::solution_multiscale))
       FOUR_C_THROW(
@@ -92,7 +92,7 @@ void Solid::TimIntExpl::setup()
     FOUR_C_THROW("Explicit time integration schemes cannot handle local co-ordinate systems");
 
   // explicit time integrators cannot handle nonlinear inertia forces
-  if (HaveNonlinearMass())
+  if (have_nonlinear_mass())
     FOUR_C_THROW(
         "Explicit time integration schemes cannot handle nonlinear inertia forces (flag: MASSLIN)");
 
@@ -112,7 +112,7 @@ void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation
   p.set("total time", time);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state(0, "displacement", dis);
   discret_->set_state(0, "displacement new", dis);
 
@@ -129,7 +129,7 @@ void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation
 void Solid::TimIntExpl::print_step()
 {
   // print out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     print_step_text(stdout);
   }

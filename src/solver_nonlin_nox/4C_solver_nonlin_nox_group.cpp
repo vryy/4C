@@ -117,7 +117,7 @@ void NOX::Nln::Group::computeX(
     const NOX::Nln::Group& grp, const ::NOX::Epetra::Vector& d, double step)
 {
   skipUpdateX_ = false;
-  prePostOperatorPtr_->runPreComputeX(grp, d.getEpetraVector(), step, *this);
+  prePostOperatorPtr_->run_pre_compute_x(grp, d.getEpetraVector(), step, *this);
 
   if (isPreconditioner()) sharedLinearSystem.getObject(this)->destroyPreconditioner();
 
@@ -125,7 +125,7 @@ void NOX::Nln::Group::computeX(
 
   if (not skipUpdateX_) xVector.update(1.0, grp.xVector, step, d);
 
-  prePostOperatorPtr_->runPostComputeX(grp, d.getEpetraVector(), step, *this);
+  prePostOperatorPtr_->run_post_compute_x(grp, d.getEpetraVector(), step, *this);
   return;
 }
 

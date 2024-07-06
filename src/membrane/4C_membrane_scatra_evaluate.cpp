@@ -22,21 +22,21 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
-  if (la.Size() > 1)
+  if (la.size() > 1)
   {
     // ask for the number of dofs of second dofset (scatra)
-    const int numscal = discretization.NumDof(1, Nodes()[0]);
+    const int numscal = discretization.num_dof(1, nodes()[0]);
 
-    if (la[1].Size() != Membrane<distype>::numnod_ * numscal)
+    if (la[1].size() != Membrane<distype>::numnod_ * numscal)
       FOUR_C_THROW("location vector length does not match!");
 
     // name of scalarfield
     std::string scalarfield = "scalarfield";
 
-    if (discretization.HasState(1, scalarfield))
+    if (discretization.has_state(1, scalarfield))
     {
       // get the scalar state
-      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(1, scalarfield);
+      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(1, scalarfield);
 
       if (scalarnp == Teuchos::null)
         FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
         double eta_gp = (Membrane<distype>::intpoints_).qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
-        Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, Shape());
+        Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, shape());
 
         // scalar at current gp
         std::vector<double> scalar_curr_gp(numscal, 0.0);

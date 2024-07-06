@@ -71,12 +71,12 @@ namespace
     EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate(variables, constants, component),
         6.4996477560000005e-11, 1e-14);
 
-    // test EvaluateDerivative wrt phi1
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
+    // test evaluate_derivative wrt phi1
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate_derivative(variables, constants, component)[0],
         3.42086724e-10, 1e-14);
 
-    // test EvaluateDerivative wrt phi2
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
+    // test evaluate_derivative wrt phi2
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate_derivative(variables, constants, component)[1],
         -1.0016939520000001e-07, 1e-14);
   }
 
@@ -93,12 +93,12 @@ namespace
     EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate(variables, constants, component),
         3.2792446508136922e-11, 1e-14);
 
-    // test EvaluateDerivative wrt phi1
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
+    // test evaluate_derivative wrt phi1
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate_derivative(variables, constants, component)[0],
         2.2805781600000004e-10, 1e-14);
 
-    // test EvaluateDerivative wrt phi2
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
+    // test evaluate_derivative wrt phi2
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate_derivative(variables, constants, component)[1],
         -4.1174493452973438e-08, 1e-14);
   }
 
@@ -115,12 +115,12 @@ namespace
     EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate(variables, constants, component),
         3.3233325598255571e-12, 1e-14);
 
-    // test EvaluateDerivative wrt phi1
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[0],
+    // test evaluate_derivative wrt phi1
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate_derivative(variables, constants, component)[0],
         3.4208672400000007e-11, 1e-14);
 
-    // test EvaluateDerivative wrt phi2
-    EXPECT_NEAR(LungOxygenExchangeLaw_->EvaluateDerivative(variables, constants, component)[1],
+    // test evaluate_derivative wrt phi2
+    EXPECT_NEAR(LungOxygenExchangeLaw_->evaluate_derivative(variables, constants, component)[1],
         -2.4885189707947446e-08, 1e-14);
   }
 
@@ -138,14 +138,14 @@ namespace
     EXPECT_NEAR(LungCarbonDioxideExchangeLaw_->evaluate(variables, constants, component),
         1.0687549509499465e-10, 1e-14);
 
-    // test EvaluateDerivative wrt phi1
+    // test evaluate_derivative wrt phi1
     EXPECT_NEAR(
-        LungCarbonDioxideExchangeLaw_->EvaluateDerivative(variables, constants, component)[2],
+        LungCarbonDioxideExchangeLaw_->evaluate_derivative(variables, constants, component)[2],
         -1.8312702239999997e-09, 1e-14);
 
-    // test EvaluateDerivative wrt phi2
+    // test evaluate_derivative wrt phi2
     EXPECT_NEAR(
-        LungCarbonDioxideExchangeLaw_->EvaluateDerivative(variables, constants, component)[3],
+        LungCarbonDioxideExchangeLaw_->evaluate_derivative(variables, constants, component)[3],
         2.4245157554249963e-09, 1e-14);
   }
 
@@ -162,14 +162,14 @@ namespace
     EXPECT_NEAR(LungCarbonDioxideExchangeLaw_->evaluate(variables, constants, component),
         1.0251136673522964e-10, 1e-14);
 
-    // test EvaluateDerivative wrt phi1
+    // test evaluate_derivative wrt phi1
     EXPECT_NEAR(
-        LungCarbonDioxideExchangeLaw_->EvaluateDerivative(variables, constants, component)[2],
+        LungCarbonDioxideExchangeLaw_->evaluate_derivative(variables, constants, component)[2],
         -1.8312702239999997e-09, 1e-14);
 
-    // test EvaluateDerivative wrt phi2
+    // test evaluate_derivative wrt phi2
     EXPECT_NEAR(
-        LungCarbonDioxideExchangeLaw_->EvaluateDerivative(variables, constants, component)[3],
+        LungCarbonDioxideExchangeLaw_->evaluate_derivative(variables, constants, component)[3],
         2.4245157554249963e-09, 1e-14);
   }
 

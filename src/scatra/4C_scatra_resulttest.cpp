@@ -34,29 +34,29 @@ void ScaTra::ScaTraResultTest::test_node(Input::LineDefinition& res, int& nerr, 
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != scatratimint_->discretization()->Name()) return;
+  if (dis != scatratimint_->discretization()->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(scatratimint_->discretization()->HaveGlobalNode(node));
+  int havenode(scatratimint_->discretization()->have_global_node(node));
   int isnodeofanybody(0);
-  scatratimint_->discretization()->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  scatratimint_->discretization()->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
     FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1,
-        scatratimint_->discretization()->Name().c_str());
+        scatratimint_->discretization()->name().c_str());
   }
   else
   {
-    if (scatratimint_->discretization()->HaveGlobalNode(node))
+    if (scatratimint_->discretization()->have_global_node(node))
     {
-      Core::Nodes::Node* actnode = scatratimint_->discretization()->gNode(node);
+      Core::Nodes::Node* actnode = scatratimint_->discretization()->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != scatratimint_->discretization()->Comm().MyPID()) return;
+      if (actnode->owner() != scatratimint_->discretization()->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
       std::string quantity;
@@ -86,12 +86,12 @@ double ScaTra::ScaTraResultTest::result_node(
   double result(0.);
 
   // extract row map from solution vector
-  const Epetra_BlockMap& phinpmap = scatratimint_->Phinp()->Map();
+  const Epetra_BlockMap& phinpmap = scatratimint_->phinp()->Map();
 
   // test result value of single scalar field
   if (quantity == "phi")
     result =
-        (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->discretization()->Dof(0, node, 0))];
+        (*scatratimint_->phinp())[phinpmap.LID(scatratimint_->discretization()->dof(0, node, 0))];
 
   // test result value for a system of scalars
   else if (!quantity.compare(0, 3, "phi"))
@@ -103,12 +103,12 @@ double ScaTra::ScaTraResultTest::result_node(
 
     // safety checks
     if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read species ID!");
-    if (scatratimint_->discretization()->NumDof(0, node) <= k)
+    if (scatratimint_->discretization()->num_dof(0, node) <= k)
       FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // extract result
     result =
-        (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->discretization()->Dof(0, node, k))];
+        (*scatratimint_->phinp())[phinpmap.LID(scatratimint_->discretization()->dof(0, node, k))];
   }
 
   // test domain or boundary flux
@@ -125,7 +125,7 @@ double ScaTra::ScaTraResultTest::result_node(
 
     // safety checks
     if (locator == suffix.c_str()) FOUR_C_THROW("Couldn't read species ID!");
-    if (scatratimint_->discretization()->NumDof(0, node) <= k)
+    if (scatratimint_->discretization()->num_dof(0, node) <= k)
       FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // read spatial dimension
@@ -145,39 +145,39 @@ double ScaTra::ScaTraResultTest::result_node(
 
     // extract result
     if (!quantity.compare(0, 12, "flux_domain_"))
-      result = ((*scatratimint_->FluxDomain())[dim])[phinpmap.LID(
-          scatratimint_->discretization()->Dof(0, node, k))];
+      result = ((*scatratimint_->flux_domain())[dim])[phinpmap.LID(
+          scatratimint_->discretization()->dof(0, node, k))];
     else
-      result = ((*scatratimint_->FluxBoundary())[dim])[phinpmap.LID(
-          scatratimint_->discretization()->Dof(0, node, k))];
+      result = ((*scatratimint_->flux_boundary())[dim])[phinpmap.LID(
+          scatratimint_->discretization()->dof(0, node, k))];
   }
 
   // test result values for biofilm growth (scatra structure and scatra fluid)
   else if (quantity == "scstr_growth_displx")
-    result = ((*scatratimint_->StrGrowth())[0])[phinpmap.LID(
-        scatratimint_->discretization()->Dof(0, node, 0))];
+    result = ((*scatratimint_->str_growth())[0])[phinpmap.LID(
+        scatratimint_->discretization()->dof(0, node, 0))];
   else if (quantity == "scstr_growth_disply")
-    result = ((*scatratimint_->StrGrowth())[1])[phinpmap.LID(
-        scatratimint_->discretization()->Dof(0, node, 0))];
+    result = ((*scatratimint_->str_growth())[1])[phinpmap.LID(
+        scatratimint_->discretization()->dof(0, node, 0))];
   else if (quantity == "scstr_growth_displz")
-    result = ((*scatratimint_->StrGrowth())[2])[phinpmap.LID(
-        scatratimint_->discretization()->Dof(0, node, 0))];
+    result = ((*scatratimint_->str_growth())[2])[phinpmap.LID(
+        scatratimint_->discretization()->dof(0, node, 0))];
   else if (quantity == "scfld_growth_displx")
-    result = ((*scatratimint_->FldGrowth())[0])[phinpmap.LID(
-        scatratimint_->discretization()->Dof(0, node, 0))];
+    result = ((*scatratimint_->fld_growth())[0])[phinpmap.LID(
+        scatratimint_->discretization()->dof(0, node, 0))];
   else if (quantity == "scfld_growth_disply")
-    result = ((*scatratimint_->FldGrowth())[1])[phinpmap.LID(
-        scatratimint_->discretization()->Dof(0, node, 0))];
+    result = ((*scatratimint_->fld_growth())[1])[phinpmap.LID(
+        scatratimint_->discretization()->dof(0, node, 0))];
   else if (quantity == "scfld_growth_displz")
-    result = ((*scatratimint_->FldGrowth())[2])[phinpmap.LID(
-        scatratimint_->discretization()->Dof(0, node, 0))];
+    result = ((*scatratimint_->fld_growth())[2])[phinpmap.LID(
+        scatratimint_->discretization()->dof(0, node, 0))];
 
   // test scatra-scatra interface layer thickness
   else if (quantity == "s2ilayerthickness")
   {
     // extract scatra-scatra interface meshtying strategy class
     const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> strategy =
-        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->Strategy());
+        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->strategy());
     if (strategy == Teuchos::null)
       FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
@@ -188,13 +188,13 @@ double ScaTra::ScaTraResultTest::result_node(
     {
       case Inpar::S2I::growth_evaluation_monolithic:
       {
-        s2igrowthvec = strategy->GrowthVarNp();
+        s2igrowthvec = strategy->growth_var_np();
         break;
       }
 
       case Inpar::S2I::growth_evaluation_semi_implicit:
       {
-        s2igrowthvec = strategy->GrowthVarN();
+        s2igrowthvec = strategy->growth_var_n();
         break;
       }
 
@@ -212,7 +212,7 @@ double ScaTra::ScaTraResultTest::result_node(
 
     // extract result
     result = (*s2igrowthvec)[scatratimint_->discretization()->dof_row_map(2)->LID(
-        scatratimint_->discretization()->Dof(2, node, 0))];
+        scatratimint_->discretization()->dof(2, node, 0))];
   }
 
   // catch unknown quantity strings
@@ -226,12 +226,12 @@ double ScaTra::ScaTraResultTest::result_node(
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node   fang 03/15 |
  *-------------------------------------------------------------------------------------*/
-void ScaTra::ScaTraResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void ScaTra::ScaTraResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only on specified discretization
   std::string disname;
   res.extract_string("DIS", disname);
-  if (disname == scatratimint_->discretization()->Name())
+  if (disname == scatratimint_->discretization()->name())
   {
     // extract name of quantity to be tested
     std::string quantity;
@@ -241,7 +241,7 @@ void ScaTra::ScaTraResultTest::TestSpecial(Input::LineDefinition& res, int& nerr
     const double result = result_special(quantity);
 
     // compare values on first processor
-    if (scatratimint_->discretization()->Comm().MyPID() == 0)
+    if (scatratimint_->discretization()->get_comm().MyPID() == 0)
     {
       const int err = compare_values(result, "SPECIAL", res);
       nerr += err;
@@ -264,11 +264,11 @@ double ScaTra::ScaTraResultTest::result_special(
   double result(0.);
 
   // number of Newton-Raphson iterations in last time step
-  if (quantity == "numiterlastnewton") result = (double)scatratimint_->IterNum();
+  if (quantity == "numiterlastnewton") result = (double)scatratimint_->iter_num();
 
   // number of outer coupling iterations in last time step
   else if (quantity == "numiterlastouter")
-    result = (double)scatratimint_->IterNumOuter();
+    result = (double)scatratimint_->iter_num_outer();
 
   // total values, mean values, relative L2 errors, or relative H1 errors of scalar fields in
   // subdomain or entire domain
@@ -340,9 +340,9 @@ double ScaTra::ScaTraResultTest::result_special(
       // extract map with relevant result from scalar transport time integrator
       const std::map<const int, std::vector<double>>* map(nullptr);
       if (!quantity.compare(0, 8, "totalphi"))
-        map = &scatratimint_->TotalScalars();
+        map = &scatratimint_->total_scalars();
       else
-        map = &scatratimint_->MeanScalars();
+        map = &scatratimint_->mean_scalars();
 
       // extract relevant result from map
       std::map<const int, std::vector<double>>::const_iterator iterator = map->find(domain);
@@ -361,21 +361,21 @@ double ScaTra::ScaTraResultTest::result_special(
       if (domain == -1)
       {
         if (!quantity.compare(0, 7, "L2error"))
-          result = (*scatratimint_->RelErrors())[species * 2];
+          result = (*scatratimint_->rel_errors())[species * 2];
         else
-          result = (*scatratimint_->RelErrors())[species * 2 + 1];
+          result = (*scatratimint_->rel_errors())[species * 2 + 1];
       }
 
       // error inside subdomain
       else
       {
         if (!quantity.compare(0, 7, "L2error"))
-          result = (*scatratimint_
-                         ->RelErrors())[domain * scatratimint_->NumDofPerNode() * 2 + species * 2];
-        else
           result =
               (*scatratimint_
-                      ->RelErrors())[domain * scatratimint_->NumDofPerNode() * 2 + species * 2 + 1];
+                      ->rel_errors())[domain * scatratimint_->num_dof_per_node() * 2 + species * 2];
+        else
+          result = (*scatratimint_->rel_errors())[domain * scatratimint_->num_dof_per_node() * 2 +
+                                                  species * 2 + 1];
       }
     }
   }
@@ -383,7 +383,7 @@ double ScaTra::ScaTraResultTest::result_special(
   // number of iterations performed by linear solver during last Newton-Raphson iteration
   else if (quantity == "numiterlastsolve")
   {
-    result = (double)scatratimint_->Strategy()->Solver().getNumIters();
+    result = (double)scatratimint_->strategy()->solver().get_num_iters();
   }
 
   // test parallel distribution of scatra-scatra coupling interface
@@ -404,19 +404,19 @@ double ScaTra::ScaTraResultTest::result_special(
     const int proc_num = std::stoi(proc_string);
 
     // extract processor ID
-    if (proc_num >= scatratimint_->discretization()->Comm().NumProc())
+    if (proc_num >= scatratimint_->discretization()->get_comm().NumProc())
       FOUR_C_THROW("Invalid processor ID!");
 
     // extract scatra-scatra interface meshtying strategy class
     const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> strategy =
-        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->Strategy());
+        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->strategy());
     if (strategy == Teuchos::null)
       FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
     // extract number of degrees of freedom owned by specified processor at specified scatra-scatra
     // coupling interface
     result = strategy->mortar_discretization(interface_num).dof_row_map()->NumMyElements();
-    scatratimint_->discretization()->Comm().Broadcast(&result, 1, proc_num);
+    scatratimint_->discretization()->get_comm().Broadcast(&result, 1, proc_num);
   }
 
   // test relaxation parameters for partitioned simulations
@@ -429,15 +429,15 @@ double ScaTra::ScaTraResultTest::result_special(
 
     // safety checks
     if (locator == index_string.c_str()) FOUR_C_THROW("Couldn't read parameter index!");
-    if (index >= scatratimint_->Omega().size()) FOUR_C_THROW("Invalid parameter index!");
+    if (index >= scatratimint_->omega().size()) FOUR_C_THROW("Invalid parameter index!");
 
     // extract result
-    result = scatratimint_->Omega()[index];
+    result = scatratimint_->omega()[index];
   }
 
   // test total number of time steps
   else if (!quantity.compare(0, 7, "numstep"))
-    result = scatratimint_->Step();
+    result = scatratimint_->step();
 
   // test domainintegral_ID
   else if (!quantity.compare(0, 15, "domainintegral_"))
@@ -447,10 +447,10 @@ double ScaTra::ScaTraResultTest::result_special(
     char* locator(nullptr);
     // extract domain ID
     int domain = strtol(index, &locator, 10);
-    if (domain < 0 || domain > (int)(scatratimint_->DomainIntegrals().size() - 1))
+    if (domain < 0 || domain > (int)(scatratimint_->domain_integrals().size() - 1))
       FOUR_C_THROW("Value for domain integral has to lie between 0 and %i",
-          (int)(scatratimint_->DomainIntegrals().size() - 1));
-    result = scatratimint_->DomainIntegrals()[domain];
+          (int)(scatratimint_->domain_integrals().size() - 1));
+    result = scatratimint_->domain_integrals()[domain];
   }
 
   // test boundaryintegral_ID
@@ -461,10 +461,10 @@ double ScaTra::ScaTraResultTest::result_special(
     char* locator(nullptr);
     // extract boundary ID
     int boundary = strtol(index, &locator, 10);
-    if (boundary < 0 || boundary > (int)(scatratimint_->BoundaryIntegrals().size() - 1))
+    if (boundary < 0 || boundary > (int)(scatratimint_->boundary_integrals().size() - 1))
       FOUR_C_THROW("Value for boundary integral has to lie between 0 and %i",
-          (int)(scatratimint_->DomainIntegrals().size() - 1));
-    result = scatratimint_->BoundaryIntegrals()[boundary];
+          (int)(scatratimint_->domain_integrals().size() - 1));
+    result = scatratimint_->boundary_integrals()[boundary];
   }
 
   // catch unknown quantity strings

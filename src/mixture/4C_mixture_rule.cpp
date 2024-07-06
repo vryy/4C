@@ -50,23 +50,23 @@ MIXTURE::PAR::MixtureRule::MixtureRule(const Core::Mat::PAR::Parameter::Data& ma
 MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::factory(int matid)
 {
   // for the sake of safety
-  if (Global::Problem::Instance()->Materials() == Teuchos::null)
+  if (Global::Problem::instance()->materials() == Teuchos::null)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
-  if (Global::Problem::Instance()->Materials()->Num() == 0)
+  if (Global::Problem::instance()->materials()->num() == 0)
   {
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
   // retrieve validated input line of material ID in question
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
 
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::mix_rule_function:
     {
@@ -128,7 +128,8 @@ void MIXTURE::MixtureRule::unpack_mixture_rule(
 void MIXTURE::MixtureRule::read_element(int numgp, Input::LineDefinition* linedef)
 {
   // Init must only be called once
-  if (has_read_element_) FOUR_C_THROW("ReadElement() is called multiple times. Just once allowed.");
+  if (has_read_element_)
+    FOUR_C_THROW("read_element() is called multiple times. Just once allowed.");
   numgp_ = numgp;
 
   has_read_element_ = true;
@@ -137,8 +138,8 @@ void MIXTURE::MixtureRule::read_element(int numgp, Input::LineDefinition* linede
 // Setup the mixture rule
 void MIXTURE::MixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
-  // Setup must be called after ReadElement()
-  if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before setup()!");
+  // Setup must be called after read_element()
+  if (!has_read_element_) FOUR_C_THROW("read_element() must be called before setup()!");
 
   // Setup must only be called once
   if (is_setup_) FOUR_C_THROW("setup() is called multiple times. Just once allowed.");

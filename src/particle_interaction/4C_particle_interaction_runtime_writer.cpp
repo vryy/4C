@@ -57,8 +57,8 @@ void ParticleInteraction::InteractionWriter::register_specific_runtime_output_wr
   std::shared_ptr<Core::IO::VisualizationManager> runtime_visualization_manager =
       std::make_shared<Core::IO::VisualizationManager>(
           Core::IO::VisualizationParametersFactory(
-              Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-              *Global::Problem::Instance()->OutputControlFile(), setuptime_),
+              Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+              *Global::Problem::instance()->output_control_file(), setuptime_),
           comm_, fieldname);
 
   // set the output writer object
@@ -74,7 +74,7 @@ void ParticleInteraction::InteractionWriter::register_specific_runtime_csv_write
 
   // set the csv writer object
   runtime_csvwriters_[fieldname] = std::make_shared<Core::IO::RuntimeCsvWriter>(
-      comm_.MyPID(), *Global::Problem::Instance()->OutputControlFile(), fieldname);
+      comm_.MyPID(), *Global::Problem::instance()->output_control_file(), fieldname);
 }
 
 void ParticleInteraction::InteractionWriter::write_particle_interaction_runtime_output(
@@ -88,7 +88,7 @@ void ParticleInteraction::InteractionWriter::write_particle_interaction_runtime_
     // data to be written preset in particle interaction evaluation
 
     // finalize everything and write all required files to filesystem
-    runtime_visualization_manager->WriteToDisk(time, step);
+    runtime_visualization_manager->write_to_disk(time, step);
   }
 
   // iterate over csv writer objects

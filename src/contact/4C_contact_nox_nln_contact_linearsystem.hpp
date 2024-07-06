@@ -116,7 +116,7 @@ namespace NOX
            *  "inactive" problem is solved directly by inverting the diagonal matrix.
            *
            *  \author hiermeier \date 04/17 */
-          void ExtractActiveBlocks(
+          void extract_active_blocks(
               Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
 
           /** \brief Set the original linear problem as sub-problem
@@ -124,7 +124,7 @@ namespace NOX
            *  This is the default case if no simple pseudo problem can be detected.
            *
            *  \author hiermeier \date 04/17 */
-          void SetOriginalSystem(
+          void set_original_system(
               Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
 
           /** \brief insert left hand side of the linear sub-problem into the global
@@ -137,7 +137,7 @@ namespace NOX
            *  \param[out] glhs: global left hand side vector
            *
            *  \author hiermeier \date 03/18 */
-          void InsertIntoGlobalLhs(Epetra_Vector& glhs) const;
+          void insert_into_global_lhs(Epetra_Vector& glhs) const;
 
           const LinearSystem& linsys_;
 

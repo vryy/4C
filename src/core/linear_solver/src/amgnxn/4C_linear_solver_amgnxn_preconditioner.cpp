@@ -39,7 +39,7 @@ Core::LinearSolver::AmGnxnPreconditioner::AmGnxnPreconditioner(Teuchos::Paramete
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Operator> Core::LinearSolver::AmGnxnPreconditioner::PrecOperator() const
+Teuchos::RCP<Epetra_Operator> Core::LinearSolver::AmGnxnPreconditioner::prec_operator() const
 {
   return p_;
 }
@@ -83,12 +83,12 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
 
   // Create own copy of the system matrix in order to allow reusing the preconditioner
   a_ = A;
-  a_ = a_->Clone(Core::LinAlg::Copy);
-  a_->Complete();
+  a_ = a_->clone(Core::LinAlg::Copy);
+  a_->complete();
 
   // Determine number of blocks
-  int NumBlocks = a_->Rows();
-  if (a_->Rows() != a_->Cols())
+  int NumBlocks = a_->rows();
+  if (a_->rows() != a_->cols())
     FOUR_C_THROW("The AMGnxn preconditioner works only for block square matrices");
 
   // Pick-up the input parameters
@@ -98,20 +98,20 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
   if (myInterface.get_preconditioner_type() == "AMG(BlockSmoother)")
   {
     p_ = Teuchos::rcp(
-        new AmGnxnOperator(a_, myInterface.GetNumPdes(), myInterface.GetNullSpacesDim(),
-            myInterface.GetNullSpacesData(), myInterface.get_preconditioner_params(),
-            myInterface.GetSmoothersParams(), myInterface.GetSmoothersParams()));
+        new AmGnxnOperator(a_, myInterface.get_num_pdes(), myInterface.get_null_spaces_dim(),
+            myInterface.get_null_spaces_data(), myInterface.get_preconditioner_params(),
+            myInterface.get_smoothers_params(), myInterface.get_smoothers_params()));
   }
   else if (myInterface.get_preconditioner_type() == "BlockSmoother(X)")
   {
-    p_ = Teuchos::rcp(new BlockSmootherOperator(a_, myInterface.GetNumPdes(),
-        myInterface.GetNullSpacesDim(), myInterface.GetNullSpacesData(),
-        myInterface.get_preconditioner_params(), myInterface.GetSmoothersParams()));
+    p_ = Teuchos::rcp(new BlockSmootherOperator(a_, myInterface.get_num_pdes(),
+        myInterface.get_null_spaces_dim(), myInterface.get_null_spaces_data(),
+        myInterface.get_preconditioner_params(), myInterface.get_smoothers_params()));
   }
   else if (myInterface.get_preconditioner_type() == "Merge_and_Ifpack")
   {
     p_ = Teuchos::rcp(new MergedOperator(
-        a_, myInterface.get_preconditioner_params(), myInterface.GetSmoothersParams()));
+        a_, myInterface.get_preconditioner_params(), myInterface.get_smoothers_params()));
   }
   else
     FOUR_C_THROW("Unknown preconditioner type: %s", myInterface.get_preconditioner_type().c_str());
@@ -344,11 +344,11 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
   if (!is_setup_flag_)
     FOUR_C_THROW("ApplyInverse cannot be called without a previous set up of the preconditioner");
 
-  const Core::LinAlg::MultiMapExtractor& range_ex = a_->RangeExtractor();
-  const Core::LinAlg::MultiMapExtractor& domain_ex = a_->DomainExtractor();
+  const Core::LinAlg::MultiMapExtractor& range_ex = a_->range_extractor();
+  const Core::LinAlg::MultiMapExtractor& domain_ex = a_->domain_extractor();
 
-  int NumBlocks = a_->Rows();
-  if (NumBlocks != a_->Cols()) FOUR_C_THROW("The block matrix has to be square");
+  int NumBlocks = a_->rows();
+  if (NumBlocks != a_->cols()) FOUR_C_THROW("The block matrix has to be square");
 
   AMGNxN::BlockedVector Xbl(NumBlocks);
   AMGNxN::BlockedVector Ybl(NumBlocks);
@@ -364,15 +364,15 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
 
     range_ex.extract_vector(X, i, *Xi);
     domain_ex.extract_vector(Y, i, *Yi);
-    Xbl.SetVector(Xi, i);
-    Ybl.SetVector(Yi, i);
+    Xbl.set_vector(Xi, i);
+    Ybl.set_vector(Yi, i);
   }
 
   if (v_ == Teuchos::null) FOUR_C_THROW("Null pointer. We cannot call the vcycle");
 
-  v_->Solve(Xbl, Ybl, true);
+  v_->solve(Xbl, Ybl, true);
 
-  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.GetVector(i)), i, Y);
+  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.get_vector(i)), i, Y);
 
   return 0;
 }
@@ -386,8 +386,8 @@ void Core::LinearSolver::AmGnxnOperator::setup()
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGnxn_Operator::Setup");
 
 
-  int NumBlocks = a_->Rows();
-  if (NumBlocks != a_->Cols()) FOUR_C_THROW("We spect a square matrix here");
+  int NumBlocks = a_->rows();
+  if (NumBlocks != a_->cols()) FOUR_C_THROW("We spect a square matrix here");
 
   // Extract the blockedMatrix
   Teuchos::RCP<AMGNxN::BlockedMatrix> Abl =
@@ -397,8 +397,8 @@ void Core::LinearSolver::AmGnxnOperator::setup()
     for (int j = 0; j < NumBlocks; j++)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(a_->Matrix(i, j), Core::LinAlg::View));
-      Abl->SetMatrix(Aij, i, j);
+          Teuchos::rcp(new Core::LinAlg::SparseMatrix(a_->matrix(i, j), Core::LinAlg::View));
+      Abl->set_matrix(Aij, i, j);
     }
   }
 
@@ -463,11 +463,11 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
     FOUR_C_THROW("ApplyInverse cannot be called without a previous set up of the preconditioner");
 
 
-  const Core::LinAlg::MultiMapExtractor& range_ex = a_->RangeExtractor();
-  const Core::LinAlg::MultiMapExtractor& domain_ex = a_->DomainExtractor();
+  const Core::LinAlg::MultiMapExtractor& range_ex = a_->range_extractor();
+  const Core::LinAlg::MultiMapExtractor& domain_ex = a_->domain_extractor();
 
-  int NumBlocks = a_->Rows();
-  if (NumBlocks != a_->Cols()) FOUR_C_THROW("The block matrix has to be square");
+  int NumBlocks = a_->rows();
+  if (NumBlocks != a_->cols()) FOUR_C_THROW("The block matrix has to be square");
 
   AMGNxN::BlockedVector Xbl(NumBlocks);
   AMGNxN::BlockedVector Ybl(NumBlocks);
@@ -480,16 +480,16 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
         Teuchos::rcp(new Epetra_MultiVector(*(domain_ex.Map(i)), NV));
     range_ex.extract_vector(X, i, *Xi);
     domain_ex.extract_vector(Y, i, *Yi);
-    Xbl.SetVector(Xi, i);
-    Ybl.SetVector(Yi, i);
+    Xbl.set_vector(Xi, i);
+    Ybl.set_vector(Yi, i);
   }
 
 
   if (s_ == Teuchos::null) FOUR_C_THROW("Null pointer. We cannot call the smoother");
 
-  s_->Solve(Xbl, Ybl, true);
+  s_->solve(Xbl, Ybl, true);
 
-  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.GetVector(i)), i, Y);
+  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.get_vector(i)), i, Y);
 
 
 
@@ -519,7 +519,7 @@ void Core::LinearSolver::BlockSmootherOperator::setup()
 
 
   // Prepare info
-  int NumBlocks = a_->Rows();
+  int NumBlocks = a_->rows();
   std::string smother_name = amgnxn_params_.get<std::string>("smoother", "BGS");
   std::vector<int> blocks(NumBlocks, 0);
   for (int i = 0; i < NumBlocks; i++) blocks[i] = i;
@@ -536,23 +536,23 @@ void Core::LinearSolver::BlockSmootherOperator::setup()
     for (int j = 0; j < NumBlocks; j++)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(a_->Matrix(i, j), Core::LinAlg::View));
-      Abl->SetMatrix(Aij, i, j);
+          Teuchos::rcp(new Core::LinAlg::SparseMatrix(a_->matrix(i, j), Core::LinAlg::View));
+      Abl->set_matrix(Aij, i, j);
     }
   }
 
   // smoother factory
   AMGNxN::SmootherFactory mySmootherCreator;
-  mySmootherCreator.SetOperator(Abl);
-  mySmootherCreator.SetParamsSmoother(smoothers_params_);
-  mySmootherCreator.SetLevel(0);
-  mySmootherCreator.SetBlocks(blocks);
-  mySmootherCreator.SetSmootherName(smother_name);
-  mySmootherCreator.SetVerbosity(verbosity);
+  mySmootherCreator.set_operator(Abl);
+  mySmootherCreator.set_params_smoother(smoothers_params_);
+  mySmootherCreator.set_level(0);
+  mySmootherCreator.set_blocks(blocks);
+  mySmootherCreator.set_smoother_name(smother_name);
+  mySmootherCreator.set_verbosity(verbosity);
   mySmootherCreator.set_null_space_all_blocks(null_space_blocks);
 
   // Create smoother
-  sbase_ = mySmootherCreator.Create();
+  sbase_ = mySmootherCreator.create();
   s_ = Teuchos::rcp_dynamic_cast<AMGNxN::BlockedSmoother>(sbase_);
   if (s_ == Teuchos::null)
     FOUR_C_THROW("We expect a blocked smoother. Fix the xml file defining the smoother");
@@ -640,7 +640,7 @@ void Core::LinearSolver::MergedOperator::setup()
   Teuchos::Time timer("", true);
   timer.reset();
 
-  asp_ = a_->Merge();
+  asp_ = a_->merge();
 
   double elaptime = timer.totalElapsedTime(true);
   if (a_->Comm().MyPID() == 0)
@@ -649,7 +649,7 @@ void Core::LinearSolver::MergedOperator::setup()
 
   // Safety check
   Teuchos::RCP<Epetra_Operator> Aop =
-      Teuchos::rcp_dynamic_cast<Epetra_Operator>(asp_->EpetraMatrix());
+      Teuchos::rcp_dynamic_cast<Epetra_Operator>(asp_->epetra_matrix());
   Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Aop);
   if (crsA == Teuchos::null) FOUR_C_THROW("Houston, something went wrong in merging the matrix");
 
@@ -706,7 +706,7 @@ int Core::LinearSolver::MergedOperator::ApplyInverse(
   if (s_ == Teuchos::null) FOUR_C_THROW("Null pointer. We cannot call the smoother");
 
   Epetra_MultiVector Ybis(Y.Map(), Y.NumVectors(), false);
-  s_->Apply(X, Ybis, true);
+  s_->apply(X, Ybis, true);
   Y.Update(1., Ybis, 0.);
 
   return 0;

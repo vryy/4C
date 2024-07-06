@@ -11,12 +11,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Shell7pLineType Discret::ELEMENTS::Shell7pLineType::instance_;
 
-Discret::ELEMENTS::Shell7pLineType& Discret::ELEMENTS::Shell7pLineType::Instance()
+Discret::ELEMENTS::Shell7pLineType& Discret::ELEMENTS::Shell7pLineType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pLineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pLineType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -26,11 +26,11 @@ Discret::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const 
     Core::Nodes::Node** nodes, Core::Elements::Element* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lline);
   // type of gaussian integration
-  switch (Shape())
+  switch (shape())
   {
     case Core::FE::CellType::line2:
       gaussrule_ = Core::FE::GaussRule1D::line_2point;
@@ -48,13 +48,13 @@ Discret::ELEMENTS::Shell7pLine::Shell7pLine(const Discret::ELEMENTS::Shell7pLine
 {
 }
 
-Core::Elements::Element* Discret::ELEMENTS::Shell7pLine::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Shell7pLine::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::Shell7pLine(*this);
   return newelement;
 }
 
-Core::FE::CellType Discret::ELEMENTS::Shell7pLine::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Shell7pLine::shape() const
 {
   switch (num_node())
   {

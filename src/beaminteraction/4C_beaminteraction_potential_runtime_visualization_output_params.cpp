@@ -23,8 +23,8 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRunt
     : isinit_(false),
       issetup_(false),
       visualization_parameters_(Core::IO::VisualizationParametersFactory(
-          Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-          *Global::Problem::Instance()->OutputControlFile(), restart_time)),
+          Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+          *Global::Problem::instance()->output_control_file(), restart_time)),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_forces_(false),

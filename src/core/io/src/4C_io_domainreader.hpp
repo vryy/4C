@@ -65,7 +65,7 @@ namespace Core::IO
     //! Destructor
     virtual ~DomainReader() = default;
     /// give the discretization this reader fills
-    Teuchos::RCP<Core::FE::Discretization> MyDis() const { return dis_; }
+    Teuchos::RCP<Core::FE::Discretization> my_dis() const { return dis_; }
 
    private:
     /*! \brief generate elements, partition node graph, create nodes

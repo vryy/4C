@@ -53,7 +53,7 @@ namespace Mortar
       /*! \brief Read and check meshtying/contact input parameters
        *
        * All specified contact-related input parameters are read from the
-       * Global::Problem::Instance() and stored into a local variable of
+       * Global::Problem::instance() and stored into a local variable of
        * type Teuchos::ParameterList. Invalid parameter combinations are
        * sorted out and throw a FOUR_C_THROW.
        *
@@ -74,7 +74,7 @@ namespace Mortar
        *
        * \author Popp
        */
-      void BuildInterfaces(const Teuchos::ParameterList& params,
+      void build_interfaces(const Teuchos::ParameterList& params,
           std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
 
@@ -89,7 +89,7 @@ namespace Mortar
        * \todo ToDo Get rid of poroslave and poromaster parameters.
        *
        * \author Popp */
-      Teuchos::RCP<CONTACT::MtAbstractStrategy> BuildStrategy(const Teuchos::ParameterList& params,
+      Teuchos::RCP<CONTACT::MtAbstractStrategy> build_strategy(const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const;
 
@@ -112,7 +112,7 @@ namespace Mortar
        * access to the class members, use the alternative call.
        *
        * \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::MtAbstractStrategy> BuildStrategy(
+      static Teuchos::RCP<CONTACT::MtAbstractStrategy> build_strategy(
           const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,

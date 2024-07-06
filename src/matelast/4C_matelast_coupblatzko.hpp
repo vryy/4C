@@ -86,7 +86,7 @@ namespace Mat
       /// @name Access material constants
       //@{
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_coupblatzko;
       }
@@ -94,7 +94,7 @@ namespace Mat
       //@}
 
       // add strain energy
-      void AddStrainEnergy(double& psi,  ///< strain energy function
+      void add_strain_energy(double& psi,  ///< strain energy function
           const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           const Core::LinAlg::Matrix<3, 1>&
@@ -124,23 +124,23 @@ namespace Mat
 
       /// add the derivatives of a coupled strain energy functions associated with a purely
       /// isochoric deformation
-      void AddCoupDerivVol(
+      void add_coup_deriv_vol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override;
 
       /// add young's modulus equivalent
-      void AddYoungsMod(double& young, double& shear, double& bulk) override
+      void add_youngs_mod(double& young, double& shear, double& bulk) override
       {
-        young += 2. * Mue() * (1. + Nue());
+        young += 2. * mue() * (1. + nue());
       };
 
       /// @name Access methods
       //@{
-      double Mue() const { return params_->mue_; }
-      double Nue() const { return params_->nue_; }
+      double mue() const { return params_->mue_; }
+      double nue() const { return params_->nue_; }
       //@}
 
       /// Indicator for formulation
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation

@@ -414,7 +414,7 @@ namespace Core::Gen
      *  @param[in] isdebug  bool value for activation/deactivation
      *
      *  @author hiermeier @date 07/17 */
-    void setDebugMode(bool isdebug) { base_type::setDebugMode(isdebug); }
+    void set_debug_mode(bool isdebug) { base_type::set_debug_mode(isdebug); }
 
    protected:
     /// access the internally stored data

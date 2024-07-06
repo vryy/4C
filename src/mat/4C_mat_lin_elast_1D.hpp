@@ -68,11 +68,11 @@ namespace Mat
   class LinElast1DType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "LinElast1DType"; }
+    std::string name() const override { return "LinElast1DType"; }
 
-    static LinElast1DType& Instance() { return instance_; };
+    static LinElast1DType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static LinElast1DType instance_;
@@ -83,39 +83,39 @@ namespace Mat
    public:
     explicit LinElast1D(Mat::PAR::LinElast1D* params);
 
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new LinElast1D(*this));
     }
 
     /// mass density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     /// elastic energy based on @p epsilon
     double evaluate_elastic_energy(const double epsilon) const
     {
-      return 0.5 * EvaluatePK2(epsilon) * epsilon;
+      return 0.5 * evaluate_p_k2(epsilon) * epsilon;
     }
 
     /// evaluate 2nd Piola-Kirchhoff stress based on @param epsilon (Green-Lagrange strain)
-    double EvaluatePK2(const double epsilon) const { return params_->youngs_ * epsilon; }
+    double evaluate_p_k2(const double epsilon) const { return params_->youngs_ * epsilon; }
 
     /// evaluate stiffness of material i.e. derivative of 2nd Piola Kirchhoff stress w.r.t.
     /// Green-Lagrange strain
-    double EvaluateStiffness() const { return params_->youngs_; }
+    double evaluate_stiffness() const { return params_->youngs_; }
 
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_linelast1D;
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return LinElast1DType::Instance().UniqueParObjectId();
+      return LinElast1DType::instance().unique_par_object_id();
     }
 
     void unpack(const std::vector<char>& data) override;
@@ -129,11 +129,11 @@ namespace Mat
   class LinElast1DGrowthType : public Core::Communication::ParObjectType
   {
    public:
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-    static LinElast1DGrowthType& Instance() { return instance_; }
+    static LinElast1DGrowthType& instance() { return instance_; }
 
-    std::string Name() const override { return "LinElast1DGrowthType"; }
+    std::string name() const override { return "LinElast1DGrowthType"; }
 
    private:
     static LinElast1DGrowthType instance_;
@@ -145,9 +145,9 @@ namespace Mat
     explicit LinElast1DGrowth(Mat::PAR::LinElast1DGrowth* params);
 
     /// growth proportional to amount of substance or to concentration
-    bool AmountPropGrowth() const { return growth_params_->amount_prop_growth_; }
+    bool amount_prop_growth() const { return growth_params_->amount_prop_growth_; }
 
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new LinElast1DGrowth(*this));
     }
@@ -155,24 +155,24 @@ namespace Mat
     double evaluate_elastic_energy(double def_grad, double conc) const;
 
     /// 2nd Piola-Kirchhoff stress based on @p def_grad and @p conc
-    double EvaluatePK2(double def_grad, double conc) const;
+    double evaluate_p_k2(double def_grad, double conc) const;
 
     /// stiffness, i.e. derivative of 2nd Piola-Kirchhoff stress w.r.t. @p def_grad based on @p
     /// def_grad and @p conc
-    double EvaluateStiffness(double def_grad, double conc) const;
+    double evaluate_stiffness(double def_grad, double conc) const;
 
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_linelast1D_growth;
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    Core::Mat::PAR::Parameter* Parameter() const override { return growth_params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return growth_params_; }
 
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return LinElast1DGrowthType::Instance().UniqueParObjectId();
+      return LinElast1DGrowthType::instance().unique_par_object_id();
     }
 
     void unpack(const std::vector<char>& data) override;

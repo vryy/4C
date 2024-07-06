@@ -57,23 +57,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Teuchos::RCP<Mat::Elastic::Summand> Mat::Elastic::Summand::Factory(int matnum)
+Teuchos::RCP<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum)
 {
   // for the sake of safety
-  if (Global::Problem::Instance()->Materials() == Teuchos::null)
+  if (Global::Problem::instance()->materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
 
   // yet another safety check
-  if (Global::Problem::Instance()->Materials()->Num() == 0)
+  if (Global::Problem::instance()->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
   // retrieve validated input line of material ID in question
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matnum);
+  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matnum);
 
   // construct structural tensor strategy for anisotropic materials
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::mes_isoanisoexpo:
     case Core::Materials::mes_isomuscleblemker:
@@ -90,7 +90,7 @@ Teuchos::RCP<Mat::Elastic::Summand> Mat::Elastic::Summand::Factory(int matnum)
       break;
   }
 
-  switch (curmat->Type())
+  switch (curmat->type())
   {
     case Core::Materials::mes_anisoactivestress_evolution:
     {
@@ -319,17 +319,17 @@ Teuchos::RCP<Mat::Elastic::Summand> Mat::Elastic::Summand::Factory(int matnum)
       return Teuchos::rcp(new ViscoPart(params));
     }
     default:
-      FOUR_C_THROW("cannot deal with type %d", curmat->Type());
+      FOUR_C_THROW("cannot deal with type %d", curmat->type());
   }
   return Teuchos::null;
 }
 
-void Mat::Elastic::Summand::AddShearMod(bool& haveshearmod, double& shearmod) const
+void Mat::Elastic::Summand::add_shear_mod(bool& haveshearmod, double& shearmod) const
 {
   FOUR_C_THROW("Mat::Elastic::Summand::AddShearMod: Add Shear Modulus not implemented - do so!");
 }
 
-int Mat::Elastic::Summand::UniqueParObjectId() const { return -1; }
+int Mat::Elastic::Summand::unique_par_object_id() const { return -1; }
 
 void Mat::Elastic::Summand::pack(Core::Communication::PackBuffer& data) const { return; }
 
@@ -337,7 +337,7 @@ void Mat::Elastic::Summand::unpack(const std::vector<char>& data) { return; };
 
 
 // Function which reads in the given fiber value due to the FIBER1 nomenclature
-void Mat::Elastic::Summand::ReadFiber(Input::LineDefinition* linedef, const std::string& specifier,
+void Mat::Elastic::Summand::read_fiber(Input::LineDefinition* linedef, const std::string& specifier,
     Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber1;
@@ -355,7 +355,7 @@ void Mat::Elastic::Summand::ReadFiber(Input::LineDefinition* linedef, const std:
 }
 
 // Function which reads in the given fiber value due to the CIR-AXI-RAD nomenclature
-void Mat::Elastic::Summand::ReadRadAxiCir(
+void Mat::Elastic::Summand::read_rad_axi_cir(
     Input::LineDefinition* linedef, Core::LinAlg::Matrix<3, 3>& locsys)
 {
   // read local (cylindrical) cosy-directions at current element
@@ -364,9 +364,9 @@ void Mat::Elastic::Summand::ReadRadAxiCir(
   Core::LinAlg::Matrix<3, 1> fiber_axi;
   Core::LinAlg::Matrix<3, 1> fiber_cir;
 
-  ReadFiber(linedef, "RAD", fiber_rad);
-  ReadFiber(linedef, "AXI", fiber_axi);
-  ReadFiber(linedef, "CIR", fiber_cir);
+  read_fiber(linedef, "RAD", fiber_rad);
+  read_fiber(linedef, "AXI", fiber_axi);
+  read_fiber(linedef, "CIR", fiber_cir);
 
   for (int i = 0; i < 3; ++i)
   {
@@ -380,7 +380,7 @@ void Mat::Elastic::Summand::evaluate_first_derivatives_aniso(Core::LinAlg::Matri
     Core::LinAlg::Matrix<3, 3> const& rcg, int gp, int eleGID)
 {
   bool isoprinc, isomod, anisoprinc, anisomod, viscogeneral;
-  SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
+  specify_formulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
   if (anisoprinc or anisomod)
   {
     FOUR_C_THROW(
@@ -394,7 +394,7 @@ void Mat::Elastic::Summand::evaluate_second_derivatives_aniso(
     int eleGID)
 {
   bool isoprinc, isomod, anisoprinc, anisomod, viscogeneral;
-  SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
+  specify_formulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
   if (anisoprinc or anisomod)
   {
     FOUR_C_THROW(

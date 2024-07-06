@@ -36,7 +36,7 @@ void Core::Geo::Cut::Output::GmshFacetsOnly(
   str << ".facets" << (not file_affix.empty() ? "_" + file_affix : "") << "_CUTFAIL.pos";
   std::string filename(Core::Geo::Cut::Output::GenerateGmshOutputFilename(str.str()));
 
-  std::cout << "\nFacets of element " << ele->Id() << " are written to " << filename << "\n";
+  std::cout << "\nFacets of element " << ele->id() << " are written to " << filename << "\n";
 
   std::ofstream file(filename.c_str());
   int count = 0;
@@ -156,8 +156,8 @@ char Core::Geo::Cut::Output::GmshElementType(Core::FE::CellType shape)
  *--------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::Output::GmshElementDump(std::ofstream& file, Element* ele, bool to_local)
 {
-  const std::vector<Node*>& nodes = ele->Nodes();
-  char elementtype = GmshElementType(ele->Shape());
+  const std::vector<Node*>& nodes = ele->nodes();
+  char elementtype = GmshElementType(ele->shape());
   GmshElementDump(file, nodes, elementtype, to_local, ele);
 }
 
@@ -182,7 +182,7 @@ void Core::Geo::Cut::Output::GmshElementDump(std::ofstream& file,
 #if CUT_DEVELOP
     file << p->Id();
 #else
-    file << p->Position();
+    file << p->position();
 #endif
   }
   file << "};\n";
@@ -238,7 +238,7 @@ void Core::Geo::Cut::Output::GmshSideDump(
 void Core::Geo::Cut::Output::GmshSideDump(
     std::ofstream& file, const Side* s, bool to_local, Element* ele)
 {
-  const std::vector<Node*>& nodes = s->Nodes();
+  const std::vector<Node*>& nodes = s->nodes();
   char elementtype;
   switch (nodes.size())
   {
@@ -297,7 +297,7 @@ void Core::Geo::Cut::Output::GmshTriSideDump(
   {
     Core::Geo::Cut::Point* p = points[i];
     if (i != 0) file << ",";
-    file << p->Position();
+    file << p->position();
   }
   file << "};\n";
 }
@@ -316,57 +316,57 @@ void Core::Geo::Cut::Output::GmshFacetDump(std::ofstream& file, Facet* facet,
 
   if (visualizationtype == "sides")
   {
-    if (facet->Points().size() == 1)
+    if (facet->points().size() == 1)
     {
       GmshFacetDump(file, facet, "points", print_all, to_local, ele);
       return;
     }
 
-    if (facet->Points().size() == 2)
+    if (facet->points().size() == 2)
     {
       GmshFacetDump(file, facet, "lines", print_all, to_local, ele);
       return;
     }
 
-    if (facet->IsTriangulated())
+    if (facet->is_triangulated())
     {
-      for (unsigned j = 0; j < facet->Triangulation().size(); ++j)
+      for (unsigned j = 0; j < facet->triangulation().size(); ++j)
       {
-        Core::Geo::Cut::Output::GmshTriSideDump(file, facet->Triangulation()[j], to_local, ele);
+        Core::Geo::Cut::Output::GmshTriSideDump(file, facet->triangulation()[j], to_local, ele);
       }
     }
-    else if (facet->IsFacetSplit())
+    else if (facet->is_facet_split())
     {
-      for (unsigned j = 0; j < facet->GetSplitCells().size(); ++j)
+      for (unsigned j = 0; j < facet->get_split_cells().size(); ++j)
       {
-        Core::Geo::Cut::Output::GmshTriSideDump(file, facet->GetSplitCells()[j], to_local, ele);
+        Core::Geo::Cut::Output::GmshTriSideDump(file, facet->get_split_cells()[j], to_local, ele);
       }
     }
-    else if (facet->belongs_to_level_set_side() || facet->CornerPoints().size() == 3 ||
-             facet->CornerPoints().size() == 4)
+    else if (facet->belongs_to_level_set_side() || facet->corner_points().size() == 3 ||
+             facet->corner_points().size() == 4)
     {
-      Core::Geo::Cut::Output::GmshTriSideDump(file, facet->CornerPoints(), to_local, ele);
+      Core::Geo::Cut::Output::GmshTriSideDump(file, facet->corner_points(), to_local, ele);
     }
-    else if (facet->CornerPoints().size() > 2 &&
+    else if (facet->corner_points().size() > 2 &&
              print_all)  // do mitpoint triangulation just for visualization reasons! (not usedfull
                          // if you want to check if a triangulation exists!)
     {
       std::vector<double> xmid(3, 0);
-      for (unsigned int i = 0; i < facet->CornerPoints().size(); ++i)
+      for (unsigned int i = 0; i < facet->corner_points().size(); ++i)
       {
-        for (unsigned int dim = 0; dim < 3; ++dim) xmid[dim] += facet->CornerPoints()[i]->X()[dim];
+        for (unsigned int dim = 0; dim < 3; ++dim) xmid[dim] += facet->corner_points()[i]->x()[dim];
       }
       for (unsigned int dim = 0; dim < 3; ++dim)
-        xmid[dim] = xmid[dim] / facet->CornerPoints().size();
+        xmid[dim] = xmid[dim] / facet->corner_points().size();
 
       ConcretePoint<3> midpoint = ConcretePoint<3>(-1, xmid.data(), nullptr, nullptr, 0.0);
 
       std::vector<Point*> tri;
-      for (unsigned int i = 0; i < facet->CornerPoints().size(); ++i)
+      for (unsigned int i = 0; i < facet->corner_points().size(); ++i)
       {
         tri.clear();
-        tri.push_back(facet->CornerPoints()[i]);
-        tri.push_back(facet->CornerPoints()[(i + 1) % facet->CornerPoints().size()]);
+        tri.push_back(facet->corner_points()[i]);
+        tri.push_back(facet->corner_points()[(i + 1) % facet->corner_points().size()]);
         tri.push_back(&midpoint);
         Core::Geo::Cut::Output::GmshTriSideDump(file, tri, to_local, ele);
       }
@@ -374,17 +374,17 @@ void Core::Geo::Cut::Output::GmshFacetDump(std::ofstream& file, Facet* facet,
   }
   else if (visualizationtype == "lines")
   {
-    for (std::size_t pidx = 0; pidx < facet->Points().size(); ++pidx)
+    for (std::size_t pidx = 0; pidx < facet->points().size(); ++pidx)
     {
-      Core::Geo::Cut::Output::GmshLineDump(file, facet->Points()[pidx],
-          facet->Points()[(pidx + 1) % facet->Points().size()], to_local, ele);
+      Core::Geo::Cut::Output::GmshLineDump(file, facet->points()[pidx],
+          facet->points()[(pidx + 1) % facet->points().size()], to_local, ele);
     }
   }
   else if (visualizationtype == "points")
   {
-    for (std::size_t pidx = 0; pidx < facet->Points().size(); ++pidx)
+    for (std::size_t pidx = 0; pidx < facet->points().size(); ++pidx)
       Core::Geo::Cut::Output::GmshPointDump(
-          file, facet->Points()[pidx], facet->SideId(), to_local, ele);
+          file, facet->points()[pidx], facet->side_id(), to_local, ele);
   }
   else
     FOUR_C_THROW("GmshFacetDump: unknown visualizationtype!");
@@ -396,7 +396,7 @@ void Core::Geo::Cut::Output::GmshFacetDump(std::ofstream& file, Facet* facet,
 void Core::Geo::Cut::Output::GmshVolumecellDump(std::ofstream& file, VolumeCell* VC,
     const std::string& visualizationtype, bool print_all, bool to_local, Element* ele)
 {
-  for (plain_facet_set::const_iterator j = VC->Facets().begin(); j != VC->Facets().end(); j++)
+  for (plain_facet_set::const_iterator j = VC->facets().begin(); j != VC->facets().end(); j++)
     GmshFacetDump(file, *j, visualizationtype, print_all, to_local, ele);
 }
 
@@ -432,28 +432,30 @@ void Core::Geo::Cut::Output::GmshCompleteCutElement(
 
   // write details of points
   GmshNewSection(file, "Points", true);
-  const std::vector<Point*>& ps = ele->Points();
+  const std::vector<Point*>& ps = ele->points();
   for (std::vector<Point*>::const_iterator its = ps.begin(); its != ps.end(); its++)
     GmshPointDump(file, *its, to_local, ele);
 
   // write details of cut sides
   GmshNewSection(file, "Cut_Facets", true);
-  const plain_facet_set& facets = ele->Facets();
+  const plain_facet_set& facets = ele->facets();
   for (plain_facet_set::const_iterator its = facets.begin(); its != facets.end(); its++)
   {
-    if ((*its)->ParentSide()->IsCutSide()) GmshFacetDump(file, *its, "sides", true, to_local, ele);
+    if ((*its)->parent_side()->is_cut_side())
+      GmshFacetDump(file, *its, "sides", true, to_local, ele);
   }
 
   // write details of cut sides
   GmshNewSection(file, "Ele_Facets", true);
   for (plain_facet_set::const_iterator its = facets.begin(); its != facets.end(); its++)
   {
-    if (!(*its)->ParentSide()->IsCutSide()) GmshFacetDump(file, *its, "sides", true, to_local, ele);
+    if (!(*its)->parent_side()->is_cut_side())
+      GmshFacetDump(file, *its, "sides", true, to_local, ele);
   }
 
   // write details of volumecells
   // GmshNewSection( file, "Volumecells",true);
-  const plain_volumecell_set& vcs = ele->VolumeCells();
+  const plain_volumecell_set& vcs = ele->volume_cells();
   for (plain_volumecell_set::const_iterator its = vcs.begin(); its != vcs.end(); its++)
   {
     GmshNewSection(file, "Volumecells", true);
@@ -463,12 +465,12 @@ void Core::Geo::Cut::Output::GmshCompleteCutElement(
 
   // write details of cut sides
   GmshNewSection(file, "Cut sides", false);
-  const plain_side_set& cutsides = ele->CutSides();
+  const plain_side_set& cutsides = ele->cut_sides();
   for (plain_side_set::const_iterator its = cutsides.begin(); its != cutsides.end(); its++)
     GmshSideDump(file, *its, to_local, ele);
   GmshEndSection(file);
 
-  if (ele->HasLevelSetSide())
+  if (ele->has_level_set_side())
   {
     GmshNewSection(file, "LevelSetValues");
     GmshLevelSetValueDump(file, ele, true, to_local);  // true -> dumps LS values at nodes as well.
@@ -491,7 +493,7 @@ void Core::Geo::Cut::Output::GmshCompleteCutElement(
 void Core::Geo::Cut::Output::GmshLineDump(
     std::ofstream& file, Core::Geo::Cut::Line* line, bool to_local, Element* ele)
 {
-  GmshLineDump(file, line->BeginPoint(), line->EndPoint(), to_local, ele);
+  GmshLineDump(file, line->begin_point(), line->end_point(), to_local, ele);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -544,8 +546,8 @@ void Core::Geo::Cut::Output::GmshEdgeDump(
   GmshLineDump(file, edge->BeginNode()->point(), edge->EndNode()->point(),
       edge->BeginNode()->point()->Id(), edge->EndNode()->point()->Id(), to_local, ele);
 #else
-  GmshLineDump(file, edge->BeginNode()->point(), edge->EndNode()->point(), edge->BeginNode()->Id(),
-      edge->EndNode()->Id(), to_local, ele);
+  GmshLineDump(file, edge->begin_node()->point(), edge->end_node()->point(),
+      edge->begin_node()->id(), edge->end_node()->id(), to_local, ele);
 #endif
 }
 
@@ -564,7 +566,7 @@ void Core::Geo::Cut::Output::GmshEdgeDump(std::ofstream& file, Core::Geo::Cut::E
 void Core::Geo::Cut::Output::GmshNodeDump(
     std::ofstream& file, Core::Geo::Cut::Node* node, bool to_local, Element* ele)
 {
-  GmshPointDump(file, node->point(), node->Id(), to_local, ele);
+  GmshPointDump(file, node->point(), node->id(), to_local, ele);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -597,7 +599,7 @@ void Core::Geo::Cut::Output::GmshPointDump(std::ofstream& file, Core::Geo::Cut::
 void Core::Geo::Cut::Output::GmshPointDump(
     std::ofstream& file, Core::Geo::Cut::Point* point, bool to_local, Element* ele)
 {
-  GmshPointDump(file, point, point->Position(), to_local, ele);
+  GmshPointDump(file, point, point->position(), to_local, ele);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -610,22 +612,22 @@ void Core::Geo::Cut::Output::GmshPointDump(
 void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
     std::ofstream& file, Element* ele, bool to_local)
 {
-  const plain_facet_set facets = ele->Facets();
+  const plain_facet_set facets = ele->facets();
   for (plain_facet_set::const_iterator j = facets.begin(); j != facets.end(); j++)
   {
     Facet* facet = *j;
 
     std::vector<double> normal_triag_midp;
-    if (facet->OnCutSide())
+    if (facet->on_cut_side())
     {
       Core::LinAlg::Matrix<3, 1> facet_triang_midpoint_coord(true);
 
-      if (facet->IsTriangulated())
+      if (facet->is_triangulated())
       {
-        std::vector<std::vector<Point*>> facet_triang = facet->Triangulation();
+        std::vector<std::vector<Point*>> facet_triang = facet->triangulation();
         Point* facet_triang_midpoint = (facet_triang[0])[0];
 
-        facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0, 0));
+        facet_triang_midpoint->coordinates(&facet_triang_midpoint_coord(0, 0));
         normal_triag_midp = ele->get_level_set_gradient(facet_triang_midpoint_coord);
 
         for (std::vector<std::vector<Point*>>::iterator k = facet_triang.begin();
@@ -639,7 +641,7 @@ void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
                i != facet_triang_tri.end(); i++)
           {
             Point* p1 = *i;
-            p1->Coordinates(cur.data());
+            p1->coordinates(cur.data());
             f_triang_tri_midp.update(1.0, cur, 1.0);
           }
           f_triang_tri_midp.scale(1.0 / facet_triang_tri.size());
@@ -652,11 +654,11 @@ void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
       else
       {
         Core::LinAlg::Matrix<3, 1> cur;
-        std::vector<Point*> pts = facet->Points();
+        std::vector<Point*> pts = facet->points();
         for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
         {
           Point* p1 = *i;
-          p1->Coordinates(cur.data());
+          p1->coordinates(cur.data());
           facet_triang_midpoint_coord.update(1.0, cur, 1.0);
         }
         facet_triang_midpoint_coord.scale(1.0 / pts.size());
@@ -667,12 +669,12 @@ void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
       GmshVector(file, facet_triang_midpoint_coord, normal, true, to_local, ele);
 
       // Write Corner-points of LS:
-      std::vector<Point*> cornerpts = facet->CornerPoints();
+      std::vector<Point*> cornerpts = facet->corner_points();
       for (std::vector<Point*>::iterator i = cornerpts.begin(); i != cornerpts.end(); i++)
       {
         Core::LinAlg::Matrix<3, 1> cornercoord;
         Point* p1 = *i;
-        p1->Coordinates(cornercoord.data());
+        p1->coordinates(cornercoord.data());
         std::vector<double> normal = ele->get_level_set_gradient(cornercoord);
 
         GmshVector(file, cornercoord, normal, true, to_local, ele);
@@ -692,18 +694,18 @@ void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
 void Core::Geo::Cut::Output::GmshLevelSetValueDump(
     std::ofstream& file, Element* ele, bool dumpnodevalues, bool to_local)
 {
-  const plain_facet_set facets = ele->Facets();
+  const plain_facet_set facets = ele->facets();
   for (plain_facet_set::const_iterator j = facets.begin(); j != facets.end(); j++)
   {
     Facet* facet = *j;
 
-    if (facet->OnCutSide())
+    if (facet->on_cut_side())
     {
       Core::LinAlg::Matrix<3, 1> facet_triang_midpoint_coord(true);
 
-      if (facet->IsTriangulated())
+      if (facet->is_triangulated())
       {
-        std::vector<std::vector<Point*>> facet_triang = facet->Triangulation();
+        std::vector<std::vector<Point*>> facet_triang = facet->triangulation();
         for (std::vector<std::vector<Point*>>::iterator k = facet_triang.begin();
              k != facet_triang.end(); k++)
         {
@@ -715,7 +717,7 @@ void Core::Geo::Cut::Output::GmshLevelSetValueDump(
                i != facet_triang_tri.end(); i++)
           {
             Point* p1 = *i;
-            p1->Coordinates(cur.data());
+            p1->coordinates(cur.data());
             f_triang_tri_midp.update(1.0, cur, 1.0);
           }
           f_triang_tri_midp.scale(1.0 / facet_triang_tri.size());
@@ -724,16 +726,16 @@ void Core::Geo::Cut::Output::GmshLevelSetValueDump(
           GmshScalar(file, f_triang_tri_midp, ls_value, to_local, ele);
         }
         Point* facet_triang_midpoint = (facet_triang[0])[0];
-        facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0, 0));
+        facet_triang_midpoint->coordinates(&facet_triang_midpoint_coord(0, 0));
       }
       else
       {
         Core::LinAlg::Matrix<3, 1> cur;
-        std::vector<Point*> pts = facet->Points();
+        std::vector<Point*> pts = facet->points();
         for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
         {
           Point* p1 = *i;
-          p1->Coordinates(cur.data());
+          p1->coordinates(cur.data());
           facet_triang_midpoint_coord.update(1.0, cur, 1.0);
         }
         facet_triang_midpoint_coord.scale(1.0 / pts.size());
@@ -746,14 +748,14 @@ void Core::Geo::Cut::Output::GmshLevelSetValueDump(
 
   if (dumpnodevalues)
   {
-    std::vector<Node*> nodes = ele->Nodes();
+    std::vector<Node*> nodes = ele->nodes();
     for (std::vector<Node*>::iterator j = nodes.begin(); j != nodes.end(); j++)
     {
       Node* node = *j;
       Core::LinAlg::Matrix<3, 1> node_coord(true);
-      node->Coordinates(&node_coord(0, 0));
+      node->coordinates(&node_coord(0, 0));
 
-      GmshScalar(file, node_coord, node->LSV(), to_local, ele);
+      GmshScalar(file, node_coord, node->lsv(), to_local, ele);
     }
   }
 }
@@ -784,12 +786,12 @@ void Core::Geo::Cut::Output::GmshLevelSetValueZeroSurfaceDump(
 {
   std::vector<double> lsv_value(8);
 
-  std::vector<Node*> nodes = ele->Nodes();
+  std::vector<Node*> nodes = ele->nodes();
   int mm = 0;
   for (std::vector<Node*>::iterator j = nodes.begin(); j != nodes.end(); j++)
   {
     Node* node = *j;
-    lsv_value[mm] = node->LSV();
+    lsv_value[mm] = node->lsv();
     mm++;
   }
 
@@ -849,17 +851,17 @@ void Core::Geo::Cut::Output::GmshLevelSetValueZeroSurfaceDump(
 void Core::Geo::Cut::Output::GmshLevelSetOrientationDump(
     std::ofstream& file, Element* ele, bool to_local)
 {
-  const plain_volumecell_set volcells = ele->VolumeCells();
+  const plain_volumecell_set volcells = ele->volume_cells();
   for (plain_volumecell_set::const_iterator i = volcells.begin(); i != volcells.end(); i++)
   {
     VolumeCell* volcell = *i;
 
-    if (volcell->Position() == Core::Geo::Cut::Point::inside) continue;
+    if (volcell->position() == Core::Geo::Cut::Point::inside) continue;
 
     //    const plain_facet_set facets = volcells->Facets();
 
-    volcell->BoundaryCells();
-    plain_boundarycell_set bc_cells = volcell->BoundaryCells();
+    volcell->boundary_cells();
+    plain_boundarycell_set bc_cells = volcell->boundary_cells();
     for (plain_boundarycell_set::iterator j = bc_cells.begin(); j != bc_cells.end(); ++j)
     {
       BoundaryCell* bc = *j;
@@ -870,10 +872,10 @@ void Core::Geo::Cut::Output::GmshLevelSetOrientationDump(
 
       Core::LinAlg::Matrix<3, 1> normal_bc;
       Core::LinAlg::Matrix<2, 1> xsi;
-      bc->Normal(xsi, normal_bc);
+      bc->normal(xsi, normal_bc);
 
-      std::vector<std::vector<double>> coords_bc = bc->CoordinatesV();
-      // const Core::LinAlg::SerialDenseMatrix ls_coordEp = bc->Coordinates();
+      std::vector<std::vector<double>> coords_bc = bc->coordinates_v();
+      // const Core::LinAlg::SerialDenseMatrix ls_coordEp = bc->coordinates();
       Core::LinAlg::Matrix<3, 1> ls_coord(true);
       ls_coord(0, 0) = coords_bc[1][0];
       ls_coord(1, 0) = coords_bc[1][1];
@@ -902,7 +904,7 @@ void Core::Geo::Cut::Output::GmshLevelSetOrientationDump(
 void Core::Geo::Cut::Output::GmshEqnPlaneNormalDump(
     std::ofstream& file, Element* ele, bool normalize, bool to_local)
 {
-  const plain_facet_set facets = ele->Facets();
+  const plain_facet_set facets = ele->facets();
   for (plain_facet_set::const_iterator j = facets.begin(); j != facets.end(); j++)
   {
     Facet* facet = *j;
@@ -917,14 +919,14 @@ void Core::Geo::Cut::Output::GmshEqnPlaneNormalDump(
     std::ofstream& file, Facet* facet, bool normalize, bool to_local, Element* ele)
 {
   Core::LinAlg::Matrix<3, 1> facet_triang_midpoint_coord(true);
-  std::vector<Point*> f_cornpts = facet->CornerPoints();
+  std::vector<Point*> f_cornpts = facet->corner_points();
   std::vector<double> eqn_plane = GetEqOfPlane(f_cornpts);
 
-  if (facet->IsTriangulated())
+  if (facet->is_triangulated())
   {
-    std::vector<std::vector<Point*>> facet_triang = facet->Triangulation();
+    std::vector<std::vector<Point*>> facet_triang = facet->triangulation();
     Point* facet_triang_midpoint = (facet_triang[0])[0];
-    facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0, 0));
+    facet_triang_midpoint->coordinates(&facet_triang_midpoint_coord(0, 0));
 
     for (std::vector<std::vector<Point*>>::iterator k = facet_triang.begin();
          k != facet_triang.end(); k++)
@@ -937,7 +939,7 @@ void Core::Geo::Cut::Output::GmshEqnPlaneNormalDump(
            i++)
       {
         Point* p1 = *i;
-        p1->Coordinates(cur.data());
+        p1->coordinates(cur.data());
         f_triang_tri_midp.update(1.0, cur, 1.0);
       }
       f_triang_tri_midp.scale(1.0 / facet_triang_tri.size());
@@ -948,11 +950,11 @@ void Core::Geo::Cut::Output::GmshEqnPlaneNormalDump(
   else
   {
     Core::LinAlg::Matrix<3, 1> cur;
-    std::vector<Point*> pts = facet->Points();
+    std::vector<Point*> pts = facet->points();
     for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
     {
       Point* p1 = *i;
-      p1->Coordinates(cur.data());
+      p1->coordinates(cur.data());
       facet_triang_midpoint_coord.update(1.0, cur, 1.0);
     }
     facet_triang_midpoint_coord.scale(1.0 / pts.size());
@@ -1063,7 +1065,7 @@ void Core::Geo::Cut::Output::GmshWriteCoords(
     std::ofstream& file, Point* point, bool to_local, Element* ele)
 {
   Core::LinAlg::Matrix<3, 1> coord;
-  point->Coordinates(coord.data());
+  point->coordinates(coord.data());
 
   GmshWriteCoords(file, coord, to_local, ele);
 }
@@ -1073,7 +1075,7 @@ void Core::Geo::Cut::Output::GmshWriteCoords(
  *----------------------------------------------------------------------------*/
 std::string Core::Geo::Cut::Output::GenerateGmshOutputFilename(const std::string& filename_tail)
 {
-  //  std::string filename = ::Global::Problem::Instance()->OutputControlFile()->file_name();
+  //  std::string filename = ::Global::Problem::instance()->OutputControlFile()->file_name();
   std::string filename("xxx");
   filename.append(filename_tail);
   return filename;
@@ -1111,7 +1113,7 @@ std::vector<double> Core::Geo::Cut::Output::GetEqOfPlane(std::vector<Point*> pts
   {
     Point* p1 = *k;
     Core::LinAlg::Matrix<3, 1> cur;
-    p1->Coordinates(cur.data());
+    p1->coordinates(cur.data());
 
     std::vector<double> pt(3);
 
@@ -1132,7 +1134,7 @@ std::vector<double> Core::Geo::Cut::Output::GetEqOfPlane(std::vector<Point*> pts
 void Core::Geo::Cut::Output::GmshElementCutTest(
     std::ofstream& file, Core::Geo::Cut::Element* ele, bool haslevelsetside)
 {
-  std::cout << "Write Cut Test for Element " << ele->Id() << " ... " << std::flush;
+  std::cout << "Write Cut Test for Element " << ele->id() << " ... " << std::flush;
 
   // default precision for coordinates
   file << std::setprecision(20);
@@ -1177,7 +1179,7 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
        << "\n";
   file << ""
        << "\n";
-  file << "void test_generated_" << ele->Id() << "()"
+  file << "void test_generated_" << ele->id() << "()"
        << "\n";
   file << "{"
        << "\n";
@@ -1194,21 +1196,21 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
        << "\n";
   file << "  int sidecount = 0;"
        << "\n";
-  file << "  std::vector<double> lsvs(" << ele->Nodes().size() << ");"
+  file << "  std::vector<double> lsvs(" << ele->nodes().size() << ");"
        << "\n";
 
   // --- get all neighboring elements and cutsides
   plain_element_set eles;
   plain_side_set csides;
-  for (std::vector<Side*>::const_iterator sit = ele->Sides().begin(); sit != ele->Sides().end();
+  for (std::vector<Side*>::const_iterator sit = ele->sides().begin(); sit != ele->sides().end();
        ++sit)
   {
-    for (plain_element_set::const_iterator eit = (*sit)->Elements().begin();
-         eit != (*sit)->Elements().end(); ++eit)
+    for (plain_element_set::const_iterator eit = (*sit)->elements().begin();
+         eit != (*sit)->elements().end(); ++eit)
     {
       eles.insert(*eit);
-      for (plain_side_set::const_iterator csit = (*eit)->CutSides().begin();
-           csit != (*eit)->CutSides().end(); ++csit)
+      for (plain_side_set::const_iterator csit = (*eit)->cut_sides().begin();
+           csit != (*eit)->cut_sides().end(); ++csit)
         csides.insert(*csit);
     }
   }
@@ -1227,7 +1229,7 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
       file << ""
            << "\n";
       Side* s = *i;
-      const std::vector<Node*>& side_nodes = s->Nodes();
+      const std::vector<Node*>& side_nodes = s->nodes();
       int nodelid = -1;
       file << "    nids.clear();"
            << "\n";
@@ -1237,10 +1239,10 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
         Node* n = *j;
         for (int dim = 0; dim < 3; ++dim)
         {
-          file << "    tri3_xyze(" << dim << "," << nodelid << ") = " << n->point()->X()[dim] << ";"
+          file << "    tri3_xyze(" << dim << "," << nodelid << ") = " << n->point()->x()[dim] << ";"
                << "\n";
         }
-        file << "    nids.push_back( " << n->Id() << " );"
+        file << "    nids.push_back( " << n->id() << " );"
              << "\n";
       }
       file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, "
@@ -1254,9 +1256,9 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
   {
     file << "  ci.AddLevelSetSide(1);"
          << "\n";
-    for (std::size_t i = 0; i < ele->Nodes().size(); ++i)
+    for (std::size_t i = 0; i < ele->nodes().size(); ++i)
     {
-      file << "  lsvs[" << i << "] = " << ele->Nodes()[i]->LSV() << ";"
+      file << "  lsvs[" << i << "] = " << ele->nodes()[i]->lsv() << ";"
            << "\n";
     }
   }
@@ -1268,32 +1270,32 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
     Element* aele = *eit;
     file << "  {"
          << "\n";
-    file << "  LinAlg::SerialDenseMatrix hex" << aele->Nodes().size() << "_xyze( 3, "
-         << aele->Nodes().size() << " );"
+    file << "  LinAlg::SerialDenseMatrix hex" << aele->nodes().size() << "_xyze( 3, "
+         << aele->nodes().size() << " );"
          << "\n";
     file << ""
          << "\n";
     file << "    nids.clear();"
          << "\n";
-    for (std::size_t i = 0; i < aele->Nodes().size(); ++i)
+    for (std::size_t i = 0; i < aele->nodes().size(); ++i)
     {
       for (unsigned dim = 0; dim < 3; ++dim)
       {
-        file << "  hex8_xyze(" << dim << "," << i << ") = " << aele->Nodes()[i]->point()->X()[dim]
+        file << "  hex8_xyze(" << dim << "," << i << ") = " << aele->nodes()[i]->point()->x()[dim]
              << ";"
              << "\n";
       }
-      file << "  nids.push_back( " << aele->Nodes()[i]->Id() << " );"
+      file << "  nids.push_back( " << aele->nodes()[i]->id() << " );"
            << "\n";
     }
     file << ""
          << "\n";
     if (not haslevelsetside)
-      file << "  intersection.add_element( " << aele->Id()
+      file << "  intersection.add_element( " << aele->id()
            << ", nids, hex8_xyze, Core::FE::CellType::hex8);"
            << "\n";
     else
-      file << "  intersection.add_element( " << aele->Id()
+      file << "  intersection.add_element( " << aele->id()
            << ", nids, hex8_xyze, Core::FE::CellType::hex8, &lsvs[0], false );"
            << "\n";
     file << "  }"
@@ -1394,7 +1396,7 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
          << "\n";
     file << "      mesh.DumpGmsh(\"Cuttest_Debug_Output.pos\");"
          << "\n";
-    file << "      intersection.CutMesh().GetElement(1)->DebugDump();"
+    file << "      intersection.CutMesh().get_element(1)->DebugDump();"
          << "\n";
     file << "      FOUR_C_THROW(\"volume predicted by either one of the method is wrong\");"
          << "\n";
@@ -1416,25 +1418,25 @@ void Core::Geo::Cut::Output::DebugDump_ThreePointsOnEdge(
   std::ofstream file("three_points_on_the_edge.pos");
   Core::Geo::Cut::Output::GmshSideDump(file, first, std::string("FirstSide"));
   Core::Geo::Cut::Output::GmshSideDump(file, second, std::string("SecondSide"));
-  file << "// Edge is " << e->BeginNode()->point() << "->" << e->EndNode()->point() << std::endl;
+  file << "// Edge is " << e->begin_node()->point() << "->" << e->end_node()->point() << std::endl;
   Core::Geo::Cut::Output::GmshEdgeDump(file, e, std::string("NotTouchedEdge"));
   Core::Geo::Cut::Output::GmshPointDump(
-      file, p, p->Id(), std::string("NotTouchedPoint"), false, nullptr);
+      file, p, p->id(), std::string("NotTouchedPoint"), false, nullptr);
   for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
   {
     std::stringstream point_name;
     point_name << "CutPoint" << std::distance(cut.begin(), it);
-    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, nullptr);
+    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->id(), point_name.str(), false, nullptr);
     (*it)->dump_connectivity_info();
   }
 
-  const PointPositionSet& edge_cut_points = e->CutPoints();
+  const PointPositionSet& edge_cut_points = e->cut_points();
   for (PointPositionSet::const_iterator it = edge_cut_points.begin(); it != edge_cut_points.end();
        ++it)
   {
     std::stringstream point_name;
     point_name << "EdgeCutPoint" << std::distance(edge_cut_points.begin(), it);
-    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, nullptr);
+    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->id(), point_name.str(), false, nullptr);
   }
   file.close();
 }
@@ -1447,9 +1449,9 @@ void Core::Geo::Cut::Output::DebugDump_MoreThanTwoIntersectionPoints(
   for (std::vector<Point*>::const_iterator it = point_stack.begin(); it != point_stack.end(); ++it)
   {
     std::stringstream section_name;
-    section_name << "Point" << (*it)->Id();
+    section_name << "Point" << (*it)->id();
     Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
-    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->Id(), false, nullptr);
+    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->id(), false, nullptr);
     Core::Geo::Cut::Output::GmshEndSection(file, false);
 #if CUT_CREATION_INFO
     const std::pair<Side*, Edge*>& cu_pair = std::make_pair(other, edge);
@@ -1475,7 +1477,7 @@ void Core::Geo::Cut::Output::DebugDump_MoreThanTwoIntersectionPoints(
     {
       if (*it != *jt)
       {
-        std::cout << "Diference between " << (*it)->Id() << " and " << (*jt)->Id() << " is "
+        std::cout << "Diference between " << (*it)->id() << " and " << (*jt)->id() << " is "
                   << Core::Geo::Cut::DistanceBetweenPoints(*jt, *it) << std::endl;
       }
     }
@@ -1494,7 +1496,7 @@ void Core::Geo::Cut::Output::DebugDump_MultipleCutPointsSpecial(Side* first, Sid
   {
     std::stringstream pname;
     pname << "CutPoint" << std::distance(cut.begin(), it);
-    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, nullptr);
+    Core::Geo::Cut::Output::GmshPointDump(file, *it, (*it)->id(), pname.str(), false, nullptr);
     (*it)->dump_connectivity_info();
   }
   file.close();
@@ -1502,12 +1504,12 @@ void Core::Geo::Cut::Output::DebugDump_MultipleCutPointsSpecial(Side* first, Sid
   std::cout << "Collected " << collected_points.size() << " points " << std::endl;
   for (PointSet::const_iterator it = collected_points.begin(); it != collected_points.end(); ++it)
   {
-    std::cout << (*it)->Id() << "  " << std::endl;
+    std::cout << (*it)->id() << "  " << std::endl;
   }
   std::cout << "Totally there are  " << cut.size() << " points " << std::endl;
   for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
   {
-    std::cout << (*it)->Id() << "  " << std::endl;
+    std::cout << (*it)->id() << "  " << std::endl;
   }
   std::cout << "Got " << new_lines.size() << " cut lines"
             << " for " << cut.size() << " cut points\n";

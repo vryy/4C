@@ -42,7 +42,7 @@ namespace FLD
     /*!
     \brief return scheme-specific time integration parameter
     */
-    double TimIntParam() const override { return 0.0; };
+    [[nodiscard]] double tim_int_param() const override { return 0.0; };
 
     /*!
     \brief read restart data

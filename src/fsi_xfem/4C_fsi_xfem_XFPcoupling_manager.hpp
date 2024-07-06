@@ -48,18 +48,18 @@ namespace XFEM
 
     //! Initializes the couplings (done at the beginning of the algorithm after fields have their
     //! state for timestep n)
-    void InitCouplingStates() override;
+    void init_coupling_states() override;
 
-    void SetCouplingStates() override;
+    void set_coupling_states() override;
 
-    void AddCouplingMatrix(
+    void add_coupling_matrix(
         Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
-    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me,
-        double scaling) override;
+    void add_coupling_rhs(Teuchos::RCP<Epetra_Vector> rhs,
+        const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep)
-    void Update(double scaling) override;
+    void update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
     void output(Core::IO::DiscretizationWriter& writer) override;

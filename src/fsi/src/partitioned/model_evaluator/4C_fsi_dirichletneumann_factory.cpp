@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorithm(
+Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorithm(
     const Epetra_Comm& comm, const Teuchos::ParameterList& fsidyn)
 {
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
@@ -33,7 +33,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
   switch (method)
   {
     case Inpar::FSI::DirichletNeumannSlideale:
-      switch (Global::Problem::Instance()->GetProblemType())
+      switch (Global::Problem::instance()->get_problem_type())
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
@@ -54,7 +54,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
       }
       break;
     case Inpar::FSI::DirichletNeumannVolCoupl:
-      switch (Global::Problem::Instance()->GetProblemType())
+      switch (Global::Problem::instance()->get_problem_type())
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
@@ -75,7 +75,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
       }
       break;
     case Inpar::FSI::DirichletNeumann:
-      switch (Global::Problem::Instance()->GetProblemType())
+      switch (Global::Problem::instance()->get_problem_type())
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):

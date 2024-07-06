@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>*
-Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -31,7 +31,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::Instance(
             new ScaTraEleUtilsElchScl<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -48,7 +48,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::ScaTraEleUtilsElchScl(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
+void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::mat_elch_mat(
     Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
     Inpar::ElCh::DiffCondMat& diffcondmat)
@@ -57,22 +57,22 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
   const auto elchmat = Teuchos::rcp_static_cast<const Mat::ElchMat>(material);
 
   // safety check
-  if (elchmat->NumPhase() != 1)
+  if (elchmat->num_phase() != 1)
     FOUR_C_THROW("Can only have a single electrolyte phase at the moment!");
 
   // extract electrolyte phase
-  const auto elchphase = elchmat->PhaseById(elchmat->PhaseID(0));
+  const auto elchphase = elchmat->phase_by_id(elchmat->phase_id(0));
 
-  if (elchphase->MaterialType() == Core::Materials::m_elchphase)
+  if (elchphase->material_type() == Core::Materials::m_elchphase)
   {
     // evaluate electrolyte phase
-    MatElchPhase(elchphase, concentrations, temperature, diffmanager, diffcondmat);
+    mat_elch_phase(elchphase, concentrations, temperature, diffmanager, diffcondmat);
   }
   else
     FOUR_C_THROW("Invalid material type!");
 }
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
+void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::mat_scl(
     Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager)
 {
@@ -80,20 +80,20 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
   const auto matscl = Teuchos::rcp_static_cast<const Mat::Scl>(material);
 
   // valence of ionic species
-  diffmanager->SetValence(matscl->Valence(), 0);
+  diffmanager->set_valence(matscl->valence(), 0);
 
   // set constant anion concentration (=bulk concentration of cations)
-  diffmanager->SetBulkConc(matscl->BulkConcentration());
+  diffmanager->set_bulk_conc(matscl->bulk_concentration());
 
   // set concentration dependent conductivity of cations
-  diffmanager->SetCond(matscl->compute_conductivity(concentration, temperature));
+  diffmanager->set_cond(matscl->compute_conductivity(concentration, temperature));
 
   // derivative of electronic conductivity w.r.t. concentration
-  diffmanager->SetConcDerivCond(
+  diffmanager->set_conc_deriv_cond(
       matscl->compute_concentration_derivative_of_conductivity(concentration, temperature), 0);
 
   // diffusion coefficient of cations
-  diffmanager->SetIsotropicDiff(
+  diffmanager->set_isotropic_diff(
       matscl->compute_diffusion_coefficient(concentration, temperature), 0);
 
   // derivation of concentration depending diffusion coefficient wrt concentration
@@ -102,10 +102,10 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
       0, 0);
 
   // Susceptibility of background lattice
-  diffmanager->SetSusceptibility(matscl->compute_susceptibility());
+  diffmanager->set_susceptibility(matscl->compute_susceptibility());
 
   // Permittivity based on susceptibility
-  diffmanager->SetPermittivity(matscl->ComputePermittivity());
+  diffmanager->set_permittivity(matscl->compute_permittivity());
 
   // derivation of concentration dependent diffusion coefficient wrt temperature
   diffmanager->set_temp_deriv_iso_diff_coef(
@@ -113,19 +113,19 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
       0, 0);
 
   // concentration dependent transference number
-  diffmanager->SetTransNum(matscl->compute_transference_number(concentration), 0);
+  diffmanager->set_trans_num(matscl->compute_transference_number(concentration), 0);
 
   // derivation of concentration dependent transference number wrt all ionic species
-  diffmanager->SetDerivTransNum(matscl->compute_first_deriv_trans(concentration), 0, 0);
+  diffmanager->set_deriv_trans_num(matscl->compute_first_deriv_trans(concentration), 0, 0);
 
   // derivative of electronic conductivity w.r.t. temperature
-  diffmanager->SetTempDerivCond(
+  diffmanager->set_temp_deriv_cond(
       matscl->compute_temperature_derivative_of_conductivity(concentration, temperature), 0);
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
+void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::mat_elch_phase(
     Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
     Inpar::ElCh::DiffCondMat& diffcondmat)
@@ -134,22 +134,22 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
   const auto matelchphase = Teuchos::rcp_static_cast<const Mat::ElchPhase>(material);
 
   // set porosity
-  diffmanager->SetPhasePoro(matelchphase->Epsilon(), 0);
+  diffmanager->set_phase_poro(matelchphase->epsilon(), 0);
 
   // set tortuosity
-  diffmanager->SetPhaseTort(matelchphase->Tortuosity(), 0);
+  diffmanager->set_phase_tort(matelchphase->tortuosity(), 0);
 
   // loop over materials within electrolyte phase
-  for (int imat = 0; imat < matelchphase->NumMat(); ++imat)
+  for (int imat = 0; imat < matelchphase->num_mat(); ++imat)
   {
-    const auto elchPhaseMaterial = matelchphase->MatById(matelchphase->MatID(imat));
+    const auto elchPhaseMaterial = matelchphase->mat_by_id(matelchphase->mat_id(imat));
 
-    switch (elchPhaseMaterial->MaterialType())
+    switch (elchPhaseMaterial->material_type())
     {
       case Core::Materials::m_scl:
       {
         diffcondmat = Inpar::ElCh::diffcondmat_scl;
-        MatScl(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
+        mat_scl(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
         break;
       }
       default:

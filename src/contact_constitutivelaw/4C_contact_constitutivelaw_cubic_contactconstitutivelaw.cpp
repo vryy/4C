@@ -48,17 +48,17 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::CubicConstitutiveLaw(
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->GetOffset() > 0)
+  if (gap + params_->get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = 1.0;
   gap = -gap;
   result = -1.0;
-  result *= params_->Getdata() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) *
-                (gap - params_->GetOffset()) +
-            params_->GetB() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) +
-            params_->GetC() * (gap - params_->GetOffset()) + params_->GetD();
+  result *= params_->getdata() * (gap - params_->get_offset()) * (gap - params_->get_offset()) *
+                (gap - params_->get_offset()) +
+            params_->get_b() * (gap - params_->get_offset()) * (gap - params_->get_offset()) +
+            params_->get_c() * (gap - params_->get_offset()) + params_->get_d();
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
@@ -68,16 +68,16 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONT
 /*----------------------------------------------------------------------*
  |  Evaluate derivative of the contact constitutive law|
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::EvaluateDeriv(
+double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->GetOffset() > 0)
+  if (gap + params_->get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
-  return 3 * params_->Getdata() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) +
-         2 * params_->GetB() * (gap - params_->GetOffset()) + params_->GetC();
+  return 3 * params_->getdata() * (gap - params_->get_offset()) * (gap - params_->get_offset()) +
+         2 * params_->get_b() * (gap - params_->get_offset()) + params_->get_c();
 }
 
 FOUR_C_NAMESPACE_CLOSE

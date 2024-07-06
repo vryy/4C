@@ -24,18 +24,18 @@ XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
   return;
 }
 
-int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const Core::Nodes::Node &node) const
+int XFEM::XFEMTransparentIndependentDofSet::num_dof_per_node(const Core::Nodes::Node &node) const
 {
   if (wizard_ != Teuchos::null)
   {
-    Core::Geo::Cut::Node *n = wizard_->GetNode(node.Id());
+    Core::Geo::Cut::Node *n = wizard_->get_node(node.id());
     if (n != nullptr)
     {
-      int numdofpernode = Core::DOFSets::DofSet::NumDofPerNode(node);
-      return numdofpernode * n->NumDofSets();
+      int numdofpernode = Core::DOFSets::DofSet::num_dof_per_node(node);
+      return numdofpernode * n->num_dof_sets();
     }
   }
-  return Core::DOFSets::DofSet::NumDofPerNode(node);
+  return Core::DOFSets::DofSet::num_dof_per_node(node);
 }
 
 FOUR_C_NAMESPACE_CLOSE

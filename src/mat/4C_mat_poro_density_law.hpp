@@ -35,7 +35,7 @@ namespace Mat
           ) = 0;
 
       /// compute current density
-      virtual double ComputeCurDensity(
+      virtual double compute_cur_density(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
           ) = 0;
@@ -56,10 +56,10 @@ namespace Mat
           ) = 0;
 
       /// return inverse bulkmodulus (=compressibility)
-      virtual double InvBulkmodulus() const = 0;
+      virtual double inv_bulkmodulus() const = 0;
 
       /// factory method
-      static Mat::PAR::PoroDensityLaw* CreateDensityLaw(int matID);
+      static Mat::PAR::PoroDensityLaw* create_density_law(int matID);
     };
 
     //! class for constant density law
@@ -83,7 +83,7 @@ namespace Mat
       };
 
       /// compute current density
-      double ComputeCurDensity(
+      double compute_cur_density(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
           ) override
@@ -116,7 +116,7 @@ namespace Mat
       };
 
       /// return inverse bulkmodulus (=compressibility)
-      double InvBulkmodulus() const override { return 0.0; };
+      double inv_bulkmodulus() const override { return 0.0; };
     };
 
     //! class for exponential density law
@@ -136,7 +136,7 @@ namespace Mat
           ) override;
 
       /// compute current density
-      double ComputeCurDensity(
+      double compute_cur_density(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
           const double& press        ///< (i) pressure at gauss point
           ) override;
@@ -157,7 +157,7 @@ namespace Mat
           ) override;
 
       /// return inverse bulkmodulus (=compressibility)
-      double InvBulkmodulus() const override { return 1.0 / bulkmodulus_; };
+      double inv_bulkmodulus() const override { return 1.0 / bulkmodulus_; };
 
      private:
       /// @name material parameters

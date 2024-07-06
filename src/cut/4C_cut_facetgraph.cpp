@@ -27,13 +27,13 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
   for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
   {
     Facet *f = *i;
-    f->GetLines(lines);
+    f->get_lines(lines);
 
     // connect side facet to all hole lines
 
-    if (f->HasHoles())
+    if (f->has_holes())
     {
-      const plain_facet_set &holes = f->Holes();
+      const plain_facet_set &holes = f->holes();
 
       // NOTE: Adding hole facet to the hole_lines is already done in the previous step since
       // f->GetLines() also checks for the nested holes so this might be redundant
@@ -41,7 +41,7 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
       for (plain_facet_set::const_iterator i = holes.begin(); i != holes.end(); ++i)
       {
         Facet *h = *i;
-        h->GetLines(hole_lines);
+        h->get_lines(hole_lines);
       }
       for (std::map<std::pair<Point *, Point *>, plain_facet_set>::iterator i = hole_lines.begin();
            i != hole_lines.end(); ++i)
@@ -56,9 +56,9 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
   for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
   {
     Facet *f = *i;
-    if (f->HasHoles())
+    if (f->has_holes())
     {
-      const plain_facet_set &holes = f->Holes();
+      const plain_facet_set &holes = f->holes();
       std::copy(holes.begin(), holes.end(), std::inserter(all_facets, all_facets.begin()));
     }
   }
@@ -86,7 +86,7 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
     }
   }
 
-  graph_.SetSplit(all_facets.size());
+  graph_.set_split(all_facets.size());
 
   all_facets_.reserve(all_facets.size());
   all_facets_.assign(all_facets.begin(), all_facets.end());
@@ -114,7 +114,7 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
       Facet *f = *i;
       if (all_facets.count(f) > 0)
       {
-        graph_.Add(facet_id(f), current);
+        graph_.add(facet_id(f), current);
         index_value_map[facet_id(f)] = static_cast<const void *>(f);
       }
     }
@@ -123,14 +123,14 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
   // graph is the graph of connected lines and facets,  including internal facets
   // cycle is the graph of connected line and facets, but only the outer ones, without internals
 
-  graph_.TestClosed();
+  graph_.test_closed();
 
   ColoredGraph::Graph cycle(all_facets_.size());
 
   for (std::vector<Side *>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
     Side *s = *i;
-    const std::vector<Facet *> &side_facets = s->Facets();
+    const std::vector<Facet *> &side_facets = s->facets();
 
     for (std::vector<Facet *>::const_iterator i = side_facets.begin(); i != side_facets.end(); ++i)
     {
@@ -143,13 +143,13 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
         for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
         {
           int p2 = *i;
-          cycle.Add(p1, p2);
+          cycle.add(p1, p2);
         }
       }
 
-      if (f->HasHoles())
+      if (f->has_holes())
       {
-        const plain_facet_set &hs = f->Holes();
+        const plain_facet_set &hs = f->holes();
         for (plain_facet_set::const_iterator i = hs.begin(); i != hs.end(); ++i)
         {
           Facet *h = *i;
@@ -161,7 +161,7 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
             for (plain_int_set::const_iterator i = row.begin(); i != row.end(); ++i)
             {
               int p2 = *i;
-              cycle.Add(p1, p2);
+              cycle.add(p1, p2);
             }
           }
         }
@@ -172,7 +172,7 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
   // Free are cut lines and cut facets, that are inside ( e.g. cut_side cut facets inside the
   // element)
   plain_int_set free;
-  graph_.GetAll(free);
+  graph_.get_all(free);
 
   for (ColoredGraph::Graph::const_iterator i = cycle.begin(); i != cycle.end(); ++i)
   {
@@ -183,13 +183,13 @@ Core::Geo::Cut::FacetGraph::FacetGraph(
   // used is the external and it is looped over already , free is the internal, but we still use the
   // main graph_ with everything
   ColoredGraph::Graph used(cycle);
-  graph_.Map(&index_value_map);
-  cycle_list_.AddPoints(graph_, used, cycle, free, all_lines_);
+  graph_.map(&index_value_map);
+  cycle_list_.add_points(graph_, used, cycle, free, all_lines_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::FacetGraph::CreateVolumeCells(
+void Core::Geo::Cut::FacetGraph::create_volume_cells(
     Mesh &mesh, Element *element, plain_volumecell_set &cells)
 {
   std::vector<plain_facet_set> volumes;
@@ -207,7 +207,7 @@ void Core::Geo::Cut::FacetGraph::CreateVolumeCells(
     for (ColoredGraph::Graph::const_iterator i = g.begin(); i != g.end(); ++i)
     {
       int p = i->first;
-      if (p >= g.Split())
+      if (p >= g.split())
       {
         break;
       }
@@ -241,7 +241,7 @@ void Core::Geo::Cut::FacetGraph::add_to_volume_cells(Mesh &mesh, Element *elemen
     plain_facet_set &collected_facets = *i;
 
     // check facet number
-    if (collected_facets.size() < (element->Dim() + 1))
+    if (collected_facets.size() < (element->n_dim() + 1))
     {
       print();
 
@@ -262,7 +262,7 @@ void Core::Geo::Cut::FacetGraph::add_to_volume_cells(Mesh &mesh, Element *elemen
     std::map<std::pair<Point *, Point *>, plain_facet_set> volume_lines;
     collect_volume_lines(collected_facets, volume_lines);
 
-    cells.insert(mesh.NewVolumeCell(collected_facets, volume_lines, element));
+    cells.insert(mesh.new_volume_cell(collected_facets, volume_lines, element));
   }
 }
 
@@ -274,20 +274,20 @@ void Core::Geo::Cut::FacetGraph::collect_volume_lines(plain_facet_set &collected
   for (plain_facet_set::iterator i = collected_facets.begin(); i != collected_facets.end(); ++i)
   {
     Facet *f = *i;
-    f->GetLines(volume_lines);
+    f->get_lines(volume_lines);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::Cut::FacetGraph> Core::Geo::Cut::FacetGraph::Create(
+Teuchos::RCP<Core::Geo::Cut::FacetGraph> Core::Geo::Cut::FacetGraph::create(
     const std::vector<Side *> &sides, const plain_facet_set &facets)
 {
   Teuchos::RCP<FacetGraph> fg = Teuchos::null;
 
 
   // get current underlying element dimension
-  const unsigned dim = sides[0]->Elements()[0]->Dim();
+  const unsigned dim = sides[0]->elements()[0]->n_dim();
   switch (dim)
   {
     case 1:

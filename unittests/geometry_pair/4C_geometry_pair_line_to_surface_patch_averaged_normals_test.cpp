@@ -105,9 +105,9 @@ namespace
       // Check if the GID are correct.
       std::vector<int> patch_dof_gid_reference = {126, 127, 128, 111, 112, 113, 117, 118, 119, 129,
           130, 131, 120, 121, 122, 102, 103, 104, 99, 100, 101, 108, 109, 110, 114, 115, 116};
-      EXPECT_EQ(face_element->GetPatchGID().size(), patch_dof_gid_reference.size());
-      for (unsigned int i = 0; i < face_element->GetPatchGID().size(); i++)
-        EXPECT_EQ(face_element->GetPatchGID()[i], patch_dof_gid_reference[i]);
+      EXPECT_EQ(face_element->get_patch_gid().size(), patch_dof_gid_reference.size());
+      for (unsigned int i = 0; i < face_element->get_patch_gid().size(); i++)
+        EXPECT_EQ(face_element->get_patch_gid()[i], patch_dof_gid_reference[i]);
 
       // Check if the local node ID map of the connected faces to the main face could be found.
       EXPECT_EQ(get_connected_faces(face_element).size(), 3);
@@ -148,8 +148,8 @@ namespace
     }
 
     // Set the state in the face element, here also the FAD variables for each patch are set.
-    auto gid_map = Teuchos::rcp(new Epetra_Map(
-        discret_->NumGlobalNodes() * 3, discret_->NumGlobalNodes() * 3, 0, discret_->Comm()));
+    auto gid_map = Teuchos::rcp(new Epetra_Map(discret_->num_global_nodes() * 3,
+        discret_->num_global_nodes() * 3, 0, discret_->get_comm()));
     auto displacement_vector = Teuchos::rcp(new Epetra_Vector(*gid_map));
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;
@@ -158,18 +158,18 @@ namespace
       // Check the values of the averaged normals.
       for (unsigned int i_dof = 0; i_dof < 3 * surface::n_nodes_; i_dof++)
       {
-        EXPECT_NEAR(
-            Core::FADUtils::CastToDouble(face_element->GetFaceElementData().nodal_normals_(i_dof)),
+        EXPECT_NEAR(Core::FADUtils::CastToDouble(
+                        face_element->get_face_element_data().nodal_normals_(i_dof)),
             current_normals[i_dof], eps);
-        for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
+        for (unsigned int i_der = 0; i_der < face_element->get_patch_gid().size(); i_der++)
         {
-          EXPECT_NEAR(
-              Core::FADUtils::CastToDouble(
-                  face_element->GetFaceElementData().nodal_normals_(i_dof).dx(dof_offset + i_der)),
+          EXPECT_NEAR(Core::FADUtils::CastToDouble(
+                          face_element->get_face_element_data().nodal_normals_(i_dof).dx(
+                              dof_offset + i_der)),
               current_normals_derivative[i_dof][i_der], eps);
-          for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
+          for (unsigned int i_der_2 = 0; i_der_2 < face_element->get_patch_gid().size(); i_der_2++)
           {
-            EXPECT_NEAR(Core::FADUtils::CastToDouble(face_element->GetFaceElementData()
+            EXPECT_NEAR(Core::FADUtils::CastToDouble(face_element->get_face_element_data()
                                                          .nodal_normals_(i_dof)
                                                          .dx(dof_offset + i_der)
                                                          .dx(dof_offset + i_der_2)),
@@ -184,15 +184,15 @@ namespace
       xi(1) = -0.8;
       xi(2) = 0.69;
       Core::LinAlg::Matrix<3, 1, scalar_type> r;
-      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->GetFaceElementData(), r);
+      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->get_face_element_data(), r);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       {
         EXPECT_NEAR(Core::FADUtils::CastToDouble(r(i_dim)), position[i_dim], eps);
-        for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
+        for (unsigned int i_der = 0; i_der < face_element->get_patch_gid().size(); i_der++)
         {
           EXPECT_NEAR(Core::FADUtils::CastToDouble(r(i_dim).dx(dof_offset + i_der)),
               position_derivative[i_dim][i_der], eps);
-          for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
+          for (unsigned int i_der_2 = 0; i_der_2 < face_element->get_patch_gid().size(); i_der_2++)
             EXPECT_NEAR(Core::FADUtils::CastToDouble(
                             r(i_dim).dx(dof_offset + i_der).dx(dof_offset + i_der_2)),
                 position_derivative_2[i_dim][i_der][i_der_2], eps);

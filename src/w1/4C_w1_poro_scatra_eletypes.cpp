@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::WallQuad4PoroScatraType Discret::ELEMENTS::WallQuad4PoroScatraType::instance_;
 
-Discret::ELEMENTS::WallQuad4PoroScatraType& Discret::ELEMENTS::WallQuad4PoroScatraType::Instance()
+Discret::ELEMENTS::WallQuad4PoroScatraType& Discret::ELEMENTS::WallQuad4PoroScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroScatraType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>* object =
@@ -38,7 +38,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroScatraType::Crea
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ4POROSCATRA")
@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -84,12 +84,12 @@ void Discret::ELEMENTS::WallQuad4PoroScatraType::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::WallQuad9PoroScatraType Discret::ELEMENTS::WallQuad9PoroScatraType::instance_;
 
-Discret::ELEMENTS::WallQuad9PoroScatraType& Discret::ELEMENTS::WallQuad9PoroScatraType::Instance()
+Discret::ELEMENTS::WallQuad9PoroScatraType& Discret::ELEMENTS::WallQuad9PoroScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroScatraType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>* object =
@@ -101,7 +101,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroScatraType::Crea
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ9POROSCATRA")
@@ -116,7 +116,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -147,12 +147,12 @@ void Discret::ELEMENTS::WallQuad9PoroScatraType::setup_element_definition(
 
 Discret::ELEMENTS::WallNurbs4PoroScatraType Discret::ELEMENTS::WallNurbs4PoroScatraType::instance_;
 
-Discret::ELEMENTS::WallNurbs4PoroScatraType& Discret::ELEMENTS::WallNurbs4PoroScatraType::Instance()
+Discret::ELEMENTS::WallNurbs4PoroScatraType& Discret::ELEMENTS::WallNurbs4PoroScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroScatraType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>* object =
@@ -164,7 +164,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroScatraType::Cre
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN4POROSCATRA")
@@ -179,7 +179,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraTyp
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -210,12 +210,12 @@ void Discret::ELEMENTS::WallNurbs4PoroScatraType::setup_element_definition(
 
 Discret::ELEMENTS::WallNurbs9PoroScatraType Discret::ELEMENTS::WallNurbs9PoroScatraType::instance_;
 
-Discret::ELEMENTS::WallNurbs9PoroScatraType& Discret::ELEMENTS::WallNurbs9PoroScatraType::Instance()
+Discret::ELEMENTS::WallNurbs9PoroScatraType& Discret::ELEMENTS::WallNurbs9PoroScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroScatraType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>* object =
@@ -227,7 +227,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroScatraType::Cre
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN9POROSCATRA")
@@ -242,7 +242,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraTyp
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -273,12 +273,12 @@ void Discret::ELEMENTS::WallNurbs9PoroScatraType::setup_element_definition(
 
 Discret::ELEMENTS::WallTri3PoroScatraType Discret::ELEMENTS::WallTri3PoroScatraType::instance_;
 
-Discret::ELEMENTS::WallTri3PoroScatraType& Discret::ELEMENTS::WallTri3PoroScatraType::Instance()
+Discret::ELEMENTS::WallTri3PoroScatraType& Discret::ELEMENTS::WallTri3PoroScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroScatraType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>* object =
@@ -290,7 +290,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroScatraType::Creat
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLT3POROSCATRA")
@@ -305,7 +305,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType:
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =

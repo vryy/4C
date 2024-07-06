@@ -65,13 +65,13 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
       for (const auto& entry : point_periodic_rve_ref_conditions_)
       {
         const auto& str_id = entry->parameters().get<std::string>("referenceNode");
-        const auto* nodeInSet = entry->GetNodes();
+        const auto* nodeInSet = entry->get_nodes();
 
         if (nodeInSet->size() > 1)
         {
           FOUR_C_THROW("There can only be a single node defined as a reference node");
         }
-        rve_ref_node_map_[str_id.c_str()] = discret_ptr_->gNode(nodeInSet->data()[0]);
+        rve_ref_node_map_[str_id.c_str()] = discret_ptr_->g_node(nodeInSet->data()[0]);
 
         Core::IO::cout(Core::IO::verbose)
             << "Map " << str_id.c_str() << " to node id " << (*nodeInSet)[0] << Core::IO::endl;
@@ -83,18 +83,18 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
           << Core::IO::endl;
       for (const auto& elem : rve_ref_node_map_)
       {
-        Core::IO::cout(Core::IO::verbose) << elem.first << ": " << elem.second->Id() << ", ";
+        Core::IO::cout(Core::IO::verbose) << elem.first << ": " << elem.second->id() << ", ";
       }
       Core::IO::cout(Core::IO::verbose) << Core::IO::endl;
 
       // calculate the Reference vectors between Ref. poitns
-      r_xmxp_[0] = rve_ref_node_map_["N2"]->X()[0] - rve_ref_node_map_["N1L"]->X()[0];
-      r_xmxp_[1] = rve_ref_node_map_["N2"]->X()[1] - rve_ref_node_map_["N1L"]->X()[1];
+      r_xmxp_[0] = rve_ref_node_map_["N2"]->x()[0] - rve_ref_node_map_["N1L"]->x()[0];
+      r_xmxp_[1] = rve_ref_node_map_["N2"]->x()[1] - rve_ref_node_map_["N1L"]->x()[1];
       Core::IO::cout(Core::IO::verbose) << "RVE reference vector (X- ---> X+ ) : [" << r_xmxp_[0]
                                         << ", " << r_xmxp_[1] << "]" << Core::IO::endl;
 
-      r_ymyp_[0] = rve_ref_node_map_["N4"]->X()[0] - rve_ref_node_map_["N1B"]->X()[0];
-      r_ymyp_[1] = rve_ref_node_map_["N4"]->X()[1] - rve_ref_node_map_["N1B"]->X()[1];
+      r_ymyp_[0] = rve_ref_node_map_["N4"]->x()[0] - rve_ref_node_map_["N1B"]->x()[0];
+      r_ymyp_[1] = rve_ref_node_map_["N4"]->x()[1] - rve_ref_node_map_["N1B"]->x()[1];
       Core::IO::cout(Core::IO::verbose) << "RVE reference vector (Y- ---> Y+ ) : [" << r_ymyp_[0]
                                         << ", " << r_ymyp_[1] << "]" << Core::IO::endl;
     }
@@ -119,11 +119,11 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
  *----------------------------------------------------------------------------*/
 void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input()
 {
-  if (discret_ptr_->Comm().NumProc() > 1)
+  if (discret_ptr_->get_comm().NumProc() > 1)
     FOUR_C_THROW("periodic boundary conditions for RVEs are not implemented in parallel.");
 
 
-  mpc_parameter_list_ = Global::Problem::Instance()->rve_multi_point_constraint_params();
+  mpc_parameter_list_ = Global::Problem::instance()->rve_multi_point_constraint_params();
 
   rve_ref_type_ = Core::UTILS::IntegralValue<Inpar::RveMpc::RveReferenceDeformationDefinition>(
       mpc_parameter_list_, "RVE_REFERENCE_POINTS");
@@ -143,7 +143,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input
       Core::IO::cout(Core::IO::minimal)
           << "Constraint enforcement strategy: Penalty method" << Core::IO::endl;
       const Teuchos::ParameterList& MpcList =
-          Global::Problem::Instance()->rve_multi_point_constraint_params();
+          Global::Problem::instance()->rve_multi_point_constraint_params();
       get_penalty_parameter_ptr() = MpcList.get<double>("PENALTY_PARAM");
       Core::IO::cout(Core::IO::verbose)
           << "Penalty weight used: " << get_penalty_parameter_ptr() << Core::IO::endl;
@@ -151,10 +151,10 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input
   }
 
   // Conditions definition
-  discret_ptr_->GetCondition("LinePeriodicRve", line_periodic_rve_conditions_);
-  discret_ptr_->GetCondition("SurfacePeriodicRve", surface_periodic_rve_conditions_);
-  discret_ptr_->GetCondition("PointPeriodicRveReferenceNode", point_periodic_rve_ref_conditions_);
-  discret_ptr_->GetCondition(
+  discret_ptr_->get_condition("LinePeriodicRve", line_periodic_rve_conditions_);
+  discret_ptr_->get_condition("SurfacePeriodicRve", surface_periodic_rve_conditions_);
+  discret_ptr_->get_condition("PointPeriodicRveReferenceNode", point_periodic_rve_ref_conditions_);
+  discret_ptr_->get_condition(
       "PointLinearCoupledEquation", point_linear_coupled_equation_conditions_);
 
   // Input Checks: Dimensions
@@ -219,7 +219,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::find_opposit
   std::string newPos;
   std::array<double, 2> R_ipim;
 
-  Core::Nodes::Node* nodeA = discret_ptr_->gNode(nodeID);
+  Core::Nodes::Node* nodeA = discret_ptr_->g_node(nodeID);
 
   switch (edge)
   {
@@ -248,7 +248,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::find_opposit
 
   // Calculate the Position of the opposing edge node
   std::vector<double> newPosition = {0.0, 0.0};
-  for (int i = 0; i < 2; i++) newPosition[i] = nodeA->X()[i] + R_ipim[i];
+  for (int i = 0; i < 2; i++) newPosition[i] = nodeA->x()[i] + R_ipim[i];
 
   Core::IO::cout(Core::IO::debug) << "Calculated position of matching node: " << newPosition[0]
                                   << " / " << newPosition[1] << Core::IO::endl;
@@ -257,14 +257,14 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::find_opposit
   // ToDo: Switch to ArborX
   for (auto pairId : *rveBoundaryNodeIdMap[newPos])
   {
-    Core::Nodes::Node* nodeB = discret_ptr_->gNode(pairId);
+    Core::Nodes::Node* nodeB = discret_ptr_->g_node(pairId);
 
-    if (std::abs(nodeB->X()[0] - newPosition[0]) < node_search_toler_)
+    if (std::abs(nodeB->x()[0] - newPosition[0]) < node_search_toler_)
     {
-      if (std::abs(nodeB->X()[1] - newPosition[1]) < node_search_toler_)
+      if (std::abs(nodeB->x()[1] - newPosition[1]) < node_search_toler_)
       {
         Core::IO::cout(Core::IO::debug)
-            << "Found Node Pair (IDs): A: " << nodeA->Id() << " B: " << pairId << Core::IO::endl;
+            << "Found Node Pair (IDs): A: " << nodeA->id() << " B: " << pairId << Core::IO::endl;
         return pairId;
       }
     }
@@ -320,8 +320,8 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
               for (int i = 0; i < numDim; ++i)
               {
                 rveRefVector.push_back(
-                    discret_ptr_->gNode(rveCornerNodeIdMap[surf.second])->X()[i] -
-                    discret_ptr_->gNode(rveCornerNodeIdMap["N1"])->X()[i]);
+                    discret_ptr_->g_node(rveCornerNodeIdMap[surf.second])->x()[i] -
+                    discret_ptr_->g_node(rveCornerNodeIdMap["N1"])->x()[i]);
               }
               rveRefVecMap[surf.first] = rveRefVector;
 
@@ -347,13 +347,14 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
 
               for (int i = 0; i < numDim; ++i)
               {
-                matchPosition[i] = discret_ptr_->gNode(nodeP)->X()[i] - rveRefVecMap[surf.first][i];
+                matchPosition[i] =
+                    discret_ptr_->g_node(nodeP)->x()[i] - rveRefVecMap[surf.first][i];
               }
               Core::IO::cout(Core::IO::debug)
-                  << "Node+ location: " << discret_ptr_->gNode(nodeP)->X()[0] << ", "
-                  << discret_ptr_->gNode(nodeP)->X()[1];
+                  << "Node+ location: " << discret_ptr_->g_node(nodeP)->x()[0] << ", "
+                  << discret_ptr_->g_node(nodeP)->x()[1];
               if (rve_dim_ == Inpar::RveMpc::rve3d)
-                Core::IO::cout(Core::IO::debug) << ", " << discret_ptr_->gNode(nodeP)->X()[2];
+                Core::IO::cout(Core::IO::debug) << ", " << discret_ptr_->g_node(nodeP)->x()[2];
               Core::IO::cout(Core::IO::debug) << Core::IO::endl;
 
               Core::IO::cout(Core::IO::debug)
@@ -368,7 +369,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
                 bool isMatch = true;
                 for (int i = 0; i < numDim; ++i)
                 {
-                  if (std::abs(discret_ptr_->gNode(nodeM)->X()[i] - matchPosition[i]) >
+                  if (std::abs(discret_ptr_->g_node(nodeM)->x()[i] - matchPosition[i]) >
                       node_search_toler_)
                   {
                     isMatch = false;
@@ -377,10 +378,10 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
                 }
                 if (isMatch)
                 {
-                  PBC.push_back(discret_ptr_->gNode(nodeP));
-                  PBC.push_back(discret_ptr_->gNode(nodeM));
-                  PBC.push_back(discret_ptr_->gNode(rveCornerNodeIdMap[surf.second]));
-                  PBC.push_back(discret_ptr_->gNode(rveCornerNodeIdMap["N1"]));
+                  PBC.push_back(discret_ptr_->g_node(nodeP));
+                  PBC.push_back(discret_ptr_->g_node(nodeM));
+                  PBC.push_back(discret_ptr_->g_node(rveCornerNodeIdMap[surf.second]));
+                  PBC.push_back(discret_ptr_->g_node(rveCornerNodeIdMap["N1"]));
                   PBCs.push_back(PBC);
                   PBC.clear();
 
@@ -404,17 +405,17 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
       Core::IO::cout(Core::IO::verbose) << "General 2D RVE" << Core::IO::endl;
       for (const auto& elem : rve_ref_node_map_)
       {
-        Core::IO::cout(Core::IO::verbose) << elem.first << " first " << elem.second->Id() << " sec "
+        Core::IO::cout(Core::IO::verbose) << elem.first << " first " << elem.second->id() << " sec "
                                           << "\n";
       }
 
       /* Loop over X- Edge */
       for (auto nodeXm : *rveBoundaryNodeIdMap["x-"])
       {
-        if (nodeXm != rve_ref_node_map_["N1L"]->Id())  // exlude N1 - N2 = N1 - N2
+        if (nodeXm != rve_ref_node_map_["N1L"]->id())  // exlude N1 - N2 = N1 - N2
         {
-          PBC.push_back(discret_ptr_->gNode(nodeXm));
-          PBC.push_back(discret_ptr_->gNode(find_opposite_edge_node(
+          PBC.push_back(discret_ptr_->g_node(nodeXm));
+          PBC.push_back(discret_ptr_->g_node(find_opposite_edge_node(
               nodeXm, Inpar::RveMpc::RveEdgeIdentifiers::Gamma_xm, rveBoundaryNodeIdMap)));
           PBC.push_back(rve_ref_node_map_["N1L"]);
           PBC.push_back(rve_ref_node_map_["N2"]);
@@ -424,7 +425,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
               << "PBC MPC Set created X- ---> X+ Edge:  " << Core::IO::endl;
           for (auto* nnn : PBC)
           {
-            Core::IO::cout(Core::IO::debug) << " ___ " << nnn->Id();
+            Core::IO::cout(Core::IO::debug) << " ___ " << nnn->id();
           }
           Core::IO::cout(Core::IO::debug) << Core::IO::endl;
           PBC.clear();
@@ -434,11 +435,11 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
       /* Loop over Y- Edge*/
       for (auto nodeYm : *rveBoundaryNodeIdMap["y-"])
       {
-        if (nodeYm != rve_ref_node_map_["N1B"]->Id() && nodeYm != rve_ref_node_map_["N2"]->Id())
+        if (nodeYm != rve_ref_node_map_["N1B"]->id() && nodeYm != rve_ref_node_map_["N2"]->id())
         {
-          PBC.push_back(discret_ptr_->gNode(find_opposite_edge_node(
+          PBC.push_back(discret_ptr_->g_node(find_opposite_edge_node(
               nodeYm, Inpar::RveMpc::RveEdgeIdentifiers::Gamma_ym, rveBoundaryNodeIdMap)));
-          PBC.push_back(discret_ptr_->gNode(nodeYm));
+          PBC.push_back(discret_ptr_->g_node(nodeYm));
           PBC.push_back(rve_ref_node_map_["N4"]);
           PBC.push_back(rve_ref_node_map_["N1B"]);
           PBCs.push_back(PBC);
@@ -460,7 +461,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
   {
     for (auto* node : pbc)
     {
-      ids.push_back(node->Id());
+      ids.push_back(node->id());
     }
     std::sort(ids.begin(), ids.end());
     idListSet[indx++] = ids;
@@ -526,10 +527,10 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
       pbcDofs.clear();
       for (auto* node : pbc)
       {
-        Core::IO::cout(Core::IO::debug) << node->Id() << ", ";
+        Core::IO::cout(Core::IO::debug) << node->id() << ", ";
 
         // Create coupled equation dof list:
-        pbcDofs.emplace_back(discret_ptr_->Dof(node)[dim]);
+        pbcDofs.emplace_back(discret_ptr_->dof(node)[dim]);
       }
       Core::IO::cout(Core::IO::debug) << "\ndofs used in linear coupled equation: \n ";
       for (auto dof : pbcDofs)
@@ -578,10 +579,10 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
   for (const auto& ceTerm : point_linear_coupled_equation_conditions_)
   {
     auto eq_id = (ceTerm->parameters().get<int>("EQUATION_ID")) - 1;
-    const auto* node_id = ceTerm->GetNodes();
+    const auto* node_id = ceTerm->get_nodes();
     const auto& dofStr = ceTerm->parameters().get<std::string>("DOF");
     auto coef = ceTerm->parameters().get<double>("COEFFICIENT");
-    auto* node = discret_ptr_->gNode(node_id->data()[0]);
+    auto* node = discret_ptr_->g_node(node_id->data()[0]);
 
 
     if (dofStr == "dispx")
@@ -597,7 +598,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
       FOUR_C_THROW(
           "Linear coupled equations (MPCs) are only implemented for 2D (dispx or dispy DOFs)");
     }
-    auto dofID = discret_ptr_->Dof(node)[dofPos];
+    auto dofID = discret_ptr_->dof(node)[dofPos];
 
 
     Core::IO::cout(Core::IO::debug) << Core::IO::endl;
@@ -620,7 +621,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
   int nMPC = 0;
   for (const auto& mpc : listMPCs_)
   {
-    nMPC += mpc->GetNumberOfMPCs();
+    nMPC += mpc->get_number_of_mp_cs();
   }
   unsigned int i = 0;
   for (; i < constraintRowIds.size(); ++i)
@@ -782,7 +783,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
   {
     case Inpar::RveMpc::RveDimension::rve2d:
     {
-      discret_ptr_->GetCondition("LinePeriodicRve", line_periodic_rve_conditions_);
+      discret_ptr_->get_condition("LinePeriodicRve", line_periodic_rve_conditions_);
 
 
 
@@ -797,21 +798,21 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
 
         // Print the Edge Condition
         Core::IO::cout(Core::IO::verbose) << "EDGE: " << boundary.c_str() << " Node IDs: ";
-        for (auto nodeId : *conditionLine->GetNodes())
+        for (auto nodeId : *conditionLine->get_nodes())
         {
           Core::IO::cout(Core::IO::verbose) << nodeId << " ";
         }
         Core::IO::cout(Core::IO::verbose) << Core::IO::endl;
 
         // Create EdgeNodeMap
-        rveBoundaryNodeIdMap[boundary.c_str()] = conditionLine->GetNodes();
+        rveBoundaryNodeIdMap[boundary.c_str()] = conditionLine->get_nodes();
       }
     }
     break;
 
     case Inpar::RveMpc::RveDimension::rve3d:
     {
-      discret_ptr_->GetCondition("SurfacePeriodicRve", surface_periodic_rve_conditions_);
+      discret_ptr_->get_condition("SurfacePeriodicRve", surface_periodic_rve_conditions_);
 
       Core::IO::cout(Core::IO::verbose)
           << Core::IO::endl
@@ -823,12 +824,12 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
         const auto& boundary = conditionLine->parameters().get<std::string>("SurfId");
 
         Core::IO::cout(Core::IO::verbose) << "SURF: " << boundary.c_str() << " Node IDs: ";
-        for (auto nodeId : *conditionLine->GetNodes())
+        for (auto nodeId : *conditionLine->get_nodes())
         {
           Core::IO::cout(Core::IO::verbose) << nodeId << " ";
         }
         Core::IO::cout(Core::IO::verbose) << Core::IO::endl;
-        rveBoundaryNodeIdMap[boundary.c_str()] = conditionLine->GetNodes();
+        rveBoundaryNodeIdMap[boundary.c_str()] = conditionLine->get_nodes();
       }
       break;
     }

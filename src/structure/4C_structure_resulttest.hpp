@@ -55,7 +55,7 @@ class StruResultTest : public Core::UTILS::ResultTest
   See get_special_result_for_testing() for a list and extraction mechanisms of special results to be
   tested.
   */
-  void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) final;
+  void test_special(Input::LineDefinition& res, int& nerr, int& test_count) final;
 
  private:
   //! Extract specified quantity from the structure field

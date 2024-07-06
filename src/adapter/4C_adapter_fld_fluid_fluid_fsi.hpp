@@ -65,9 +65,9 @@ namespace Adapter
     void update() override;
 
     /// solve for pure fluid-fluid-ale problem
-    void Solve() override;
+    void solve() override;
 
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> ivel) override
     {
       FOUR_C_THROW("Do not call RexationSolve for XFFSI.");
       return Teuchos::null;
@@ -86,29 +86,29 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
     {
       return mergedfluidinterface_;
     }
 
-    Teuchos::RCP<const Epetra_Vector> GridVel() override;
-    Teuchos::RCP<Epetra_Vector> WriteAccessGridVel();
+    Teuchos::RCP<const Epetra_Vector> grid_vel() override;
+    Teuchos::RCP<Epetra_Vector> write_access_grid_vel();
 
-    Teuchos::RCP<const Epetra_Vector> Dispnp() override;
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp();
-    Teuchos::RCP<const Epetra_Vector> Dispn() override;
+    Teuchos::RCP<const Epetra_Vector> dispnp() override;
+    Teuchos::RCP<Epetra_Vector> write_access_dispnp();
+    Teuchos::RCP<const Epetra_Vector> dispn() override;
 
     /// get the velocity row map of the embedded fluid
-    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
+    Teuchos::RCP<const Epetra_Map> velocity_row_map() override;
 
     /// get block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     // access to embedded discretization
     const Teuchos::RCP<Core::FE::Discretization>& discretization() override;
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& DiscWriter() override { return output_; }
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& disc_writer() override { return output_; }
 
     /// get map extractor for background/embedded fluid
     Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();
@@ -135,7 +135,7 @@ namespace Adapter
     void use_block_matrix(bool split_fluidsysmat = false) override;
 
     /// determine, whether the ALE-mesh should be relaxed at current time step
-    bool IsAleRelaxationStep(int step) const;
+    bool is_ale_relaxation_step(int step) const;
 
     /// get type of monolithic XFFSI approach
     Inpar::XFEM::MonolithicXffsiApproach monolithic_xffsi_approach() const
@@ -143,7 +143,7 @@ namespace Adapter
       return monolithic_approach_;
     }
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ShapeDerivatives() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> shape_derivatives() override;
 
    private:
     /// setup of map extractor to distinguish between FSI DOF-map and

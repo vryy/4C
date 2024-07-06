@@ -76,7 +76,7 @@ namespace Global
 {
   /*!
    * The Problem class gathers various input parameters and provides access
-   * from anywhere via the singleton Instance() function.
+   * from anywhere via the singleton instance() function.
    *
    * This class is an old attempt to deal with parameters. The fundamental problem lies in the
    * global nature of the singleton instance. This behavior makes it very difficult to follow the
@@ -123,7 +123,7 @@ namespace Global
    *
    * The global problem behaves like a singleton, so there is always one instance available. But you
    * can have more than one instance of Problem. In normal situations this will not be needed. So
-   * don't bother. Just call the static Instance() function to get the global instance and access
+   * don't bother. Just call the static instance() function to get the global instance and access
    * your discretizations.
    *
    * In the special case that you want to read more that one input file, however, you will need to
@@ -153,29 +153,32 @@ namespace Global
     Problem& operator=(Problem&&) = delete;
 
     /// return an instance of this class
-    static Problem* Instance(int num = 0);
+    static Problem* instance(int num = 0);
 
     /// return number of problem instances
-    static unsigned NumInstances() { return instances_.size(); }
+    static unsigned num_instances() { return instances_.size(); }
 
     /// calculation done, clean up
     /*!
       There can be a variety of objects to a problem. Some of them might
       require proper cleanup. Make sure we always do it.
      */
-    static void Done();
+    static void done();
 
     //@}
 
     /// @name Input
 
     /// set restart step which was read from the command line
-    void SetRestartStep(int r);
+    void set_restart_step(int r);
 
-    void SetInputControlFile(Teuchos::RCP<Core::IO::InputControl>& input) { inputcontrol_ = input; }
+    void set_input_control_file(Teuchos::RCP<Core::IO::InputControl>& input)
+    {
+      inputcontrol_ = input;
+    }
 
     /// manipulate problem type
-    void SetProblemType(Core::ProblemType targettype);
+    void set_problem_type(Core::ProblemType targettype);
 
     void set_spatial_approximation_type(Core::FE::ShapeFunctionType shape_function_type);
 
@@ -183,16 +186,16 @@ namespace Global
     /// Once and for all definitions
 
     /// give enum of my problem type
-    Core::ProblemType GetProblemType() const;
+    Core::ProblemType get_problem_type() const;
 
     /// give string name of my problem type
-    std::string ProblemName() const;
+    std::string problem_name() const;
 
     /// return restart step
     [[nodiscard]] int restart() const;
 
     /// number of space dimensions (as specified in the input file)
-    int NDim() const;
+    int n_dim() const;
 
     //! Return type of the basis function encoded as enum
     Core::FE::ShapeFunctionType spatial_approximation_type() const { return shapefuntype_; }
@@ -211,14 +214,14 @@ namespace Global
     @param[in] prefix
     @param[in] restartkenner
     */
-    void OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile, std::string prefix,
-        const std::string& restartkenner);
+    void open_control_file(const Epetra_Comm& comm, const std::string& inputfile,
+        std::string prefix, const std::string& restartkenner);
 
     /// control file for restart read
-    Teuchos::RCP<Core::IO::InputControl> InputControlFile() { return inputcontrol_; }
+    Teuchos::RCP<Core::IO::InputControl> input_control_file() { return inputcontrol_; }
 
     /// control file for normal output
-    Teuchos::RCP<Core::IO::OutputControl> OutputControlFile() { return outputcontrol_; }
+    Teuchos::RCP<Core::IO::OutputControl> output_control_file() { return outputcontrol_; }
 
     /// write parameters read from input file for documentation
     void write_input_parameters();
@@ -228,21 +231,21 @@ namespace Global
     /// @name Parameters read from file
 
     /// Set parameters from a parameter list and return with default values.
-    void setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list);
+    void set_parameter_list(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list);
 
     /// Return a const parameter list of all of the valid parameters that
     /// this->setParameterList(...) will accept.
-    Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const;
+    Teuchos::RCP<const Teuchos::ParameterList> get_valid_parameters() const;
 
-    Teuchos::RCP<const Teuchos::ParameterList> getParameterList() const;
+    Teuchos::RCP<const Teuchos::ParameterList> get_parameter_list() const;
 
     /// @name Communicators and their parallel groups
 
     /// set communicators
-    void SetCommunicators(Teuchos::RCP<Core::Communication::Communicators> communicators);
+    void set_communicators(Teuchos::RCP<Core::Communication::Communicators> communicators);
 
     /// return communicators
-    Teuchos::RCP<Core::Communication::Communicators> GetCommunicators() const;
+    Teuchos::RCP<Core::Communication::Communicators> get_communicators() const;
 
     //@}
 
@@ -257,7 +260,7 @@ namespace Global
     {
       return parameters_->sublist("BOUNDINGVOLUME STRATEGY");
     }
-    const Teuchos::ParameterList& IOParams() const { return parameters_->sublist("IO"); }
+    const Teuchos::ParameterList& io_params() const { return parameters_->sublist("IO"); }
     const Teuchos::ParameterList& structural_dynamic_params() const
     {
       return parameters_->sublist("STRUCTURAL DYNAMIC");
@@ -280,7 +283,7 @@ namespace Global
     }
     const Teuchos::ParameterList& rve_multi_point_constraint_params() const
     {
-      return getParameterList()->sublist("MULTI POINT CONSTRAINTS");
+      return get_parameter_list()->sublist("MULTI POINT CONSTRAINTS");
     }
     const Teuchos::ParameterList& brownian_dynamics_params() const
     {
@@ -290,11 +293,11 @@ namespace Global
     {
       return parameters_->sublist("THERMAL DYNAMIC");
     }
-    const Teuchos::ParameterList& TSIDynamicParams() const
+    const Teuchos::ParameterList& tsi_dynamic_params() const
     {
       return parameters_->sublist("TSI DYNAMIC");
     }
-    const Teuchos::ParameterList& FluidDynamicParams() const
+    const Teuchos::ParameterList& fluid_dynamic_params() const
     {
       return parameters_->sublist("FLUID DYNAMIC");
     }
@@ -306,23 +309,23 @@ namespace Global
     {
       return parameters_->sublist("SCALAR TRANSPORT DYNAMIC");
     }
-    const Teuchos::ParameterList& STIDynamicParams() const
+    const Teuchos::ParameterList& sti_dynamic_params() const
     {
       return parameters_->sublist("STI DYNAMIC");
     }
-    const Teuchos::ParameterList& FS3IDynamicParams() const
+    const Teuchos::ParameterList& f_s3_i_dynamic_params() const
     {
       return parameters_->sublist("FS3I DYNAMIC");
     }
-    const Teuchos::ParameterList& AleDynamicParams() const
+    const Teuchos::ParameterList& ale_dynamic_params() const
     {
       return parameters_->sublist("ALE DYNAMIC");
     }
-    const Teuchos::ParameterList& FSIDynamicParams() const
+    const Teuchos::ParameterList& fsi_dynamic_params() const
     {
       return parameters_->sublist("FSI DYNAMIC");
     }
-    const Teuchos::ParameterList& FPSIDynamicParams() const
+    const Teuchos::ParameterList& fpsi_dynamic_params() const
     {
       return parameters_->sublist("FPSI DYNAMIC");
     }
@@ -330,23 +333,23 @@ namespace Global
     {
       return parameters_->sublist("IMMERSED METHOD");
     }
-    const Teuchos::ParameterList& CutGeneralParams() const
+    const Teuchos::ParameterList& cut_general_params() const
     {
       return parameters_->sublist("CUT GENERAL");
     }
-    const Teuchos::ParameterList& XFEMGeneralParams() const
+    const Teuchos::ParameterList& xfem_general_params() const
     {
       return parameters_->sublist("XFEM GENERAL");
     }
-    const Teuchos::ParameterList& XFluidDynamicParams() const
+    const Teuchos::ParameterList& x_fluid_dynamic_params() const
     {
       return parameters_->sublist("XFLUID DYNAMIC");
     }
-    const Teuchos::ParameterList& FBIParams() const
+    const Teuchos::ParameterList& fbi_params() const
     {
       return parameters_->sublist("FLUID BEAM INTERACTION");
     }
-    const Teuchos::ParameterList& LOMAControlParams() const
+    const Teuchos::ParameterList& loma_control_params() const
     {
       return parameters_->sublist("LOMA CONTROL");
     }
@@ -354,11 +357,11 @@ namespace Global
     {
       return parameters_->sublist("BIOFILM CONTROL");
     }
-    const Teuchos::ParameterList& ELCHControlParams() const
+    const Teuchos::ParameterList& elch_control_params() const
     {
       return parameters_->sublist("ELCH CONTROL");
     }
-    const Teuchos::ParameterList& EPControlParams() const
+    const Teuchos::ParameterList& ep_control_params() const
     {
       return parameters_->sublist("CARDIAC MONODOMAIN CONTROL");
     }
@@ -398,37 +401,37 @@ namespace Global
     {
       return parameters_->sublist("ELASTO HYDRO DYNAMIC");
     }
-    const Teuchos::ParameterList& SSIControlParams() const
+    const Teuchos::ParameterList& ssi_control_params() const
     {
       return parameters_->sublist("SSI CONTROL");
     }
-    const Teuchos::ParameterList& SSTIControlParams() const
+    const Teuchos::ParameterList& ssti_control_params() const
     {
       return parameters_->sublist("SSTI CONTROL");
     }
-    const Teuchos::ParameterList& SearchtreeParams() const
+    const Teuchos::ParameterList& searchtree_params() const
     {
       return parameters_->sublist("SEARCH TREE");
     }
-    const Teuchos::ParameterList& StructuralNoxParams() const
+    const Teuchos::ParameterList& structural_nox_params() const
     {
       return parameters_->sublist("STRUCT NOX");
     }
-    const Teuchos::ParameterList& LocaParams() const { return parameters_->sublist("LOCA"); }
-    const Teuchos::ParameterList& ParticleParams() const
+    const Teuchos::ParameterList& loca_params() const { return parameters_->sublist("LOCA"); }
+    const Teuchos::ParameterList& particle_params() const
     {
       return parameters_->sublist("PARTICLE DYNAMIC");
     }
-    const Teuchos::ParameterList& PASIDynamicParams() const
+    const Teuchos::ParameterList& pasi_dynamic_params() const
     {
       return parameters_->sublist("PASI DYNAMIC");
     }
-    const Teuchos::ParameterList& LevelSetControl() const
+    const Teuchos::ParameterList& level_set_control() const
     {
       return parameters_->sublist("LEVEL-SET CONTROL");
     }
-    const Teuchos::ParameterList& WearParams() const { return parameters_->sublist("WEAR"); }
-    const Teuchos::ParameterList& TSIContactParams() const
+    const Teuchos::ParameterList& wear_params() const { return parameters_->sublist("WEAR"); }
+    const Teuchos::ParameterList& tsi_contact_params() const
     {
       return parameters_->sublist("TSI CONTACT");
     }
@@ -448,54 +451,54 @@ namespace Global
     {
       return parameters_->sublist("ELECTROMAGNETIC DYNAMIC");
     }
-    const Teuchos::ParameterList& VolmortarParams() const
+    const Teuchos::ParameterList& volmortar_params() const
     {
       return parameters_->sublist("VOLMORTAR COUPLING");
     }
-    const Teuchos::ParameterList& MORParams() const { return parameters_->sublist("MOR"); };
+    const Teuchos::ParameterList& mor_params() const { return parameters_->sublist("MOR"); };
     const Teuchos::ParameterList& mesh_partitioning_params() const
     {
       return parameters_->sublist("MESH PARTITIONING");
     }
 
-    const Teuchos::ParameterList& ProblemTypeParams() const
+    const Teuchos::ParameterList& problem_type_params() const
     {
       return parameters_->sublist("PROBLEM TYP");
     }
 
-    const Teuchos::ParameterList& ProblemSizeParams() const
+    const Teuchos::ParameterList& problem_size_params() const
     {
       return parameters_->sublist("PROBLEM SIZE");
     }
 
-    const Teuchos::ParameterList& SolverParams(int solverNr) const;
+    const Teuchos::ParameterList& solver_params(int solverNr) const;
 
     std::function<const Teuchos::ParameterList&(int)> solver_params_callback() const;
 
-    const Teuchos::ParameterList& UMFPACKSolverParams();
+    const Teuchos::ParameterList& umfpack_solver_params();
 
     //@}
 
     /// @name Discretizations
 
     /// get access to a particular discretization
-    Teuchos::RCP<Core::FE::Discretization> GetDis(const std::string& name) const;
+    Teuchos::RCP<Core::FE::Discretization> get_dis(const std::string& name) const;
 
-    auto DiscretizationRange() { return std_20::ranges::views::all(discretizationmap_); }
+    auto discretization_range() { return std_20::ranges::views::all(discretizationmap_); }
 
-    auto DiscretizationRange() const { return std_20::ranges::views::all(discretizationmap_); }
+    auto discretization_range() const { return std_20::ranges::views::all(discretizationmap_); }
 
     /// tell number of known fields
-    unsigned NumFields() const { return discretizationmap_.size(); }
+    unsigned num_fields() const { return discretizationmap_.size(); }
 
     /// tell names of known fields
-    std::vector<std::string> GetDisNames() const;
+    std::vector<std::string> get_dis_names() const;
 
     /// check whether a certain discretization exists or not
-    bool DoesExistDis(const std::string& name) const;
+    bool does_exist_dis(const std::string& name) const;
 
     /// add a discretization to the global problem
-    void AddDis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis);
+    void add_dis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis);
 
 
     //@}
@@ -503,7 +506,7 @@ namespace Global
     /// @name Materials
 
     /// return pointer to materials bundled to the problem
-    Teuchos::RCP<Mat::PAR::Bundle> Materials() { return materials_; }
+    Teuchos::RCP<Mat::PAR::Bundle> materials() { return materials_; }
 
     // return pointer to contact constitutive law bundled to the problem
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> contact_constitutive_laws()
@@ -516,11 +519,11 @@ namespace Global
     /// @name Particles
 
     /// return reference to read in particles
-    std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>>& Particles() { return particles_; }
+    std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>>& particles() { return particles_; }
 
     //@}
 
-    std::map<std::pair<std::string, std::string>, std::map<int, int>>& CloningMaterialMap()
+    std::map<std::pair<std::string, std::string>, std::map<int, int>>& cloning_material_map()
     {
       return clonefieldmatmap_;
     }
@@ -533,9 +536,9 @@ namespace Global
      * @tparam T The type of function interface.
      */
     template <typename T>
-    const T& FunctionById(int num)
+    const T& function_by_id(int num)
     {
-      return functionmanager_.template FunctionById<T>(num);
+      return functionmanager_.template function_by_id<T>(num);
     }
 
     //@}
@@ -543,12 +546,12 @@ namespace Global
     /// @name Result Tests
 
     /// Do the testing
-    void TestAll(const Epetra_Comm& comm) { resulttest_.TestAll(comm); }
+    void test_all(const Epetra_Comm& comm) { resulttest_.test_all(comm); }
 
     /// add field specific result test object
-    void AddFieldTest(Teuchos::RCP<Core::UTILS::ResultTest> test)
+    void add_field_test(Teuchos::RCP<Core::UTILS::ResultTest> test)
     {
-      resulttest_.AddFieldTest(test);
+      resulttest_.add_field_test(test);
     }
 
     Core::UTILS::ResultTestManager& get_result_test_manager() { return resulttest_; }
@@ -556,10 +559,10 @@ namespace Global
     //@}
 
     /// Return the class that handles random numbers globally
-    Core::UTILS::Random* Random() { return &random_; }
+    Core::UTILS::Random* random() { return &random_; }
 
     /// Return the class that handles restart initiating -> to be extended
-    Core::IO::RestartManager* RestartManager() { return &restartmanager_; }
+    Core::IO::RestartManager* restart_manager() { return &restartmanager_; }
 
     /**
      * Set the @p function_manager which contains all parsed functions.
@@ -567,9 +570,9 @@ namespace Global
      * @note The parsing of functions must take place before. This calls wants a filled
      * FunctionManager.
      */
-    void SetFunctionManager(Core::UTILS::FunctionManager&& function_manager);
+    void set_function_manager(Core::UTILS::FunctionManager&& function_manager);
 
-    const Core::UTILS::FunctionManager& FunctionManager() const { return functionmanager_; }
+    const Core::UTILS::FunctionManager& function_manager() const { return functionmanager_; }
 
    private:
     /// private default constructor to disallow creation of instances

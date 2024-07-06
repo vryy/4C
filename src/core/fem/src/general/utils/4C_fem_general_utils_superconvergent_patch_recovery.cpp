@@ -28,7 +28,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
     const int numvec, Teuchos::ParameterList& params)
 {
   const int dimp = dim + 1;
-  const int myrank = dis.Comm().MyPID();
+  const int myrank = dis.get_comm().MyPID();
 
   // check whether action type is set
   if (params.getEntryRCP("action") == Teuchos::null)
@@ -38,7 +38,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   bool dofmaptoreconstruct = false;
   if (state.Map().PointSameAs(*dis.dof_row_map()))
     dofmaptoreconstruct = true;
-  else if (state.Map().PointSameAs(*dis.ElementRowMap()))
+  else if (state.Map().PointSameAs(*dis.element_row_map()))
   {
     dofmaptoreconstruct = false;
     if (numvec != state.NumVectors())
@@ -68,8 +68,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   // set up reduced node row map of fluid field
   std::vector<int> reducednoderowmap;
   std::vector<int> reducednodecolmap;
-  const Epetra_Map* fullnoderowmap = dis.NodeRowMap();
-  const Epetra_Map* fullnodecolmap = dis.NodeColMap();
+  const Epetra_Map* fullnoderowmap = dis.node_row_map();
+  const Epetra_Map* fullnodecolmap = dis.node_col_map();
 
   // a little more memory than necessary is possibly reserved here
   reducednoderowmap.reserve(fullnoderowmap->NumMyElements());
@@ -98,14 +98,14 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 
   // step 1: get state to be reconstruced (e.g. velocity gradient) at element
   // centers (for linear elements the centers are the superconvergent sampling points!)
-  dis.ClearState();
+  dis.clear_state();
   // Set ALE displacements here
   if (dofmaptoreconstruct)
   {
     dis.set_state(statename, Teuchos::rcpFromRef(state));
   }
 
-  const Epetra_Map* elementrowmap = dis.ElementRowMap();
+  const Epetra_Map* elementrowmap = dis.element_row_map();
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered =
       Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, numvec, true));
   Teuchos::RCP<Epetra_MultiVector> centercoords =
@@ -114,7 +114,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  Core::Elements::Element::LocationArray la(dis.NumDofSets());
+  Core::Elements::Element::LocationArray la(dis.num_dof_sets());
 
   // define element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -124,16 +124,16 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   Core::LinAlg::SerialDenseVector elevector3;
 
   // get number of elements
-  const int numele = dis.NumMyRowElements();
+  const int numele = dis.num_my_row_elements();
 
   // loop only row elements
   for (int i = 0; i < numele; ++i)
   {
-    Core::Elements::Element* actele = dis.lRowElement(i);
+    Core::Elements::Element* actele = dis.l_row_element(i);
 
     // get element location vector
     // Core::Elements::Element::LocationArray la(1);
-    actele->LocationVector(dis, la, false);
+    actele->location_vector(dis, la, false);
 
     // Reshape element matrices and vectors and initialize to zero
     elevector1.size(numvec);
@@ -165,10 +165,10 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   }  // end element loop
 
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
-      Teuchos::rcp(new Epetra_MultiVector(*(dis.ElementColMap()), numvec, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(dis.element_col_map()), numvec, true));
   Core::LinAlg::Export(*elevec_toberecovered, *elevec_toberecovered_col);
   Teuchos::RCP<Epetra_MultiVector> centercoords_col =
-      Teuchos::rcp(new Epetra_MultiVector(*(dis.ElementColMap()), dim, true));
+      Teuchos::rcp(new Epetra_MultiVector(*(dis.element_col_map()), dim, true));
   Core::LinAlg::Export(*centercoords, *centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
@@ -176,7 +176,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap, numvec));
 
   std::vector<Core::Conditions::Condition*> conds;
-  dis.GetCondition("SPRboundary", conds);
+  dis.get_condition("SPRboundary", conds);
 
   // SPR boundary condition must be set for all boundaries except pbc
   if (conds.size() != 1 && conds.size() != 0)
@@ -190,14 +190,14 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   for (int i = 0; i < nodecolmap.NumMyElements(); ++i)
   {
     const int nodegid = nodecolmap.GID(i);
-    const Core::Nodes::Node* node = dis.gNode(nodegid);
+    const Core::Nodes::Node* node = dis.g_node(nodegid);
     if (!node) FOUR_C_THROW("Cannot find with gid: %d", nodegid);
 
     // distinction between inner nodes and boundary nodes
-    if (conds.size() == 0 || !conds[0]->ContainsNode(nodegid))
+    if (conds.size() == 0 || !conds[0]->contains_node(nodegid))
     {
       // continue with next node in case a ghost node is inner node
-      if (node->Owner() != myrank) continue;
+      if (node->owner() != myrank) continue;
 
       // distinction between normal inner node and pbc master node
       if (allcoupledcolnodes->find(nodegid) == allcoupledcolnodes->end())
@@ -206,8 +206,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
         // we have an inner node here
         //---------------------------------------------
 
-        const Core::Elements::Element* const* adjacentele = node->Elements();
-        const int numadjacent = node->NumElement();
+        const Core::Elements::Element* const* adjacentele = node->elements();
+        const int numadjacent = node->num_element();
 
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
@@ -224,9 +224,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           // loop over all surrounding elements
           for (int k = 0; k < numadjacent; ++k)
           {
-            const int elelid = elevec_toberecovered_col->Map().LID(adjacentele[k]->Id());
+            const int elelid = elevec_toberecovered_col->Map().LID(adjacentele[k]->id());
             for (int d = 0; d < dim; ++d)
-              p(d + 1) = (*(*centercoords_col)(d))[elelid] - node->X()[d] /* + ALE_DISP*/;
+              p(d + 1) = (*(*centercoords_col)(d))[elelid] - node->x()[d] /* + ALE_DISP*/;
 
             // compute outer product of p x p and add to A
             A.multiply_nt(1.0, p, p, 1.0);
@@ -263,18 +263,18 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const Core::Nodes::Node* slavenode = dis.gNode(slavenodeids[s]);
+          const Core::Nodes::Node* slavenode = dis.g_node(slavenodeids[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
-            eleoffsets[s][d] = (node->X()[d] - slavenode->X()[d]) /* + ALE DISP */;
+            eleoffsets[s][d] = (node->x()[d] - slavenode->x()[d]) /* + ALE DISP */;
 
           // add adjacent elements of slave nodes to vector
-          adjacenteles[s] = slavenode->Elements();
-          numadjacenteles[s] = slavenode->NumElement();
+          adjacenteles[s] = slavenode->elements();
+          numadjacenteles[s] = slavenode->num_element();
         }
         // add elements connected to master node -> offset is zero for master elements
-        adjacenteles[numslavenodes] = node->Elements();
-        numadjacenteles[numslavenodes] = node->NumElement();
+        adjacenteles[numslavenodes] = node->elements();
+        numadjacenteles[numslavenodes] = node->num_element();
 
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
@@ -293,10 +293,10 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           {
             for (int k = 0; k < numadjacenteles[s]; ++k)
             {
-              const int elelid = elevec_toberecovered_col->Map().LID(adjacenteles[s][k]->Id());
+              const int elelid = elevec_toberecovered_col->Map().LID(adjacenteles[s][k]->id());
               for (int d = 0; d < dim; ++d)
                 p(d + 1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] -
-                           node->X()[d] /* + ALE_DISP*/;
+                           node->x()[d] /* + ALE_DISP*/;
 
               // compute outer product of p x p and add to A
               A.multiply_nt(1.0, p, p, 1.0);
@@ -329,27 +329,27 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
         //---------------------------------------------
 
         // get all neighboring nodes of boundary node and find closest one
-        const Core::Elements::Element* const* adjacentele = node->Elements();
-        const int numadjacentele = node->NumElement();
+        const Core::Elements::Element* const* adjacentele = node->elements();
+        const int numadjacentele = node->num_element();
         double distance = 1.0e12;
         int closestnodeid = -1;
         for (int k = 0; k < numadjacentele; ++k)
         {
-          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
+          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->nodes();
           const int numnode = adjacentele[k]->num_node();
           for (int n = 0; n < numnode; ++n)
           {
             // continue with next node in case the neighbor is also on the boundary
-            if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
+            if (conds[0]->contains_node(adjacentnodes[n]->id())) continue;
 
-            const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
+            const auto& pos = adjacentnodes[n]->x(); /* + ALE DISP */
             static Core::LinAlg::Matrix<dim, 1> dist;
-            for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
+            for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->x()[d]; /* + ALE DISP */
             const double tmp = dist.norm2();
             if (tmp < distance and tmp > 1.0e-14)
             {
               distance = tmp;
-              closestnodeid = adjacentnodes[n]->Id();
+              closestnodeid = adjacentnodes[n]->id();
             }
           }
         }
@@ -360,14 +360,14 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
               "small (at least in one direction)");
 
         // build patch for closest node and evaluate patch at boundary node
-        const Core::Nodes::Node* closestnode = dis.gNode(closestnodeid);
-        const Core::Elements::Element* const* closestnodeadjacentele = closestnode->Elements();
-        const int numadjacent = closestnode->NumElement();
+        const Core::Nodes::Node* closestnode = dis.g_node(closestnodeid);
+        const Core::Elements::Element* const* closestnodeadjacentele = closestnode->elements();
+        const int numadjacent = closestnode->num_element();
 
         // leave here in case the closest node is a ghost node
         // only row nodes have all neighboring elements on this proc
         // this will result in off processor assembling (boundary node as ghost node)
-        if (closestnode->Owner() != myrank) continue;
+        if (closestnode->owner() != myrank) continue;
 
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
@@ -384,9 +384,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           // loop over all surrounding elements
           for (int k = 0; k < numadjacent; ++k)
           {
-            const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacentele[k]->Id());
+            const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacentele[k]->id());
             for (int d = 0; d < dim; ++d)
-              p(d + 1) = (*(*centercoords_col)(d))[elelid] - closestnode->X()[d]; /* + ALE_DISP*/
+              p(d + 1) = (*(*centercoords_col)(d))[elelid] - closestnode->x()[d]; /* + ALE_DISP*/
 
             // compute outer product of p x p and add to A
             A.multiply_nt(1.0, p, p, 1.0);
@@ -402,7 +402,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           double recoveredgradient = p(0) * x(0);
           for (int d = 0; d < dim; ++d)
           {
-            p(d + 1) = node->X()[d] - closestnode->X()[d] /* + ALE_DISP*/;
+            p(d + 1) = node->x()[d] - closestnode->x()[d] /* + ALE_DISP*/;
             recoveredgradient += p(d + 1) * x(d + 1);
           }
 
@@ -417,33 +417,33 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
         //---------------------------------------------
 
         // often bounds are axis aligned -> another pbc (master) node is closest node
-        const Core::Elements::Element* const* adjacentele = node->Elements();
-        const int numadjacentele = node->NumElement();
+        const Core::Elements::Element* const* adjacentele = node->elements();
+        const int numadjacentele = node->num_element();
 
         // leave here if the boundary node is a ghost node and has no adjacent elements on this proc
         // only boundary ghost nodes which have an inner node as a row node have all neighboring
         // elements on this proc this will result in off processor assembling (boundary ghost node
         // but closest node as row node)
-        if (node->Owner() != myrank && numadjacentele == 0) continue;
+        if (node->owner() != myrank && numadjacentele == 0) continue;
 
         double distance = 1.0e12;
         int closestnodeid = -1;
         for (int k = 0; k < numadjacentele; ++k)
         {
-          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
+          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->nodes();
           for (int n = 0; n < adjacentele[k]->num_node(); ++n)
           {
             // continue with next node in case the neighbor is also on the boundary
-            if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
+            if (conds[0]->contains_node(adjacentnodes[n]->id())) continue;
 
-            const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
+            const auto& pos = adjacentnodes[n]->x(); /* + ALE DISP */
             static Core::LinAlg::Matrix<dim, 1> dist;
-            for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
+            for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->x()[d]; /* + ALE DISP */
             const double tmp = dist.norm2();
             if (tmp < distance and tmp > 1.0e-14)
             {
               distance = tmp;
-              closestnodeid = adjacentnodes[n]->Id();
+              closestnodeid = adjacentnodes[n]->id();
             }
           }
         }
@@ -456,12 +456,12 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
         // build patch for closest node and evaluate patch at boundary node
 
         // get master nodes and corresponding slave nodes
-        Core::Nodes::Node* closestnode = dis.gNode(closestnodeid);
+        Core::Nodes::Node* closestnode = dis.g_node(closestnodeid);
 
         // leave here in case the closest node is a ghost node
         // only row nodes have all neighboring elements on this proc
         // this will result in off processor assembling (boundary node as ghost node)
-        if (closestnode->Owner() != myrank) continue;
+        if (closestnode->owner() != myrank) continue;
 
         std::map<int, std::vector<int>>::iterator masternode =
             allcoupledcolnodes->find(closestnodeid);
@@ -493,18 +493,18 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const Core::Nodes::Node* slavenode = dis.gNode(masternode->second[s]);
+          const Core::Nodes::Node* slavenode = dis.g_node(masternode->second[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
-            eleoffsets[s][d] = (closestnode->X()[d] - slavenode->X()[d]); /* + ALE DISP */
+            eleoffsets[s][d] = (closestnode->x()[d] - slavenode->x()[d]); /* + ALE DISP */
 
           // add adjacent elements of slave nodes to vectors
-          closestnodeadjacenteles[s] = slavenode->Elements();
-          numadjacenteles[s] = slavenode->NumElement();
+          closestnodeadjacenteles[s] = slavenode->elements();
+          numadjacenteles[s] = slavenode->num_element();
         }
         // add elements connected to master node -> offset is zero for master elements
-        closestnodeadjacenteles[numslavenodes] = closestnode->Elements();
-        numadjacenteles[numslavenodes] = closestnode->NumElement();
+        closestnodeadjacenteles[numslavenodes] = closestnode->elements();
+        numadjacenteles[numslavenodes] = closestnode->num_element();
 
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
@@ -524,10 +524,10 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
             for (int k = 0; k < numadjacenteles[s]; ++k)
             {
               const int elelid =
-                  elevec_toberecovered_col->Map().LID(closestnodeadjacenteles[s][k]->Id());
+                  elevec_toberecovered_col->Map().LID(closestnodeadjacenteles[s][k]->id());
               for (int d = 0; d < dim; ++d)
                 p(d + 1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] -
-                           closestnode->X()[d]; /* + ALE_DISP*/
+                           closestnode->x()[d]; /* + ALE_DISP*/
 
               // compute outer product of p x p and add to A
               A.multiply_nt(1.0, p, p, 1.0);
@@ -544,7 +544,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           double recoveredgradient = p(0) * x(0);
           for (int d = 0; d < dim; ++d)
           {
-            p(d + 1) = node->X()[d] - closestnode->X()[d] /* + ALE_DISP*/;
+            p(d + 1) = node->x()[d] - closestnode->x()[d] /* + ALE_DISP*/;
             recoveredgradient += p(d + 1) * x(d + 1);
           }
 

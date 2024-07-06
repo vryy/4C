@@ -64,12 +64,12 @@ Mat::Elastic::IsoMuscleBlemker::IsoMuscleBlemker(Mat::Elastic::PAR::IsoMuscleBle
       Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
-void Mat::Elastic::IsoMuscleBlemker::PackSummand(Core::Communication::PackBuffer& data) const
+void Mat::Elastic::IsoMuscleBlemker::pack_summand(Core::Communication::PackBuffer& data) const
 {
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::IsoMuscleBlemker::UnpackSummand(
+void Mat::Elastic::IsoMuscleBlemker::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   anisotropy_extension_.unpack_anisotropy(data, position);

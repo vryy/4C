@@ -46,7 +46,7 @@ void Solid::MODELEVALUATOR::BrownianDynData::init(
   str_data_ptr_ = str_data_ptr;
 
   const Teuchos::ParameterList& browndyn_params_list =
-      Global::Problem::Instance()->brownian_dynamics_params();
+      Global::Problem::instance()->brownian_dynamics_params();
 
   // viscosity
   viscosity_ = browndyn_params_list.get<double>("VISCOSITY");
@@ -131,7 +131,7 @@ void Solid::MODELEVALUATOR::BrownianDynData::resize_random_force_m_vector(
 
   // resize in case of new crosslinkers that were set and are now part of the discretization
   randomforces_ = Teuchos::rcp(
-      new Epetra_MultiVector(*(discret_ptr->ElementColMap()), maxrandnumelement, true));
+      new Epetra_MultiVector(*(discret_ptr->element_col_map()), maxrandnumelement, true));
 
   return;
 }

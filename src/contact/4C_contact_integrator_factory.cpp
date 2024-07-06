@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::BuildIntegrator(
+Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator(
     const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
     const Core::FE::CellType& slave_type, const Epetra_Comm& comm) const
 {
@@ -110,7 +110,7 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::BuildIntegrator(
     const Core::FE::CellType& slave_type, const Epetra_Comm& comm)
 {
   Factory factory;
-  return factory.BuildIntegrator(sol_type, mortar_params, slave_type, comm);
+  return factory.build_integrator(sol_type, mortar_params, slave_type, comm);
 }
 
 FOUR_C_NAMESPACE_CLOSE

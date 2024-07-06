@@ -31,7 +31,7 @@ namespace Mat
        * @param gp
        *
        */
-      virtual void Reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+      virtual void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
           const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) = 0;
 
       //! @name Coupled derivatives
@@ -40,7 +40,7 @@ namespace Mat
       /// @brief  get derivative of 2nd PK stress wrt temperature
       ///
       /// this term arises for coupled thermo-mechanical materials
-      virtual void GetdSdT(Core::LinAlg::Matrix<6, 1>* dS_dT) = 0;
+      virtual void getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT) = 0;
 
       //! @}
 

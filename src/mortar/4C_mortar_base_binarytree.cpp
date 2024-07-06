@@ -136,7 +136,7 @@ Mortar::BaseBinaryTreeNode::BaseBinaryTreeNode(Core::FE::Discretization& discret
 /*----------------------------------------------------------------------*
  | Calculate slabs of DOP out of current node positions       popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTreeNode::CalculateSlabsDop()
+void Mortar::BaseBinaryTreeNode::calculate_slabs_dop()
 {
   // initialize slabs
   for (int j = 0; j < kdop() / 2; ++j)
@@ -149,21 +149,21 @@ void Mortar::BaseBinaryTreeNode::CalculateSlabsDop()
   for (int i = 0; i < (int)elelist().size(); ++i)
   {
     int gid = elelist()[i];
-    Core::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().g_element(gid);
     if (!element) FOUR_C_THROW("ERROR: Cannot find element with gid %\n", gid);
     Mortar::Element* mrtrelement = dynamic_cast<Mortar::Element*>(element);
-    Core::Nodes::Node** nodes = mrtrelement->Points();
+    Core::Nodes::Node** nodes = mrtrelement->points();
     if (!nodes) FOUR_C_THROW("ERROR: Null pointer!");
 
     // calculate slabs for every node on every element
-    for (int k = 0; k < mrtrelement->NumPoint(); ++k)
+    for (int k = 0; k < mrtrelement->num_point(); ++k)
     {
       Node* mrtrnode = dynamic_cast<Node*>(nodes[k]);
       if (!mrtrnode) FOUR_C_THROW("ERROR: Null pointer!");
 
       // get current node position
       std::array<double, 3> pos = {0.0, 0.0, 0.0};
-      for (int j = 0; j < dim(); ++j) pos[j] = mrtrnode->xspatial()[j];
+      for (int j = 0; j < n_dim(); ++j) pos[j] = mrtrnode->xspatial()[j];
 
       // calculate slabs
       for (int j = 0; j < kdop() / 2; ++j)
@@ -192,11 +192,11 @@ void Mortar::BaseBinaryTreeNode::CalculateSlabsDop()
         // now the auxiliary position
         std::array<double, 3> auxpos = {0.0, 0.0, 0.0};
         double scalar = 0.0;
-        for (int j = 0; j < dim(); ++j)
+        for (int j = 0; j < n_dim(); ++j)
           scalar = scalar +
-                   (mrtrnode->X()[j] + mrtrnode->uold()[j] - mrtrnode->xspatial()[j]) * normal[j];
+                   (mrtrnode->x()[j] + mrtrnode->uold()[j] - mrtrnode->xspatial()[j]) * normal[j];
 
-        for (int j = 0; j < dim(); ++j) auxpos[j] = mrtrnode->xspatial()[j] + scalar * normal[j];
+        for (int j = 0; j < n_dim(); ++j) auxpos[j] = mrtrnode->xspatial()[j] + scalar * normal[j];
 
         for (int j = 0; j < kdop() / 2; ++j)
         {
@@ -223,7 +223,7 @@ void Mortar::BaseBinaryTreeNode::CalculateSlabsDop()
 /*----------------------------------------------------------------------*
  | Enlarge geometry of treenode (public)                      popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTreeNode::EnlargeGeometry(double& enlarge)
+void Mortar::BaseBinaryTreeNode::enlarge_geometry(double& enlarge)
 {
   // scale slabs with scalar enlarge
   for (int i = 0; i < kdop_ / 2; ++i)
@@ -238,12 +238,12 @@ void Mortar::BaseBinaryTreeNode::EnlargeGeometry(double& enlarge)
 /*----------------------------------------------------------------------*
  | Print slabs to std::cout (public)                          popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTreeNode::PrintSlabs()
+void Mortar::BaseBinaryTreeNode::print_slabs()
 {
   std::cout << std::endl
-            << discret().Comm().MyPID()
+            << discret().get_comm().MyPID()
             << "************************************************************";
-  PrintType();
+  print_type();
   std::cout << "slabs:";
   for (int i = 0; i < slabs_.numRows(); ++i)
     std::cout << "\nslab: " << i << " min: " << slabs_.operator()(i, 0)
@@ -256,7 +256,7 @@ void Mortar::BaseBinaryTreeNode::PrintSlabs()
 /*----------------------------------------------------------------------*
  | Print slabs of dop to file for Gmsh (public)               popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
+void Mortar::BaseBinaryTreeNode::print_dops_for_gmsh(std::string filename)
 {
   FILE* fp = nullptr;
   std::ostringstream currentfilename;
@@ -475,7 +475,7 @@ void Mortar::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
                 position1[p] = coords[trianglepoints[i][m]][p];
                 position2[p] = coords[trianglepoints[i][n]][p];
               }
-              PlotGmshTriangle(filename, position0, position1, position2);
+              plot_gmsh_triangle(filename, position0, position1, position2);
             }
           }
         }
@@ -497,7 +497,7 @@ void Mortar::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
 /*----------------------------------------------------------------------*
  | Return coords for gmshpoint of 18DOP(public)               popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTreeNode::PlotGmshPoint(std::string filename, double* position0, int nr)
+void Mortar::BaseBinaryTreeNode::plot_gmsh_point(std::string filename, double* position0, int nr)
 {
   FILE* fp = nullptr;
   fp = fopen(filename.c_str(), "a");
@@ -523,7 +523,7 @@ void Mortar::BaseBinaryTreeNode::PlotGmshPoint(std::string filename, double* pos
 /*----------------------------------------------------------------------*
  | Plot quadrangle in gmsh(public)                            popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTreeNode::PlotGmshQuadrangle(std::string filename, double* position0,
+void Mortar::BaseBinaryTreeNode::plot_gmsh_quadrangle(std::string filename, double* position0,
     double* position1, double* position2, double* position3)
 {
   FILE* fp = nullptr;
@@ -547,7 +547,7 @@ void Mortar::BaseBinaryTreeNode::PlotGmshQuadrangle(std::string filename, double
 /*----------------------------------------------------------------------*
  | Plot triangle in gmsh(public)                              popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BaseBinaryTreeNode::PlotGmshTriangle(
+void Mortar::BaseBinaryTreeNode::plot_gmsh_triangle(
     std::string filename, double* position0, double* position1, double* position2)
 {
   FILE* fp = nullptr;

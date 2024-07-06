@@ -67,48 +67,48 @@ namespace Adapter
     }
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() override { return structure_->RHS(); }
+    Teuchos::RCP<const Epetra_Vector> rhs() override { return structure_->rhs(); }
 
     /// unknown displacements at \f$t_{n+1}\f$
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Dispnp() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> dispnp() const override
     {
-      return structure_->Dispnp();
+      return structure_->dispnp();
     }
 
     /// known displacements at \f$t_{n}\f$
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Dispn() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> dispn() const override
     {
-      return structure_->Dispn();
+      return structure_->dispn();
     }
 
     /// unknown velocity at \f$t_{n+1}\f$
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Velnp() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> velnp() const override
     {
-      return structure_->Velnp();
+      return structure_->velnp();
     }
 
     /// known velocity at \f$t_{n}\f$
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Veln() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> veln() const override
     {
-      return structure_->Veln();
+      return structure_->veln();
     }
 
     /// known velocity at \f$t_{n-1}\f$
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Velnm() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> velnm() const override
     {
-      return structure_->Velnm();
+      return structure_->velnm();
     }
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Accnp() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> accnp() const override
     {
-      return structure_->Accnp();
+      return structure_->accnp();
     }
 
     /// known acceleration at \f$t_{n}\f$
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> Accn() const override
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> accn() const override
     {
-      return structure_->Accn();
+      return structure_->accn();
     }
 
     //@}
@@ -130,7 +130,7 @@ namespace Adapter
     const Epetra_Map* dof_row_map_view() override { return structure_->dof_row_map_view(); }
 
     /// domain map of system matrix
-    [[nodiscard]] const Epetra_Map& DomainMap() const override { return structure_->DomainMap(); }
+    [[nodiscard]] const Epetra_Map& domain_map() const override { return structure_->domain_map(); }
 
     /// direct access to system matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
@@ -158,9 +158,9 @@ namespace Adapter
     }
 
     // access to locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override
     {
-      return structure_->LocsysManager();
+      return structure_->locsys_manager();
     }
 
     /// direct access to discretization
@@ -176,10 +176,10 @@ namespace Adapter
     }
 
     /// are there any algebraic constraints?
-    bool HaveConstraint() override { return structure_->HaveConstraint(); }
+    bool have_constraint() override { return structure_->have_constraint(); }
 
     /// are there any spring dashpot BCs?
-    bool HaveSpringDashpot() override { return structure_->HaveSpringDashpot(); }
+    bool have_spring_dashpot() override { return structure_->have_spring_dashpot(); }
 
     /// get constraint manager defined in the structure
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
@@ -209,15 +209,15 @@ namespace Adapter
     }
 
     /// expand dirichlet bc map
-    void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override
+    void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override
     {
-      structure_->AddDirichDofs(maptoadd);
+      structure_->add_dirich_dofs(maptoadd);
     };
 
     /// contract dirichlet bc map
-    void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override
+    void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override
     {
-      structure_->RemoveDirichDofs(maptoremove);
+      structure_->remove_dirich_dofs(maptoremove);
     };
 
     /// reset step and state vectors
@@ -233,52 +233,52 @@ namespace Adapter
     //@{
 
     /// return time integration factor
-    [[nodiscard]] double TimIntParam() const override { return structure_->TimIntParam(); }
+    [[nodiscard]] double tim_int_param() const override { return structure_->tim_int_param(); }
 
     //! Sets the current time \f$t_{n}\f$
     void set_time(const double time) override { structure_->set_time(time); }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
-    void SetTimen(const double time) override { structure_->SetTimen(time); }
+    void set_timen(const double time) override { structure_->set_timen(time); }
 
     //! Sets the target step \f$n\f$
-    void SetStep(int step) override { structure_->SetStep(step); }
+    void set_step(int step) override { structure_->set_step(step); }
 
     //! Sets the target step \f$n+1\f$
-    void SetStepn(int step) override { structure_->SetStepn(step); }
+    void set_stepn(int step) override { structure_->set_stepn(step); }
 
     //! Return current time \f$t_{n}\f$
-    [[nodiscard]] double TimeOld() const override { return structure_->TimeOld(); }
+    [[nodiscard]] double time_old() const override { return structure_->time_old(); }
 
     //! Return target time \f$t_{n+1}\f$
-    [[nodiscard]] double Time() const override { return structure_->Time(); }
+    [[nodiscard]] double time() const override { return structure_->time(); }
 
     /// get upper limit of time range of interest
-    [[nodiscard]] double GetTimeEnd() const override { return structure_->GetTimeEnd(); }
+    [[nodiscard]] double get_time_end() const override { return structure_->get_time_end(); }
 
     //! Set upper limit of time range of interest //HACK for parameter continuation
-    void SetTimeEnd(double timemax) override { structure_->SetTimeEnd(timemax); }
+    void set_time_end(double timemax) override { structure_->set_time_end(timemax); }
 
     /// get time step size \f$\Delta t_n\f$
-    [[nodiscard]] double Dt() const override { return structure_->Dt(); }
+    [[nodiscard]] double dt() const override { return structure_->dt(); }
 
     /// Return current step number $n$
-    [[nodiscard]] int StepOld() const override { return structure_->StepOld(); }
+    [[nodiscard]] int step_old() const override { return structure_->step_old(); }
 
     /// Return current step number $n+1$
-    [[nodiscard]] int Step() const override { return structure_->Step(); }
+    [[nodiscard]] int step() const override { return structure_->step(); }
 
     /// get number of time steps
-    [[nodiscard]] int NumStep() const override { return structure_->NumStep(); }
+    [[nodiscard]] int num_step() const override { return structure_->num_step(); }
 
     /// integrate from t1 to t2
-    int Integrate() override { return structure_->Integrate(); }
+    int integrate() override { return structure_->integrate(); }
 
     //! do something in case nonlinear solution does not converge for some reason
-    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+    Inpar::Solid::ConvergenceStatus perform_error_action(
         Inpar::Solid::ConvergenceStatus nonlinsoldiv) override
     {
-      return structure_->PerformErrorAction(nonlinsoldiv);
+      return structure_->perform_error_action(nonlinsoldiv);
     }
 
     /// tests if there are more time steps to do
@@ -313,7 +313,7 @@ namespace Adapter
     void update() override { structure_->update(); }
 
     /// update at time step end
-    void Update(const double endtime) override { structure_->Update(endtime); }
+    void update(const double endtime) override { structure_->update(endtime); }
 
     /// resize MStep objects for AB2
     void resize_m_step_tim_ada() override { structure_->resize_m_step_tim_ada(); }
@@ -377,28 +377,28 @@ namespace Adapter
     void set_state(const Teuchos::RCP<Epetra_Vector>& x) override { structure_->set_state(x); }
 
     /// set evaluation action
-    void SetActionType(const Core::Elements::ActionType& action) override
+    void set_action_type(const Core::Elements::ActionType& action) override
     {
-      structure_->SetActionType(action);
+      structure_->set_action_type(action);
     }
 
     /// wrapper for things that should be done before prepare_time_step is called
-    void PrePredict() override { structure_->PrePredict(); }
+    void pre_predict() override { structure_->pre_predict(); }
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    void PreSolve() override { structure_->PreSolve(); }
+    void pre_solve() override { structure_->pre_solve(); }
 
     /// wrapper for things that should be done before updating
-    void PreUpdate() override { structure_->PreUpdate(); }
+    void pre_update() override { structure_->pre_update(); }
 
     /// wrapper for things that should be done after solving the update
     void post_update() override { structure_->post_update(); }
 
     /// wrapper for things that should be done after the output
-    void PostOutput() override { structure_->PostOutput(); }
+    void post_output() override { structure_->post_output(); }
 
     /// wrapper for things that should be done after the actual time loop is finished
-    void PostTimeLoop() override { structure_->PostTimeLoop(); }
+    void post_time_loop() override { structure_->post_time_loop(); }
 
     //@}
 
@@ -407,7 +407,7 @@ namespace Adapter
     //@{
 
     /// nonlinear solve
-    Inpar::Solid::ConvergenceStatus Solve() override { return structure_->Solve(); }
+    Inpar::Solid::ConvergenceStatus solve() override { return structure_->solve(); }
 
     //! linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
@@ -428,9 +428,9 @@ namespace Adapter
     //@{
 
     /// set forces due to interface with fluid, the force is expected external-force-like
-    void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce) override
+    void set_force_interface(Teuchos::RCP<Epetra_MultiVector> iforce) override
     {
-      structure_->SetForceInterface(iforce);
+      structure_->set_force_interface(iforce);
     }
 
     //! specific method for iterative staggered partitioned TSI
@@ -444,27 +444,27 @@ namespace Adapter
     //@{
 
     /// write access to extract displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() override
+    Teuchos::RCP<Epetra_Vector> write_access_dispnp() override
     {
-      return structure_->WriteAccessDispnp();
+      return structure_->write_access_dispnp();
     }
 
     /// write access to extract velocities at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override
+    Teuchos::RCP<Epetra_Vector> write_access_velnp() override
     {
-      return structure_->WriteAccessVelnp();
+      return structure_->write_access_velnp();
     }
 
     /// write access to extract displacements at \f$t^{n}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispn() override
+    Teuchos::RCP<Epetra_Vector> write_access_dispn() override
     {
-      return structure_->WriteAccessDispn();
+      return structure_->write_access_dispn();
     }
 
     /// write access to extract velocities at \f$t^{n}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessVeln() override
+    Teuchos::RCP<Epetra_Vector> write_access_veln() override
     {
-      return structure_->WriteAccessVelnp();
+      return structure_->write_access_velnp();
     }
 
     //@}
@@ -476,43 +476,46 @@ namespace Adapter
     //@{
 
     /// material displacements (structure with ale)
-    Teuchos::RCP<Epetra_Vector> DispMat() override { return structure_->DispMat(); }
+    Teuchos::RCP<Epetra_Vector> disp_mat() override { return structure_->disp_mat(); }
 
     /// apply material displacements to structure field (structure with ale)
-    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat) override
+    void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) override
     {
-      structure_->ApplyDisMat(dismat);
+      structure_->apply_dis_mat(dismat);
     }
 
     //@}
 
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override
     {
-      return structure_->CreateFieldTest();
+      return structure_->create_field_test();
     }
 
     //! @name Biofilm specific methods
     //@{
 
-    void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override
+    void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override
     {
-      structure_->SetStrGrDisp(struct_growth_disp);
+      structure_->set_str_gr_disp(struct_growth_disp);
     }
 
     //@}
 
     /// bool indicating if micro material is used
-    bool HaveMicroMat() override { return structure_->HaveMicroMat(); }
+    bool have_micro_mat() override { return structure_->have_micro_mat(); }
 
     /// do we have this model
-    bool HaveModel(Inpar::Solid::ModelType model) override { return structure_->HaveModel(model); }
+    bool have_model(Inpar::Solid::ModelType model) override
+    {
+      return structure_->have_model(model);
+    }
 
     /// return model evaluator
-    Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override
+    Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
     {
-      return structure_->ModelEvaluator(mtype);
+      return structure_->model_evaluator(mtype);
     }
 
     [[nodiscard]] bool has_final_state_been_written() const override

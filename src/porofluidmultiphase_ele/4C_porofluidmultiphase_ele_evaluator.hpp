@@ -88,9 +88,9 @@ namespace Discret
 
         virtual int num_phases_to_assemble_into() const = 0;
 
-        virtual int PhaseToAssembleInto(int iassemble, int numdofpernode) const = 0;
+        virtual int phase_to_assemble_into(int iassemble, int numdofpernode) const = 0;
 
-        bool CalcInitTimeDeriv() const { return inittimederiv_; };
+        bool calc_init_time_deriv() const { return inittimederiv_; };
 
        private:
         // do we calculate the inital time derivative?
@@ -110,7 +110,7 @@ namespace Discret
 
         int num_phases_to_assemble_into() const override { return 1; };
 
-        int PhaseToAssembleInto(int iassemble, int numdofpernode) const override
+        int phase_to_assemble_into(int iassemble, int numdofpernode) const override
         {
           return curphase_;
         };
@@ -136,7 +136,7 @@ namespace Discret
 
         int num_phases_to_assemble_into() const override { return 2; };
 
-        int PhaseToAssembleInto(int iassemble, int numdofpernode) const override
+        int phase_to_assemble_into(int iassemble, int numdofpernode) const override
         {
           return phasestoassemble_[iassemble];
         };
@@ -178,13 +178,13 @@ namespace Discret
         virtual ~EvaluatorInterface() = default;
 
         //! factory method
-        static Teuchos::RCP<EvaluatorInterface<nsd, nen>> CreateEvaluator(
+        static Teuchos::RCP<EvaluatorInterface<nsd, nen>> create_evaluator(
             const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
             const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
             const PoroFluidManager::PhaseManagerInterface& phasemanager);
 
         //! evaluate matrixes (stiffness)
-        virtual void EvaluateMatrix(
+        virtual void evaluate_matrix(
             std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
@@ -198,7 +198,7 @@ namespace Discret
             ) = 0;
 
         //! evaluate vectors (RHS vector)
-        virtual void EvaluateVector(
+        virtual void evaluate_vector(
             std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
@@ -263,7 +263,7 @@ namespace Discret
         MultiEvaluator(){};
 
         //! evaluate matrixes (stiffness)
-        void EvaluateMatrix(
+        void evaluate_matrix(
             std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
@@ -279,12 +279,12 @@ namespace Discret
           // loop over the evaluators
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
-            (*it)->EvaluateMatrix(elemat, funct, derxy, numdofpernode, phasemanager,
+            (*it)->evaluate_matrix(elemat, funct, derxy, numdofpernode, phasemanager,
                 variablemanager, timefacfac, fac);
         };
 
         //! evaluate vectors (RHS vector)
-        void EvaluateVector(
+        void evaluate_vector(
             std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
@@ -301,7 +301,7 @@ namespace Discret
           // loop over the evaluators
           typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
-            (*it)->EvaluateVector(elevec, funct, derxy, xyze, numdofpernode, phasemanager,
+            (*it)->evaluate_vector(elevec, funct, derxy, xyze, numdofpernode, phasemanager,
                 variablemanager, rhsfac, fac);
         };
 
@@ -355,7 +355,7 @@ namespace Discret
         };
 
         //! add an evaluator to the list of evaluators
-        void AddEvaluator(Teuchos::RCP<EvaluatorInterface<nsd, nen>> evaluator)
+        void add_evaluator(Teuchos::RCP<EvaluatorInterface<nsd, nen>> evaluator)
         {
           evaluators_.push_back(evaluator);
         };
@@ -388,7 +388,7 @@ namespace Discret
             : assembler_(assembler), myphase_(curphase){};
 
         //! evaluate matrixes (stiffness)
-        void EvaluateMatrix(
+        void evaluate_matrix(
             std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
             const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
@@ -408,13 +408,13 @@ namespace Discret
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
             evaluate_matrix_and_assemble(elemat, funct, derxy, myphase_,
-                assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
-                phasemanager, variablemanager, timefacfac, fac, assembler_->CalcInitTimeDeriv());
+                assembler_->phase_to_assemble_into(iassemble, numdofpernode), numdofpernode,
+                phasemanager, variablemanager, timefacfac, fac, assembler_->calc_init_time_deriv());
           }
         };
 
         //! evaluate vectors (RHS vector)
-        void EvaluateVector(
+        void evaluate_vector(
             std::vector<Core::LinAlg::SerialDenseVector*>& elevec,  //!< element vector to be filled
             const Core::LinAlg::Matrix<nen, 1>& funct,              //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
@@ -435,8 +435,8 @@ namespace Discret
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
             evaluate_vector_and_assemble(elevec, funct, derxy, xyze, myphase_,
-                assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
-                phasemanager, variablemanager, rhsfac, fac, assembler_->CalcInitTimeDeriv());
+                assembler_->phase_to_assemble_into(iassemble, numdofpernode), numdofpernode,
+                phasemanager, variablemanager, rhsfac, fac, assembler_->calc_init_time_deriv());
           }
         };
 
@@ -464,7 +464,7 @@ namespace Discret
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
             evaluate_matrix_od_struct_and_assemble(elemat, funct, deriv, derxy, xjm, myphase_,
-                assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
+                assembler_->phase_to_assemble_into(iassemble, numdofpernode), numdofpernode,
                 phasemanager, variablemanager, timefacfac, fac, det);
           }
         };
@@ -490,7 +490,7 @@ namespace Discret
             // call the actual evaluation and assembly of the respective term (defined by derived
             // class)
             evaluate_matrix_od_scatra_and_assemble(elemat, funct, derxy, myphase_,
-                assembler_->PhaseToAssembleInto(iassemble, numdofpernode), numdofpernode,
+                assembler_->phase_to_assemble_into(iassemble, numdofpernode), numdofpernode,
                 phasemanager, variablemanager, timefacfac, fac);
           }
         };

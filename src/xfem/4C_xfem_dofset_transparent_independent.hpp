@@ -53,7 +53,7 @@ namespace XFEM
 
 
    protected:
-    int NumDofPerNode(const Core::Nodes::Node& node) const override;
+    int num_dof_per_node(const Core::Nodes::Node& node) const override;
 
 
    private:

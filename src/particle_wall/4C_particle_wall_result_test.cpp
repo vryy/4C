@@ -45,33 +45,33 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
   // extract and check discretization name
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != walldiscretization_->Name()) return;
+  if (dis != walldiscretization_->name()) return;
 
   // extract node id
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(walldiscretization_->HaveGlobalNode(node));
+  int havenode(walldiscretization_->have_global_node(node));
   int havenodeonanyproc(0);
-  walldiscretization_->Comm().SumAll(&havenode, &havenodeonanyproc, 1);
+  walldiscretization_->get_comm().SumAll(&havenode, &havenodeonanyproc, 1);
 
   // safety check
   if (not havenodeonanyproc)
     FOUR_C_THROW("node %d does not belong to discretization %s", node + 1,
-        walldiscretization_->Name().c_str());
+        walldiscretization_->name().c_str());
 
 
-  if (walldiscretization_->HaveGlobalNode(node))
+  if (walldiscretization_->have_global_node(node))
   {
-    const Core::Nodes::Node* actnode = walldiscretization_->gNode(node);
+    const Core::Nodes::Node* actnode = walldiscretization_->g_node(node);
 
     // node not owned on this processor
-    if (actnode->Owner() != walldiscretization_->Comm().MyPID()) return;
+    if (actnode->owner() != walldiscretization_->get_comm().MyPID()) return;
 
     // get wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-        particlewallinterface_->GetWallDataState();
+        particlewallinterface_->get_wall_data_state();
 
     // extract test quantity
     std::string quantity;
@@ -84,7 +84,7 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
     if (quantity == "posx" or quantity == "posy" or quantity == "posz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->GetDispCol();
+      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->get_disp_col();
 
       int idx = -1;
       if (quantity == "posx")
@@ -96,15 +96,15 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
 
       if (idx >= 0)
       {
-        actresult = actnode->X()[idx];
+        actresult = actnode->x()[idx];
 
         if (disp != Teuchos::null)
         {
           const Epetra_BlockMap& disnpmap = disp->Map();
-          int lid = disnpmap.LID(walldiscretization_->Dof(0, actnode, idx));
+          int lid = disnpmap.LID(walldiscretization_->dof(0, actnode, idx));
           if (lid < 0)
             FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(),
-                idx, actnode->Id());
+                idx, actnode->id());
           actresult += (*disp)[lid];
         }
       }
@@ -113,7 +113,7 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
     else if (quantity == "dispx" or quantity == "dispy" or quantity == "dispz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->GetDispCol();
+      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->get_disp_col();
 
       if (disp == Teuchos::null) return;
 
@@ -128,10 +128,10 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
       if (idx >= 0)
       {
         const Epetra_BlockMap& disnpmap = disp->Map();
-        int lid = disnpmap.LID(walldiscretization_->Dof(0, actnode, idx));
+        int lid = disnpmap.LID(walldiscretization_->dof(0, actnode, idx));
         if (lid < 0)
           FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(),
-              idx, actnode->Id());
+              idx, actnode->id());
         actresult = (*disp)[lid];
       }
     }
@@ -145,16 +145,16 @@ void PARTICLEWALL::WallResultTest::test_node(Input::LineDefinition& res, int& ne
   }
 }
 
-void PARTICLEWALL::WallResultTest::TestSpecial(
+void PARTICLEWALL::WallResultTest::test_special(
     Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // check results only for processor 0
-  if (walldiscretization_->Comm().MyPID() != 0) return;
+  if (walldiscretization_->get_comm().MyPID() != 0) return;
 
   // extract and check discretization name
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != walldiscretization_->Name()) return;
+  if (dis != walldiscretization_->name()) return;
 
   // extract test quantity
   std::string quantity;
@@ -164,10 +164,10 @@ void PARTICLEWALL::WallResultTest::TestSpecial(
   double actresult = 0.0;
 
   // number of total wall elements
-  if (quantity == "nwalleles") actresult = walldiscretization_->NumGlobalElements();
+  if (quantity == "nwalleles") actresult = walldiscretization_->num_global_elements();
   // number of total wall nodes
   else if (quantity == "nwallnodes")
-    actresult = walldiscretization_->NumGlobalNodes();
+    actresult = walldiscretization_->num_global_nodes();
   else
     FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 

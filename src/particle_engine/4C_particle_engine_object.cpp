@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 PARTICLEENGINE::ParticleObjectType PARTICLEENGINE::ParticleObjectType::instance_;
 
-Core::Communication::ParObject* PARTICLEENGINE::ParticleObjectType::Create(
+Core::Communication::ParObject* PARTICLEENGINE::ParticleObjectType::create(
     const std::vector<char>& data)
 {
   ParticleObject* my_particleobject = new ParticleObject();
@@ -43,7 +43,7 @@ void PARTICLEENGINE::ParticleObject::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // particletype_
@@ -68,7 +68,7 @@ void PARTICLEENGINE::ParticleObject::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // particletype_
   extract_from_pack(position, data, type_);

@@ -327,7 +327,7 @@ void NOX::Nln::GlobalData::set_status_test_parameters()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Utils& NOX::Nln::GlobalData::get_NOX_utils() const
+const ::NOX::Utils& NOX::Nln::GlobalData::get_nox_utils() const
 {
   if (nox_utils_.is_null()) FOUR_C_THROW("noxUtils_ was not initialized!");
 
@@ -336,7 +336,7 @@ const ::NOX::Utils& NOX::Nln::GlobalData::get_NOX_utils() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<::NOX::Utils>& NOX::Nln::GlobalData::get_NOX_utils_ptr() const
+const Teuchos::RCP<::NOX::Utils>& NOX::Nln::GlobalData::get_nox_utils_ptr() const
 {
   if (nox_utils_.is_null()) FOUR_C_THROW("noxUtils_ was not initialized!");
 

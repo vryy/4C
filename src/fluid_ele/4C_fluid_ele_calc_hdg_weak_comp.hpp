@@ -72,7 +72,7 @@ namespace Discret
       /*!
         Interface function for supporting methods of the element
        */
-      int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -107,12 +107,13 @@ namespace Discret
       }
 
       /// Update local solution
-      virtual int UpdateLocalSolution(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& interiorinc);
+      virtual int update_local_solution(Discret::ELEMENTS::Fluid* ele,
+          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& interiorinc);
 
       /// projection of function field
-      virtual int ProjectField(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int project_field(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
@@ -126,7 +127,7 @@ namespace Discret
       \brief Initialize the shape functions and solver to the given element (degree is runtime
       parameter)
        */
-      void InitializeShapes(const Discret::ELEMENTS::Fluid* ele);
+      void initialize_shapes(const Discret::ELEMENTS::Fluid* ele);
 
       /// Evaluate the element
       /*!
@@ -169,7 +170,7 @@ namespace Discret
       }
 
       /// Evaluate the XFEM cut element
-      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -252,7 +253,7 @@ namespace Discret
       }
 
       /// Singleton access method
-      static FluidEleCalcHDGWeakComp<distype>* Instance(
+      static FluidEleCalcHDGWeakComp<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
      private:
@@ -275,7 +276,7 @@ namespace Discret
             Core::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly);
 
         /// initialize all
-        void InitializeAll();
+        void initialize_all();
 
         /// compute material matrix
         void compute_material_matrix(const Teuchos::RCP<Core::Mat::Material>& mat,
@@ -288,7 +289,7 @@ namespace Discret
             const std::vector<double>& alevel);
 
         /// compute face residual
-        void ComputeFaceResidual(const int f, const Teuchos::RCP<Core::Mat::Material>& mat,
+        void compute_face_residual(const int f, const Teuchos::RCP<Core::Mat::Material>& mat,
             const std::vector<double>& val, const std::vector<double>& traceval,
             const std::vector<double>& alevel);
 
@@ -296,7 +297,7 @@ namespace Discret
         void compute_interior_matrices(const Teuchos::RCP<Core::Mat::Material>& mat);
 
         /// compute face matrices
-        void ComputeFaceMatrices(const int f, const Teuchos::RCP<Core::Mat::Material>& mat);
+        void compute_face_matrices(const int f, const Teuchos::RCP<Core::Mat::Material>& mat);
 
         /// compute local residual
         void compute_local_residual();
@@ -323,7 +324,7 @@ namespace Discret
         void condense_local_residual(Core::LinAlg::SerialDenseVector& eleVec);
 
         /// condense local matrix
-        void CondenseLocalMatrix(Core::LinAlg::SerialDenseMatrix& eleMat);
+        void condense_local_matrix(Core::LinAlg::SerialDenseMatrix& eleMat);
 
         // print matrices and residuals
         void print_matrices_and_residuals(Discret::ELEMENTS::Fluid& ele,

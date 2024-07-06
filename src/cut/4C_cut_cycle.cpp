@@ -15,14 +15,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-bool Core::Geo::Cut::Cycle::IsValid() const
+bool Core::Geo::Cut::Cycle::is_valid() const
 {
   if (points_.size() < 3) return false;
 
   // ignore cycles with all points on one and the same edge
   {
     plain_edge_set edges;
-    CommonEdges(edges);
+    common_edges(edges);
     if (edges.size() > 0)
     {
       return false;
@@ -32,12 +32,12 @@ bool Core::Geo::Cut::Cycle::IsValid() const
   return true;
 }
 
-bool Core::Geo::Cut::Cycle::IsCut(Element* element) const
+bool Core::Geo::Cut::Cycle::is_cut(Element* element) const
 {
   for (std::vector<Point*>::const_iterator i = points_.begin(); i != points_.end(); ++i)
   {
     Point* p = *i;
-    if (not p->IsCut(element))
+    if (not p->is_cut(element))
     {
       return false;
     }
@@ -45,7 +45,7 @@ bool Core::Geo::Cut::Cycle::IsCut(Element* element) const
   return true;
 }
 
-void Core::Geo::Cut::Cycle::Add(point_line_set& lines) const
+void Core::Geo::Cut::Cycle::add(point_line_set& lines) const
 {
   for (unsigned i = 0; i != points_.size(); ++i)
   {
@@ -72,12 +72,12 @@ void Core::Geo::Cut::Cycle::Add(point_line_set& lines) const
   }
 }
 
-void Core::Geo::Cut::Cycle::CommonEdges(plain_edge_set& edges) const
+void Core::Geo::Cut::Cycle::common_edges(plain_edge_set& edges) const
 {
   std::vector<Point*>::const_iterator i = points_.begin();
   if (i != points_.end())
   {
-    edges = (*i)->CutEdges();
+    edges = (*i)->cut_edges();
     for (++i; i != points_.end(); ++i)
     {
       Point* p = *i;
@@ -104,7 +104,7 @@ void Core::Geo::Cut::Cycle::intersection(plain_side_set& sides) const
   }
 }
 
-bool Core::Geo::Cut::Cycle::Equals(const Cycle& other)
+bool Core::Geo::Cut::Cycle::equals(const Cycle& other)
 {
   if (size() != other.size())
   {
@@ -124,7 +124,7 @@ bool Core::Geo::Cut::Cycle::Equals(const Cycle& other)
   return true;
 }
 
-void Core::Geo::Cut::Cycle::DropPoint(Point* p)
+void Core::Geo::Cut::Cycle::drop_point(Point* p)
 {
   std::vector<Point*>::iterator j = std::find(points_.begin(), points_.end(), p);
   if (j != points_.end())
@@ -154,7 +154,7 @@ void Core::Geo::Cut::Cycle::DropPoint(Point* p)
   }
 }
 
-void Core::Geo::Cut::Cycle::TestUnique()
+void Core::Geo::Cut::Cycle::test_unique()
 {
   PointSet c_copy;
   c_copy.insert(points_.begin(), points_.end());
@@ -169,7 +169,7 @@ void Core::Geo::Cut::Cycle::TestUnique()
         int num_occ = std::count(points_.begin(), points_.end(), (*it));
         print();
         std::stringstream str;
-        str << "Multiple( " << num_occ << " ) occcurence of point " << (*it)->Id()
+        str << "Multiple( " << num_occ << " ) occcurence of point " << (*it)->id()
             << " in the cycle" << std::endl;
         FOUR_C_THROW(str.str());
       }
@@ -177,21 +177,21 @@ void Core::Geo::Cut::Cycle::TestUnique()
   }
 }
 
-void Core::Geo::Cut::Cycle::GnuplotDump(std::ostream& stream) const
+void Core::Geo::Cut::Cycle::gnuplot_dump(std::ostream& stream) const
 {
   for (unsigned i = 0; i != points_.size(); ++i)
   {
     Point* p1 = points_[i];
     Point* p2 = points_[(i + 1) % points_.size()];
 
-    p1->Plot(stream);
-    p2->Plot(stream);
+    p1->plot(stream);
+    p2->plot(stream);
     stream << "\n\n";
   }
 }
 
 
-void Core::Geo::Cut::Cycle::GmshDump(std::ofstream& file) const
+void Core::Geo::Cut::Cycle::gmsh_dump(std::ofstream& file) const
 {
   for (unsigned i = 0; i != points_.size(); ++i)
   {
@@ -201,7 +201,7 @@ void Core::Geo::Cut::Cycle::GmshDump(std::ofstream& file) const
     std::stringstream section_name;
     section_name << "Line" << i;
     Core::Geo::Cut::Output::GmshNewSection(file, section_name.str());
-    Core::Geo::Cut::Output::GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, nullptr);
+    Core::Geo::Cut::Output::GmshLineDump(file, p1, p2, p1->id(), p2->id(), false, nullptr);
     Core::Geo::Cut::Output::GmshEndSection(file, false);
   }
 }
@@ -215,7 +215,7 @@ void Core::Geo::Cut::Cycle::print() const
 {
   std::cout << "--- Cycle ---" << std::endl;
   for (std::vector<Point*>::const_iterator cit = points_.begin(); cit != points_.end(); ++cit)
-    std::cout << "Point " << (*cit)->Id() << "\n";
+    std::cout << "Point " << (*cit)->id() << "\n";
   std::cout << std::endl;
 }
 

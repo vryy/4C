@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Torsion3Type Discret::ELEMENTS::Torsion3Type::instance_;
 
-Discret::ELEMENTS::Torsion3Type& Discret::ELEMENTS::Torsion3Type::Instance() { return instance_; }
+Discret::ELEMENTS::Torsion3Type& Discret::ELEMENTS::Torsion3Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Torsion3Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::Torsion3Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Torsion3* object = new Discret::ELEMENTS::Torsion3(-1, -1);
@@ -30,7 +30,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Torsion3Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Torsion3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Torsion3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TORSION3")
@@ -43,7 +43,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Torsion3Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Torsion3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Torsion3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -59,7 +59,7 @@ void Discret::ELEMENTS::Torsion3Type::nodal_block_information(
   dimns = 6;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Torsion3Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Torsion3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -97,7 +97,7 @@ Discret::ELEMENTS::Torsion3::Torsion3(const Discret::ELEMENTS::Torsion3& old)
  | Deep copy this instance of Torsion3 and return pointer to it (public)|
  |                                                           cyron 02/10|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Torsion3::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Torsion3::clone() const
 {
   Discret::ELEMENTS::Torsion3* newelement = new Discret::ELEMENTS::Torsion3(*this);
   return newelement;
@@ -114,7 +114,7 @@ void Discret::ELEMENTS::Torsion3::print(std::ostream& os) const { return; }
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 02/10|
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Torsion3::Shape() const { return Core::FE::CellType::line3; }
+Core::FE::CellType Discret::ELEMENTS::Torsion3::shape() const { return Core::FE::CellType::line3; }
 
 
 /*----------------------------------------------------------------------*
@@ -126,7 +126,7 @@ void Discret::ELEMENTS::Torsion3::pack(Core::Communication::PackBuffer& data) co
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   Element::pack(data);
   add_to_pack(data, bendingpotential_);
@@ -141,7 +141,7 @@ void Discret::ELEMENTS::Torsion3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);
@@ -155,7 +155,7 @@ void Discret::ELEMENTS::Torsion3::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             cyron 02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Torsion3::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Torsion3::lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::Torsion3::set_params_interface_ptr(const Teuchos::Parame
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Torsion3::ParamsInterfacePtr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Torsion3::params_interface_ptr()
 {
   return interface_ptr_;
 }

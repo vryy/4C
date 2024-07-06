@@ -72,16 +72,16 @@ namespace Core::IO
       files of all processors, by appending .p<proc_num> to the
       basename.
     */
-    void Open(std::string basename, int num_output_procs, int new_proc_num, int my_id);
+    void open(std::string basename, int num_output_procs, int new_proc_num, int my_id);
     //!
-    void Close();
+    void close();
 
     /*!
      * \brief read the packed element data from the mesh files
      * \note  this function should only be called while the HDFReader reads
      *        mesh files
      */
-    Teuchos::RCP<std::vector<char>> ReadElementData(int step, int new_proc_num, int my_id) const;
+    Teuchos::RCP<std::vector<char>> read_element_data(int step, int new_proc_num, int my_id) const;
 
     //!
     /*!
@@ -89,7 +89,7 @@ namespace Core::IO
      * \note: this function should only be called while the HDFReader reads
      *         mesh files
      */
-    Teuchos::RCP<std::vector<char>> ReadNodeData(int step, int new_proc_num, int my_id) const;
+    Teuchos::RCP<std::vector<char>> read_node_data(int step, int new_proc_num, int my_id) const;
 
     /*!
      * \brief reads the packed periodic boundary condition data from the mesh files
@@ -98,7 +98,7 @@ namespace Core::IO
      * \note this function should only be called when the HDFReader opened
      *       the mesh files
      */
-    Teuchos::RCP<std::vector<char>> ReadCondition(
+    Teuchos::RCP<std::vector<char>> read_condition(
         const int step, const int new_proc_num, const int my_id, const std::string condname) const;
 
     /*!
@@ -108,7 +108,7 @@ namespace Core::IO
     //
     //      \return  The whole knotvector data in a char vector
     //      */
-    Teuchos::RCP<std::vector<char>> ReadKnotvector(const int step) const;
+    Teuchos::RCP<std::vector<char>> read_knotvector(const int step) const;
 
 
     //! read an Epetra_MultiVector from the result files
@@ -123,7 +123,7 @@ namespace Core::IO
       \param columns      (in): number of vector columns
       \param Comm         (in): the communicator
      */
-    Teuchos::RCP<Epetra_MultiVector> ReadResultData(
+    Teuchos::RCP<Epetra_MultiVector> read_result_data(
         std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const;
 
     //! read a std::vector<char> from the result files
@@ -144,14 +144,14 @@ namespace Core::IO
     Teuchos::RCP<std::vector<char>> read_char_vector(
         std::string value_path, const Epetra_Comm& Comm) const;
 
-    Teuchos::RCP<std::vector<double>> ReadDoubleVector(std::string path) const
+    Teuchos::RCP<std::vector<double>> read_double_vector(std::string path) const
     {
       std::vector<int> length;
       Teuchos::RCP<std::vector<double>> values = read_double_data(path, 0, 1, length);
       return values;
     };
 
-    Teuchos::RCP<std::vector<int>> ReadIntVector(std::string path) const
+    Teuchos::RCP<std::vector<int>> read_int_vector(std::string path) const
     {
       std::vector<int> length;
       Teuchos::RCP<std::vector<int>> values = read_int_data(path, 0, 1);

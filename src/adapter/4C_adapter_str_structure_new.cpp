@@ -148,7 +148,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   if (not is_init()) FOUR_C_THROW("You have to call init() first!");
 
   // get the problem instance
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   // get the restart step
   const int restart = problem->restart();
 
@@ -163,19 +163,19 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // Here we read the discretization at the current
   // time step from restart files
   // ---------------------------------------------------------------------------
-  if (actdis_->GetCondition("PointCoupling") != nullptr)
+  if (actdis_->get_condition("PointCoupling") != nullptr)
   {
     std::vector<Teuchos::RCP<Core::FE::Discretization>> actdis_vec(1, actdis_);
-    Teuchos::ParameterList binning_params = Global::Problem::Instance()->binning_strategy_params();
+    Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
     Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
-        "spatial_approximation_type", Global::Problem::Instance()->spatial_approximation_type(),
+        "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     actdis_vec[0]->fill_complete(false, false, false);
     auto element_filter = [](const Core::Elements::Element* element)
     {
       if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element))
         return Core::Binstrategy::Utils::SpecialElement::beam;
-      else if (element->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+      else if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
         return Core::Binstrategy::Utils::SpecialElement::rigid_sphere;
       else
         return Core::Binstrategy::Utils::SpecialElement::none;
@@ -183,25 +183,25 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
 
     auto rigid_sphere_radius = [](const Core::Elements::Element* element)
     {
-      if (element->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
-        return dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element)->Radius();
+      if (element->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+        return dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element)->radius();
       else
         return 0.0;
     };
     auto correct_beam_center_node = [](const Core::Nodes::Node* node)
     {
-      const Core::Elements::Element* element = node->Elements()[0];
+      const Core::Elements::Element* element = node->elements()[0];
       const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-      if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
-        return element->Nodes()[0];
+      if (beamelement != nullptr and not beamelement->is_centerline_node(*node))
+        return element->nodes()[0];
       else
         return node;
     };
     Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
-        Global::Problem::Instance()->OutputControlFile(), actdis_vec, element_filter,
+        Global::Problem::instance()->output_control_file(), actdis_vec, element_filter,
         rigid_sphere_radius, correct_beam_center_node, true);
   }
-  else if (not actdis_->Filled() || not actdis_->HaveDofs())
+  else if (not actdis_->filled() || not actdis_->have_dofs())
   {
     actdis_->fill_complete();
   }
@@ -229,7 +229,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // time integration
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(problem->io_params()));
   Teuchos::RCP<Teuchos::ParameterList> time_adaptivity_params =
       Teuchos::rcp(new Teuchos::ParameterList(sdyn_->sublist("TIMEADAPTIVITY")));
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -247,10 +247,10 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   {
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
-    Teuchos::RCP<Mat::PAR::Bundle> materials = problem->Materials();
-    for (const auto& [_, mat] : materials->Map())
+    Teuchos::RCP<Mat::PAR::Bundle> materials = problem->materials();
+    for (const auto& [_, mat] : materials->map())
     {
-      if (mat->Type() == Core::Materials::m_struct_multiscale)
+      if (mat->type() == Core::Materials::m_struct_multiscale)
       {
         if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(*sdyn_, "DYNAMICTYP") !=
             Inpar::Solid::dyna_genalpha)
@@ -267,7 +267,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Create context for output and restart
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis_->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis_->writer();
   if (Core::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->write_mesh(0, 0.0);
@@ -338,18 +338,18 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // ---------------------------------------------------------------------------
   // --- contact conditions
   std::vector<Core::Conditions::Condition*> ccond(0);
-  actdis_->GetCondition("Contact", ccond);
+  actdis_->get_condition("Contact", ccond);
   if (ccond.size())
   {
     // what's the current problem type?
-    Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+    Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
     // ToDo: once the new structural time integration can handle
     //       condensed contact formulations, the model_evaluator
     //       can have its contact model. For now, the TSI Lagrange
     //       strategy resides in the TSI algorithm.
     if (probtype == Core::ProblemType::tsi)
     {
-      const Teuchos::ParameterList& contact = Global::Problem::Instance()->contact_dynamic_params();
+      const Teuchos::ParameterList& contact = Global::Problem::instance()->contact_dynamic_params();
       if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           Inpar::CONTACT::solution_nitsche)
         modeltypes.insert(Inpar::Solid::model_contact);
@@ -359,7 +359,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   }
   // --- meshtying conditions
   std::vector<Core::Conditions::Condition*> mtcond(0);
-  actdis_->GetCondition("Mortar", mtcond);
+  actdis_->get_condition("Mortar", mtcond);
   if (mtcond.size()) modeltypes.insert(Inpar::Solid::model_meshtying);
 
   // check for 0D cardiovascular conditions
@@ -368,13 +368,13 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   std::vector<Core::Conditions::Condition*> cardiovasc0dcond_arterialproxdist(0);
   std::vector<Core::Conditions::Condition*> cardiovasc0dcond_syspulcirculation(0);
   std::vector<Core::Conditions::Condition*> cardiovascrespir0dcond_syspulperiphcirculation(0);
-  actdis_->GetCondition(
+  actdis_->get_condition(
       "Cardiovascular0D4ElementWindkesselStructureCond", cardiovasc0dcond_4elementwindkessel);
-  actdis_->GetCondition(
+  actdis_->get_condition(
       "Cardiovascular0DArterialProxDistStructureCond", cardiovasc0dcond_arterialproxdist);
-  actdis_->GetCondition("Cardiovascular0DSysPulCirculationStructureCond",
+  actdis_->get_condition("Cardiovascular0DSysPulCirculationStructureCond",
       cardiovascrespir0dcond_syspulperiphcirculation);
-  actdis_->GetCondition("CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",
+  actdis_->get_condition("CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",
       cardiovasc0dcond_syspulcirculation);
   if (cardiovasc0dcond_4elementwindkessel.size() or cardiovasc0dcond_arterialproxdist.size() or
       cardiovasc0dcond_syspulcirculation.size() or
@@ -393,12 +393,12 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   std::vector<Core::Conditions::Condition*> lagcond_mpconline2d(0);
   std::vector<Core::Conditions::Condition*> lagcond_mpconplane3d(0);
   std::vector<Core::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
-  actdis_->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
-  actdis_->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
-  actdis_->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);
-  actdis_->GetCondition("MPC_NodeOnLine_2D", lagcond_mpconline2d);
-  actdis_->GetCondition("MPC_NodeOnPlane_3D", lagcond_mpconplane3d);
-  actdis_->GetCondition("MPC_NormalComponent_3D", lagcond_mpcnormcomp3d);
+  actdis_->get_condition("VolumeConstraint_3D", lagcond_volconstr3d);
+  actdis_->get_condition("AreaConstraint_3D", lagcond_areaconstr3d);
+  actdis_->get_condition("AreaConstraint_2D", lagcond_areaconstr2d);
+  actdis_->get_condition("MPC_NodeOnLine_2D", lagcond_mpconline2d);
+  actdis_->get_condition("MPC_NodeOnPlane_3D", lagcond_mpconplane3d);
+  actdis_->get_condition("MPC_NormalComponent_3D", lagcond_mpcnormcomp3d);
   if (lagcond_volconstr3d.size() or lagcond_areaconstr3d.size() or lagcond_areaconstr2d.size() or
       lagcond_mpconline2d.size() or lagcond_mpconplane3d.size() or lagcond_mpcnormcomp3d.size())
     have_lag_constraint = true;
@@ -406,9 +406,9 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   std::vector<Core::Conditions::Condition*> pencond_volconstr3d(0);
   std::vector<Core::Conditions::Condition*> pencond_areaconstr3d(0);
   std::vector<Core::Conditions::Condition*> pencond_mpcnormcomp3d(0);
-  actdis_->GetCondition("VolumeConstraint_3D_Pen", pencond_volconstr3d);
-  actdis_->GetCondition("AreaConstraint_3D_Pen", pencond_areaconstr3d);
-  actdis_->GetCondition("MPC_NormalComponent_3D_Pen", pencond_mpcnormcomp3d);
+  actdis_->get_condition("VolumeConstraint_3D_Pen", pencond_volconstr3d);
+  actdis_->get_condition("AreaConstraint_3D_Pen", pencond_areaconstr3d);
+  actdis_->get_condition("MPC_NormalComponent_3D_Pen", pencond_mpcnormcomp3d);
   if (pencond_volconstr3d.size() or pencond_areaconstr3d.size() or pencond_mpcnormcomp3d.size())
     have_pen_constraint = true;
   if (have_lag_constraint or have_pen_constraint)
@@ -418,15 +418,15 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // check for spring dashpot conditions
   // ---------------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> sdp_cond(0);
-  actdis_->GetCondition("RobinSpringDashpot", sdp_cond);
+  actdis_->get_condition("RobinSpringDashpot", sdp_cond);
   if (sdp_cond.size()) modeltypes.insert(Inpar::Solid::model_springdashpot);
   // ---------------------------------------------------------------------------
   // check for coupled problems
   // ---------------------------------------------------------------------------
   // get the problem instance
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   // what's the current problem type?
-  Core::ProblemType probtype = problem->GetProblemType();
+  Core::ProblemType probtype = problem->get_problem_type();
   switch (probtype)
   {
     case Core::ProblemType::fsi:
@@ -503,7 +503,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // check for beam interactions (either contact or potential-based)
   // ---------------------------------------------------------------------------
   // get beam contact strategy
-  const Teuchos::ParameterList& beamcontact = Global::Problem::Instance()->beam_contact_params();
+  const Teuchos::ParameterList& beamcontact = Global::Problem::instance()->beam_contact_params();
   Inpar::BEAMCONTACT::Strategy strategy =
       Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
@@ -512,11 +512,11 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
 
   // conditions for potential-based beam interaction
   std::vector<Core::Conditions::Condition*> beampotconditions(0);
-  actdis_->GetCondition("BeamPotentialLineCharge", beampotconditions);
+  actdis_->get_condition("BeamPotentialLineCharge", beampotconditions);
 
   // conditions for beam penalty point coupling
   std::vector<Core::Conditions::Condition*> beampenaltycouplingconditions(0);
-  actdis_->GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
+  actdis_->get_condition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
 
 
   if (strategy != Inpar::BEAMCONTACT::bstr_none and modelevaluator == Inpar::BEAMCONTACT::bstr_old)
@@ -526,34 +526,34 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
   if (Core::UTILS::IntegralValue<int>(
-          Global::Problem::Instance()->brownian_dynamics_params(), "BROWNDYNPROB"))
+          Global::Problem::instance()->brownian_dynamics_params(), "BROWNDYNPROB"))
     modeltypes.insert(Inpar::Solid::model_browniandyn);
 
   // ---------------------------------------------------------------------------
   // check for beam interaction
   // ---------------------------------------------------------------------------
   if (Core::UTILS::IntegralValue<int>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING"),
+          Global::Problem::instance()->beam_interaction_params().sublist("CROSSLINKING"),
           "CROSSLINKER") or
       Core::UTILS::IntegralValue<int>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
+          Global::Problem::instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING") or
       Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
+          Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
       Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
-          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
+          Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
-          Global::Problem::Instance()->beam_interaction_params().sublist(
+          Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
           "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
-          Global::Problem::Instance()->beam_interaction_params().sublist(
+          Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
           "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
-          Global::Problem::Instance()->beam_interaction_params().sublist(
+          Global::Problem::instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE CONTACT"),
           "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0 or beampenaltycouplingconditions.size() > 0)
@@ -564,9 +564,9 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // ---------------------------------------------------------------------------
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation;
-  actdis_->GetCondition("LinePeriodicRve", linePeriodicRve);
-  actdis_->GetCondition("SurfacePeriodicRve", surfPeriodicRve);
-  actdis_->GetCondition("PointLinearCoupledEquation", pointLinearCoupledEquation);
+  actdis_->get_condition("LinePeriodicRve", linePeriodicRve);
+  actdis_->get_condition("SurfacePeriodicRve", surfPeriodicRve);
+  actdis_->get_condition("PointLinearCoupledEquation", pointLinearCoupledEquation);
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
@@ -594,17 +594,17 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
   int isrotvec_local = 0;
   int isrotvec_global = 0;
 
-  for (int i = 0; i < actdis_->NumMyRowElements(); ++i)
+  for (int i = 0; i < actdis_->num_my_row_elements(); ++i)
   {
-    Core::Elements::Element* actele = actdis_->lRowElement(i);
+    Core::Elements::Element* actele = actdis_->l_row_element(i);
     // Detect plasticity -------------------------------------------------------
-    if (actele->ElementType() == Discret::ELEMENTS::SoHex8PlastType::Instance() or
-        actele->ElementType() == Discret::ELEMENTS::SoHex27PlastType::Instance() or
-        actele->ElementType() == Discret::ELEMENTS::SoSh8PlastType::Instance() or
-        actele->ElementType() == Discret::ELEMENTS::SoHex18PlastType::Instance() or
-        actele->ElementType() == Discret::ELEMENTS::SoSh18PlastType::Instance())
+    if (actele->element_type() == Discret::ELEMENTS::SoHex8PlastType::instance() or
+        actele->element_type() == Discret::ELEMENTS::SoHex27PlastType::instance() or
+        actele->element_type() == Discret::ELEMENTS::SoSh8PlastType::instance() or
+        actele->element_type() == Discret::ELEMENTS::SoHex18PlastType::instance() or
+        actele->element_type() == Discret::ELEMENTS::SoSh18PlastType::instance())
     {
-      if (actele->Material()->MaterialType() == Core::Materials::m_plelasthyper)
+      if (actele->material()->material_type() == Core::Materials::m_plelasthyper)
         isplasticity_local = true;
     }
 
@@ -612,20 +612,20 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
     Discret::ELEMENTS::SoBase* so_base_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(actele);
     if (so_base_ele != nullptr)
     {
-      if (so_base_ele->HaveEAS()) iseas_local = 1;
+      if (so_base_ele->have_eas()) iseas_local = 1;
     }
 
     Discret::ELEMENTS::Shell7p* shell7p = dynamic_cast<Discret::ELEMENTS::Shell7p*>(actele);
     if (shell7p)
-      if (shell7p->GetEleTech().find(Inpar::Solid::EleTech::eas) != shell7p->GetEleTech().end())
+      if (shell7p->get_ele_tech().find(Inpar::Solid::EleTech::eas) != shell7p->get_ele_tech().end())
         iseas_local = 1;
 
     Discret::ELEMENTS::Solid* solid = dynamic_cast<Discret::ELEMENTS::Solid*>(actele);
     if (solid != nullptr)
-      if (solid->HaveEAS()) iseas_local = 1;
+      if (solid->have_eas()) iseas_local = 1;
 
     // Detect additional pressure dofs -----------------------------------------
-    if (actele->ElementType() == Discret::ELEMENTS::SoSh8p8Type::Instance()) ispressure_local = 1;
+    if (actele->element_type() == Discret::ELEMENTS::SoSh8p8Type::instance()) ispressure_local = 1;
 
     // Detect fbar
     Discret::ELEMENTS::SoHex8fbar* so_hex8fbar_ele =
@@ -633,8 +633,8 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
     if (so_hex8fbar_ele != nullptr) isfbar_local = 1;
 
     // Detect non-additive rotation-vector DOFs --------------------------------
-    if (actele->ElementType() == Discret::ELEMENTS::Beam3rType::Instance() or
-        actele->ElementType() == Discret::ELEMENTS::Beam3kType::Instance())
+    if (actele->element_type() == Discret::ELEMENTS::Beam3rType::instance() or
+        actele->element_type() == Discret::ELEMENTS::Beam3kType::instance())
     {
       isrotvec_local = true;
       break;
@@ -642,23 +642,23 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
   }
 
   // plasticity - sum over all processors
-  actdis_->Comm().SumAll(&isplasticity_local, &isplasticity_global, 1);
+  actdis_->get_comm().SumAll(&isplasticity_local, &isplasticity_global, 1);
   if (isplasticity_global > 0) eletechs.insert(Inpar::Solid::EleTech::plasticity);
 
   // eas - sum over all processors
-  actdis_->Comm().SumAll(&iseas_local, &iseas_global, 1);
+  actdis_->get_comm().SumAll(&iseas_local, &iseas_global, 1);
   if (iseas_global > 0) eletechs.insert(Inpar::Solid::EleTech::eas);
 
   // pressure - sum over all processors
-  actdis_->Comm().SumAll(&ispressure_local, &ispressure_global, 1);
+  actdis_->get_comm().SumAll(&ispressure_local, &ispressure_global, 1);
   if (ispressure_global > 0) eletechs.insert(Inpar::Solid::EleTech::pressure);
 
   // fbar - sum over all processors
-  actdis_->Comm().SumAll(&isfbar_local, &isfbar_global, 1);
+  actdis_->get_comm().SumAll(&isfbar_local, &isfbar_global, 1);
   if (isfbar_global > 0) eletechs.insert(Inpar::Solid::EleTech::fbar);
 
   // rotation vector DOFs - sum over all processors
-  actdis_->Comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
+  actdis_->get_comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
   if (isrotvec_global > 0) eletechs.insert(Inpar::Solid::EleTech::rotvec);
 }
 
@@ -669,13 +669,13 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
     Teuchos::ParameterList& xparams, Teuchos::ParameterList& time_adaptivity_params)
 {
   // get the problem instance and the problem type
-  Global::Problem* problem = Global::Problem::Instance();
-  Core::ProblemType probtype = problem->GetProblemType();
+  Global::Problem* problem = Global::Problem::instance();
+  Core::ProblemType probtype = problem->get_problem_type();
 
   // ---------------------------------------------------------------------------
   // show default parameters
   // ---------------------------------------------------------------------------
-  if ((actdis_->Comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *sdyn_);
+  if ((actdis_->get_comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *sdyn_);
 
   // ---------------------------------------------------------------------------
   // get input parameter lists and copy them,
@@ -683,7 +683,7 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
   // ---------------------------------------------------------------------------
   // nox parameter list
   Teuchos::RCP<Teuchos::ParameterList> snox =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(problem->structural_nox_params()));
   Teuchos::ParameterList& nox = xparams.sublist("NOX");
   nox = *snox;
 
@@ -750,7 +750,7 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
     case Core::ProblemType::fsi:
     case Core::ProblemType::fsi_redmodels:
     {
-      const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
       const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
       if (Core::UTILS::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
       {
@@ -764,7 +764,7 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
           time_adaptivity_params.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
           time_adaptivity_params.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
 
-          if (actdis_->Comm().MyPID() == 0)
+          if (actdis_->get_comm().MyPID() == 0)
           {
             Core::IO::cout
                 << "*** Due to FSI time step size adaptivity with structure based error "
@@ -826,7 +826,7 @@ void Adapter::StructureBaseAlgorithmNew::set_structure_wrapper(
 {
   // try to firstly create the adaptive wrapper
   if (str_wrapper_.is_null())
-    str_wrapper_ = Adapter::StructureTimeAda::Create(time_adaptivity_params, ti_strategy);
+    str_wrapper_ = Adapter::StructureTimeAda::create(time_adaptivity_params, ti_strategy);
 
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null()) create_wrapper(ti_strategy);
@@ -841,8 +841,8 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
     Teuchos::RCP<Solid::TimeInt::Base> ti_strategy)
 {
   // get the problem instance and the problem type
-  Global::Problem* problem = Global::Problem::Instance();
-  Core::ProblemType probtype = problem->GetProblemType();
+  Global::Problem* problem = Global::Problem::instance();
+  Core::ProblemType probtype = problem->get_problem_type();
 
   switch (probtype)
   {
@@ -855,15 +855,15 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
     case Core::ProblemType::thermo_fsi:
     case Core::ProblemType::fsi_xfem:
     {
-      const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
       const int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
       // Are there any constraint conditions active?
       const std::set<Inpar::Solid::ModelType>& modeltypes =
-          ti_strategy->get_data_sdyn().GetModelTypes();
+          ti_strategy->get_data_sdyn().get_model_types();
       if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
       {
-        if ((actdis_->Comm()).MyPID() == 0)
+        if ((actdis_->get_comm()).MyPID() == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
@@ -879,7 +879,7 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
         if (coupling == fsi_iter_lung_monolithicstructuresplit or
             coupling == fsi_iter_lung_monolithicfluidsplit)
         {
-          if ((actdis_->Comm()).MyPID() == 0)
+          if ((actdis_->get_comm()).MyPID() == 0)
             Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
           str_wrapper_ = Teuchos::rcp(
               new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
@@ -894,7 +894,7 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
     }
     case Core::ProblemType::fbi:
     {
-      const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
       if (Core::UTILS::IntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == Inpar::FSI::DirichletNeumann)
         str_wrapper_ = Teuchos::rcp(new FBIStructureWrapper(ti_strategy));
@@ -933,7 +933,7 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
               porodyn, "COUPALGO");
       // Are there any constraint conditions active?
       const std::set<Inpar::Solid::ModelType>& modeltypes =
-          ti_strategy->get_data_sdyn().GetModelTypes();
+          ti_strategy->get_data_sdyn().get_model_types();
       if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
       {
         if (coupling == Inpar::PoroElast::Monolithic_structuresplit or

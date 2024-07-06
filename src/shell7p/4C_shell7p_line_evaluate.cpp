@@ -25,7 +25,7 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   parent_element()->set_params_interface_ptr(params);
 
   // we need the displacement at the previous step
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   std::vector<double> displacements(dof_index_array.size());
   Core::FE::ExtractMyValues(*disp, displacements, dof_index_array);
@@ -38,7 +38,7 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   // time curve buisiness
   // find out whether we will use a time curve
   double time = -1.0;
-  if (parent_element()->IsParamsInterface())
+  if (parent_element()->is_params_interface())
     time = parent_element()->str_params_interface().get_total_time();
   else
     time = params.get<double>("total time", -1.0);
@@ -66,10 +66,10 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   const Core::FE::IntegrationPoints1D intpoints(Core::FE::GaussRule1D::line_2point);
   Core::LinAlg::SerialDenseVector shape_functions(numnode);
   Core::LinAlg::SerialDenseMatrix derivatives(1, numnode);
-  const Core::FE::CellType shape = Shape();
+  const Core::FE::CellType shape = Shell7pLine::shape();
 
   // integration
-  for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
+  for (int gp = 0; gp < intpoints.num_points(); ++gp)
   {
     // get shape functions and derivatives of element surface
     const double e = intpoints.qxg[gp][0];
@@ -103,8 +103,8 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
           const double* coordgpref = gp_coord2;  // needed for function evaluation
 
           // evaluate function at current gauss point
-          functfac = Global::Problem::Instance()
-                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functfac = Global::Problem::instance()
+                         ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .evaluate(coordgpref, time, i);
         }
 

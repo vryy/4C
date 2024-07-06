@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Ale2LineType Discret::ELEMENTS::Ale2LineType::instance_;
 
-Discret::ELEMENTS::Ale2LineType& Discret::ELEMENTS::Ale2LineType::Instance() { return instance_; }
+Discret::ELEMENTS::Ale2LineType& Discret::ELEMENTS::Ale2LineType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -26,8 +26,8 @@ Discret::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode, const int* n
     Core::Nodes::Node** nodes, Discret::ELEMENTS::Ale2* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lline);
   return;
 }
@@ -42,7 +42,7 @@ Discret::ELEMENTS::Ale2Line::Ale2Line(const Discret::ELEMENTS::Ale2Line& old)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Ale2Line::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Ale2Line::clone() const
 {
   Discret::ELEMENTS::Ale2Line* newelement = new Discret::ELEMENTS::Ale2Line(*this);
   return newelement;
@@ -50,7 +50,7 @@ Core::Elements::Element* Discret::ELEMENTS::Ale2Line::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Ale2Line::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Ale2Line::shape() const
 {
   switch (num_node())
   {

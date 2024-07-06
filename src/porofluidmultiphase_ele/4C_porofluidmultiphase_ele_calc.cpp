@@ -33,7 +33,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCa
     : ele_(nullptr),
       totalnumdofpernode_(numdofpernode),
       numfluidphases_(0),
-      para_(Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
+      para_(Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(
           disname)),  // standard parameter list
       xsi_(true),
       xyze0_(true),
@@ -56,7 +56,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCa
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>*
-Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
+Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
@@ -66,7 +66,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::Instance(
             new PoroFluidMultiPhaseEleCalc<distype>(numdofpernode, disname));
       });
 
-  return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
+  return singleton_map[std::make_pair(disname, numdofpernode)].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
@@ -209,7 +209,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_av
 
   gauss_point_loop(intpoints, ele, elemat, elevec, discretization, la);
 
-  const auto number_gauss_points = 1.0 / (double)intpoints.IP().nquad;
+  const auto number_gauss_points = 1.0 / (double)intpoints.ip().nquad;
 
   (*elemat[0]).scale(number_gauss_points);
   (*elemat[1]).scale(number_gauss_points);
@@ -282,37 +282,37 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
     Core::Elements::Element::LocationArray& la)
 {
   // start the loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
-    variablemanager_->EvaluateGPVariables(funct_, derxy_);
+    variablemanager_->evaluate_gp_variables(funct_, derxy_);
 
     // set the current gauss point state in the manager
-    phasemanager_->EvaluateGPState(j_, *variablemanager_);
+    phasemanager_->evaluate_gp_state(j_, *variablemanager_);
 
     // stabilization parameter and integration factors
     // const double taufac     = tau[k]*fac;
-    const double timefacfac = para_->TimeFac() * fac;
+    const double timefacfac = para_->time_fac() * fac;
     // const double timetaufac = para_->TimeFac()*taufac;
 
-    double rhsfac = para_->TimeFacRhs() * fac;
+    double rhsfac = para_->time_fac_rhs() * fac;
 
     //----------------------------------------------------------------
     // 1) element matrix
     //----------------------------------------------------------------
-    evaluator_->EvaluateMatrix(elemat, funct_, derxy_, totalnumdofpernode_, *phasemanager_,
+    evaluator_->evaluate_matrix(elemat, funct_, derxy_, totalnumdofpernode_, *phasemanager_,
         *variablemanager_, timefacfac, fac);
 
     //----------------------------------------------------------------
     // 2) element right hand side
     //----------------------------------------------------------------
 
-    evaluator_->EvaluateVector(elevec, funct_, derxy_, xyze_, totalnumdofpernode_, *phasemanager_,
+    evaluator_->evaluate_vector(elevec, funct_, derxy_, xyze_, totalnumdofpernode_, *phasemanager_,
         *variablemanager_, rhsfac, fac);
 
     // clear current gauss point data for safety
-    phasemanager_->ClearGPState();
+    phasemanager_->clear_gp_state();
   }
 
   return;
@@ -329,18 +329,18 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
     Core::Elements::Element::LocationArray& la)
 {
   // start the loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
-    variablemanager_->EvaluateGPVariables(funct_, derxy_);
+    variablemanager_->evaluate_gp_variables(funct_, derxy_);
 
     // set the current gauss point state in the manager
-    phasemanager_->EvaluateGPState(j_, *variablemanager_);
+    phasemanager_->evaluate_gp_state(j_, *variablemanager_);
 
     // stabilization parameter and integration factors
     // const double taufac     = tau[k]*fac;
-    double rhsfac = para_->TimeFacRhs() * fac;
+    double rhsfac = para_->time_fac_rhs() * fac;
     // const double timetaufac = para_->TimeFac()*taufac;
 
     //----------------------------------------------------------------
@@ -350,7 +350,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
         *phasemanager_, *variablemanager_, rhsfac, fac, det_);
 
     // clear current gauss point data for safety
-    phasemanager_->ClearGPState();
+    phasemanager_->clear_gp_state();
   }
 
   return;
@@ -367,18 +367,18 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
     Core::Elements::Element::LocationArray& la)
 {
   // start the loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
-    variablemanager_->EvaluateGPVariables(funct_, derxy_);
+    variablemanager_->evaluate_gp_variables(funct_, derxy_);
 
     // set the current gauss point state in the manager
-    phasemanager_->EvaluateGPState(j_, *variablemanager_);
+    phasemanager_->evaluate_gp_state(j_, *variablemanager_);
 
     // stabilization parameter and integration factors
     // const double taufac     = tau[k]*fac;
-    double rhsfac = para_->TimeFacRhs() * fac;
+    double rhsfac = para_->time_fac_rhs() * fac;
 
     // const double timetaufac = para_->TimeFac()*taufac;
 
@@ -389,7 +389,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
         *phasemanager_, *variablemanager_, rhsfac, fac);
 
     // clear current gauss point data for safety
-    phasemanager_->ClearGPState();
+    phasemanager_->clear_gp_state();
   }
 
   return;
@@ -426,25 +426,25 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(Core::Ele
       j_ = 1.0;
 
     // evaluate needed variables
-    variablemanager_->EvaluateGPVariables(funct_, derxy_);
+    variablemanager_->evaluate_gp_variables(funct_, derxy_);
 
     // set the current node state as GP state in the manager
-    phasemanager_->EvaluateGPState(j_, *variablemanager_);
+    phasemanager_->evaluate_gp_state(j_, *variablemanager_);
 
     //----------------------------------------------------------------
     // 1) element matrix
     //----------------------------------------------------------------
-    evaluator_->EvaluateMatrix(
+    evaluator_->evaluate_matrix(
         elemat, funct_, derxy_, totalnumdofpernode_, *phasemanager_, *variablemanager_, 1.0, 1.0);
 
     //----------------------------------------------------------------
     // 2) element vector
     //----------------------------------------------------------------
-    evaluator_->EvaluateVector(elevec, funct_, derxy_, xyze_, totalnumdofpernode_, *phasemanager_,
+    evaluator_->evaluate_vector(elevec, funct_, derxy_, xyze_, totalnumdofpernode_, *phasemanager_,
         *variablemanager_, 1.0, 1.0);
 
     // clear current gauss point data for safety
-    phasemanager_->ClearGPState();
+    phasemanager_->clear_gp_state();
   }
 }
 
@@ -467,13 +467,13 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_eleme
   //----------------------------------------------------------------
   // 1) element matrix
   //----------------------------------------------------------------
-  evaluator_->EvaluateMatrix(
+  evaluator_->evaluate_matrix(
       elemat, funct_, derxy_, totalnumdofpernode_, *phasemanager_, *variablemanager_, 1.0, 1.0);
 
   //----------------------------------------------------------------
   // 2) element vector
   //----------------------------------------------------------------
-  evaluator_->EvaluateVector(elevec, funct_, derxy_, xyze_, totalnumdofpernode_, *phasemanager_,
+  evaluator_->evaluate_vector(elevec, funct_, derxy_, xyze_, totalnumdofpernode_, *phasemanager_,
       *variablemanager_, 1.0, 1.0);
 
   return;
@@ -497,16 +497,16 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
   // set element
   ele_ = ele;
 
-  Teuchos::RCP<Core::Mat::Material> mat = ele->Material();
-  if (mat->MaterialType() != Core::Materials::m_fluidporo_multiphase and
-      mat->MaterialType() != Core::Materials::m_fluidporo_multiphase_reactions)
+  Teuchos::RCP<Core::Mat::Material> mat = ele->material();
+  if (mat->material_type() != Core::Materials::m_fluidporo_multiphase and
+      mat->material_type() != Core::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW(
-        "PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
+        "PoroFluidMultiPhase element got unsupported material type %d", mat->material_type());
 
   Teuchos::RCP<Mat::FluidPoroMultiPhase> actmat =
       Teuchos::rcp_static_cast<Mat::FluidPoroMultiPhase>(mat);
   if (actmat == Teuchos::null) FOUR_C_THROW("cast failed");
-  numfluidphases_ = actmat->NumFluidPhases();
+  numfluidphases_ = actmat->num_fluid_phases();
 
   // Note:
   // here the phase manager, the variable manager and the evaluator classes are
@@ -515,8 +515,8 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
   // could be adapted to have static members, which are only built once.
 
   // build the phase manager
-  phasemanager_ = Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::CreatePhaseManager(
-      *para_, nsd_, ele->Material()->MaterialType(), action, totalnumdofpernode_, numfluidphases_);
+  phasemanager_ = Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
+      *para_, nsd_, ele->material()->material_type(), action, totalnumdofpernode_, numfluidphases_);
   // setup the manager
   phasemanager_->setup(ele);
 
@@ -526,7 +526,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
 
   // build the evaluator
   evaluator_ =
-      Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd_, nen_>::CreateEvaluator(
+      Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd_, nen_>::create_evaluator(
           *para_, action, totalnumdofpernode_, numfluidphases_, *phasemanager_);
 
   return 0;
@@ -556,14 +556,14 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_deri
 )
 {
   // coordinates of the current integration point
-  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  const double* gpcoord = (intpoints.ip().qxg)[iquad];
   for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = gpcoord[idim];
 
   det_ = eval_shape_func_and_derivs_in_parameter_space();
 
   if (det_ < 1E-16)
     FOUR_C_THROW(
-        "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
+        "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->id(), det_);
 
   // compute global spatial derivatives
   derxy_.multiply(xij_, deriv_);
@@ -590,7 +590,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_deri
   j_ = det_ / det0;
 
   // set integration factor: fac = Gauss weight * det(J)
-  const double fac = intpoints.IP().qwgt[iquad] * det_;
+  const double fac = intpoints.ip().qwgt[iquad] * det_;
 
   // return integration factor for current GP: fac = Gauss weight * det(J)
   return fac;
@@ -654,7 +654,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::compute_jacobian_at
 
   if (det_ < 1E-16)
     FOUR_C_THROW(
-        "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
+        "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->id(), det_);
 
   // compute global spatial derivatives
   derxy_.multiply(xij_, deriv_);

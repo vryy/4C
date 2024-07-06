@@ -44,21 +44,21 @@ namespace Discret
     class ElemagType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "ElemagType"; }
+      std::string name() const override { return "ElemagType"; }
 
-      static ElemagType& Instance();
+      static ElemagType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -103,23 +103,23 @@ namespace Discret
       /*!
       \brief Deep copy this instance and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
 
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override { return distype_; };
+      Core::FE::CellType shape() const override { return distype_; };
 
       /*!
       \brief set discretization type of element
       */
-      virtual void SetDisType(Core::FE::CellType shape)
+      virtual void set_dis_type(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -128,33 +128,33 @@ namespace Discret
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return Core::FE::getNumberOfElementLines(distype_); }
+      int num_line() const override { return Core::FE::getNumberOfElementLines(distype_); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(distype_); }
+      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(distype_); }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return Core::FE::getNumberOfElementVolumes(distype_); }
+      int num_volume() const override { return Core::FE::getNumberOfElementVolumes(distype_); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and
       the parent_slave element
       */
-      Teuchos::RCP<Core::Elements::Element> CreateFaceElement(
+      Teuchos::RCP<Core::Elements::Element> create_face_element(
           Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
           int nnode,                              //!< number of surface nodes
           const int* nodeids,                     //!< node ids of surface element
@@ -170,7 +170,10 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return ElemagType::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return ElemagType::instance().unique_par_object_id();
+      }
       /*!
       \brief Pack this class so it can be communicated
 
@@ -199,7 +202,7 @@ namespace Discret
 
       HDG element: No dofs are associated with nodes
       */
-      int NumDofPerNode(const Core::Nodes::Node&) const override { return 0; }
+      int num_dof_per_node(const Core::Nodes::Node&) const override { return 0; }
 
       /*!
       \brief Get number of degrees of freedom per face
@@ -212,8 +215,8 @@ namespace Discret
       int num_dof_per_face(const unsigned face) const override
       {
         return (Core::FE::getDimension(distype_) - 1) *
-               NumDofPerComponent(face);  // seems redundant, but this is different for
-                                          // fluid_ele_hdg and Elemag_ele!
+               num_dof_per_component(face);  // seems redundant, but this is different for
+                                             // fluid_ele_hdg and Elemag_ele!
       }
 
       /*!
@@ -222,10 +225,10 @@ namespace Discret
 
       EXAMPLE: For a HEX8 NumDofPerComponent() will return 4 while for a TET4 will return 3.
       */
-      int NumDofPerComponent(const unsigned face) const override
+      int num_dof_per_component(const unsigned face) const override
       {
         return Core::FE::getBasisSize(
-            Core::FE::getEleFaceShapeType(distype_), (this->Faces()[face])->Degree(), completepol_);
+            Core::FE::getEleFaceShapeType(distype_), (this->faces()[face])->degree(), completepol_);
       }
 
       /*!
@@ -245,12 +248,12 @@ namespace Discret
       /*!
        \brief Returns the degree of the element
        */
-      int Degree() const override { return degree_; }
+      int degree() const override { return degree_; }
 
       /*!
        \brief Allows to set the element degree
        */
-      void SetDegree(int degree)
+      void set_degree(int degree)
       {
         degree_ = degree;
         return;
@@ -266,7 +269,7 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override { return ElemagType::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return ElemagType::instance(); }
 
       //@}
 
@@ -275,7 +278,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -419,18 +422,18 @@ namespace Discret
     class ElemagBoundaryType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "ElemagBoundaryType"; }
+      std::string name() const override { return "ElemagBoundaryType"; }
 
-      static ElemagBoundaryType& Instance();
+      static ElemagBoundaryType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -475,38 +478,38 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return Core::FE::getNumberOfElementLines(Shape()); }
+      int num_line() const override { return Core::FE::getNumberOfElementLines(shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(Shape()); }
+      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -514,9 +517,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ElemagBoundaryType::Instance().UniqueParObjectId();
+        return ElemagBoundaryType::instance().unique_par_object_id();
       }
 
       /*!
@@ -550,9 +553,9 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return parent_element()->NumDofPerNode(node);
+        return parent_element()->num_dof_per_node(node);
       }
 
       /// Number of degrees of freedom per element
@@ -563,9 +566,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ElemagBoundaryType::Instance();
+        return ElemagBoundaryType::instance();
       }
 
       //@}
@@ -653,7 +656,7 @@ namespace Discret
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
+      void location_vector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
       int degree_;
@@ -661,7 +664,7 @@ namespace Discret
       /*!
      \brief Allows to set the element degree
      */
-      void SetDegree(int degree)
+      void set_degree(int degree)
       {
         degree_ = degree;
         return;
@@ -694,18 +697,18 @@ namespace Discret
     class ElemagIntFaceType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "ElemagIntFaceType"; }
+      std::string name() const override { return "ElemagIntFaceType"; }
 
-      static ElemagIntFaceType& Instance();
+      static ElemagIntFaceType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -757,31 +760,31 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override { return Core::FE::getNumberOfElementLines(Shape()); }
+      int num_line() const override { return Core::FE::getNumberOfElementLines(shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override { return Core::FE::getNumberOfElementSurfaces(Shape()); }
+      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -789,7 +792,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -797,9 +800,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ElemagIntFaceType::Instance().UniqueParObjectId();
+        return ElemagIntFaceType::instance().unique_par_object_id();
       }
 
       /*!
@@ -831,10 +834,10 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return std::max(
-            ParentMasterElement()->NumDofPerNode(node), ParentSlaveElement()->NumDofPerNode(node));
+        return std::max(parent_master_element()->num_dof_per_node(node),
+            parent_slave_element()->num_dof_per_node(node));
       }
 
       /*!
@@ -853,12 +856,12 @@ namespace Discret
       /*!
        \brief Returns the degree of the element
        */
-      int Degree() const override { return degree_; }
+      int degree() const override { return degree_; }
 
       /*!
       \brief Allows to set the element degree
       */
-      void SetDegree(int degree)
+      void set_degree(int degree)
       {
         degree_ = degree;
         return;
@@ -870,7 +873,7 @@ namespace Discret
       \note All dofs shared by master and slave element are contained only once. Dofs from interface
       nodes are also included.
       */
-      void PatchLocationVector(Core::FE::Discretization& discretization,  ///< discretization
+      void patch_location_vector(Core::FE::Discretization& discretization,  ///< discretization
           std::vector<int>& nds_master,        ///< nodal dofset w.r.t master parent element
           std::vector<int>& nds_slave,         ///< nodal dofset w.r.t slave parent element
           std::vector<int>& patchlm,           ///< local map for gdof ids for patch of elements
@@ -891,9 +894,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ElemagIntFaceType::Instance();
+        return ElemagIntFaceType::instance();
       }
 
       //@}
@@ -952,9 +955,10 @@ namespace Discret
       /*!
       \brief return the master parent Elemag element
       */
-      Discret::ELEMENTS::Elemag* ParentMasterElement() const
+      Discret::ELEMENTS::Elemag* parent_master_element() const
       {
-        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentMasterElement();
+        Core::Elements::Element* parent =
+            this->Core::Elements::FaceElement::parent_master_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Elemag*>(parent) != nullptr,
             "Master element is no Elemag element");
@@ -964,9 +968,9 @@ namespace Discret
       /*!
       \brief return the slave parent Elemag element
       */
-      Discret::ELEMENTS::Elemag* ParentSlaveElement() const
+      Discret::ELEMENTS::Elemag* parent_slave_element() const
       {
-        Core::Elements::Element* parent = this->Core::Elements::FaceElement::ParentSlaveElement();
+        Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_slave_element();
         // make sure the static cast below is really valid
         FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Elemag*>(parent) != nullptr,
             "Slave element is no Elemag element");

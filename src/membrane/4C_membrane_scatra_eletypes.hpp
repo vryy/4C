@@ -31,16 +31,16 @@ namespace Discret
     class MembraneScatraTri3Type : public MembraneTri3Type
     {
      public:
-      std::string Name() const override { return "MembraneScatra_tri3Type"; }
+      std::string name() const override { return "MembraneScatra_tri3Type"; }
 
-      static MembraneScatraTri3Type& Instance();
+      static MembraneScatraTri3Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -56,16 +56,16 @@ namespace Discret
     class MembraneScatraTri6Type : public MembraneTri6Type
     {
      public:
-      std::string Name() const override { return "MembraneScatra_tri6Type"; }
+      std::string name() const override { return "MembraneScatra_tri6Type"; }
 
-      static MembraneScatraTri6Type& Instance();
+      static MembraneScatraTri6Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -81,16 +81,16 @@ namespace Discret
     class MembraneScatraQuad4Type : public MembraneQuad4Type
     {
      public:
-      std::string Name() const override { return "MembraneScatra_quad4Type"; }
+      std::string name() const override { return "MembraneScatra_quad4Type"; }
 
-      static MembraneScatraQuad4Type& Instance();
+      static MembraneScatraQuad4Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -106,16 +106,16 @@ namespace Discret
     class MembraneScatraQuad9Type : public MembraneQuad9Type
     {
      public:
-      std::string Name() const override { return "MembraneScatra_quad9Type"; }
+      std::string name() const override { return "MembraneScatra_quad9Type"; }
 
-      static MembraneScatraQuad9Type& Instance();
+      static MembraneScatraQuad9Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)

@@ -187,7 +187,7 @@ bool Core::IO::Pstream::on_pid()
  *----------------------------------------------------------------------*/
 Core::IO::Level& Core::IO::Pstream::operator()(const Verbositylevel level)
 {
-  return level_->SetLevel(level);
+  return level_->set_level(level);
 }
 
 

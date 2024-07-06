@@ -47,17 +47,17 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns true if the coupling should be evaluated with FAD.
      */
-    inline bool GetIsFAD() const override { return true; }
+    inline bool get_is_fad() const override { return true; }
 
     /**
      * \brief Returns the order of the FAD type.
      */
-    int GetFADOrder() const override;
+    int get_fad_order() const override;
 
     /**
      * \brief Returns the contact type.
      */
-    inline Inpar::BeamToSolid::BeamToSolidSurfaceContact GetContactType() const
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceContact get_contact_type() const
     {
       return contact_type_;
     }
@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the type of penalty law.
      */
-    inline Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw GetPenaltyLaw() const
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw get_penalty_law() const
     {
       return penalty_law_;
     }

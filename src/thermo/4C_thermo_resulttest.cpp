@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 THR::ResultTest::ResultTest(TimInt& tintegrator) : Core::UTILS::ResultTest("THERMAL")
 {
-  temp_ = tintegrator.Temp();
-  rate_ = tintegrator.Rate();
-  flux_ = tintegrator.Freact();
+  temp_ = tintegrator.temp();
+  rate_ = tintegrator.rate();
+  flux_ = tintegrator.freact();
   thrdisc_ = tintegrator.discretization();
 }
 
@@ -40,30 +40,30 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != thrdisc_->Name()) return;
+  if (dis != thrdisc_->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(thrdisc_->HaveGlobalNode(node));
+  int havenode(thrdisc_->have_global_node(node));
   int isnodeofanybody(0);
-  thrdisc_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  thrdisc_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
     FOUR_C_THROW(
-        "Node %d does not belong to discretization %s", node + 1, thrdisc_->Name().c_str());
+        "Node %d does not belong to discretization %s", node + 1, thrdisc_->name().c_str());
   }
   else
   {
     // this implementation does not allow testing of heatfluxes
-    if (thrdisc_->HaveGlobalNode(node))
+    if (thrdisc_->have_global_node(node))
     {
-      const Core::Nodes::Node* actnode = thrdisc_->gNode(node);
+      const Core::Nodes::Node* actnode = thrdisc_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != thrdisc_->Comm().MyPID()) return;
+      if (actnode->owner() != thrdisc_->get_comm().MyPID()) return;
 
       std::string position;
       res.extract_string("QUANTITY", position);
@@ -78,7 +78,7 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
         if (position == "temp")
         {
           unknownpos = false;
-          result = (*temp_)[tempmap.LID(thrdisc_->Dof(0, actnode, 0))];
+          result = (*temp_)[tempmap.LID(thrdisc_->dof(0, actnode, 0))];
         }
       }
 
@@ -90,7 +90,7 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
         if (position == "rate")
         {
           unknownpos = false;
-          result = (*rate_)[ratemap.LID(thrdisc_->Dof(0, actnode, 0))];
+          result = (*rate_)[ratemap.LID(thrdisc_->dof(0, actnode, 0))];
         }
       }
 
@@ -102,7 +102,7 @@ void THR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
         if (position == "flux")
         {
           unknownpos = false;
-          result = (*flux_)[fluxmap.LID(thrdisc_->Dof(0, actnode, 0))];
+          result = (*flux_)[fluxmap.LID(thrdisc_->dof(0, actnode, 0))];
         }
       }
 

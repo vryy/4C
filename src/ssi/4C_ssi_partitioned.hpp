@@ -59,7 +59,7 @@ namespace SSI
     void setup() override;
 
     /// time loop of coupled problem
-    void Timeloop() override = 0;
+    void timeloop() override = 0;
 
    protected:
     /// prepare time step of single fields

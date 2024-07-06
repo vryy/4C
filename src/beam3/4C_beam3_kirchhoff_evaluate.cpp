@@ -47,12 +47,12 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // Set brownian params interface pointer
-  if (IsParamsInterface()) set_brownian_dyn_params_interface_ptr();
+  if (is_params_interface()) set_brownian_dyn_params_interface_ptr();
 
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -118,7 +118,7 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and
       // residual values for each degree of freedom get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
@@ -164,13 +164,13 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::ExtractMyValues(*vel, myvel, lm);
@@ -197,7 +197,7 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
               elevec1.numRows());
         elevec1(0) = eint_;
       }
-      else if (IsParamsInterface())  // new structural time integration
+      else if (is_params_interface())  // new structural time integration
       {
         params_interface().add_contribution_to_energy_type(eint_, Solid::internal_energy);
         params_interface().add_contribution_to_energy_type(ekin_, Solid::kinetic_energy);
@@ -312,7 +312,7 @@ void Discret::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (brownian_dyn_params_interface_ptr() != Teuchos::null)
-    UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
+    un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
 
   // vector for current nodal DoFs in total Lagrangian style, i.e. displacement + initial values:
@@ -539,7 +539,7 @@ void Discret::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
     double alpha_f = -1.0;
     double alpha_m = -1.0;
 
-    if (this->IsParamsInterface())
+    if (this->is_params_interface())
     {
       dt = params_interface().get_delta_time();
       beta = params_interface().get_beam_params_interface_ptr()->get_beta();
@@ -685,7 +685,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
 
     // get value of interpolating function of theta (lagrange polynomials) at xi
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     N_i_xi.clear();
     Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
@@ -751,8 +751,8 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
     L_i.clear();
     L_i_xi.clear();
     L_i_s.clear();
-    Core::FE::shape_function_1D(L_i, xi_gp, Shape());
-    Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_gp, shape());
+    Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, shape());
     L_i_s.update(1.0 / jacobi_[numgp], L_i_xi);
 
 
@@ -982,7 +982,7 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
 
     // get all required shape function values
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
@@ -1017,10 +1017,10 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
   // re-interpolation of quantities at xi based on CP values
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_gp, Shape());
+  Core::FE::shape_function_1D(L_i, xi_gp, shape());
 
   L_i_xi.clear();
-  Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
+  Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, shape());
 
   L_i_s.clear();
   L_i_s.update(std::pow(jacobifac_gp, -1.0), L_i_xi, 0.0);
@@ -1358,8 +1358,8 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     N_i_xixi.clear();
     N_s.clear();
     N_ss.clear();
-    Core::FE::shape_function_1D(L_i, xi, Shape());
-    Core::FE::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+    Core::FE::shape_function_1D(L_i, xi, shape());
+    Core::FE::shape_function_1D_deriv1(L_i_xi, xi, shape());
     L_i_s.update(1.0 / jacobi_[numgp], L_i_xi, 0.0);
     assemble_shapefunctions_l(L_i, L);
     // The assemble routine is identical for L and L_s
@@ -1660,7 +1660,7 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
   double alpha_f = -1.0;
   double alpha_m = -1.0;
 
-  if (this->IsParamsInterface())
+  if (this->is_params_interface())
   {
     dt = params_interface().get_delta_time();
     beta = params_interface().get_beam_params_interface_ptr()->get_beta();
@@ -1992,7 +1992,7 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
 
     // get all required shape function values
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
@@ -2026,7 +2026,7 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
   // re-interpolation of quantities at xi based on CP values
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_gp, Shape());
+  Core::FE::shape_function_1D(L_i, xi_gp, shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -2088,7 +2088,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   const unsigned int nnodecl = 2;
 
   // get element displacements
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -2101,8 +2101,8 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
 
   // find out whether we will use a time curve
   double time = -1.0;
-  if (this->IsParamsInterface())
-    time = this->ParamsInterfacePtr()->get_total_time();
+  if (this->is_params_interface())
+    time = this->params_interface_ptr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -2122,7 +2122,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   /***********************************************************************************************/
 
   // if a point neumann condition needs to be linearized
-  if (condition.Type() == Core::Conditions::PointNeumannEB)
+  if (condition.type() == Core::Conditions::PointNeumannEB)
   {
     // find out whether we will use a time curve and get the factor
     const auto* funct = &condition.parameters().get<std::vector<int>>("funct");
@@ -2136,15 +2136,15 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
       if (funct) functnum = (*funct)[i];
 
       if (functnum > 0)
-        functtimefac[i] = Global::Problem::Instance()
-                              ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
+        functtimefac[i] = Global::Problem::instance()
+                              ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
                               .evaluate(time);
 
       load_vector_neumann(i) *= functtimefac[i];
     }
 
     // find out at which node the condition is applied
-    const std::vector<int>* nodeids = condition.GetNodes();
+    const std::vector<int>* nodeids = condition.get_nodes();
     if (nodeids == nullptr) FOUR_C_THROW("failed to retrieve node IDs from condition!");
 
     /* find out local node number --> this is done since the first element of a Neumann point
@@ -2153,11 +2153,11 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
      * of the base vectors for the smallest rotation system */
     int node = -1;
 
-    if ((*nodeids)[0] == Nodes()[0]->Id())
+    if ((*nodeids)[0] == nodes()[0]->id())
     {
       node = 0;
     }
-    else if ((*nodeids)[0] == Nodes()[1]->Id())
+    else if ((*nodeids)[0] == nodes()[1]->id())
     {
       node = 1;
     }
@@ -2168,7 +2168,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
     evaluate_point_neumann_eb<nnodecl>(elevec1, elemat1, disp_totlag, load_vector_neumann, node);
   }
   // if a line neumann condition needs to be linearized
-  else if (condition.Type() == Core::Conditions::LineNeumann)
+  else if (condition.type() == Core::Conditions::LineNeumann)
   {
     // funct is related to the 6 "funct" fields after the val field of the Neumann condition
     // in the input file; funct gives the number of the function defined in the section FUNCT
@@ -2408,7 +2408,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_stiff_matrix_analytic_from_point_neuman
 
   // get all required shape function values
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_node, Shape());
+  Core::FE::shape_function_1D(L_i, xi_node, shape());
 
   L.clear();
   assemble_shapefunctions_l(L_i, L);
@@ -2584,7 +2584,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_line_neumann_forces(
       for (unsigned int dof = 0; dof < 3; ++dof)
       {
         X_ref[dof] +=
-            Nodes()[node]->X()[dof] * N_i(2 * node) + (Gref[node])(dof, 0) * N_i(2 * node + 1);
+            nodes()[node]->x()[dof] * N_i(2 * node) + (Gref[node])(dof, 0) * N_i(2 * node + 1);
       }
     }
 
@@ -2598,8 +2598,8 @@ void Discret::ELEMENTS::Beam3k::evaluate_line_neumann_forces(
       if (function_numbers != nullptr and (*function_numbers)[idof] > 0)
       {
         functionfac =
-            Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
+            Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
                 .evaluate(X_ref.data(), time, idof);
       }
       else
@@ -2636,7 +2636,7 @@ inline void Discret::ELEMENTS::Beam3k::calc_brownian_forces_and_stiff(
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (brownian_dyn_params_interface_ptr() != Teuchos::null)
-    UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
+    un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
 
   // total position state of element
@@ -2829,7 +2829,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_translational_damping(Teuchos::Paramete
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
-        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
+        gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute position vector r of point in physical space corresponding to Gauss point
     calc_r<nnode, vpernode, T>(disp_totlag, N_i, evaluationpoint);
@@ -3014,14 +3014,14 @@ void Discret::ELEMENTS::Beam3k::evaluate_stochastic_forces(
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
-        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
+        gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
     calc_r_s<nnode, vpernode, T>(disp_totlag, N_i_xi, jacobi_[gp], r_s);
 
     // extract random numbers from global vector
     for (unsigned int idim = 0; idim < ndim; idim++)
-      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][LID()];
+      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][lid()];
 
     // compute stochastic force vector per unit length at current GP
     f_stoch.clear();
@@ -3188,7 +3188,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // get value of interpolating function of theta (Lagrange polynomials) at xi
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
@@ -3221,7 +3221,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // evaluate shape functions
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_gp, this->Shape());
+    Core::FE::shape_function_1D(L_i, xi_gp, this->shape());
 
     v_thetapar_bar.clear();
     for (unsigned int node = 0; node < BEAM3K_COLLOCATION_POINTS; ++node)
@@ -3380,7 +3380,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
 
     // get all required shape function values
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
@@ -3410,7 +3410,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
   // re-interpolation of quantities at xi based on CP values
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_gp, Shape());
+  Core::FE::shape_function_1D(L_i, xi_gp, shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {

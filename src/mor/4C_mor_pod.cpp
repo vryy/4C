@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
     Teuchos::RCP<Core::FE::Discretization> discr)
     : actdisc_(discr),
-      myrank_(actdisc_->Comm().MyPID()),
-      morparams_(Global::Problem::Instance()->MORParams()),
+      myrank_(actdisc_->get_comm().MyPID()),
+      morparams_(Global::Problem::instance()->mor_params()),
       havemor_(false),
       projmatrix_(Teuchos::null),
       structmapr_(Teuchos::null),
@@ -49,7 +49,7 @@ ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   Teuchos::RCP<Epetra_MultiVector> tmpmat = Teuchos::null;
 
   // read projection matrix from binary file
-  ReadMatrix(morparams_.get<std::string>("POD_MATRIX"), tmpmat);
+  read_matrix(morparams_.get<std::string>("POD_MATRIX"), tmpmat);
 
   // build an importer
   Teuchos::RCP<Epetra_Import> dofrowimporter =
@@ -67,9 +67,9 @@ ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   if (not is_orthogonal(projmatrix_)) FOUR_C_THROW("Projection matrix is not orthogonal.");
 
   // maps for reduced system
-  structmapr_ = Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(), 0, actdisc_->Comm()));
-  redstructmapr_ = Teuchos::rcp(
-      new Epetra_Map(projmatrix_->NumVectors(), projmatrix_->NumVectors(), 0, actdisc_->Comm()));
+  structmapr_ = Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(), 0, actdisc_->get_comm()));
+  redstructmapr_ = Teuchos::rcp(new Epetra_Map(
+      projmatrix_->NumVectors(), projmatrix_->NumVectors(), 0, actdisc_->get_comm()));
   // Core::LinAlg::AllreduceEMap cant't be used here, because NumGlobalElements will be choosen
   // wrong
 
@@ -84,13 +84,13 @@ ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
  | M_red = V^T * M * V                                    pfaller Oct17 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix>
-ModelOrderRed::ProperOrthogonalDecomposition::ReduceDiagnoal(
+ModelOrderRed::ProperOrthogonalDecomposition::reduce_diagnoal(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> M)
 {
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
-      Teuchos::rcp(new Epetra_MultiVector(M->RowMap(), projmatrix_->NumVectors(), true));
-  int err = M->Multiply(false, *projmatrix_, *M_tmp);
+      Teuchos::rcp(new Epetra_MultiVector(M->row_map(), projmatrix_->NumVectors(), true));
+  int err = M->multiply(false, *projmatrix_, *M_tmp);
   if (err) FOUR_C_THROW("Multiplication M * V failed.");
 
   // left multiply V^T * (M * V)
@@ -111,17 +111,17 @@ ModelOrderRed::ProperOrthogonalDecomposition::ReduceDiagnoal(
  | M_red = V^T * M                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix>
-ModelOrderRed::ProperOrthogonalDecomposition::ReduceOffDiagonal(
+ModelOrderRed::ProperOrthogonalDecomposition::reduce_off_diagonal(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> M)
 {
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
-      Teuchos::rcp(new Epetra_MultiVector(M->DomainMap(), projmatrix_->NumVectors(), true));
-  int err = M->Multiply(true, *projmatrix_, *M_tmp);
+      Teuchos::rcp(new Epetra_MultiVector(M->domain_map(), projmatrix_->NumVectors(), true));
+  int err = M->multiply(true, *projmatrix_, *M_tmp);
   if (err) FOUR_C_THROW("Multiplication V^T * M failed.");
 
   // convert Epetra_MultiVector to Core::LinAlg::SparseMatrix
-  Teuchos::RCP<Epetra_Map> rangemap = Teuchos::rcp(new Epetra_Map(M->DomainMap()));
+  Teuchos::RCP<Epetra_Map> rangemap = Teuchos::rcp(new Epetra_Map(M->domain_map()));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> M_red =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*rangemap, 0, false, true));
   epetra_multi_vector_to_linalg_sparse_matrix(M_tmp, rangemap, structmapr_, M_red);
@@ -132,7 +132,7 @@ ModelOrderRed::ProperOrthogonalDecomposition::ReduceOffDiagonal(
 /*----------------------------------------------------------------------*
  | v_red = V^T * v                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ModelOrderRed::ProperOrthogonalDecomposition::ReduceRHS(
+Teuchos::RCP<Epetra_MultiVector> ModelOrderRed::ProperOrthogonalDecomposition::reduce_rhs(
     Teuchos::RCP<Epetra_MultiVector> v)
 {
   Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_, true));
@@ -144,7 +144,7 @@ Teuchos::RCP<Epetra_MultiVector> ModelOrderRed::ProperOrthogonalDecomposition::R
 /*----------------------------------------------------------------------*
  | v_red = V^T * v                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::ReduceResidual(
+Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::reduce_residual(
     Teuchos::RCP<Epetra_Vector> v)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_));
@@ -160,7 +160,7 @@ Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::Reduce
 /*----------------------------------------------------------------------*
  | v = V * v_red                                          pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::ExtendSolution(
+Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::extend_solution(
     Teuchos::RCP<Epetra_Vector> v_red)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_, true));
@@ -214,15 +214,15 @@ void ModelOrderRed::ProperOrthogonalDecomposition::epetra_multi_vector_to_linalg
     for (int j = 0; j < multivect->MyLength(); j++)
     {
       // assemble the values into the Core::LinAlg::SparseMatrix (value by value)
-      sparsemat->Assemble(Values[i * multivect->MyLength() + j], rangemap->GID(j), i);
+      sparsemat->assemble(Values[i * multivect->MyLength() + j], rangemap->GID(j), i);
     }
   }
 
   // Complete the Core::LinAlg::SparseMatrix
   if (domainmap == Teuchos::null)
-    sparsemat->Complete();
+    sparsemat->complete();
   else
-    sparsemat->Complete(*domainmap, *rangemap);
+    sparsemat->complete(*domainmap, *rangemap);
   return;
 }
 
@@ -238,7 +238,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::epetra_multi_vector_to_linalg
  |   fclose(fid);                                                       |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void ModelOrderRed::ProperOrthogonalDecomposition::ReadMatrix(
+void ModelOrderRed::ProperOrthogonalDecomposition::read_matrix(
     std::string filename, Teuchos::RCP<Epetra_MultiVector> &projmatrix)
 {
   // ***************************
@@ -248,7 +248,8 @@ void ModelOrderRed::ProperOrthogonalDecomposition::ReadMatrix(
   // insert path to file if necessary
   if (filename[0] != '/')
   {
-    std::string pathfilename = Global::Problem::Instance()->OutputControlFile()->input_file_name();
+    std::string pathfilename =
+        Global::Problem::instance()->output_control_file()->input_file_name();
     std::string::size_type pos = pathfilename.rfind('/');
     if (pos != std::string::npos)
     {
@@ -294,7 +295,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::ReadMatrix(
 
   // allocate multivector according to matrix size:
   Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::rcp(new Epetra_Map(NumRows.ValueAsInt, 0, actdisc_->Comm()));
+      Teuchos::rcp(new Epetra_Map(NumRows.ValueAsInt, 0, actdisc_->get_comm()));
   projmatrix = Teuchos::rcp(new Epetra_MultiVector(*mymap, NumCols.ValueAsInt));
 
 
@@ -324,7 +325,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::ReadMatrix(
   char *memblock = new char[mysize];
 
   // calculation of starting points in matrix for each processor
-  const Epetra_Comm &comm(actdisc_->Comm());
+  const Epetra_Comm &comm(actdisc_->get_comm());
   const int numproc(comm.NumProc());
   const int mypid(comm.MyPID());
   std::vector<int> localnumbers(numproc, 0);
@@ -335,7 +336,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::ReadMatrix(
   int factor(0);
   for (int i = 0; i < mypid; i++) factor += globalnumbers[i];
 
-  actdisc_->Comm().Barrier();
+  actdisc_->get_comm().Barrier();
 
   // 64 bit number necessary, as integer can overflow for large matrices
   long long start =
@@ -369,7 +370,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::ReadMatrix(
   delete[] memblock;
 
   // all procs wait until proc number 0 did finish the stuff before
-  actdisc_->Comm().Barrier();
+  actdisc_->get_comm().Barrier();
 
   // Inform user
   if (myrank_ == 0) std::cout << " --> Successful\n" << std::endl;
@@ -385,7 +386,7 @@ bool ModelOrderRed::ProperOrthogonalDecomposition::is_orthogonal(Teuchos::RCP<Ep
   const int n = M->NumVectors();
 
   // calculate V^T * V (should be identity)
-  Epetra_Map map = Epetra_Map(n, n, 0, actdisc_->Comm());
+  Epetra_Map map = Epetra_Map(n, n, 0, actdisc_->get_comm());
   Epetra_MultiVector identity = Epetra_MultiVector(map, n, true);
   identity.Multiply('T', 'N', 1.0, *M, *M, 0.0);
 

@@ -47,30 +47,32 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     : Mortar::ManagerBase(), discret_(discret)
 {
   // overwrite base class communicator
-  comm_ = Teuchos::rcp(Discret().Comm().Clone());
+  comm_ = Teuchos::rcp(discret.get_comm().Clone());
 
   // create some local variables (later to be stored in strategy)
-  const int dim = Global::Problem::Instance()->NDim();
+  const int dim = Global::Problem::instance()->n_dim();
   if (dim != 2 && dim != 3) FOUR_C_THROW("Contact problem must be 2D or 3D");
   std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
   Teuchos::ParameterList contactParams;
 
   // read and check contact input parameters
-  if (Comm().MyPID() == 0) std::cout << "Checking contact input parameters..........." << std::endl;
+  if (get_comm().MyPID() == 0)
+    std::cout << "Checking contact input parameters..........." << std::endl;
 
   read_and_check_input(contactParams);
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // check for fill_complete of discretization
-  if (!Discret().Filled()) FOUR_C_THROW("discretization is not fillcomplete");
+  if (!discret.filled()) FOUR_C_THROW("discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in the discretization and and detect groups of
   // matching conditions. For each group, create a contact interface and store it.
-  if (Comm().MyPID() == 0) std::cout << "Building contact interface(s)..............." << std::endl;
+  if (get_comm().MyPID() == 0)
+    std::cout << "Building contact interface(s)..............." << std::endl;
 
   // Vector that contains solid-to-solid and beam-to-solid contact pairs
   std::vector<Core::Conditions::Condition*> beamandsolidcontactconditions(0);
-  Discret().GetCondition("Contact", beamandsolidcontactconditions);
+  discret.get_condition("Contact", beamandsolidcontactconditions);
 
   // Vector that solely contains solid-to-solid contact pairs
   std::vector<Core::Conditions::Condition*> contactconditions(0);
@@ -99,7 +101,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with existing displacement dofs
-  int maxdof = Discret().dof_row_map()->MaxAllGID();
+  int maxdof = discret.dof_row_map()->MaxAllGID();
 
   // get input parameters
   Inpar::CONTACT::SolvingStrategy stype =
@@ -284,8 +286,9 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       FOUR_C_THROW("Manager: Self contact requires fully redundant slave and master storage");
 
     // Use factory to create an empty interface and store it in this Manager.
-    Teuchos::RCP<CONTACT::Interface> newinterface = STRATEGY::Factory::CreateInterface(groupid1,
-        Comm(), dim, icparams, isself[0], Teuchos::null, Teuchos::null, contactconstitutivelawid);
+    Teuchos::RCP<CONTACT::Interface> newinterface =
+        STRATEGY::Factory::create_interface(groupid1, get_comm(), dim, icparams, isself[0],
+            Teuchos::null, Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // Get the RCP to the last created interface
@@ -304,14 +307,14 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get all nodes and add them
-      const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
+      const std::vector<int>* nodeids = currentgroup[j]->get_nodes();
       if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
       for (unsigned k = 0; k < (*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!Discret().NodeColMap()->MyGID(gid)) continue;
-        Core::Nodes::Node* node = Discret().gNode(gid);
+        if (!discret.node_col_map()->MyGID(gid)) continue;
+        Core::Nodes::Node* node = discret.g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // store global IDs of initially active nodes
@@ -339,43 +342,43 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
         if (frictionType != Inpar::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode =
-              Teuchos::rcp(new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
-                  Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
+              Teuchos::rcp(new CONTACT::FriNode(node->id(), node->x(), node->owner(),
+                  discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
           if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, cnode);
 
           // get edge and corner information:
           std::vector<Core::Conditions::Condition*> contactcornercond(0);
-          Discret().GetCondition("mrtrcorner", contactcornercond);
+          discret.get_condition("mrtrcorner", contactcornercond);
           for (unsigned j = 0; j < contactcornercond.size(); j++)
           {
-            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            if (contactcornercond.at(j)->contains_node(node->id()))
             {
-              cnode->SetOnCorner() = true;
+              cnode->set_on_corner() = true;
             }
           }
           std::vector<Core::Conditions::Condition*> contactedgecond(0);
-          Discret().GetCondition("mrtredge", contactedgecond);
+          discret.get_condition("mrtredge", contactedgecond);
           for (unsigned j = 0; j < contactedgecond.size(); j++)
           {
-            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            if (contactedgecond.at(j)->contains_node(node->id()))
             {
-              cnode->SetOnEdge() = true;
+              cnode->set_on_edge() = true;
             }
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<Core::Conditions::Condition*> contactSymconditions(0);
-          Discret().GetCondition("mrtrsym", contactSymconditions);
+          discret.get_condition("mrtrsym", contactSymconditions);
 
           for (unsigned l = 0; l < contactSymconditions.size(); l++)
-            if (contactSymconditions.at(l)->ContainsNode(node->Id()))
+            if (contactSymconditions.at(l)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
                   contactSymconditions.at(l)->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
-                if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
+                if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
                   constr_direction != Inpar::CONTACT::constr_xyz)
                 FOUR_C_THROW(
@@ -389,12 +392,12 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
           // the only problem would have occurred for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddNode(cnode);
+          interface->add_node(cnode);
         }
         else
         {
-          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(),
-              node->Owner(), Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->id(), node->x(),
+              node->owner(), discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
           if (nurbs)
@@ -404,36 +407,36 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 
           // get edge and corner information:
           std::vector<Core::Conditions::Condition*> contactcornercond(0);
-          Discret().GetCondition("mrtrcorner", contactcornercond);
+          discret.get_condition("mrtrcorner", contactcornercond);
           for (unsigned j = 0; j < contactcornercond.size(); j++)
           {
-            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            if (contactcornercond.at(j)->contains_node(node->id()))
             {
-              cnode->SetOnCorner() = true;
+              cnode->set_on_corner() = true;
             }
           }
           std::vector<Core::Conditions::Condition*> contactedgecond(0);
-          Discret().GetCondition("mrtredge", contactedgecond);
+          discret.get_condition("mrtredge", contactedgecond);
           for (unsigned j = 0; j < contactedgecond.size(); j++)
           {
-            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            if (contactedgecond.at(j)->contains_node(node->id()))
             {
-              cnode->SetOnEdge() = true;
+              cnode->set_on_edge() = true;
             }
           }
 
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<Core::Conditions::Condition*> contactSymconditions(0);
-          Discret().GetCondition("mrtrsym", contactSymconditions);
+          discret.get_condition("mrtrsym", contactSymconditions);
 
           for (unsigned l = 0; l < contactSymconditions.size(); l++)
-            if (contactSymconditions.at(l)->ContainsNode(node->Id()))
+            if (contactSymconditions.at(l)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
                   contactSymconditions.at(l)->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
-                if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
+                if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
                   constr_direction != Inpar::CONTACT::constr_xyz)
                 FOUR_C_THROW(
@@ -447,7 +450,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddNode(cnode);
+          interface->add_node(cnode);
         }
       }
     }
@@ -457,7 +460,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -469,14 +472,14 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       // note that elements in ele1/ele2 already are in column (overlapping) map
       int lsize = (int)currele.size();
       int gsize = 0;
-      Comm().SumAll(&lsize, &gsize, 1);
+      get_comm().SumAll(&lsize, &gsize, 1);
 
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<Core::Elements::Element> ele = fool->second;
-        Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize,
-            ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(ele->id() + ggsize,
+            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs));
 
         if ((contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
                 contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) &&
@@ -489,9 +492,9 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
               Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
           if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
           if (faceele->parent_element() == nullptr) FOUR_C_THROW("face parent does not exist");
-          if (Discret().ElementColMap()->LID(faceele->parent_element()->Id()) == -1)
+          if (discret.element_col_map()->LID(faceele->parent_element()->id()) == -1)
             FOUR_C_THROW("vol dis does not have parent ele");
-          cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
+          cele->set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
         }
 
         //------------------------------------------------------------------
@@ -531,11 +534,11 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       find_poro_interface_types(
           poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
   }
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
   // create the solver strategy object and pass all necessary data to it
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "Building contact strategy object............";
     fflush(stdout);
@@ -549,8 +552,8 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   if (stype == Inpar::CONTACT::solution_lagmult && wearLaw != Inpar::Wear::wear_none &&
       (wearType == Inpar::Wear::wear_intstate || wearType == Inpar::Wear::wear_primvar))
   {
-    strategy_ = Teuchos::rcp(new Wear::LagrangeStrategyWear(data_ptr, Discret().dof_row_map(),
-        Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+    strategy_ = Teuchos::rcp(new Wear::LagrangeStrategyWear(data_ptr, discret.dof_row_map(),
+        discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
   }
   else if (stype == Inpar::CONTACT::solution_lagmult)
   {
@@ -558,18 +561,18 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
         contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra)
     {
       strategy_ = Teuchos::rcp(
-          new LagrangeStrategyPoro(data_ptr, Discret().dof_row_map(), Discret().NodeRowMap(),
+          new LagrangeStrategyPoro(data_ptr, discret.dof_row_map(), discret.node_row_map(),
               contactParams, interfaces, dim, comm_, alphaf, maxdof, poroslave, poromaster));
     }
     else if (contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     {
-      strategy_ = Teuchos::rcp(new LagrangeStrategyTsi(data_ptr, Discret().dof_row_map(),
-          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new LagrangeStrategyTsi(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
     {
-      strategy_ = Teuchos::rcp(new LagrangeStrategy(data_ptr, Discret().dof_row_map(),
-          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new LagrangeStrategy(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
   else if (((stype == Inpar::CONTACT::solution_penalty ||
@@ -577,8 +580,8 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
                algo != Inpar::Mortar::algorithm_gpts) ||
            stype == Inpar::CONTACT::solution_uzawa)
   {
-    strategy_ = Teuchos::rcp(new PenaltyStrategy(data_ptr, Discret().dof_row_map(),
-        Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+    strategy_ = Teuchos::rcp(new PenaltyStrategy(data_ptr, discret.dof_row_map(),
+        discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
   }
   else if (algo == Inpar::Mortar::algorithm_gpts &&
            (stype == Inpar::CONTACT::solution_nitsche || stype == Inpar::CONTACT::solution_penalty))
@@ -587,25 +590,25 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
             contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) &&
         stype == Inpar::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::rcp(new NitscheStrategyPoro(data_ptr, Discret().dof_row_map(),
-          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new NitscheStrategyPoro(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else if (contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::fsi &&
              stype == Inpar::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::rcp(new NitscheStrategyFsi(data_ptr, Discret().dof_row_map(),
-          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new NitscheStrategyFsi(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else if (contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::fpi &&
              stype == Inpar::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::rcp(new NitscheStrategyFpi(data_ptr, Discret().dof_row_map(),
-          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new NitscheStrategyFpi(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
     else
     {
-      strategy_ = Teuchos::rcp(new NitscheStrategy(data_ptr, Discret().dof_row_map(),
-          Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::rcp(new NitscheStrategy(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
   else
@@ -615,11 +618,11 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 
   dynamic_cast<CONTACT::AbstractStrategy&>(*strategy_).setup(false, true);
 
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
 
   // print friction information of interfaces
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     for (unsigned i = 0; i < interfaces.size(); ++i)
     {
@@ -640,12 +643,12 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
   }
 
   // print initial parallel redistribution
-  if (Comm().MyPID() == 0 && Comm().NumProc() > 1)
+  if (get_comm().MyPID() == 0 && get_comm().NumProc() > 1)
     std::cout << "\nInitial parallel distribution of all contact interfaces:" << std::endl;
   for (auto& interface : interfaces) interface->print_parallel_distribution();
 
   // create binary search tree
-  for (auto& interface : interfaces) interface->CreateSearchTree();
+  for (auto& interface : interfaces) interface->create_search_tree();
 
   return;
 }
@@ -657,16 +660,16 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
 {
   // read parameter lists from Global::Problem
-  const Teuchos::ParameterList& mortar = Global::Problem::Instance()->mortar_coupling_params();
-  const Teuchos::ParameterList& contact = Global::Problem::Instance()->contact_dynamic_params();
-  const Teuchos::ParameterList& wearlist = Global::Problem::Instance()->WearParams();
-  const Teuchos::ParameterList& tsic = Global::Problem::Instance()->TSIContactParams();
-  const Teuchos::ParameterList& stru = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& mortar = Global::Problem::instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& contact = Global::Problem::instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& wearlist = Global::Problem::instance()->wear_params();
+  const Teuchos::ParameterList& tsic = Global::Problem::instance()->tsi_contact_params();
+  const Teuchos::ParameterList& stru = Global::Problem::instance()->structural_dynamic_params();
 
   // read Problem Type and Problem Dimension from Global::Problem
-  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
-  Core::FE::ShapeFunctionType distype = Global::Problem::Instance()->spatial_approximation_type();
-  const int dim = Global::Problem::Instance()->NDim();
+  const Core::ProblemType problemtype = Global::Problem::instance()->get_problem_type();
+  Core::FE::ShapeFunctionType distype = Global::Problem::instance()->spatial_approximation_type();
+  const int dim = Global::Problem::instance()->n_dim();
 
   // in case just System type system_condensed_lagmult
   if (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(contact, "SYSTEM") ==
@@ -798,7 +801,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID() == 0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && get_comm().MyPID() == 0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n")
               << std::endl;
 
@@ -873,7 +876,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
     bool self = false;
     {
       std::vector<Core::Conditions::Condition*> contactCondition(0);
-      Discret().GetCondition("Mortar", contactCondition);
+      discret().get_condition("Mortar", contactCondition);
 
       for (const auto& condition : contactCondition)
       {
@@ -979,7 +982,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
         problemtype == Core::ProblemType::fpsi_xfem)
     {
       const Teuchos::ParameterList& porodyn =
-          Global::Problem::Instance()->poroelast_dynamic_params();
+          Global::Problem::instance()->poroelast_dynamic_params();
       if ((Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
                   Inpar::Mortar::shape_dual &&
               Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
@@ -1018,7 +1021,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
       if ((dim != 3) && (dim != 2))
       {
         const Teuchos::ParameterList& porodyn =
-            Global::Problem::Instance()->poroelast_dynamic_params();
+            Global::Problem::instance()->poroelast_dynamic_params();
         if (Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
           FOUR_C_THROW("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
       }
@@ -1065,7 +1068,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   else if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(mortar, "ALGORITHM") ==
            Inpar::Mortar::algorithm_gpts)
   {
-    const_cast<Teuchos::ParameterList&>(Global::Problem::Instance()->contact_dynamic_params())
+    const_cast<Teuchos::ParameterList&>(Global::Problem::instance()->contact_dynamic_params())
         .set("SYSTEM", "none");
 
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
@@ -1093,11 +1096,11 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   cparams.setParameters(tsic);
   if (problemtype == Core::ProblemType::tsi)
     cparams.set<double>(
-        "TIMESTEP", Global::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP"));
+        "TIMESTEP", Global::Problem::instance()->tsi_dynamic_params().get<double>("TIMESTEP"));
   else if (problemtype != Core::ProblemType::structure)
   {
     // rauch 01/16
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
       std::cout << "\n \n  Warning: CONTACT::Manager::read_and_check_input() reads TIMESTEP = "
                 << stru.get<double>("TIMESTEP") << " from --STRUCTURAL DYNAMIC \n"
                 << std::endl;
@@ -1142,7 +1145,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   else if (problemtype == Core::ProblemType::poroelast or problemtype == Core::ProblemType::fpsi or
            problemtype == Core::ProblemType::poroscatra)
   {
-    const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
+    const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
     if (problemtype == Core::ProblemType::poroelast or problemtype == Core::ProblemType::fpsi)
       cparams.set<int>("PROBTYPE", Inpar::CONTACT::poroelast);
     else if (problemtype == Core::ProblemType::poroscatra)
@@ -1160,7 +1163,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   }
   else if (problemtype == Core::ProblemType::fpsi_xfem)
   {
-    const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
+    const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
     cparams.set<int>("PROBTYPE", Inpar::CONTACT::fpi);
     // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
     double porotimefac =
@@ -1175,7 +1178,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   }
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc() == 1)
+  if (get_comm().NumProc() == 1)
     cparams.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "None");
 
   // set dimension
@@ -1195,10 +1198,10 @@ void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, boo
   std::map<std::string, Teuchos::RCP<Epetra_Vector>> restart_vectors;
 
   // quantities to be written for restart
-  GetStrategy().DoWriteRestart(restart_vectors, forcedrestart);
+  get_strategy().do_write_restart(restart_vectors, forcedrestart);
 
-  if (GetStrategy().lagrange_multiplier_old() != Teuchos::null)
-    output.write_vector("lagrmultold", GetStrategy().lagrange_multiplier_old());
+  if (get_strategy().lagrange_multiplier_old() != Teuchos::null)
+    output.write_vector("lagrmultold", get_strategy().lagrange_multiplier_old());
 
   // write all vectors specified by used strategy
   for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::const_iterator p =
@@ -1216,27 +1219,27 @@ void CONTACT::Manager::read_restart(Core::IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
   // If Parent Elements are required, we need to reconnect them before contact restart!
-  Inpar::Mortar::AlgorithmType atype =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(GetStrategy().Params(), "ALGORITHM");
+  Inpar::Mortar::AlgorithmType atype = Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(
+      get_strategy().params(), "ALGORITHM");
   if (atype == Inpar::Mortar::algorithm_gpts)
   {
     for (unsigned i = 0;
-         i < dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy()).contact_interfaces().size();
+         i < dynamic_cast<CONTACT::AbstractStrategy&>(get_strategy()).contact_interfaces().size();
          ++i)
-      dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy())
+      dynamic_cast<CONTACT::AbstractStrategy&>(get_strategy())
           .contact_interfaces()[i]
           ->create_volume_ghosting();
   }
 
   // If Parent Elements are required, we need to reconnect them before contact restart!
-  if ((GetStrategy().Params().get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
-          GetStrategy().Params().get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) ||
-      GetStrategy().Params().get<int>("PROBTYPE") == Inpar::CONTACT::fpi)
+  if ((get_strategy().params().get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
+          get_strategy().params().get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) ||
+      get_strategy().params().get<int>("PROBTYPE") == Inpar::CONTACT::fpi)
     reconnect_parent_elements();
 
   // this is contact, thus we need the displacement state for restart
   // let strategy object do all the work
-  GetStrategy().DoReadRestart(reader, dis);
+  get_strategy().do_read_restart(reader, dis);
 
   return;
 }
@@ -1246,7 +1249,7 @@ void CONTACT::Manager::read_restart(Core::IO::DiscretizationReader& reader,
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& output)
 {
-  if (GetStrategy().IsNitsche()) return;
+  if (get_strategy().is_nitsche()) return;
 
   // *********************************************************************
   // active contact set and slip set
@@ -1254,34 +1257,34 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 
   // evaluate active set and slip set
   Teuchos::RCP<Epetra_Vector> activeset =
-      Teuchos::rcp(new Epetra_Vector(*GetStrategy().active_row_nodes()));
+      Teuchos::rcp(new Epetra_Vector(*get_strategy().active_row_nodes()));
   activeset->PutScalar(1.0);
-  if (GetStrategy().is_friction())
+  if (get_strategy().is_friction())
   {
     Teuchos::RCP<Epetra_Vector> slipset =
-        Teuchos::rcp(new Epetra_Vector(*GetStrategy().slip_row_nodes()));
+        Teuchos::rcp(new Epetra_Vector(*get_strategy().slip_row_nodes()));
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
-        Teuchos::rcp(new Epetra_Vector(*GetStrategy().active_row_nodes()));
+        Teuchos::rcp(new Epetra_Vector(*get_strategy().active_row_nodes()));
     Core::LinAlg::Export(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
   // export to problem node row map
-  Teuchos::RCP<Epetra_Map> problemnodes = GetStrategy().ProblemNodes();
+  Teuchos::RCP<Epetra_Map> problemnodes = get_strategy().problem_nodes();
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
   Core::LinAlg::Export(*activeset, *activesetexp);
 
-  if (GetStrategy().WearBothDiscrete())
+  if (get_strategy().wear_both_discrete())
   {
     Teuchos::RCP<Epetra_Vector> mactiveset =
-        Teuchos::rcp(new Epetra_Vector(*GetStrategy().MasterActiveNodes()));
+        Teuchos::rcp(new Epetra_Vector(*get_strategy().master_active_nodes()));
     mactiveset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipset =
-        Teuchos::rcp(new Epetra_Vector(*GetStrategy().MasterSlipNodes()));
+        Teuchos::rcp(new Epetra_Vector(*get_strategy().master_slip_nodes()));
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
-        Teuchos::rcp(new Epetra_Vector(*GetStrategy().MasterActiveNodes()));
+        Teuchos::rcp(new Epetra_Vector(*get_strategy().master_active_nodes()));
     Core::LinAlg::Export(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
@@ -1296,7 +1299,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   //  weighted gap
   // *********************************************************************
   // export to problem dof row map
-  Teuchos::RCP<Epetra_Map> gapnodes = GetStrategy().ProblemNodes();
+  Teuchos::RCP<Epetra_Map> gapnodes = get_strategy().problem_nodes();
   Teuchos::RCP<Epetra_Vector> gaps =
       Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strategy_)->contact_wgap();
   if (gaps != Teuchos::null)
@@ -1312,18 +1315,18 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // *********************************************************************
 
   // evaluate contact tractions
-  GetStrategy().compute_contact_stresses();
+  get_strategy().compute_contact_stresses();
 
   // export to problem dof row map
-  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
+  Teuchos::RCP<Epetra_Map> problemdofs = get_strategy().problem_dofs();
 
   // normal direction
-  Teuchos::RCP<Epetra_Vector> normalstresses = GetStrategy().contact_normal_stress();
+  Teuchos::RCP<Epetra_Vector> normalstresses = get_strategy().contact_normal_stress();
   Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   Core::LinAlg::Export(*normalstresses, *normalstressesexp);
 
   // tangential plane
-  Teuchos::RCP<Epetra_Vector> tangentialstresses = GetStrategy().contact_tangential_stress();
+  Teuchos::RCP<Epetra_Vector> tangentialstresses = get_strategy().contact_tangential_stress();
   Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   Core::LinAlg::Export(*tangentialstresses, *tangentialstressesexp);
 
@@ -1332,15 +1335,15 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   output.write_vector("norcontactstress", normalstressesexp);
   output.write_vector("tancontactstress", tangentialstressesexp);
 
-  if (GetStrategy().contact_normal_force() != Teuchos::null)
+  if (get_strategy().contact_normal_force() != Teuchos::null)
   {
     // normal direction
-    Teuchos::RCP<Epetra_Vector> normalforce = GetStrategy().contact_normal_force();
+    Teuchos::RCP<Epetra_Vector> normalforce = get_strategy().contact_normal_force();
     Teuchos::RCP<Epetra_Vector> normalforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*normalforce, *normalforceexp);
 
     // tangential plane
-    Teuchos::RCP<Epetra_Vector> tangentialforce = GetStrategy().contact_tangential_force();
+    Teuchos::RCP<Epetra_Vector> tangentialforce = get_strategy().contact_tangential_force();
     Teuchos::RCP<Epetra_Vector> tangentialforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*tangentialforce, *tangentialforceexp);
 
@@ -1382,7 +1385,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 #ifdef MASTERNODESINCONTACT
   // BEGIN: to output the global ID's of the master nodes in contact - devaal 02.2011
 
-  int dim = Global::Problem::Instance()->NDim();
+  int dim = Global::Problem::instance()->NDim();
 
   if (dim == 2) FOUR_C_THROW("Only working for 3D");
 
@@ -1471,7 +1474,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     FILE* MyFile = nullptr;
     std::ostringstream filename;
     const std::string filebase =
-        Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
+        Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
     filename << filebase << ".force";
     MyFile = fopen(filename.str().c_str(), "at+");
     if (MyFile)
@@ -1490,7 +1493,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // *********************************************************************
   // wear with internal state variable approach
   // *********************************************************************
-  bool wwear = GetStrategy().WeightedWear();
+  bool wwear = get_strategy().weighted_wear();
   if (wwear)
   {
     // ***************************************************************************
@@ -1501,26 +1504,26 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     // ***************************************************************************
 
     // evaluate wear (not weighted)
-    GetStrategy().OutputWear();
+    get_strategy().output_wear();
 
     // write output
-    Teuchos::RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();
+    Teuchos::RCP<Epetra_Vector> wearoutput = get_strategy().contact_wear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*wearoutput, *wearoutputexp);
     output.write_vector("wear", wearoutputexp);
-    GetStrategy().ContactWear()->PutScalar(0.0);
+    get_strategy().contact_wear()->PutScalar(0.0);
   }
 
   // *********************************************************************
   // poro contact
   // *********************************************************************
-  bool poro = GetStrategy().has_poro_no_penetration();
+  bool poro = get_strategy().has_poro_no_penetration();
   if (poro)
   {
     // output of poro no penetration lagrange multiplier!
     CONTACT::LagrangeStrategyPoro& costrategy =
-        dynamic_cast<CONTACT::LagrangeStrategyPoro&>(GetStrategy());
-    Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.LambdaNoPen();
+        dynamic_cast<CONTACT::LagrangeStrategyPoro&>(get_strategy());
+    Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.lambda_no_pen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*lambdaout, *lambdaoutexp);
     output.write_vector("poronopen_lambda", lambdaoutexp);
@@ -1533,7 +1536,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 void CONTACT::Manager::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
-  GetStrategy().postprocess_quantities_per_interface(outputParams);
+  get_strategy().postprocess_quantities_per_interface(outputParams);
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -1542,32 +1545,32 @@ void CONTACT::Manager::postprocess_quantities_per_interface(
 void CONTACT::Manager::reconnect_parent_elements()
 {
   {
-    const Epetra_Map* elecolmap = discret_.ElementColMap();
+    const Epetra_Map* elecolmap = discret_.element_col_map();
 
-    CONTACT::AbstractStrategy& strategy = dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy());
+    CONTACT::AbstractStrategy& strategy = dynamic_cast<CONTACT::AbstractStrategy&>(get_strategy());
 
     for (auto& interface : strategy.contact_interfaces())
     {
-      const Epetra_Map* ielecolmap = interface->Discret().ElementColMap();
+      const Epetra_Map* ielecolmap = interface->discret().element_col_map();
 
       for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
       {
         int gid = ielecolmap->GID(i);
 
-        Core::Elements::Element* ele = interface->Discret().gElement(gid);
+        Core::Elements::Element* ele = interface->discret().g_element(gid);
         if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
         Core::Elements::FaceElement* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
 
-        int volgid = faceele->ParentElementId();
+        int volgid = faceele->parent_element_id();
         if (elecolmap->LID(volgid) == -1)  // Volume discretization has not Element
           FOUR_C_THROW(
               "Manager::reconnect_parent_elements: Element %d does not exist on this Proc!",
               volgid);
 
-        Core::Elements::Element* vele = discret_.gElement(volgid);
+        Core::Elements::Element* vele = discret_.g_element(volgid);
         if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
-        faceele->set_parent_master_element(vele, faceele->FaceParentNumber());
+        faceele->set_parent_master_element(vele, faceele->face_parent_number());
       }
     }
   }
@@ -1586,70 +1589,70 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
   Teuchos::RCP<Core::Elements::FaceElement> faceele =
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
   if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
-  cele->PhysType() = Mortar::Element::other;
+  cele->phys_type() = Mortar::Element::other;
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> porocondvec;
-  discret_.GetCondition("PoroCoupling", porocondvec);
-  if (!cele->IsSlave())  // treat an element as a master element if it is no slave element
+  discret_.get_condition("PoroCoupling", porocondvec);
+  if (!cele->is_slave())  // treat an element as a master element if it is no slave element
   {
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocondvec[i]->Geometry().begin();
-           eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = porocondvec[i]->geometry().begin();
+           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
-        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
           if (mastertype == 0)
             FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = Mortar::Element::poro;
+          cele->phys_type() = Mortar::Element::poro;
           mastertype = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == Mortar::Element::other)
+    if (cele->phys_type() == Mortar::Element::other)
     {
       if (mastertype == 1)
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = Mortar::Element::structure;
+      cele->phys_type() = Mortar::Element::structure;
       mastertype = 0;
     }
   }
-  else if (cele->IsSlave())  // treat an element as slave element if it is one
+  else if (cele->is_slave())  // treat an element as slave element if it is one
   {
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocondvec[i]->Geometry().begin();
-           eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = porocondvec[i]->geometry().begin();
+           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
-        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
           if (slavetype == 0)
             FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = Mortar::Element::poro;
+          cele->phys_type() = Mortar::Element::poro;
           slavetype = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == Mortar::Element::other)
+    if (cele->phys_type() == Mortar::Element::other)
     {
       if (slavetype == 1)
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = Mortar::Element::structure;
+      cele->phys_type() = Mortar::Element::structure;
       slavetype = 0;
     }
   }
   // store information about parent for porous contact (required for calculation of deformation
   // gradient!) in every contact element although only really needed for phystype poro
-  cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
+  cele->set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
   return;
 }
 

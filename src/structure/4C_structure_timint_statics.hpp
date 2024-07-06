@@ -101,7 +101,7 @@ namespace Solid
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here exept when doing optimization
-    void ResizeMStep() override { ; }
+    void resize_m_step() override { ; }
 
     //@}
 
@@ -109,13 +109,13 @@ namespace Solid
     //@{
 
     //! Return name
-    enum Inpar::Solid::DynamicType MethodName() const override
+    enum Inpar::Solid::DynamicType method_name() const override
     {
       return Inpar::Solid::dyna_statics;
     }
 
     //! Provide number of steps, a single-step method returns 1
-    int MethodSteps() const override { return 1; }
+    int method_steps() const override { return 1; }
 
     //! Give local order of accuracy of displacement part
     int method_order_of_accuracy_dis() const override
@@ -146,7 +146,7 @@ namespace Solid
     }
 
     //! return time integration factor
-    double TimIntParam() const override { return 0.0; }
+    double tim_int_param() const override { return 0.0; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements
@@ -164,7 +164,7 @@ namespace Solid
     //! For quasi-static problems this is equivalent to
     //! a quadratic extrapolation of the displacement field.
     //! In the first step we do TangDis, in the second ConstVel
-    void PredictConstAcc() override;
+    void predict_const_acc() override;
 
     //! Create force residual #fres_ and its stiffness #stiff_
     void evaluate_force_stiff_residual(Teuchos::ParameterList& params) final;
@@ -178,7 +178,7 @@ namespace Solid
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
-    double CalcRefNormForce() override;
+    double calc_ref_norm_force() override;
 
     //! Update iteration incrementally
     //!
@@ -197,16 +197,16 @@ namespace Solid
     void update_iter_iteratively() override;
 
     //! Update step
-    void UpdateStepState() override;
+    void update_step_state() override;
 
     //! Update element
-    void UpdateStepElement() override;
+    void update_step_element() override;
 
     //! Read and set restart for forces
-    void ReadRestartForce() override;
+    void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
     //@}
 
     void apply_dirichlet_bc(const double time,  //!< at time
@@ -227,14 +227,14 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override
+    Teuchos::RCP<Epetra_Vector> fext() override
     {
       FOUR_C_THROW("Statics: no external forces at t_n available");
       return Teuchos::null;
     }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() override { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> fext_new() override { return fextn_; }
 
     //@}
 

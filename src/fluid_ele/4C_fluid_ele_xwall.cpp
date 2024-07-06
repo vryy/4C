@@ -26,12 +26,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::FluidXWallType Discret::ELEMENTS::FluidXWallType::instance_;
 
-Discret::ELEMENTS::FluidXWallType& Discret::ELEMENTS::FluidXWallType::Instance()
+Discret::ELEMENTS::FluidXWallType& Discret::ELEMENTS::FluidXWallType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidXWallType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::FluidXWallType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidXWall* object = new Discret::ELEMENTS::FluidXWall(-1, -1);
@@ -39,7 +39,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidXWallType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDXW")
@@ -49,7 +49,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::Create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::FluidXWall(id, owner));
@@ -66,7 +66,7 @@ void Discret::ELEMENTS::FluidXWallType::nodal_block_information(
   np = 1;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidXWallType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidXWallType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
@@ -108,7 +108,7 @@ Discret::ELEMENTS::FluidXWall::FluidXWall(const Discret::ELEMENTS::FluidXWall& o
  |  Deep copy this instance of Fluid and return pointer to it (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidXWall::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidXWall::clone() const
 {
   Discret::ELEMENTS::FluidXWall* newelement = new Discret::ELEMENTS::FluidXWall(*this);
   return newelement;
@@ -119,7 +119,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidXWall::Clone() const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                           |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall::lines()
 {
   return Core::Communication::GetElementLines<FluidXWallBoundary, FluidXWall>(*this);
 }
@@ -128,7 +128,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                                     |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall::surfaces()
 {
   return Core::Communication::GetElementSurfaces<FluidXWallBoundary, FluidXWall>(*this);
 }

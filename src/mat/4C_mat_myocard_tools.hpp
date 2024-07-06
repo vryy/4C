@@ -33,11 +33,11 @@ class MyocardTools
   /// destructor
   virtual ~MyocardTools() = default;
   /// compute Heaviside step function
-  double GatingFunction(const double Gate1, const double Gate2, const double p, const double var,
+  double gating_function(const double Gate1, const double Gate2, const double p, const double var,
       const double thresh) const;
 
   /// compute gating variable 'y' from dy/dt = (y_inf-y)/y_tau
-  double GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const;
+  double gating_var_calc(const double dt, double y_0, const double y_inf, const double y_tau) const;
 
 };  // Myocard_Tools
 

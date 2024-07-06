@@ -59,7 +59,7 @@ namespace FBI
      *
      * \param[in] binning binning strategy
      */
-    void SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning) override;
+    void set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning) override;
 
     /** \brief Setup the Geoemtry object
      *
@@ -82,7 +82,7 @@ namespace FBI
      *
      * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
      */
-    Teuchos::RCP<std::map<int, std::vector<int>>> Search(
+    Teuchos::RCP<std::map<int, std::vector<int>>> search(
         std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
         Teuchos::RCP<const Epetra_Vector>& column_structure_displacement) override;
 
@@ -91,7 +91,7 @@ namespace FBI
      * \param[in] structure_discretization structure discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    void UpdateBinning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
+    void update_binning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
         Teuchos::RCP<const Epetra_Vector> structure_column_displacement) override;
 
    protected:

@@ -82,7 +82,7 @@ void ParticleInteraction::SPHDensityBase::setup(
   // update with actual fluid particle types
   const auto fluidtypes = fluidtypes_;
   for (const auto& type_i : fluidtypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
+    if (not particlecontainerbundle_->get_particle_types().count(type_i)) fluidtypes_.erase(type_i);
 
   // setup density of ghosted particles to refresh
   {
@@ -123,7 +123,7 @@ void ParticleInteraction::SPHDensityBase::clear_density_sum_state() const
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear density sum state
-    container_i->ClearState(PARTICLEENGINE::DensitySum);
+    container_i->clear_state(PARTICLEENGINE::DensitySum);
   }
 }
 
@@ -140,15 +140,15 @@ void ParticleInteraction::SPHDensityBase::sum_weighted_mass_self_contribution() 
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
-    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    for (int particle_i = 0; particle_i < container_i->particles_stored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-      const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-      double* denssum_i = container_i->GetPtrToState(PARTICLEENGINE::DensitySum, particle_i);
+      const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+      const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+      double* denssum_i = container_i->get_ptr_to_state(PARTICLEENGINE::DensitySum, particle_i);
 
       // evaluate kernel
-      const double Wii = kernel_->W0(rad_i[0]);
+      const double Wii = kernel_->w0(rad_i[0]);
 
       // add self contribution
       denssum_i[0] += Wii * mass_i[0];
@@ -183,11 +183,11 @@ void ParticleInteraction::SPHDensityBase::sum_weighted_mass_particle_contributio
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    double* denssum_i = container_i->CondGetPtrToState(PARTICLEENGINE::DensitySum, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    double* denssum_i = container_i->cond_get_ptr_to_state(PARTICLEENGINE::DensitySum, particle_i);
 
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
-    double* denssum_j = container_j->CondGetPtrToState(PARTICLEENGINE::DensitySum, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
+    double* denssum_j = container_j->cond_get_ptr_to_state(PARTICLEENGINE::DensitySum, particle_j);
 
     // sum contribution of neighboring particle j
     if (denssum_i) denssum_i[0] += particlepair.Wij_ * mass_i[0];
@@ -224,9 +224,9 @@ void ParticleInteraction::SPHDensityBase::sum_weighted_mass_particle_wall_contri
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    double* denssum_i = container_i->GetPtrToState(PARTICLEENGINE::DensitySum, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    double* denssum_i = container_i->get_ptr_to_state(PARTICLEENGINE::DensitySum, particle_i);
 
     // compute vector from wall contact point j to particle i
     double r_ij[3];
@@ -255,7 +255,7 @@ void ParticleInteraction::SPHDensityBase::sum_weighted_mass_particle_wall_contri
       if (absdist < rad_i[0])
       {
         // evaluate kernel
-        const double Wik = kernel_->W(absdist, rad_i[0]);
+        const double Wik = kernel_->w(absdist, rad_i[0]);
 
         // sum contribution of virtual particle k
         denssum_i[0] += Wik * mass_i[0];
@@ -289,7 +289,7 @@ void ParticleInteraction::SPHDensityBase::clear_colorfield_state() const
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear colorfield state
-    container_i->ClearState(PARTICLEENGINE::Colorfield);
+    container_i->clear_state(PARTICLEENGINE::Colorfield);
   }
 }
 
@@ -306,16 +306,16 @@ void ParticleInteraction::SPHDensityBase::sum_colorfield_self_contribution() con
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // iterate over particles in container
-    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    for (int particle_i = 0; particle_i < container_i->particles_stored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-      const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-      const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
-      double* colorfield_i = container_i->GetPtrToState(PARTICLEENGINE::Colorfield, particle_i);
+      const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+      const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+      const double* dens_i = container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i);
+      double* colorfield_i = container_i->get_ptr_to_state(PARTICLEENGINE::Colorfield, particle_i);
 
       // evaluate kernel
-      const double Wii = kernel_->W0(rad_i[0]);
+      const double Wii = kernel_->w0(rad_i[0]);
 
       // add self contribution
       colorfield_i[0] += (Wii / dens_i[0]) * mass_i[0];
@@ -357,21 +357,23 @@ void ParticleInteraction::SPHDensityBase::sum_colorfield_particle_contribution()
         particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i = container_i->HaveStoredState(PARTICLEENGINE::Density)
-                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+    const double* dens_i = container_i->have_stored_state(PARTICLEENGINE::Density)
+                               ? container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i)
                                : &(material_j->initDensity_);
 
-    double* colorfield_i = container_i->CondGetPtrToState(PARTICLEENGINE::Colorfield, particle_i);
+    double* colorfield_i =
+        container_i->cond_get_ptr_to_state(PARTICLEENGINE::Colorfield, particle_i);
 
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
 
-    const double* dens_j = container_j->HaveStoredState(PARTICLEENGINE::Density)
-                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+    const double* dens_j = container_j->have_stored_state(PARTICLEENGINE::Density)
+                               ? container_j->get_ptr_to_state(PARTICLEENGINE::Density, particle_j)
                                : &(material_i->initDensity_);
 
-    double* colorfield_j = container_j->CondGetPtrToState(PARTICLEENGINE::Colorfield, particle_j);
+    double* colorfield_j =
+        container_j->cond_get_ptr_to_state(PARTICLEENGINE::Colorfield, particle_j);
 
     // sum contribution of neighboring particle j
     if (colorfield_i) colorfield_i[0] += (particlepair.Wij_ / dens_j[0]) * mass_j[0];
@@ -412,11 +414,11 @@ void ParticleInteraction::SPHDensityBase::sum_colorfield_particle_wall_contribut
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    double* colorfield_i = container_i->GetPtrToState(PARTICLEENGINE::Colorfield, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    double* colorfield_i = container_i->get_ptr_to_state(PARTICLEENGINE::Colorfield, particle_i);
 
     // get pointer to virtual particle states
-    const double* mass_k = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_k = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
     const double* dens_k = &(material_i->initDensity_);
 
     // (current) volume of virtual particle k
@@ -449,7 +451,7 @@ void ParticleInteraction::SPHDensityBase::sum_colorfield_particle_wall_contribut
       if (absdist < rad_i[0])
       {
         // evaluate kernel
-        const double Wik = kernel_->W(absdist, rad_i[0]);
+        const double Wik = kernel_->w(absdist, rad_i[0]);
 
         // sum contribution of virtual particle k
         colorfield_i[0] += V_k * Wik;
@@ -480,7 +482,7 @@ void ParticleInteraction::SPHDensityBase::clear_density_dot_state() const
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // clear density dot state
-    container_i->ClearState(PARTICLEENGINE::DensityDot);
+    container_i->clear_state(PARTICLEENGINE::DensityDot);
   }
 }
 
@@ -519,30 +521,30 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_contribut
 
     // get pointer to particle states
     const double* vel_i =
-        container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
-            ? container_i->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i)
-            : container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+        container_i->have_stored_state(PARTICLEENGINE::ModifiedVelocity)
+            ? container_i->get_ptr_to_state(PARTICLEENGINE::ModifiedVelocity, particle_i)
+            : container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
 
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i = container_i->HaveStoredState(PARTICLEENGINE::Density)
-                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+    const double* dens_i = container_i->have_stored_state(PARTICLEENGINE::Density)
+                               ? container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i)
                                : &(material_j->initDensity_);
 
-    double* densdot_i = container_i->CondGetPtrToState(PARTICLEENGINE::DensityDot, particle_i);
+    double* densdot_i = container_i->cond_get_ptr_to_state(PARTICLEENGINE::DensityDot, particle_i);
 
     const double* vel_j =
-        container_j->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
-            ? container_j->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_j)
-            : container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
+        container_j->have_stored_state(PARTICLEENGINE::ModifiedVelocity)
+            ? container_j->get_ptr_to_state(PARTICLEENGINE::ModifiedVelocity, particle_j)
+            : container_j->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_j);
 
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
 
-    const double* dens_j = container_j->HaveStoredState(PARTICLEENGINE::Density)
-                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+    const double* dens_j = container_j->have_stored_state(PARTICLEENGINE::Density)
+                               ? container_j->get_ptr_to_state(PARTICLEENGINE::Density, particle_j)
                                : &(material_i->initDensity_);
 
-    double* densdot_j = container_j->CondGetPtrToState(PARTICLEENGINE::DensityDot, particle_j);
+    double* densdot_j = container_j->cond_get_ptr_to_state(PARTICLEENGINE::DensityDot, particle_j);
 
     // relative velocity (use modified velocities in case of transport velocity formulation)
     double vel_ij[3];
@@ -568,7 +570,7 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_wall_cont
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-      particlewallinterface_->GetWallDataState();
+      particlewallinterface_->get_wall_data_state();
 
   // get relevant particle wall pair indices for specific particle types
   std::vector<int> relindices;
@@ -596,13 +598,13 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_wall_cont
 
     // get pointer to particle states
     const double* vel_i =
-        container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
-            ? container_i->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i)
-            : container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+        container_i->have_stored_state(PARTICLEENGINE::ModifiedVelocity)
+            ? container_i->get_ptr_to_state(PARTICLEENGINE::ModifiedVelocity, particle_i)
+            : container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
 
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
-    double* densdot_i = container_i->GetPtrToState(PARTICLEENGINE::DensityDot, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* dens_i = container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i);
+    double* densdot_i = container_i->get_ptr_to_state(PARTICLEENGINE::DensityDot, particle_i);
 
     // get pointer to column wall element
     Core::Elements::Element* ele = particlewallpair.ele_;
@@ -614,28 +616,28 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_wall_cont
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->GetVelCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2D(
-          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->shape());
 
       // get location vector of wall element
       lmele.reserve(numnodes * 3);
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      ele->LocationVector(
+      ele->location_vector(
           *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
     // velocity of wall contact point j
     std::array<double, 3> vel_j = {0.0, 0.0, 0.0};
 
-    if (walldatastate->GetVelCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
-      Core::FE::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
+      Core::FE::ExtractMyValues(*walldatastate->get_vel_col(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)
@@ -643,7 +645,7 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_wall_cont
     }
 
     // get pointer to virtual particle states
-    const double* mass_k = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_k = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
     const double* dens_k = &(material_i->initDensity_);
     const double* vel_k = vel_j.data();
 
@@ -684,7 +686,7 @@ void ParticleInteraction::SPHDensityBase::continuity_equation_particle_wall_cont
         const double e_ik_vel_ik = UTILS::VecDot(r_ik, vel_ik) / absdist;
 
         // evaluate first derivative of kernel
-        const double dWdrik = kernel_->dWdrij(absdist, rad_i[0]);
+        const double dWdrik = kernel_->d_wdrij(absdist, rad_i[0]);
 
         // sum contribution of virtual particle k
         densdot_i[0] += dens_i[0] * V_k * dWdrik * e_ik_vel_ik;
@@ -703,7 +705,7 @@ void ParticleInteraction::SPHDensityBase::set_density_sum() const
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // update density of all particles
-    container_i->UpdateState(0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum);
+    container_i->update_state(0.0, PARTICLEENGINE::Density, 1.0, PARTICLEENGINE::DensitySum);
   }
 }
 
@@ -717,7 +719,7 @@ void ParticleInteraction::SPHDensityBase::add_time_step_scaled_density_dot() con
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // update density of all particles
-    container_i->UpdateState(1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot);
+    container_i->update_state(1.0, PARTICLEENGINE::Density, dt_, PARTICLEENGINE::DensityDot);
   }
 }
 
@@ -748,7 +750,7 @@ void ParticleInteraction::SPHDensitySummation::insert_particle_states_of_particl
   }
 }
 
-void ParticleInteraction::SPHDensitySummation::ComputeDensity() const
+void ParticleInteraction::SPHDensitySummation::compute_density() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHDensitySummation::ComputeDensity");
 
@@ -790,7 +792,7 @@ void ParticleInteraction::SPHDensityIntegration::insert_particle_states_of_parti
   }
 }
 
-void ParticleInteraction::SPHDensityIntegration::ComputeDensity() const
+void ParticleInteraction::SPHDensityIntegration::compute_density() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHDensityIntegration::ComputeDensity");
 
@@ -861,7 +863,7 @@ void ParticleInteraction::SPHDensityPredictCorrect::insert_particle_states_of_pa
   }
 }
 
-void ParticleInteraction::SPHDensityPredictCorrect::ComputeDensity() const
+void ParticleInteraction::SPHDensityPredictCorrect::compute_density() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHDensityPredictCorrect::ComputeDensity");
 
@@ -936,15 +938,15 @@ void ParticleInteraction::SPHDensityPredictCorrect::correct_density() const
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    const int particlestored = container_i->ParticlesStored();
+    const int particlestored = container_i->particles_stored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    double* dens = container_i->GetPtrToState(PARTICLEENGINE::Density, 0);
-    const double* denssum = container_i->GetPtrToState(PARTICLEENGINE::DensitySum, 0);
-    const double* colorfield = container_i->GetPtrToState(PARTICLEENGINE::Colorfield, 0);
+    double* dens = container_i->get_ptr_to_state(PARTICLEENGINE::Density, 0);
+    const double* denssum = container_i->get_ptr_to_state(PARTICLEENGINE::DensitySum, 0);
+    const double* colorfield = container_i->get_ptr_to_state(PARTICLEENGINE::Colorfield, 0);
 
     // get material for current particle type
     const Mat::PAR::ParticleMaterialBase* material =
@@ -965,10 +967,10 @@ void ParticleInteraction::SPHDensityPredictCorrect::correct_density() const
       else
       {
         double dens_bc = 0.0;
-        if (densitycorrection_->ComputeDensityBC())
+        if (densitycorrection_->compute_density_bc())
         {
           double press_bc = 0.0;
-          dens_bc = equationofstate->PressureToDensity(press_bc, material->initDensity_);
+          dens_bc = equationofstate->pressure_to_density(press_bc, material->initDensity_);
         }
 
         // set corrected density of free surface particles

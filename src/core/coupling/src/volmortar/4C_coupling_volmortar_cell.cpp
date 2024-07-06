@@ -55,7 +55,7 @@ Core::VolMortar::Cell::Cell(int id, int nvertices, const Core::LinAlg::SerialDen
 /*---------------------------------------------------------------------*
  | calculate jacobian for hex elements                     farah 04/14 |
  *---------------------------------------------------------------------*/
-double Core::VolMortar::Cell::CalcJac(const double* xi)
+double Core::VolMortar::Cell::calc_jac(const double* xi)
 {
   double jac = 0.0;
 
@@ -87,7 +87,7 @@ double Core::VolMortar::Cell::CalcJac(const double* xi)
 /*---------------------------------------------------------------------*
  | mapping from parameter space to global space            farah 01/14 |
  *---------------------------------------------------------------------*/
-void Core::VolMortar::Cell::LocalToGlobal(double* local, double* global)
+void Core::VolMortar::Cell::local_to_global(double* local, double* global)
 {
   if (shape_ == Core::FE::CellType::tet4)
   {

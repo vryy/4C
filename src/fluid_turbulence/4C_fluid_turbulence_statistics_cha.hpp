@@ -123,7 +123,7 @@ namespace FLD
     moments for velocities, pressure and Cs are added to global
     'sum' vectors.
     */
-    void DoTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
+    void do_time_sample(const Teuchos::RCP<const Epetra_Vector> velnp,
         const Teuchos::RCP<const Epetra_Vector> force);
 
 
@@ -132,7 +132,7 @@ namespace FLD
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void DoLomaTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
+    void do_loma_time_sample(const Teuchos::RCP<const Epetra_Vector> velnp,
         const Teuchos::RCP<const Epetra_Vector> scanp,
         const Teuchos::RCP<const Epetra_Vector> force, const double eosfac);
 
@@ -142,7 +142,7 @@ namespace FLD
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void DoScatraTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
+    void do_scatra_time_sample(const Teuchos::RCP<const Epetra_Vector> velnp,
         const Teuchos::RCP<const Epetra_Vector> scanp,
         const Teuchos::RCP<const Epetra_Vector> force);
 
@@ -224,7 +224,7 @@ namespace FLD
 
     */
 
-    void EvaluateResiduals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs,
+    void evaluate_residuals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs,
         std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss,
         const double thermpressaf, const double thermpressam, const double thermpressdtaf,
         const double thermpressdtam,
@@ -252,7 +252,7 @@ namespace FLD
 
     */
 
-    void DumpStatistics(const int step);
+    void dump_statistics(const int step);
 
     /*!
     \brief Compute a time average of the mean values for low-Mach-number
@@ -261,7 +261,7 @@ namespace FLD
 
     */
 
-    void DumpLomaStatistics(const int step);
+    void dump_loma_statistics(const int step);
 
     /*!
     \brief Compute a time average of the mean values for turbulent
@@ -277,7 +277,7 @@ namespace FLD
 
     */
 
-    void ClearStatistics();
+    void clear_statistics();
 
     /*!
     \brief Provide the coordinates of the homogeneous planes for a

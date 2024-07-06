@@ -73,7 +73,7 @@ namespace PARTICLEENGINE
      *
      * \return reference to particle types of stored containers
      */
-    inline const std::set<ParticleType>& GetParticleTypes() const { return storedtypes_; };
+    inline const std::set<ParticleType>& get_particle_types() const { return storedtypes_; };
 
     /*!
      * \brief get specific particle container
@@ -115,7 +115,7 @@ namespace PARTICLEENGINE
         FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[type])[Owned])->ScaleState(fac, state);
+      ((containers_[type])[Owned])->scale_state(fac, state);
     };
 
     /*!
@@ -138,7 +138,7 @@ namespace PARTICLEENGINE
         FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[type])[Owned])->UpdateState(facA, stateA, facB, stateB);
+      ((containers_[type])[Owned])->update_state(facA, stateA, facB, stateB);
     };
 
     /*!
@@ -176,7 +176,7 @@ namespace PARTICLEENGINE
         FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[type])[Owned])->ClearState(state);
+      ((containers_[type])[Owned])->clear_state(state);
     };
 
     //! @}
@@ -194,7 +194,7 @@ namespace PARTICLEENGINE
      */
     inline void scale_state_all_containers(double fac, ParticleState state) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->ScaleState(fac, state);
+      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->scale_state(fac, state);
     };
 
     /*!
@@ -212,7 +212,7 @@ namespace PARTICLEENGINE
         double facA, ParticleState stateA, double facB, ParticleState stateB) const
     {
       for (const auto& type : storedtypes_)
-        ((containers_[type])[Owned])->UpdateState(facA, stateA, facB, stateB);
+        ((containers_[type])[Owned])->update_state(facA, stateA, facB, stateB);
     };
 
     /*!
@@ -237,7 +237,7 @@ namespace PARTICLEENGINE
      */
     inline void clear_state_all_containers(ParticleState state) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->ClearState(state);
+      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->clear_state(state);
     };
 
     //! @}
@@ -268,7 +268,7 @@ namespace PARTICLEENGINE
      */
     inline void clear_all_containers_of_specific_status(ParticleStatus status) const
     {
-      for (const auto& type : storedtypes_) ((containers_[type])[status])->ClearContainer();
+      for (const auto& type : storedtypes_) ((containers_[type])[status])->clear_container();
     };
 
     //! @}

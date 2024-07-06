@@ -56,22 +56,22 @@ class MyocardInada : public MyocardGeneral
   explicit MyocardInada(const double eps0_deriv_myocard, const std::string tissue);
 
   /// compute reaction coefficient
-  double ReaCoeff(const double phi, const double dt) override;
+  double rea_coeff(const double phi, const double dt) override;
 
   ///  returns number of internal state variables of the material
   int get_number_of_internal_state_variables() const override;
 
   ///  returns current internal state of the material
-  double GetInternalState(const int k) const override;
+  double get_internal_state(const int k) const override;
 
   ///  set internal state of the material
-  void SetInternalState(const int k, const double val) override;
+  void set_internal_state(const int k, const double val) override;
 
   ///  return number of ionic currents
   int get_number_of_ionic_currents() const override;
 
   ///  return ionic currents
-  double GetIonicCurrents(const int k) const override;
+  double get_ionic_currents(const int k) const override;
 
   /// time update for this material
   void update(const double phi, const double dt) override;

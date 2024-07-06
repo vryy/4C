@@ -83,7 +83,7 @@ namespace Core::LinAlg
       \param reset  (in)    : flag indicating whether all data from previous solves should
                               be recalculated including preconditioners
      */
-    void Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
+    void solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
         Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset = false);
 
 
@@ -91,10 +91,10 @@ namespace Core::LinAlg
     //     bool IsFactored() const;
 
     /// get underlying preconditioner Epetra_Operator
-    Teuchos::RCP<Epetra_Operator> EpetraOperator() { return prec_; }
+    Teuchos::RCP<Epetra_Operator> epetra_operator() { return prec_; }
 
     /// get underlying solver parameter list
-    Teuchos::ParameterList& Params();
+    Teuchos::ParameterList& params();
 
     /// @name Attribute set methods
 

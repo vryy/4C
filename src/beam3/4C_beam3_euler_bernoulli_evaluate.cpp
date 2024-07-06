@@ -38,12 +38,12 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
 {
   set_params_interface_ptr(params);
 
-  if (IsParamsInterface()) set_brownian_dyn_params_interface_ptr();
+  if (is_params_interface()) set_brownian_dyn_params_interface_ptr();
 
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -89,7 +89,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
   {
     case Core::Elements::struct_calc_ptcstiff:
     {
-      EvaluatePTC<2>(params, elemat1);
+      evaluate_ptc<2>(params, elemat1);
     }
     break;
 
@@ -112,13 +112,13 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
 
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get residual displacements
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
@@ -128,12 +128,12 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> vel;
       std::vector<double> myvel(lm.size(), 0.0);
       myvel.clear();
-      const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+      const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
       if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
           Inpar::Solid::dyna_statics)
       {
-        vel = discretization.GetState("velocity");
+        vel = discretization.get_state("velocity");
         if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
         Core::FE::ExtractMyValues(*vel, myvel, lm);
       }
@@ -166,13 +166,13 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::ExtractMyValues(*vel, myvel, lm);
@@ -211,7 +211,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
 
         elevec1(0) = eint_;
       }
-      else if (IsParamsInterface())  // new structural time integration
+      else if (is_params_interface())  // new structural time integration
       {
         params_interface().add_contribution_to_energy_type(eint_, Solid::internal_energy);
       }
@@ -246,7 +246,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // get element displacements
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -261,19 +261,19 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
 
   // get element velocities only if it's not a static problem, otherwise a dynamics problem
   // (UNCOMMENT IF NEEDED)
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
       Inpar::Solid::dyna_statics)
   {
-    Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+    Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     std::vector<double> myvel(lm.size());
     Core::FE::ExtractMyValues(*vel, myvel, lm);
   }
   // find out whether we will use a time curve
   double time = -1.0;
-  if (this->IsParamsInterface())
-    time = this->ParamsInterfacePtr()->get_total_time();
+  if (this->is_params_interface())
+    time = this->params_interface_ptr()->get_total_time();
   else
     time = params.get("total time", -1.0);
 
@@ -295,19 +295,19 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
 #endif
 
   // find out which node is correct
-  const std::vector<int>* nodeids = condition.GetNodes();
+  const std::vector<int>* nodeids = condition.get_nodes();
 
   // if a point neumann condition needs to be linearized
-  if (condition.Type() == Core::Conditions::PointNeumannEB)
+  if (condition.type() == Core::Conditions::PointNeumannEB)
   {
     // find out local element number --> this is done since the first element of a neumann point
     // condition is used for this function in this case we do not know whether it is the left or the
     // right node.
     int insert = -1;
 
-    if ((*nodeids)[0] == Nodes()[0]->Id())
+    if ((*nodeids)[0] == nodes()[0]->id())
       insert = 0;
-    else if ((*nodeids)[0] == Nodes()[1]->Id())
+    else if ((*nodeids)[0] == nodes()[1]->id())
       insert = 1;
 
     if (insert == -1) FOUR_C_THROW("\nNode could not be found on nodemap!\n");
@@ -324,8 +324,8 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       if (tmp_funct) functnum = (*tmp_funct)[i];
 
       if (functnum >= 0)
-        functfac[i] = Global::Problem::Instance()
-                          ->FunctionById<Core::UTILS::FunctionOfTime>(functnum - 1)
+        functfac[i] = Global::Problem::instance()
+                          ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
                           .evaluate(time);
     }
 
@@ -417,7 +417,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     }
   }
   // if a line neumann condition needs to be linearized
-  else if (condition.Type() == Core::Conditions::LineNeumann)
+  else if (condition.type() == Core::Conditions::LineNeumann)
   {
     // Check if MOMENT line Neumann conditions are applied accidentally and throw error
     for (int dof = 3; dof < 6; ++dof)
@@ -449,7 +449,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
       const double wgt = gausspoints.qwgt[numgp];
 
       // Get DiscretizationType of beam element
-      const Core::FE::CellType distype = Shape();
+      const Core::FE::CellType distype = shape();
 
       // Clear matrix for shape functions
       N_i.clear();
@@ -478,7 +478,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
         for (int dof = 0; dof < 3; dof++)
         {
           X_ref[dof] +=
-              Nodes()[node]->X()[dof] * N_i(2 * node) + Tref_[node](dof) * N_i(2 * node + 1);
+              nodes()[node]->x()[dof] * N_i(2 * node) + Tref_[node](dof) * N_i(2 * node + 1);
         }
 #elif (NODALDOFS == 3)
         for (int dof = 0; dof < 3; dof++)
@@ -513,8 +513,8 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
         if (functnum > 0)
         {
           // evaluate function at the position of the current node       --> dof here correct?
-          functionfac = Global::Problem::Instance()
-                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functionfac = Global::Problem::instance()
+                            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                             .evaluate(X_ref.data(), time, dof);
         }
         else
@@ -1126,12 +1126,12 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
     Core::FE::IntegrationPoints1D gausspoints = Core::FE::IntegrationPoints1D(mygaussruleeb);
 
     // Get DiscretizationType of beam element
-    const Core::FE::CellType distype = Shape();
+    const Core::FE::CellType distype = shape();
 
     // unshift node positions, i.e. manipulate element displacement vector
     // as if there where no periodic boundary conditions
     if (brownian_dyn_params_interface_ptr() != Teuchos::null)
-      UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
+      un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
     update_disp_totlag<nnode, dofpn>(disp, disp_totlag);
 
@@ -1855,7 +1855,7 @@ void Discret::ELEMENTS::Beam3eb::update_disp_totlag(
       if (dof < 3)
       {
         // position of nodes
-        disp_totlag(node * dofpn + dof) = (Nodes()[node]->X()[dof] + disp[node * dofpn + dof]);
+        disp_totlag(node * dofpn + dof) = (nodes()[node]->x()[dof] + disp[node * dofpn + dof]);
       }
       else if (dof < 6)
       {
@@ -1896,7 +1896,7 @@ void Discret::ELEMENTS::Beam3eb::update_disp_totlag(
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode>
-void Discret::ELEMENTS::Beam3eb::EvaluatePTC(
+void Discret::ELEMENTS::Beam3eb::evaluate_ptc(
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elemat1)
 {
   if (nnode > 2) FOUR_C_THROW("PTC implemented for 2-noded elements only");
@@ -1985,7 +1985,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
 {
   // get time step size
   double dt = 1000;
-  if (IsParamsInterface())
+  if (is_params_interface())
     dt = params_interface().get_delta_time();
   else
     dt = params.get<double>("delta time", 1000);
@@ -2023,7 +2023,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
-        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
+        gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute position vector r of point in physical space corresponding to Gauss point
     calc_r<nnode, vpernode, double>(disp_totlag, N_i, evaluationpoint);
@@ -2131,7 +2131,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
     Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
-        gausspoints.qxg[gp][0], N_i, N_i_xi, this->Shape(), this->RefLength());
+        gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
     calc_r_s<nnode, vpernode, double>(disp_totlag, N_i_xi, jacobi_, r_s);
@@ -2140,7 +2140,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
     for (unsigned int idim = 0; idim < ndim; idim++)
     {
 #ifndef BEAM3EBCONSTSTOCHFORCE
-      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][LID()];
+      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][lid()];
 #else
       randnumvec(idim) = (*randomforces)[idim][LID()];
 #endif
@@ -2201,7 +2201,7 @@ void Discret::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff(Teuchos::Paramet
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (brownian_dyn_params_interface_ptr() != Teuchos::null)
-    UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
+    un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
   // update current total position state of element
   Core::LinAlg::Matrix<nnode * vpernode * ndim, 1> disp_totlag(true);
@@ -2222,14 +2222,14 @@ void Discret::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff(Teuchos::Paramet
 
 /*----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Beam3eb::GetAxialStrain(
+double Discret::ELEMENTS::Beam3eb::get_axial_strain(
     double& xi, const Core::LinAlg::Matrix<12, 1>& disp_totlag) const
 {
   // Todo implement and call more general method from Beam3Base
 
   Core::LinAlg::Matrix<3, 1> r_s(true);
   Core::LinAlg::Matrix<1, 4> N_i_x(true);
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
   // First get shape functions
   Core::FE::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
 
@@ -2263,7 +2263,7 @@ double Discret::ELEMENTS::Beam3eb::GetAxialStrain(
 /*----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 // explicit template instantations
-template void Discret::ELEMENTS::Beam3eb::EvaluatePTC<2>(
+template void Discret::ELEMENTS::Beam3eb::evaluate_ptc<2>(
     Teuchos::ParameterList&, Core::LinAlg::SerialDenseMatrix&);
 
 template void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping<2, 2, 3>(

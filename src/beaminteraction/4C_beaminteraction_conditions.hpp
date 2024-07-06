@@ -86,14 +86,14 @@ namespace BEAMINTERACTION
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      * @return Pointer to the created pair.
      */
-    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
+    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) = 0;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    virtual void BuildIdSets(const Teuchos::RCP<const Core::FE::Discretization>& discretization);
+    virtual void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization);
 
     /**
      * \brief Set the displacement state.
@@ -122,7 +122,7 @@ namespace BEAMINTERACTION
      * \brief Check if a combination of a beam element ID and another element (beam, solid, ...)
      * ID is in this condition.
      */
-    virtual bool IdsInCondition(const int id_line, const int id_other) const = 0;
+    virtual bool ids_in_condition(const int id_line, const int id_other) const = 0;
 
     /**
      * \brief Create the indirect assembly manager for this condition.
@@ -176,7 +176,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Build the ID sets on all contained beam interaction conditions.
      */
-    void BuildIdSets(Teuchos::RCP<Core::FE::Discretization> discretization);
+    void build_id_sets(Teuchos::RCP<Core::FE::Discretization> discretization);
 
     /**
      * \brief Set the displacement state.
@@ -208,7 +208,7 @@ namespace BEAMINTERACTION
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs);
 
     /**
@@ -227,7 +227,7 @@ namespace BEAMINTERACTION
      */
     inline const std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
         std::vector<Teuchos::RCP<BeamInteractionConditionBase>>>&
-    GetConditionMap() const
+    get_condition_map() const
     {
       return condition_map_;
     }
@@ -237,7 +237,7 @@ namespace BEAMINTERACTION
      */
     inline std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
         std::vector<Teuchos::RCP<BeamInteractionConditionBase>>>&
-    GetConditionMap()
+    get_condition_map()
     {
       return condition_map_;
     }
@@ -256,11 +256,11 @@ namespace BEAMINTERACTION
      * \brief Check if a combination of beam element and other element id is in any beam interaction
      * condition.
      */
-    bool IdsInConditions(const int id_line, const int id_other) const
+    bool ids_in_conditions(const int id_line, const int id_other) const
     {
       for (auto& map_pair : condition_map_)
         for (auto& condition : map_pair.second)
-          if (condition->IdsInCondition(id_line, id_other)) return true;
+          if (condition->ids_in_condition(id_line, id_other)) return true;
       return false;
     };
 

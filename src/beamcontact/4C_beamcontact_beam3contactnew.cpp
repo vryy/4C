@@ -110,10 +110,10 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   smoothing_ = Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Smoothing>(
       beamcontactparams, "BEAMS_SMOOTHING");
 
-  const Core::Elements::ElementType& eot1 = element1_->ElementType();
+  const Core::Elements::ElementType& eot1 = element1_->element_type();
 
   if (smoothing_ == Inpar::BEAMCONTACT::bsm_cpp and
-      eot1 != Discret::ELEMENTS::Beam3rType::Instance())
+      eot1 != Discret::ELEMENTS::Beam3rType::instance())
     FOUR_C_THROW("Tangent smoothing only implemented for beams of type beam3r!");
 
   // For both elements the 2 direct neighbor elements are determined and saved in the
@@ -130,16 +130,16 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   Core::LinAlg::Matrix<3, 1, double> lvec2(true);
   for (int i = 0; i < 3; i++)
   {
-    lvec1(i) = (element1_->Nodes())[0]->X()[i] - (element1_->Nodes())[1]->X()[i];
-    lvec2(i) = (element2_->Nodes())[0]->X()[i] - (element2_->Nodes())[1]->X()[i];
+    lvec1(i) = (element1_->nodes())[0]->x()[i] - (element1_->nodes())[1]->x()[i];
+    lvec2(i) = (element2_->nodes())[0]->x()[i] - (element2_->nodes())[1]->x()[i];
   }
   ele1length_ = lvec1.norm2();
   ele2length_ = lvec2.norm2();
 
-  FOUR_C_THROW_UNLESS(element1->ElementType() == element2->ElementType(),
+  FOUR_C_THROW_UNLESS(element1->element_type() == element2->element_type(),
       "The class beam3contact only works for contact pairs of the same beam element type!");
 
-  if (element1->Id() >= element2->Id())
+  if (element1->id() >= element2->id())
     FOUR_C_THROW("Element 1 has to have the smaller element-ID. Adapt your contact search!");
 
 
@@ -408,34 +408,34 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_fc_contact(con
   bool DoNotAssemble = true;
 
   // node ids of both elements
-  const int* node_ids1 = element1_->NodeIds();
-  const int* node_ids2 = element2_->NodeIds();
+  const int* node_ids1 = element1_->node_ids();
+  const int* node_ids2 = element2_->node_ids();
 
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
     for (int j = 0; j < 3 * numnodalvalues; ++j)
     {
       lm1[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-      lmowner1[3 * numnodalvalues * i + j] = node->Owner();
+      lmowner1[3 * numnodalvalues * i + j] = node->owner();
     }
   }
 
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
     for (int j = 0; j < 3 * numnodalvalues; ++j)
     {
       lm2[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-      lmowner2[3 * numnodalvalues * i + j] = node->Owner();
+      lmowner2[3 * numnodalvalues * i + j] = node->owner();
     }
   }
 
@@ -612,8 +612,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
       dampingcontactflag_)
   {
     // node ids of both elements
-    const int* node_ids1 = element1_->NodeIds();
-    const int* node_ids2 = element2_->NodeIds();
+    const int* node_ids1 = element1_->node_ids();
+    const int* node_ids2 = element2_->node_ids();
 
     // initialize storage for linearizations
     Core::LinAlg::Matrix<dim1 + dim2, 1, TYPE> delta_xi(true);
@@ -658,13 +658,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and dof ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
       {
         lmrow1[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-        lmrowowner1[3 * numnodalvalues * i + j] = node->Owner();
+        lmrowowner1[3 * numnodalvalues * i + j] = node->owner();
       }
     }
 
@@ -672,13 +672,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
       {
         lmrow2[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-        lmrowowner2[3 * numnodalvalues * i + j] = node->Owner();
+        lmrowowner2[3 * numnodalvalues * i + j] = node->owner();
       }
     }
 
@@ -686,7 +686,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -700,7 +700,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1077,8 +1077,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     }
 #endif
 
-    stiffmatrix.Assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
-    stiffmatrix.Assemble(0, stiffcontact2, lmrow2, lmrowowner2, lmcol2);
+    stiffmatrix.assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
+    stiffmatrix.assemble(0, stiffcontact2, lmrow2, lmrowowner2, lmcol2);
   }
 
   return;
@@ -1204,34 +1204,34 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_fo
   bool DoNotAssemble = false;
 
   // node ids of both elements
-  const int* node_ids1 = element1_->NodeIds();
-  const int* node_ids2 = element2_->NodeIds();
+  const int* node_ids1 = element1_->node_ids();
+  const int* node_ids2 = element2_->node_ids();
 
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
     for (int j = 0; j < 3 * numnodalvalues; ++j)
     {
       lm1[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-      lmowner1[3 * numnodalvalues * i + j] = node->Owner();
+      lmowner1[3 * numnodalvalues * i + j] = node->owner();
     }
   }
 
   for (int i = 0; i < numnodes; ++i)
   {
     // get node pointer and dof ids
-    Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+    Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
     std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
     // compute force vector Fc1 and prepare assembly
     for (int j = 0; j < 3 * numnodalvalues; ++j)
     {
       lm2[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-      lmowner2[3 * numnodalvalues * i + j] = node->Owner();
+      lmowner2[3 * numnodalvalues * i + j] = node->owner();
     }
   }
 
@@ -1471,8 +1471,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
   {
     DoNotAssemble = false;
     // node ids of both elements
-    const int* node_ids1 = element1_->NodeIds();
-    const int* node_ids2 = element2_->NodeIds();
+    const int* node_ids1 = element1_->node_ids();
+    const int* node_ids2 = element2_->node_ids();
 
     // initialize storage for linearizations
     Core::LinAlg::Matrix<dim1 + dim2, 1, TYPE> delta_xi(true);
@@ -1506,13 +1506,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and dof ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
       {
         lmrow1[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-        lmrowowner1[3 * numnodalvalues * i + j] = node->Owner();
+        lmrowowner1[3 * numnodalvalues * i + j] = node->owner();
       }
     }
 
@@ -1520,13 +1520,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
       {
         lmrow2[3 * numnodalvalues * i + j] = NodeDofGIDs[j];
-        lmrowowner2[3 * numnodalvalues * i + j] = node->Owner();
+        lmrowowner2[3 * numnodalvalues * i + j] = node->owner();
       }
     }
 
@@ -1534,7 +1534,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids1[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1548,7 +1548,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int i = 0; i < numnodes; ++i)
     {
       // get pointer and node ids
-      Core::Nodes::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      Core::Nodes::Node* node = contact_discret().g_node(node_ids2[i]);
       std::vector<int> NodeDofGIDs = get_global_dofs(node);
 
       for (int j = 0; j < 3 * numnodalvalues; ++j)
@@ -1850,8 +1850,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     }
 #endif
 
-    stiffmatrix.Assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
-    stiffmatrix.Assemble(0, stiffcontact2, lmrow2, lmrowowner2, lmcol2);
+    stiffmatrix.assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
+    stiffmatrix.assemble(0, stiffcontact2, lmrow2, lmrowowner2, lmcol2);
   }
 
   return;
@@ -2311,7 +2311,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
               Core::FADUtils::CastToDouble(Core::FADUtils::Norm(eta2)) <
           NEIGHBORTOL)
       {
-        std::cout << "Warning! pair " << element1_->Id() << " / " << element2_->Id()
+        std::cout << "Warning! pair " << element1_->id() << " / " << element2_->id()
                   << ": Nodal Values shifted! " << std::endl;
 
         // Shift nodal values of contact pair by a small pre-defined value in order to enable
@@ -2762,8 +2762,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_shape_functions(
     const TYPE& eta2)
 {
   // get both discretization types
-  const Core::FE::CellType distype1 = element1_->Shape();
-  const Core::FE::CellType distype2 = element2_->Shape();
+  const Core::FE::CellType distype1 = element1_->shape();
+  const Core::FE::CellType distype2 = element2_->shape();
 
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i(true);
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi(true);
@@ -2784,10 +2784,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_shape_functions(
   }
   else if (numnodalvalues == 2)
   {
-    if (element1_->ElementType() != Discret::ELEMENTS::Beam3ebType::Instance())
+    if (element1_->element_type() != Discret::ELEMENTS::Beam3ebType::instance())
       FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
-    if (element2_->ElementType() != Discret::ELEMENTS::Beam3ebType::Instance())
+    if (element2_->element_type() != Discret::ELEMENTS::Beam3ebType::instance())
       FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
     double length1 = 2 * (static_cast<Discret::ELEMENTS::Beam3eb*>(element1_))->jacobi();
@@ -3264,7 +3264,7 @@ std::vector<int> CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_global_
     const Core::Nodes::Node* node)
 {
   // get dofs in beam contact discretization
-  std::vector<int> cdofs = ContactDiscret().Dof(node);
+  std::vector<int> cdofs = contact_discret().dof(node);
 
   // get dofs in problem discretization via offset
   std::vector<int> pdofs((int)(cdofs.size()));
@@ -3283,7 +3283,7 @@ std::vector<int> CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_global_
  |  Change the sign of the normal vector                   meier 02/2014|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::InvertNormal()
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::invert_normal()
 {
   for (int i = 0; i < 3; i++) normal_(i) = -normal_(i);
 }
@@ -3504,7 +3504,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::set_class_variables(
  |  Check if there is a difference of old and new gap      meier 02/2014|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNewGapStatus()
+bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_new_gap_status()
 {
   TYPE gap_diff = gap_ - gap_original_;
 
@@ -3522,7 +3522,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNewGapStatus()
  |  Update nodal coordinates (public)                        meier 02/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateElePos(
+void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_pos(
     Core::LinAlg::SerialDenseMatrix& newele1pos, Core::LinAlg::SerialDenseMatrix& newele2pos)
 {
   for (int i = 0; i < 3 * numnodalvalues; i++)
@@ -3650,34 +3650,36 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
     // ID is element1_
     if (xi1_old_ < -1.0)
     {
-      if (neighbors1_->GetLeftNeighbor() != nullptr)
+      if (neighbors1_->get_left_neighbor() != nullptr)
       {
-        id1 = neighbors1_->GetLeftNeighbor()->Id();
+        id1 = neighbors1_->get_left_neighbor()->id();
       }
     }
     else if (xi1_old_ > 1.0)
     {
-      if (neighbors1_->GetRightNeighbor() != nullptr) id1 = neighbors1_->GetRightNeighbor()->Id();
+      if (neighbors1_->get_right_neighbor() != nullptr)
+        id1 = neighbors1_->get_right_neighbor()->id();
     }
     else
     {
-      id1 = element1_->Id();
+      id1 = element1_->id();
     }
 
     if (xi2_old_ < -1.0)
     {
-      if (neighbors2_->GetLeftNeighbor() != nullptr)
+      if (neighbors2_->get_left_neighbor() != nullptr)
       {
-        id2 = neighbors2_->GetLeftNeighbor()->Id();
+        id2 = neighbors2_->get_left_neighbor()->id();
       }
     }
     else if (xi2_old_ > 1.0)
     {
-      if (neighbors2_->GetRightNeighbor() != nullptr) id2 = neighbors2_->GetRightNeighbor()->Id();
+      if (neighbors2_->get_right_neighbor() != nullptr)
+        id2 = neighbors2_->get_right_neighbor()->id();
     }
     else
     {
-      id2 = element2_->Id();
+      id2 = element2_->id();
     }
 
     // One ID being -1 means, that no neighbor element has been found. Consequently, the considered
@@ -3692,11 +3694,11 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
       {
         // It is already tested in GetNormalOld() that the corresponding pair had a valid closest
         // point solution in the last time step if &normal_old_!=nullptr!
-        if (contactpairmap[std::make_pair(id1, id2)]->GetNormalOld() != nullptr)
+        if (contactpairmap[std::make_pair(id1, id2)]->get_normal_old() != nullptr)
         {
-          normal_old_ = *(contactpairmap[std::make_pair(id1, id2)]->GetNormalOld());
+          normal_old_ = *(contactpairmap[std::make_pair(id1, id2)]->get_normal_old());
 
-          if (contactpairmap[std::make_pair(id1, id2)]->FirstTimeStep() == true and
+          if (contactpairmap[std::make_pair(id1, id2)]->first_time_step() == true and
               beamsclose == true)
             FOUR_C_THROW(
                 "Vector normal_old_ requested but not available in the first time step the pair "
@@ -3710,7 +3712,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
                   Core::FADUtils::ScalarProduct(normal_old_, normal_old_))) < NORMALTOL and
               beamsclose)
           {
-            std::cout << "pair: " << element1_->Id() << " / " << element2_->Id() << ":"
+            std::cout << "pair: " << element1_->id() << " / " << element2_->id() << ":"
                       << std::endl;
             std::cout << "neighbor pair: " << id1 << " / " << id2 << ":" << std::endl;
             FOUR_C_THROW(
@@ -3722,7 +3724,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
         {
           std::cout << "Warning: No valid vector normal_old_ of neighbor pair " << id1 << " / "
                     << id2 << " available in order to calculate normal_old_ for pair "
-                    << element1_->Id() << " / " << element2_->Id() << "!" << std::endl;
+                    << element1_->id() << " / " << element2_->id() << "!" << std::endl;
         }
       }
       else
@@ -3730,8 +3732,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
         if (beamsclose)
         {
           std::cout << "Warning: Neighbor pair " << id1 << " / " << id2
-                    << " not found in order to calculate normal_old_ for pair " << element1_->Id()
-                    << " / " << element2_->Id() << "! Choose larger search radius!" << std::endl;
+                    << " not found in order to calculate normal_old_ for pair " << element1_->id()
+                    << " / " << element2_->id() << "! Choose larger search radius!" << std::endl;
           FOUR_C_THROW("Stopped due to Warning above!");
         }
       }
@@ -3742,11 +3744,11 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
       {
         // It is already tested in GetNormalOld() that the corresponding pair had a valid closest
         // point solution in the last time step if &normal_old_!=nullptr!
-        if (contactpairmap[std::make_pair(id2, id1)]->GetNormalOld() != nullptr)
+        if (contactpairmap[std::make_pair(id2, id1)]->get_normal_old() != nullptr)
         {
-          normal_old_ = *(contactpairmap[std::make_pair(id2, id1)]->GetNormalOld());
+          normal_old_ = *(contactpairmap[std::make_pair(id2, id1)]->get_normal_old());
 
-          if (contactpairmap[std::make_pair(id2, id1)]->FirstTimeStep() == true and
+          if (contactpairmap[std::make_pair(id2, id1)]->first_time_step() == true and
               beamsclose == true)
             FOUR_C_THROW(
                 "Vector normal_old_requested but not available in the first time step the pair has "
@@ -3760,7 +3762,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
                   Core::FADUtils::ScalarProduct(normal_old_, normal_old_))) < NORMALTOL and
               beamsclose)
           {
-            std::cout << "pair: " << element1_->Id() << " / " << element2_->Id() << ":"
+            std::cout << "pair: " << element1_->id() << " / " << element2_->id() << ":"
                       << std::endl;
             std::cout << "neighbor pair: " << id2 << " / " << id1 << ":" << std::endl;
             FOUR_C_THROW(
@@ -3772,7 +3774,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
         {
           std::cout << "Warning: No valid vector normal_old_ of neighbor pair " << id2 << " / "
                     << id1 << " available in order to calculate normal_old_ for pair "
-                    << element1_->Id() << " / " << element2_->Id() << "!" << std::endl;
+                    << element1_->id() << " / " << element2_->id() << "!" << std::endl;
         }
       }
       else
@@ -3780,8 +3782,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
         if (beamsclose)
         {
           std::cout << "Warning: Neighbor pair " << id2 << " / " << id1
-                    << " not found in order to calculate normal_old_ for pair " << element1_->Id()
-                    << " / " << element2_->Id() << "! Choose larger search radius!" << std::endl;
+                    << " not found in order to calculate normal_old_ for pair " << element1_->id()
+                    << " / " << element2_->id() << "! Choose larger search radius!" << std::endl;
           FOUR_C_THROW("Stopped due to Warning above!");
         }
       }
@@ -3801,7 +3803,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
           Core::FADUtils::Norm(xi2_ - xi2_old_) > MAXDELTAXIETA) and
       tangentproduct_ < PARALLEL_DEACTIVATION_VAL)
   {
-    std::cout << "Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
+    std::cout << "Pair: " << element1_->id() << " / " << element2_->id() << std::endl;
     std::cout << "xi1: " << xi1_ << "xi2: " << xi2_ << std::endl;
     std::cout << "xi1_old_: " << xi1_old_ << "xi2_old_: " << xi2_old_ << std::endl;
     std::cout << "delta_r.norm2(): " << delta_r.norm2() << std::endl;
@@ -3821,19 +3823,19 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_boundary_contact(
   // If the considered element has no neighbor (-> boundary element) and the corresponding
   // parameter coordinate has exceeded the end of the physical beam, the contact is deactivated
   // for this pair for the complete time step!
-  if (neighbors1_->GetLeftNeighbor() == nullptr and xi1_ < -1.0 and !cppunconverged_)
+  if (neighbors1_->get_left_neighbor() == nullptr and xi1_ < -1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }
-  if (neighbors1_->GetRightNeighbor() == nullptr and xi1_ > 1.0 and !cppunconverged_)
+  if (neighbors1_->get_right_neighbor() == nullptr and xi1_ > 1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }
-  if (neighbors2_->GetLeftNeighbor() == nullptr and xi2_ < -1.0 and !cppunconverged_)
+  if (neighbors2_->get_left_neighbor() == nullptr and xi2_ < -1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }
-  if (neighbors2_->GetRightNeighbor() == nullptr and xi2_ > 1.0 and !cppunconverged_)
+  if (neighbors2_->get_right_neighbor() == nullptr and xi2_ > 1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }
@@ -3846,15 +3848,15 @@ double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_jacobi(
     Core::Elements::Element* element1)
 {
   double jacobi = 1.0;
-  const Core::Elements::ElementType& eot1 = element1->ElementType();
+  const Core::Elements::ElementType& eot1 = element1->element_type();
 
   // The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
   // the jacobi_ factor corresponding to the first gauss point of the beam element
-  if (eot1 == Discret::ELEMENTS::Beam3ebType::Instance())
+  if (eot1 == Discret::ELEMENTS::Beam3ebType::instance())
   {
     jacobi = (static_cast<Discret::ELEMENTS::Beam3eb*>(element1))->get_jacobi();
   }
-  else if (eot1 == Discret::ELEMENTS::Beam3rType::Instance())
+  else if (eot1 == Discret::ELEMENTS::Beam3rType::instance())
   {
     jacobi = (static_cast<Discret::ELEMENTS::Beam3r*>(element1))->get_jacobi();
   }

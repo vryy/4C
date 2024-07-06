@@ -72,7 +72,7 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_coupSVK;
       }
@@ -80,7 +80,7 @@ namespace Mat
       //@}
 
       // add strain energy
-      void AddStrainEnergy(double& psi,  ///< strain energy function
+      void add_strain_energy(double& psi,  ///< strain energy function
           const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           const Core::LinAlg::Matrix<3, 1>&
@@ -108,11 +108,11 @@ namespace Mat
 
       /// add the derivatives of a coupled strain energy functions associated with a purely
       /// isochoric deformation
-      void AddCoupDerivVol(
+      void add_coup_deriv_vol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override;
 
       /// Indicator for formulation
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
@@ -126,7 +126,7 @@ namespace Mat
 
 
       /// a young's modulus equivalent
-      void AddYoungsMod(double& young, double& shear, double& bulk) override
+      void add_youngs_mod(double& young, double& shear, double& bulk) override
       {
         young += 9. * params_->mue_ * (3. * params_->lambda_ + 2. * params_->mue_) /
                  (params_->lambda_ + params_->mue_);

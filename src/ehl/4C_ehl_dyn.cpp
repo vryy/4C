@@ -58,10 +58,10 @@ void printehlmixlogo()
  *----------------------------------------------------------------------*/
 void ehl_dyn()
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // 1.- Initialization
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // 2.- Parameter reading
   Teuchos::ParameterList& ehlparams =
@@ -74,7 +74,7 @@ void ehl_dyn()
       (Core::UTILS::IntegralValue<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));
 
   // print problem specific logo
-  if (!problem->GetDis("structure")->Comm().MyPID())
+  if (!problem->get_dis("structure")->get_comm().MyPID())
   {
     if (!modifiedreynolds)
       printehllogo();
@@ -82,12 +82,12 @@ void ehl_dyn()
       printehlmixlogo();
   }
 
-  if (!problem->GetDis("structure")->Comm().MyPID()) EHL::printlogo();
+  if (!problem->get_dis("structure")->get_comm().MyPID()) EHL::printlogo();
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
   Teuchos::ParameterList& sdyn =
-      const_cast<Teuchos::ParameterList&>(Global::Problem::Instance()->structural_dynamic_params());
+      const_cast<Teuchos::ParameterList&>(Global::Problem::instance()->structural_dynamic_params());
 
 
   //  //Modification of time parameter list
@@ -122,16 +122,16 @@ void ehl_dyn()
   // 4.- Run of the actual problem.
 
   // 4.1.- Some setup needed for the elastohydrodynamic lubrication problem.
-  ehl->SetupSystem();
+  ehl->setup_system();
 
   // 4.2.- Solve the whole problem
-  ehl->Timeloop();
+  ehl->timeloop();
 
   // 4.3.- Summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // 5. - perform the result test
-  ehl->TestResults(comm);
+  ehl->test_results(comm);
 }
 
 FOUR_C_NAMESPACE_CLOSE

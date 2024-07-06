@@ -157,11 +157,11 @@ bool Solid::TimeInt::Base::not_finished() const
 
   // check the current time
   const double& timenp = dataglobalstate_->get_time_np();
-  const double& timemax = datasdyn_->GetTimeMax();
+  const double& timemax = datasdyn_->get_time_max();
   const double& dt = (*dataglobalstate_->get_delta_time())[0];
   // check the step counter
   const int& stepnp = dataglobalstate_->get_step_np();
-  const int& stepmax = datasdyn_->GetStepMax();
+  const int& stepmax = datasdyn_->get_step_max();
 
   return (timenp <= timemax + 1.0e-8 * dt and stepnp <= stepmax);
 }
@@ -179,10 +179,10 @@ void Solid::TimeInt::Base::set_restart(int stepn, double timen, Teuchos::RCP<Epe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& Solid::TimeInt::Base::GetMassDomainMap() const
+const Epetra_Map& Solid::TimeInt::Base::get_mass_domain_map() const
 {
   check_init_setup();
-  return dataglobalstate_->get_mass_matrix()->DomainMap();
+  return dataglobalstate_->get_mass_matrix()->domain_map();
 }
 
 /*----------------------------------------------------------------------------*
@@ -203,15 +203,15 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::TimeInt::Base::get_dbc_map
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Conditions::LocsysManager> Solid::TimeInt::Base::LocsysManager()
+Teuchos::RCP<Core::Conditions::LocsysManager> Solid::TimeInt::Base::locsys_manager()
 {
   check_init_setup();
-  return dbc_ptr_->LocSysManagerPtr();
+  return dbc_ptr_->loc_sys_manager_ptr();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::ModelEvaluator(
+const Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::model_evaluator(
     Inpar::Solid::ModelType mtype) const
 {
   return integrator().model_eval().evaluator(mtype);
@@ -219,14 +219,14 @@ const Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::ModelEvaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::ModelEvaluator(Inpar::Solid::ModelType mtype)
+Solid::MODELEVALUATOR::Generic& Solid::TimeInt::Base::model_evaluator(Inpar::Solid::ModelType mtype)
 {
   return integrator().model_eval().evaluator(mtype);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::TimeInt::Base::TimIntParam() const
+double Solid::TimeInt::Base::tim_int_param() const
 {
   check_init_setup();
   return int_ptr_->get_int_param();
@@ -239,16 +239,16 @@ void Solid::TimeInt::Base::resize_m_step_tim_ada()
   check_init_setup();
   // resize time and stepsize fields
   const double& timen = dataglobalstate_->get_time_n();
-  dataglobalstate_->get_multi_time()->Resize(-1, 0, timen);
+  dataglobalstate_->get_multi_time()->resize(-1, 0, timen);
   const double& dtn = (*dataglobalstate_->get_delta_time())[0];
-  dataglobalstate_->get_delta_time()->Resize(-1, 0, dtn);
+  dataglobalstate_->get_delta_time()->resize(-1, 0, dtn);
 
   // resize state vectors, AB2 is a 2-step method, thus we need two
   // past steps at t_{n} and t_{n-1}
   const Epetra_Map* dofrowmap_ptr = dataglobalstate_->dof_row_map_view();
-  dataglobalstate_->get_multi_dis()->Resize(-1, 0, dofrowmap_ptr, true);
-  dataglobalstate_->get_multi_vel()->Resize(-1, 0, dofrowmap_ptr, true);
-  dataglobalstate_->get_multi_acc()->Resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->get_multi_dis()->resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->get_multi_vel()->resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->get_multi_acc()->resize(-1, 0, dofrowmap_ptr, true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -277,7 +277,7 @@ void Solid::TimeInt::Base::update_step_time()
   // --------------------------------------------------------------------------
   // update old time and step variables
   // --------------------------------------------------------------------------
-  dataglobalstate_->get_multi_time()->UpdateSteps(timenp);
+  dataglobalstate_->get_multi_time()->update_steps(timenp);
   stepn = stepnp;
 
   // --------------------------------------------------------------------------
@@ -285,7 +285,7 @@ void Solid::TimeInt::Base::update_step_time()
   // --------------------------------------------------------------------------
   // get current time step size
   const double& dtn = (*dataglobalstate_->get_delta_time())[0];
-  dataglobalstate_->get_delta_time()->UpdateSteps(dtn);
+  dataglobalstate_->get_delta_time()->update_steps(dtn);
   timenp += dtn;
   stepnp += 1;
 }
@@ -332,22 +332,23 @@ void Solid::TimeInt::Base::select_energy_types_to_be_written()
             dynamic_cast<Solid::MODELEVALUATOR::BeamInteraction const&>(
                 int_ptr_->model_eval_ptr()->evaluator(Inpar::Solid::model_beaminteraction));
 
-        if (beaminteraction_evaluator.HaveSubModelType(
+        if (beaminteraction_evaluator.have_sub_model_type(
                 Inpar::BEAMINTERACTION::submodel_beamcontact))
         {
           evaldata.insert_energy_type_to_be_considered(Solid::beam_contact_penalty_potential);
         }
-        if (beaminteraction_evaluator.HaveSubModelType(Inpar::BEAMINTERACTION::submodel_potential))
+        if (beaminteraction_evaluator.have_sub_model_type(
+                Inpar::BEAMINTERACTION::submodel_potential))
         {
           evaldata.insert_energy_type_to_be_considered(Solid::beam_interaction_potential);
         }
-        if (beaminteraction_evaluator.HaveSubModelType(
+        if (beaminteraction_evaluator.have_sub_model_type(
                 Inpar::BEAMINTERACTION::submodel_crosslinking))
         {
           evaldata.insert_energy_type_to_be_considered(Solid::beam_to_beam_link_internal_energy);
           evaldata.insert_energy_type_to_be_considered(Solid::beam_to_beam_link_kinetic_energy);
         }
-        if (beaminteraction_evaluator.HaveSubModelType(
+        if (beaminteraction_evaluator.have_sub_model_type(
                 Inpar::BEAMINTERACTION::submodel_spherebeamlink))
         {
           evaldata.insert_energy_type_to_be_considered(Solid::beam_to_sphere_link_internal_energy);
@@ -385,7 +386,7 @@ void Solid::TimeInt::Base::initialize_energy_file_stream_and_write_headers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimeInt::Base::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimeInt::Base::create_field_test()
 {
   check_init_setup();
   Teuchos::RCP<Solid::ResultTest> resulttest = Teuchos::rcp(new Solid::ResultTest());
@@ -408,8 +409,8 @@ void Solid::TimeInt::Base::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP
   *time = dataglobalstate_->get_time_n();
   Teuchos::RCP<const Core::FE::Discretization> discret_ptr =
       Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(dataglobalstate_->get_discret());
-  *elementdata = *(discret_ptr->PackMyElements());
-  *nodedata = *(discret_ptr->PackMyNodes());
+  *elementdata = *(discret_ptr->pack_my_elements());
+  *nodedata = *(discret_ptr->pack_my_nodes());
 
   // get restart data is only for simple structure problems
   // hence if the model set is larger than one, we throw an error
@@ -492,7 +493,7 @@ void Solid::TimeInt::Base::output_step(bool forced_writerestart)
     reset_step();
     // restart has already been written or simulation has just started
     if (dataio_->should_write_restart_for_step(dataglobalstate_->get_step_n()) or
-        dataglobalstate_->get_step_n() == Global::Problem::Instance()->restart())
+        dataglobalstate_->get_step_n() == Global::Problem::instance()->restart())
       return;
     // if state already exists, add restart information
     if (dataio_->write_results_for_this_step(dataglobalstate_->get_step_n()))
@@ -598,7 +599,7 @@ void Solid::TimeInt::Base::output_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Base::OutputDebugState(
+void Solid::TimeInt::Base::output_debug_state(
     Core::IO::DiscretizationWriter& iowriter, bool write_owner) const
 {
   output_state(iowriter, write_owner);
@@ -678,7 +679,7 @@ void Solid::TimeInt::Base::output_stress_strain()
         FOUR_C_THROW("Requested stress type is not supported!");
         break;
     }
-    output_ptr->write_vector(text, evaldata.stress_data(), *(discretization()->ElementRowMap()));
+    output_ptr->write_vector(text, evaldata.stress_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
   evaldata.stress_data_ptr() = Teuchos::null;
@@ -702,7 +703,7 @@ void Solid::TimeInt::Base::output_stress_strain()
         break;
     }
     output_ptr->write_vector(
-        text, evaldata.coupling_stress_data(), *(discretization()->ElementRowMap()));
+        text, evaldata.coupling_stress_data(), *(discretization()->element_row_map()));
   }
 
   // ---------------------------------------------------------------------------
@@ -728,7 +729,7 @@ void Solid::TimeInt::Base::output_stress_strain()
         FOUR_C_THROW("Requested strain type is not supported!");
         break;
     }
-    output_ptr->write_vector(text, evaldata.strain_data(), *(discretization()->ElementRowMap()));
+    output_ptr->write_vector(text, evaldata.strain_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
   evaldata.strain_data_ptr() = Teuchos::null;
@@ -752,7 +753,7 @@ void Solid::TimeInt::Base::output_stress_strain()
         break;
     }
     output_ptr->write_vector(
-        text, evaldata.plastic_strain_data(), *(discretization()->ElementRowMap()));
+        text, evaldata.plastic_strain_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
   evaldata.plastic_strain_data_ptr() = Teuchos::null;
@@ -813,7 +814,7 @@ void Solid::TimeInt::Base::output_optional_quantity()
         break;
     }
     output_ptr->write_vector(
-        text, evaldata.opt_quantity_data(), *(discretization()->ElementRowMap()));
+        text, evaldata.opt_quantity_data(), *(discretization()->element_row_map()));
   }
   // we don't need this anymore
   evaldata.opt_quantity_data_ptr() = Teuchos::null;
@@ -845,7 +846,7 @@ void Solid::TimeInt::Base::output_restart(bool& datawritten)
 
   // info dedicated to user's eyes staring at standard out
   if ((dataglobalstate_->get_my_rank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
-      (StepOld() % dataio_->get_print2_screen_every_n_step() == 0))
+      (step_old() % dataio_->get_print2_screen_every_n_step() == 0))
   {
     Core::IO::cout << "====== Restart for field 'Structure' written in step "
                    << dataglobalstate_->get_step_n() << Core::IO::endl;
@@ -875,7 +876,7 @@ void Solid::TimeInt::Base::add_restart_to_output_state()
 
   // info dedicated to user's eyes staring at standard out
   if ((dataglobalstate_->get_my_rank() == 0) and (dataio_->get_print2_screen_every_n_step() > 0) and
-      (StepOld() % dataio_->get_print2_screen_every_n_step() == 0))
+      (step_old() % dataio_->get_print2_screen_every_n_step() == 0))
   {
     Core::IO::cout << "====== Restart for field 'Structure' written in step "
                    << dataglobalstate_->get_step_n() << Core::IO::endl;
@@ -898,7 +899,7 @@ void Solid::TimeInt::Base::write_gmsh_struc_output_step()
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  Core::IO::Gmsh::VectorFieldDofBasedToGmsh(discretization(), Dispn(), gmshfilecontent, 0, true);
+  Core::IO::Gmsh::VectorFieldDofBasedToGmsh(discretization(), dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 
@@ -912,7 +913,7 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
 
   // create an input/output reader
   Core::IO::DiscretizationReader ioreader(
-      discretization(), Global::Problem::Instance()->InputControlFile(), stepn);
+      discretization(), Global::Problem::instance()->input_control_file(), stepn);
   dataglobalstate_->get_step_n() = stepn;
   dataglobalstate_->get_step_np() = stepn + 1;
   dataglobalstate_->get_multi_time() =
@@ -940,10 +941,10 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   // (2) read (or overwrite) the general dynamic state
   Teuchos::RCP<Epetra_Vector>& velnp = dataglobalstate_->get_vel_np();
   ioreader.read_vector(velnp, "velocity");
-  dataglobalstate_->get_multi_vel()->UpdateSteps(*velnp);
+  dataglobalstate_->get_multi_vel()->update_steps(*velnp);
   Teuchos::RCP<Epetra_Vector>& accnp = dataglobalstate_->get_acc_np();
   ioreader.read_vector(accnp, "acceleration");
-  dataglobalstate_->get_multi_acc()->UpdateSteps(*accnp);
+  dataglobalstate_->get_multi_acc()->update_steps(*accnp);
 
   // (3) read specific time integrator (forces, etc.) and model evaluator data
   int_ptr_->read_restart(ioreader);
@@ -969,7 +970,7 @@ Teuchos::RCP<Core::FE::Discretization> Solid::TimeInt::Base::discretization()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Base::SetActionType(const Core::Elements::ActionType& action)
+void Solid::TimeInt::Base::set_action_type(const Core::Elements::ActionType& action)
 {
   check_init_setup();
   int_ptr_->eval_data().set_action_type(action);
@@ -977,17 +978,17 @@ void Solid::TimeInt::Base::SetActionType(const Core::Elements::ActionType& actio
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::TimeInt::Base::GroupId() const
+int Solid::TimeInt::Base::group_id() const
 {
   Teuchos::RCP<Core::Communication::Communicators> group =
-      Global::Problem::Instance()->GetCommunicators();
-  return group->GroupId();
+      Global::Problem::instance()->get_communicators();
+  return group->group_id();
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Base::post_update() { int_ptr_->post_update(); }
 
-void Solid::TimeInt::Base::PostTimeLoop() { int_ptr_->post_time_loop(); }
+void Solid::TimeInt::Base::post_time_loop() { int_ptr_->post_time_loop(); }
 
 bool Solid::TimeInt::Base::has_final_state_been_written() const
 {

@@ -69,9 +69,9 @@ void FSI::Partitioned::setup()
   // call setup of base class
   FSI::Algorithm::setup();
 
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   set_default_parameters(fsidyn, noxparameterlist_);
-  setup_coupling(fsidyn, Comm());
+  setup_coupling(fsidyn, get_comm());
 }
 
 
@@ -79,66 +79,67 @@ void FSI::Partitioned::setup()
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-  if (Comm().MyPID() == 0) std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;
+  if (get_comm().MyPID() == 0)
+    std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;
 
   Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  coupsfm_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::Instance()->NDim(),
-      Global::Problem::Instance()->mortar_coupling_params(),
-      Global::Problem::Instance()->contact_dynamic_params(),
-      Global::Problem::Instance()->spatial_approximation_type()));
+  coupsfm_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+      Global::Problem::instance()->mortar_coupling_params(),
+      Global::Problem::instance()->contact_dynamic_params(),
+      Global::Problem::instance()->spatial_approximation_type()));
 
 
   if ((Core::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
           1)  // matching meshes
-      and (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::fsi_xfem) and
-      (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::fbi))
+      and (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fsi_xfem) and
+      (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fbi))
   {
     matchingnodes_ = true;
-    const int ndim = Global::Problem::Instance()->NDim();
+    const int ndim = Global::Problem::instance()->n_dim();
     coupsf.setup_condition_coupling(*structure_field()->discretization(),
-        structure_field()->Interface()->fsi_cond_map(), *MBFluidField()->discretization(),
-        MBFluidField()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+        structure_field()->interface()->fsi_cond_map(), *mb_fluid_field()->discretization(),
+        mb_fluid_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
-    if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
+    if (coupsf.master_dof_map()->NumGlobalElements() == 0)
       FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
   else if ((Core::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                1)  // matching meshes coupled via XFEM
-           and (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::fsi_xfem) and
-           (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::fbi))
+           and (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fsi_xfem) and
+           (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fbi))
   {
     matchingnodes_ = true;  // matching between structure and boundary dis! non-matching between
                             // boundary dis and fluid is handled bei XFluid itself
-    const int ndim = Global::Problem::Instance()->NDim();
+    const int ndim = Global::Problem::instance()->n_dim();
 
     Teuchos::RCP<Adapter::FluidXFEM> x_movingboundary =
-        Teuchos::rcp_dynamic_cast<Adapter::FluidXFEM>(MBFluidField());
+        Teuchos::rcp_dynamic_cast<Adapter::FluidXFEM>(mb_fluid_field());
     coupsf.setup_condition_coupling(*structure_field()->discretization(),
-        structure_field()->Interface()->fsi_cond_map(),
+        structure_field()->interface()->fsi_cond_map(),
         *x_movingboundary->boundary_discretization(),  // use the matching boundary discretization
-        x_movingboundary->StructInterface()->fsi_cond_map(), "FSICoupling", ndim);
+        x_movingboundary->struct_interface()->fsi_cond_map(), "FSICoupling", ndim);
 
-    if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
+    if (coupsf.master_dof_map()->NumGlobalElements() == 0)
       FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if ((Global::Problem::Instance()->GetProblemType() == Core::ProblemType::fbi))
+  else if ((Global::Problem::instance()->get_problem_type() == Core::ProblemType::fbi))
   {
     matchingnodes_ = true;
   }
   else if (Core::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                0  // mortar coupling
-           and (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::fsi_xfem))
+           and (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fsi_xfem))
   {
     // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are
     // coupled e.g.: 3D: coupleddof = [1, 1, 1]
-    std::vector<int> coupleddof(Global::Problem::Instance()->NDim(), 1);
+    std::vector<int> coupleddof(Global::Problem::instance()->n_dim(), 1);
 
     matchingnodes_ = false;
-    coupsfm_->setup(structure_field()->discretization(), MBFluidField()->discretization(),
-        (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(MBFluidField()))
+    coupsfm_->setup(structure_field()->discretization(), mb_fluid_field()->discretization(),
+        (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field()))
             ->ale_field()
             ->write_access_discretization(),
-        coupleddof, "FSICoupling", comm, Global::Problem::Instance()->FunctionManager(), true);
+        coupleddof, "FSICoupling", comm, Global::Problem::instance()->function_manager(), true);
   }
   else
   {
@@ -156,7 +157,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 void FSI::Partitioned::set_default_parameters(
     const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "\n set_default_parameters in FSI::Partitioned ..." << std::endl;
 
   // extract sublist with settings for partitioned solver
@@ -367,7 +368,7 @@ void FSI::Partitioned::set_default_parameters(
   }
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  printParams.set("MyPID", Comm().MyPID());
+  printParams.set("MyPID", get_comm().MyPID());
 
   // set default output flag to no output
   // The field solver will output a lot, anyway.
@@ -383,9 +384,9 @@ void FSI::Partitioned::set_default_parameters(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
+void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
 
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = noxparameterlist_;
@@ -406,12 +407,12 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   // log solver iterations
 
   Teuchos::RCP<std::ofstream> log;
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
-    std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
+    std::string s = Global::Problem::instance()->output_control_file()->file_name();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
-    (*log) << "# num procs      = " << Comm().NumProc() << "\n"
+    (*log) << "# num procs      = " << get_comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method", "Newton") << "\n"
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
            << "# Preconditioner = " << nlParams.get("Preconditioner", "None") << "\n"
@@ -431,13 +432,13 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
   // ==================================================================
 
-  while (NotFinished())
+  while (not_finished())
   {
     // Increment all field counters and predict field values whenever
     // appropriate.
     prepare_time_step();
 
-    if (debugwriter_ != Teuchos::null) debugwriter_->NewTimeStep(Step());
+    if (debugwriter_ != Teuchos::null) debugwriter_->new_time_step(step());
 
     // reset all counters
     std::fill(counter_.begin(), counter_.end(), 0);
@@ -482,7 +483,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // Output the parameter list
     if (utils_->isPrintType(::NOX::Utils::Parameters))
-      if (Step() == 1 and Comm().MyPID() == 0)
+      if (step() == 1 and get_comm().MyPID() == 0)
       {
         utils_->out() << std::endl
                       << "Final Parameters" << std::endl
@@ -496,9 +497,9 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // stop time measurement
     timemonitor = Teuchos::null;
 
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
-      (*log) << Step() << "\t" << Time() << "\t" << timer.totalElapsedTime(true) << "\t"
+      (*log) << step() << "\t" << time() << "\t" << timer.totalElapsedTime(true) << "\t"
              << nlParams.sublist("Output").get("Nonlinear Iterations", 0) << "\t"
              << nlParams.sublist("Output").get("2-Norm of Residual", 0.) << "\t"
              << lsParams.sublist("Output").get("Total Number of Linear Iterations", 0);
@@ -519,7 +520,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     if (usedmethod == Inpar::FSI::DirichletNeumannSlideale)
     {
-      Remeshing();
+      remeshing();
     }
 
     // calculate stresses, strains, energies
@@ -659,7 +660,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
       // method.
       if (dirParams.get("Method", "Newton") != "User Defined")
       {
-        if (Comm().MyPID() == 0)
+        if (get_comm().MyPID() == 0)
           utils->out() << "Warning: No Jacobian for solver " << dirParams.get("Method", "Newton")
                        << "\n";
       }
@@ -677,7 +678,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
   {
     if (lsParams.get("Preconditioner", "None") == "None")
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         utils->out() << "Warning: Preconditioner turned off in linear solver settings.\n";
     }
 
@@ -779,7 +780,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_disp()
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_force()
 {
   // extract forces
-  return fluid_to_struct(MBFluidField()->extract_interface_forces());
+  return fluid_to_struct(mb_fluid_field()->extract_interface_forces());
 }
 
 
@@ -792,7 +793,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
   Teuchos::Time timer("FSI_computeF", true);
   const double startTime = timer.wallTime();
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     utils_->out() << "\n "
                   << "FSI residual calculation"
@@ -805,7 +806,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
 
   if (!x.Map().UniqueGIDs()) FOUR_C_THROW("source map not unique");
 
-  if (debugwriter_ != Teuchos::null) debugwriter_->NewIteration();
+  if (debugwriter_ != Teuchos::null) debugwriter_->new_iteration();
 
   // Do the FSI step. The real work is in here.
   fsi_op(x, F, fillFlag);
@@ -813,7 +814,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
   if (debugwriter_ != Teuchos::null) debugwriter_->write_vector("F", F);
 
   const double endTime = timer.wallTime();
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     utils_->out() << "\nTime for residual calculation: " << endTime - startTime << " secs\n\n";
   return true;
 }
@@ -821,7 +822,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::Remeshing() {}
+void FSI::Partitioned::remeshing() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -833,7 +834,7 @@ void FSI::Partitioned::fsi_op(const Epetra_Vector& x, Epetra_Vector& F, const Fi
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_op(
     Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
 {
-  if (Comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
+  if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Fluid operator" << std::endl;
   return Teuchos::null;
 }
@@ -844,7 +845,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_op(
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_op(
     Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
 {
-  if (Comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
+  if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Structural operator" << std::endl;
   return Teuchos::null;
 }
@@ -856,18 +857,18 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_op(
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_velocity(
     Teuchos::RCP<const Epetra_Vector> idispnp) const
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
 
   if (Core::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER") == 1)
   {
     ivel = Teuchos::rcp(new Epetra_Vector(*iveln_));
-    ivel->Update(2. / Dt(), *idispnp, -2. / Dt(), *idispn_, -1.);
+    ivel->Update(2. / dt(), *idispnp, -2. / dt(), *idispn_, -1.);
   }
   else
   {
     ivel = Teuchos::rcp(new Epetra_Vector(*idispn_));
-    ivel->Update(1. / Dt(), *idispnp, -1. / Dt());
+    ivel->Update(1. / dt(), *idispnp, -1. / dt());
   }
   return ivel;
 }
@@ -880,11 +881,11 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_to_fluid(Teuchos::RCP<Epetr
   const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
-    return coupsf.MasterToSlave(iv);
+    return coupsf.master_to_slave(iv);
   }
   else
   {
-    return coupsfm_->MasterToSlave(iv);
+    return coupsfm_->master_to_slave(iv);
   }
 }
 
@@ -896,18 +897,18 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_to_struct(Teuchos::RCP<Epetr
   const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
-    return coupsf.SlaveToMaster(iv);
+    return coupsf.slave_to_master(iv);
   }
   else
   {
     // Translate consistent nodal forces to interface loads
-    const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField()->integrate_interface_shape();
+    const Teuchos::RCP<Epetra_Vector> ishape = mb_fluid_field()->integrate_interface_shape();
     const Teuchos::RCP<Epetra_Vector> iforce = Teuchos::rcp(new Epetra_Vector(iv->Map()));
 
     if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
       FOUR_C_THROW("ReciprocalMultiply failed");
 
-    return coupsfm_->SlaveToMaster(iforce);
+    return coupsfm_->slave_to_master(iforce);
   }
 }
 
@@ -931,7 +932,7 @@ const Core::Adapter::CouplingMortar& FSI::Partitioned::structure_fluid_coupling_
 void FSI::Partitioned::extract_previous_interface_solution()
 {
   idispn_ = structure_field()->extract_interface_dispn();
-  iveln_ = fluid_to_struct(MBFluidField()->extract_interface_veln());
+  iveln_ = fluid_to_struct(mb_fluid_field()->extract_interface_veln());
 }
 
 /*----------------------------------------------------------------------*/
@@ -941,8 +942,8 @@ void FSI::Partitioned::output()
   // call base class version
   FSI::Algorithm::output();
 
-  switch (
-      Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
+  switch (Core::UTILS::IntegralValue<int>(
+      Global::Problem::instance()->fsi_dynamic_params(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {
@@ -956,8 +957,8 @@ void FSI::Partitioned::output()
           Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory, true);
 
       // write aitken relaxation parameter
-      MBFluidField()->fluid_field()->DiscWriter()->write_double(
-          "omega", aitkenfactory->GetAitken()->GetOmega());
+      mb_fluid_field()->fluid_field()->disc_writer()->write_double(
+          "omega", aitkenfactory->get_aitken()->get_omega());
 
       break;
     }  // AITKEN case
@@ -972,25 +973,25 @@ void FSI::Partitioned::read_restart(int step)
   // call base class version
   FSI::Algorithm::read_restart(step);
 
-  switch (
-      Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->FSIDynamicParams(), "COUPALGO"))
+  switch (Core::UTILS::IntegralValue<int>(
+      Global::Problem::instance()->fsi_dynamic_params(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {
       double omega = -1234.0;
-      auto input_control_file = Global::Problem::Instance()->InputControlFile();
+      auto input_control_file = Global::Problem::instance()->input_control_file();
 
-      if (Teuchos::rcp_dynamic_cast<Adapter::FluidImmersed>(MBFluidField()) != Teuchos::null ||
-          Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(MBFluidField()) != Teuchos::null)
+      if (Teuchos::rcp_dynamic_cast<Adapter::FluidImmersed>(mb_fluid_field()) != Teuchos::null ||
+          Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(mb_fluid_field()) != Teuchos::null)
       {
         Core::IO::DiscretizationReader reader(
-            MBFluidField()->fluid_field()->discretization(), input_control_file, step);
+            mb_fluid_field()->fluid_field()->discretization(), input_control_file, step);
         omega = reader.read_double("omega");
       }
-      else if (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(MBFluidField()) != Teuchos::null)
+      else if (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field()) != Teuchos::null)
       {
         Teuchos::RCP<Adapter::FluidAle> fluidale =
-            Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(MBFluidField());
+            Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field());
         Core::IO::DiscretizationReader reader(Teuchos::rcp_const_cast<Core::FE::Discretization>(
                                                   fluidale->ale_field()->discretization()),
             input_control_file, step);

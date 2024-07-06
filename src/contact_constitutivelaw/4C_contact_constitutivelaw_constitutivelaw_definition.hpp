@@ -88,7 +88,7 @@ namespace CONTACT
        * \param[in] reader the actual dat file reader that has access to the dat file
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
-      void Read(const Global::Problem& problem, Core::IO::DatFileReader& reader,
+      void read(const Global::Problem& problem, Core::IO::DatFileReader& reader,
           Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle);
 
       /// print my DAT file section and possible contact constitutive laws
@@ -96,16 +96,16 @@ namespace CONTACT
           const Core::FE::Discretization* dis = nullptr);
 
       /// get contact constitutive law name
-      [[nodiscard]] std::string Name() const { return coconstlawname_; }
+      [[nodiscard]] std::string name() const { return coconstlawname_; }
 
       // get contact constitutive law type
-      [[nodiscard]] Inpar::CONTACT::ConstitutiveLawType Type() const { return coconstlawtype_; }
+      [[nodiscard]] Inpar::CONTACT::ConstitutiveLawType type() const { return coconstlawtype_; }
 
       /// get contact constitutive law description
-      [[nodiscard]] std::string Description() const { return description_; }
+      [[nodiscard]] std::string description() const { return description_; }
 
       /// get contact constitutive law inputline
-      [[nodiscard]] std::vector<Teuchos::RCP<Input::LineComponent>> Inputline() const
+      [[nodiscard]] std::vector<Teuchos::RCP<Input::LineComponent>> inputline() const
       {
         return inputline_;
       }

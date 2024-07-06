@@ -71,7 +71,7 @@ namespace FLD
     void init() override { init(true); }
     void init(bool createinitialstate) override;
 
-    void CreateInitialState() override;
+    void create_initial_state() override;
 
     /// don't keep a sparse matrix underneath
     void use_block_matrix(bool splitmatrix = true) override;
@@ -80,14 +80,14 @@ namespace FLD
     void set_x_fluid_fluid_params();
 
     /// set initial flow field for fluid domains
-    void SetInitialFlowField(
+    void set_initial_flow_field(
         const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     /// set fluid-fluid interface fixed for current time step
-    void SetInterfaceFixed();
+    void set_interface_fixed();
 
     /// free fluid-fluid interface
-    void SetInterfaceFree();
+    void set_interface_free();
 
     /// setup the variables to do a new time step
     void prepare_time_step() override;
@@ -96,7 +96,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
     /// prepare solution (cut happens here)
-    void PrepareXFEMSolve() override;
+    void prepare_xfem_solve() override;
 
     /// Monolithic FSI needs to access the linear fluid problem.
     void evaluate(Teuchos::RCP<const Epetra_Vector>
@@ -105,7 +105,7 @@ namespace FLD
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
-    void TimeUpdate() override;
+    void time_update() override;
 
     /*!
      * \brief set underlying dof-maps for new shape derivatives matrix
@@ -125,14 +125,14 @@ namespace FLD
      * \param (in) condmap map of fsi interface dof
      * \return coupled fluid-fluid block system matrix
      */
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix(
         Teuchos::RCP<Epetra_Map> innermap, Teuchos::RCP<Epetra_Map> condmap);
 
-    Teuchos::RCP<const Epetra_Vector> RHS() override { return xff_state_->xffluidresidual_; }
-    Teuchos::RCP<const Epetra_Vector> Velnp() override { return xff_state_->xffluidvelnp_; }
-    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override { return xff_state_->xffluidvelnp_; }
-    Teuchos::RCP<const Epetra_Vector> Veln() override { return xff_state_->xffluidveln_; }
-    Teuchos::RCP<const Epetra_Vector> Stepinc() override { return stepinc_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() override { return xff_state_->xffluidresidual_; }
+    Teuchos::RCP<const Epetra_Vector> velnp() override { return xff_state_->xffluidvelnp_; }
+    Teuchos::RCP<Epetra_Vector> write_access_velnp() override { return xff_state_->xffluidvelnp_; }
+    Teuchos::RCP<const Epetra_Vector> veln() override { return xff_state_->xffluidveln_; }
+    Teuchos::RCP<const Epetra_Vector> stepinc() override { return stepinc_; }
 
     Teuchos::RCP<Epetra_Vector> write_access_disp_old_state() { return dispnpoldstate_; }
 
@@ -145,15 +145,15 @@ namespace FLD
     }
 
     /// get merged vel-pres-splitter
-    Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter() override
     {
       return xff_state_->xffluidvelpressplitter_;
     }
 
     // get merged pressure dof-map
-    Teuchos::RCP<const Epetra_Map> PressureRowMap() override;
+    Teuchos::RCP<const Epetra_Map> pressure_row_map() override;
     // get merged velocity dof-map
-    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
+    Teuchos::RCP<const Epetra_Map> velocity_row_map() override;
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> extended_shape_derivatives()
     {
@@ -161,14 +161,14 @@ namespace FLD
     }
 
     /// get the combined fluid-fluid system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(xff_state_->xffluidsysmat_);
     }
 
     /// get the combined fluid-fluid system matrix in block form (embedded and background fluid
     /// blocks)
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
           xff_state_->xffluidsysmat_);
@@ -196,7 +196,7 @@ namespace FLD
     void interpolate_embedded_state_vectors();
 
     /// create a result test
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     /// write output for both fluid discretizations
     void output() override;

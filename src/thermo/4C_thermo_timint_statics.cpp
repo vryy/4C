@@ -89,7 +89,7 @@ void THR::TimIntStatics::evaluate_rhs_tang_residual()
   fextn_->PutScalar(0.0);
 
   //! initialise tangent matrix to zero
-  tang_->Zero();
+  tang_->zero();
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
@@ -113,7 +113,7 @@ void THR::TimIntStatics::evaluate_rhs_tang_residual()
   //!    K_{Teffdyn} = K_{T}
   //! i.e. do nothing here
 
-  tang_->Complete();  // close tangent matrix
+  tang_->complete();  // close tangent matrix
 
   //! hallelujah
   return;
@@ -144,7 +144,7 @@ double THR::TimIntStatics::calc_ref_norm_temperature()
  | calculate characteristic/reference norms for forces       dano 08/09 |
  | originally by lw                                                     |
  *----------------------------------------------------------------------*/
-double THR::TimIntStatics::CalcRefNormForce()
+double THR::TimIntStatics::calc_ref_norm_force()
 {
   //! The reference norms are used to scale the calculated iterative
   //! temperature norm and/or the residual force norm. For this
@@ -200,15 +200,15 @@ void THR::TimIntStatics::update_iter_iteratively()
 /*----------------------------------------------------------------------*
  | update after time step                                    dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::UpdateStepState()
+void THR::TimIntStatics::update_step_state()
 {
   //! update state
   //! new temperatures at t_{n+1} -> t_n
   //!    T_{n} := T_{n+1}
-  temp_->UpdateSteps(*tempn_);
+  temp_->update_steps(*tempn_);
   //! new temperature rates at t_{n+1} -> t_n
   //!    T'_{n} := T'_{n+1}
-  rate_->UpdateSteps(*raten_);  // this simply copies zero vectors
+  rate_->update_steps(*raten_);  // this simply copies zero vectors
 
   //! update new external force
   //!    F_{ext;n} := F_{ext;n+1}
@@ -227,7 +227,7 @@ void THR::TimIntStatics::UpdateStepState()
  | update after time step after output on element level      dano 05/13 |
  | update anything that needs to be updated at the element level        |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::UpdateStepElement()
+void THR::TimIntStatics::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -245,7 +245,7 @@ void THR::TimIntStatics::UpdateStepElement()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::ReadRestartForce()
+void THR::TimIntStatics::read_restart_force()
 {
   // do nothing
   return;
@@ -256,7 +256,7 @@ void THR::TimIntStatics::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void THR::TimIntStatics::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

@@ -30,7 +30,7 @@ namespace Core::IO
       VisualizationParameters parameters)
       : discretization_(discretization),
         visualization_manager_(Teuchos::rcp(new Core::IO::VisualizationManager(
-            std::move(parameters), discretization->Comm(), discretization->Name())))
+            std::move(parameters), discretization->get_comm(), discretization->name())))
   {
   }
 
@@ -44,21 +44,21 @@ namespace Core::IO
 
     // count number of nodes and number for each processor; output is completely independent of
     // the number of processors involved
-    unsigned int num_row_nodes = (unsigned int)discretization_->NumMyRowNodes();
+    unsigned int num_row_nodes = (unsigned int)discretization_->num_my_row_nodes();
 
     // get and prepare storage for point coordinate values
     std::vector<double>& point_coordinates =
-        visualization_manager_->get_visualization_data().GetPointCoordinates();
+        visualization_manager_->get_visualization_data().get_point_coordinates();
     point_coordinates.clear();
     point_coordinates.reserve(num_spatial_dimensions * num_row_nodes);
 
 
     // loop over my nodes and collect the geometry/grid data, i.e. reference positions of nodes
-    for (const Core::Nodes::Node* node : discretization_->MyRowNodeRange())
+    for (const Core::Nodes::Node* node : discretization_->my_row_node_range())
     {
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
       {
-        point_coordinates.push_back(node->X()[idim]);
+        point_coordinates.push_back(node->x()[idim]);
       }
     }
 
@@ -87,7 +87,7 @@ namespace Core::IO
     for (int lid = 0; lid < result_data_dofbased->MyLength(); ++lid)
       point_result_data.push_back((*result_data_dofbased)[lid]);
 
-    visualization_manager_->get_visualization_data().SetPointDataVector<double>(
+    visualization_manager_->get_visualization_data().set_point_data_vector<double>(
         resultname, point_result_data, result_num_dofs_per_node);
   }
 
@@ -124,16 +124,16 @@ namespace Core::IO
       }
     }
 
-    visualization_manager_->get_visualization_data().SetPointDataVector<double>(
+    visualization_manager_->get_visualization_data().set_point_data_vector<double>(
         resultname, point_result_data, result_num_components_per_node);
   }
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
-  void DiscretizationVisualizationWriterNodes::WriteToDisk(
+  void DiscretizationVisualizationWriterNodes::write_to_disk(
       const double visualization_time, const int visualization_step)
   {
-    visualization_manager_->WriteToDisk(visualization_time, visualization_step);
+    visualization_manager_->write_to_disk(visualization_time, visualization_step);
   }
 }  // namespace Core::IO
 FOUR_C_NAMESPACE_CLOSE

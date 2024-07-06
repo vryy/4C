@@ -45,41 +45,42 @@ void FSI::DirichletNeumannSlideale::setup()
   // call setup of base class
   FSI::DirichletNeumann::setup();
 
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   set_kinematic_coupling(
       Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
 
   Inpar::FSI::SlideALEProj aletype = Core::UTILS::IntegralValue<Inpar::FSI::SlideALEProj>(
-      Global::Problem::Instance()->FSIDynamicParams(), "SLIDEALEPROJ");
+      Global::Problem::instance()->fsi_dynamic_params(), "SLIDEALEPROJ");
 
   slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(structure_field()->discretization(),
-      MBFluidField()->discretization(), structure_fluid_coupling_mortar(), true, aletype));
+      mb_fluid_field()->discretization(), structure_fluid_coupling_mortar(), true, aletype));
 
-  islave_ = Teuchos::rcp(new Epetra_Vector(*structure_fluid_coupling_mortar().SlaveDofMap(), true));
+  islave_ =
+      Teuchos::rcp(new Epetra_Vector(*structure_fluid_coupling_mortar().slave_dof_map(), true));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannSlideale::Remeshing()
+void FSI::DirichletNeumannSlideale::remeshing()
 {
   // dispn and dispnp of structure, used for surface integral and velocity of the fluid in the
   // interface
   Teuchos::RCP<Epetra_Vector> idisptotal = structure_field()->extract_interface_dispnp();
 
-  slideale_->Remeshing(*structure_field(), MBFluidField()->discretization(), idisptotal, islave_,
-      structure_fluid_coupling_mortar(), Comm());
+  slideale_->remeshing(*structure_field(), mb_fluid_field()->discretization(), idisptotal, islave_,
+      structure_fluid_coupling_mortar(), get_comm());
 
   // Evaluate solid/fluid Mortar coupling
-  slideale_->EvaluateMortar(
+  slideale_->evaluate_mortar(
       structure_field()->extract_interface_dispnp(), islave_, structure_fluid_coupling_mortar());
   // Evaluate solid/ale Mortar coupling
-  slideale_->EvaluateFluidMortar(idisptotal, islave_);
+  slideale_->evaluate_fluid_mortar(idisptotal, islave_);
 
   Teuchos::RCP<Epetra_Vector> unew =
-      slideale_->InterpolateFluid(MBFluidField()->extract_interface_velnp());
-  MBFluidField()->apply_interface_values(islave_, unew);
+      slideale_->interpolate_fluid(mb_fluid_field()->extract_interface_velnp());
+  mb_fluid_field()->apply_interface_values(islave_, unew);
 }
 
 
@@ -94,7 +95,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::fluid_op(
   {
     FOUR_C_THROW("not implemented");
     // SD relaxation calculation
-    return fluid_to_struct(MBFluidField()->RelaxationSolve(struct_to_fluid(idispcurr), Dt()));
+    return fluid_to_struct(mb_fluid_field()->relaxation_solve(struct_to_fluid(idispcurr), dt()));
   }
   else
   {
@@ -104,12 +105,12 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::fluid_op(
     const Teuchos::RCP<Epetra_Vector> ivel = interface_velocity(idispcurr);
 
     // A rather simple hack. We need something better!
-    const int itemax = MBFluidField()->Itemax();
-    if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
+    const int itemax = mb_fluid_field()->itemax();
+    if (fillFlag == MF_Res and mfresitemax_ > 0) mb_fluid_field()->set_itemax(mfresitemax_ + 1);
 
     // new Epetra_Vector for aledisp in interface
-    Teuchos::RCP<Epetra_Vector> iale =
-        Teuchos::rcp(new Epetra_Vector(*(structure_fluid_coupling_mortar().MasterDofMap()), true));
+    Teuchos::RCP<Epetra_Vector> iale = Teuchos::rcp(
+        new Epetra_Vector(*(structure_fluid_coupling_mortar().master_dof_map()), true));
 
     Teuchos::RCP<Epetra_Vector> idispn = structure_field()->extract_interface_dispn();
 
@@ -118,11 +119,11 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::fluid_op(
     // iale reduced by old displacement dispn and instead added the real last displacements
     iale->Update(1.0, *ft_stemp_, -1.0, *idispn, 1.0);
 
-    MBFluidField()->nonlinear_solve(struct_to_fluid(iale), struct_to_fluid(ivel));
+    mb_fluid_field()->nonlinear_solve(struct_to_fluid(iale), struct_to_fluid(ivel));
 
-    MBFluidField()->SetItemax(itemax);
+    mb_fluid_field()->set_itemax(itemax);
 
-    return fluid_to_struct(MBFluidField()->extract_interface_forces());
+    return fluid_to_struct(mb_fluid_field()->extract_interface_forces());
   }
 }
 /*----------------------------------------------------------------------*/
@@ -135,13 +136,13 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::struct_op(
   if (fillFlag == User)
   {
     // SD relaxation calculation
-    return structure_field()->RelaxationSolve(iforce);
+    return structure_field()->relaxation_solve(iforce);
   }
   else
   {
     // normal structure solve
     structure_field()->apply_interface_forces(iforce);
-    structure_field()->Solve();
+    structure_field()->solve();
     return structure_field()->extract_interface_dispnp();
   }
 }
@@ -159,7 +160,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::initial_guess()
   }
   else
   {
-    const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (Core::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {

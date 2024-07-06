@@ -36,7 +36,7 @@ CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* dof_ro
 /*----------------------------------------------------------------------*
  | Poro Meshtying initialization calculations         h.Willmann    2015|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroMtLagrangeStrategy::InitializePoroMt(
+void CONTACT::PoroMtLagrangeStrategy::initialize_poro_mt(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffoffdiag)
 
 {
@@ -57,11 +57,11 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
 {
   // system type
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // shape function
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -79,7 +79,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
 
     // complete stiffness matrix
     // (this is a prerequisite for the Split2x2 methods to be called later)
-    kteffoffdiag->Complete();
+    kteffoffdiag->complete();
 
     /**********************************************************************/
     /* Split kteffoffdiag into 3 block matrix rows                        */
@@ -106,7 +106,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     //    std::cout<< " kteffmatrix " << std::endl;
     //    kteffmatrix->DomainMap().print(std::cout);
 
-    if (ParRedist())  // asdf
+    if (par_redist())  // asdf
     {
       FOUR_C_THROW(
           "no parallel redistribution of poro meshtying implemented - feel free to implement");
@@ -135,11 +135,11 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     // cm: add T(mbar)*cs
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cmmod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-    cmmod->Add(*cm, false, 1.0, 1.0);
+    cmmod->add(*cm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cmadd =
         Core::LinAlg::MLMultiply(*get_m_hat(), true, *cs, false, false, false, true);
-    cmmod->Add(*cmadd, false, 1.0, 1.0);
-    cmmod->Complete(cm->DomainMap(), cm->RowMap());
+    cmmod->add(*cmadd, false, 1.0, 1.0);
+    cmmod->complete(cm->domain_map(), cm->row_map());
 
     // cs: nothing to do as it remains zero
 
@@ -148,17 +148,17 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     /**********************************************************************/
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffoffdiagnew =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-            *ProblemDofs(), 81, true, false, kteffmatrix->GetMatrixtype()));
+            *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
 
     // add n matrix row
-    kteffoffdiagnew->Add(*cn, false, 1.0, 1.0);
+    kteffoffdiagnew->add(*cn, false, 1.0, 1.0);
 
     // add m matrix row
-    kteffoffdiagnew->Add(*cmmod, false, 1.0, 1.0);
+    kteffoffdiagnew->add(*cmmod, false, 1.0, 1.0);
 
     // s matrix row remains zero (thats what it was all about)
 
-    kteffoffdiagnew->Complete(kteffmatrix->DomainMap(), kteffmatrix->RangeMap());
+    kteffoffdiagnew->complete(kteffmatrix->domain_map(), kteffmatrix->range_map());
 
     kteffoffdiag = kteffoffdiagnew;
   }
@@ -180,10 +180,10 @@ void CONTACT::PoroMtLagrangeStrategy::recover_coupling_matrix_partof_lmp(
 
   Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 
-  cs_->Multiply(false, *veli, *mod);
+  cs_->multiply(false, *veli, *mod);
   zfluid->Update(-1.0, *mod, 1.0);
   Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*zfluid));
-  get_d_inverse()->Multiply(true, *zcopy, *zfluid);
+  get_d_inverse()->multiply(true, *zcopy, *zfluid);
   zfluid->Scale(1 / (1 - alphaf_));
 
   z_->Update(1.0, *zfluid, 1.0);  // Add FluidCoupling Contribution to LM!

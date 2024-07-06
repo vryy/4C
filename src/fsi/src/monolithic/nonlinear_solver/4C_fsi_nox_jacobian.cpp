@@ -183,7 +183,7 @@ bool NOX::FSI::FSIMatrixFree::computeJacobian(const Epetra_Vector& x, Epetra_Ope
 }
 
 
-void NOX::FSI::FSIMatrixFree::setGroupForComputeF(const ::NOX::Abstract::Group& group)
+void NOX::FSI::FSIMatrixFree::set_group_for_compute_f(const ::NOX::Abstract::Group& group)
 {
   useGroupForComputeF = true;
   groupPtr = group.clone();

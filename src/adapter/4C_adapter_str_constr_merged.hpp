@@ -68,27 +68,27 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Vector> initial_guess() override;
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() override;
+    Teuchos::RCP<const Epetra_Vector> rhs() override;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp() const override;
+    Teuchos::RCP<const Epetra_Vector> dispnp() const override;
 
     /// known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn() const override;
+    Teuchos::RCP<const Epetra_Vector> dispn() const override;
 
     /*! \brief known velocity at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    Teuchos::RCP<const Epetra_Vector> Veln() const override;
+    Teuchos::RCP<const Epetra_Vector> veln() const override;
 
     /*! known acceleration at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    Teuchos::RCP<const Epetra_Vector> Accn() const override;
+    Teuchos::RCP<const Epetra_Vector> accn() const override;
 
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> dof_row_map() override;
@@ -119,10 +119,10 @@ namespace Adapter
     };
 
     /// domain map of system matrix
-    const Epetra_Map& DomainMap() const override;
+    const Epetra_Map& domain_map() const override;
 
     /// are there any algebraic constraints?
-    bool HaveConstraint() override { return structure_->HaveConstraint(); };
+    bool have_constraint() override { return structure_->have_constraint(); };
 
     /// Return bool indicating if constraints are defined
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
@@ -152,7 +152,7 @@ namespace Adapter
     //@}
 
     /// Integrate from t1 to t2
-    int Integrate() override { return structure_->Integrate(); }
+    int integrate() override { return structure_->integrate(); }
 
    private:
     /// the constraint map setup for full <-> stuct+constr transition

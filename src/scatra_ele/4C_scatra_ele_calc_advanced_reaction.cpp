@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
@@ -38,7 +38,7 @@ Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Instance(
             new ScaTraEleCalcAdvReac<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
+  return singleton_map[std::make_pair(disname, numdofpernode)].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -57,7 +57,7 @@ Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
   for (unsigned i = 0; i < numdim_gp_; ++i) gpcoord_[i] = 0.0;
 
   // safety check
-  if (not my::scatrapara_->TauGP())
+  if (not my::scatrapara_->tau_gp())
     FOUR_C_THROW(
         "For advanced reactions, tau needs to be evaluated by integration-point evaluations!");
 }
@@ -76,38 +76,38 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_material_par
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
   // of non-reactive elements:
-  rea_manager()->Clear(my::numscal_);
+  rea_manager()->clear(my::numscal_);
 
-  if (material->MaterialType() == Core::Materials::m_matlist)
+  if (material->material_type() == Core::Materials::m_matlist)
   {
     const Teuchos::RCP<const Mat::MatList> actmat =
         Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
 
-  else if (material->MaterialType() == Core::Materials::m_matlist_reactions)
+  else if (material->material_type() == Core::Materials::m_matlist_reactions)
   {
     const Teuchos::RCP<Mat::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       // Note: order is important here!!
       materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
@@ -139,13 +139,13 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::materials(
     const int iquad  //!< id of current gauss point
 )
 {
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_scatra:
       my::mat_scatra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
-      FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported", material->material_type());
       break;
   }
   return;
@@ -163,7 +163,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_rhs_int(
 )
 {
   //... + all advanced reaction terms
-  rhsint = my::bodyforce_[k].dot(my::funct_) + densnp * rea_manager()->GetReaBodyForce(k);
+  rhsint = my::bodyforce_[k].dot(my::funct_) + densnp * rea_manager()->get_rea_body_force(k);
 
   return;
 }
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
 
   my::calc_mat_react(emat, k, timefacfac, timetaufac, taufac, densnp, sgconv, diff);
 
-  const Core::LinAlg::Matrix<nen_, 1>& conv = my::scatravarmanager_->Conv(k);
+  const Core::LinAlg::Matrix<nen_, 1>& conv = my::scatravarmanager_->conv(k);
 
   // -----------------second care for advanced reaction terms ( - (\partial_c f(c) )------------
   // NOTE: The shape of f(c) can be arbitrary. So better consider using this term for new
@@ -192,7 +192,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
 
   Core::LinAlg::Matrix<nen_, 1> functint = my::funct_;
-  if (not my::scatrapara_->MatGP()) functint = funct_elementcenter_;
+  if (not my::scatrapara_->mat_gp()) functint = funct_elementcenter_;
 
   for (int j = 0; j < my::numscal_; j++)
   {
@@ -220,15 +220,15 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
     //----------------------------------------------------------------
     // stabilization of reactive term
     //----------------------------------------------------------------
-    if (my::scatrapara_->StabType() != Inpar::ScaTra::stabtype_no_stabilization)
+    if (my::scatrapara_->stab_type() != Inpar::ScaTra::stabtype_no_stabilization)
     {
       double densreataufac = timetaufac_reac * densnp;
       // convective stabilization of reactive term (in convective form)
       for (unsigned vi = 0; vi < nen_; ++vi)
       {
         const double v = densreataufac * (conv(vi) + sgconv(vi) +
-                                             my::scatrapara_->USFEMGLSFac() * 1.0 /
-                                                 my::scatraparatimint_->TimeFac() * functint(vi));
+                                             my::scatrapara_->usfemgls_fac() * 1.0 /
+                                                 my::scatraparatimint_->time_fac() * functint(vi));
         const int fvi = vi * my::numdofpernode_ + k;
 
         for (unsigned ui = 0; ui < nen_; ++ui)
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
         // diffusive stabilization of reactive term
         for (unsigned vi = 0; vi < nen_; ++vi)
         {
-          const double v = my::scatrapara_->USFEMGLSFac() * timetaufac_reac * diff(vi);
+          const double v = my::scatrapara_->usfemgls_fac() * timetaufac_reac * diff(vi);
           const int fvi = vi * my::numdofpernode_ + k;
 
           for (unsigned ui = 0; ui < nen_; ++ui)
@@ -259,7 +259,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
       //----------------------------------------------------------------
       // reactive stabilization
       //----------------------------------------------------------------
-      densreataufac = my::scatrapara_->USFEMGLSFac() * timetaufac_reac * densnp;
+      densreataufac = my::scatrapara_->usfemgls_fac() * timetaufac_reac * densnp;
 
       // reactive stabilization of convective (in convective form) and reactive term
       for (unsigned vi = 0; vi < nen_; ++vi)
@@ -271,7 +271,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
         {
           const int fui = ui * my::numdofpernode_ + j;
 
-          emat(fvi, fui) += v * (conv(ui) + remanager->GetReaCoeff(k) * my::funct_(ui));
+          emat(fvi, fui) += v * (conv(ui) + remanager->get_rea_coeff(k) * my::funct_(ui));
         }
       }
 
@@ -280,7 +280,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
         // reactive stabilization of diffusive term
         for (unsigned vi = 0; vi < nen_; ++vi)
         {
-          const double v = my::scatrapara_->USFEMGLSFac() * timetaufac_reac * my::funct_(vi);
+          const double v = my::scatrapara_->usfemgls_fac() * timetaufac_reac * my::funct_(vi);
           const int fvi = vi * my::numdofpernode_ + k;
 
           for (unsigned ui = 0; ui < nen_; ++ui)
@@ -293,13 +293,13 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
       }
 
 
-      if (not my::scatraparatimint_->IsStationary())
+      if (not my::scatraparatimint_->is_stationary())
       {
         // reactive stabilization of transient term
         for (unsigned vi = 0; vi < nen_; ++vi)
         {
-          const double v = my::scatrapara_->USFEMGLSFac() * taufac * densnp *
-                           remanager->GetReaCoeff(k) * densnp * functint(vi);
+          const double v = my::scatrapara_->usfemgls_fac() * taufac * densnp *
+                           remanager->get_rea_coeff(k) * densnp * functint(vi);
           const int fvi = vi * my::numdofpernode_ + k;
 
           for (unsigned ui = 0; ui < nen_; ++ui)
@@ -310,7 +310,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
           }
         }
 
-        if (my::use2ndderiv_ and remanager->GetReaCoeff(k) != 0.0)
+        if (my::use2ndderiv_ and remanager->get_rea_coeff(k) != 0.0)
           FOUR_C_THROW("Second order reactive stabilization is not fully implemented!! ");
       }
     }
@@ -331,11 +331,11 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::set_advanced_rea
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = rea_manager();
 
-  remanager->AddToReaBodyForce(
-      matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->Phinp(), gpcoord), k);
+  remanager->add_to_rea_body_force(
+      matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->phinp(), gpcoord), k);
 
   matreaclist->calc_rea_body_force_deriv_matrix(
-      k, remanager->get_rea_body_force_deriv_vector(k), my::scatravarmanager_->Phinp(), gpcoord);
+      k, remanager->get_rea_body_force_deriv_vector(k), my::scatravarmanager_->phinp(), gpcoord);
 }
 
 /*----------------------------------------------------------------------*

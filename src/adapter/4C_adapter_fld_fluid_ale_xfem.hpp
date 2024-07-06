@@ -38,7 +38,7 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
 
     /// communication object at the struct interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface();
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& struct_interface();
 
     //@}
 
@@ -51,7 +51,7 @@ namespace Adapter
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
     //@}
 

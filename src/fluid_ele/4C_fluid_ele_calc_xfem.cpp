@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcXFEM<distype>*
-Discret::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleCalcXFEM<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -40,7 +40,7 @@ Discret::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(Core::UTILS::SingletonAct
             new Discret::ELEMENTS::FluidEleCalcXFEM<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 
@@ -74,7 +74,7 @@ Discret::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
 {
   // we use the standard parameter list here, since there are not any additional
   // xfem-specific parameters required in this derived class
-  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterXFEM::Instance();
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterXFEM::instance();
   fldparaxfem_ = static_cast<Discret::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
 }
 
@@ -87,7 +87,7 @@ namespace Discret
               Evaluate routine for cut elements of XFEM  (public)
     *-------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::EvaluateXFEM(Discret::ELEMENTS::Fluid* ele,
+    int FluidEleCalcXFEM<distype>::evaluate_xfem(Discret::ELEMENTS::Fluid* ele,
         Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -170,10 +170,10 @@ namespace Discret
           Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
-      const double t = my::fldparatimint_->Time();
+      const double t = my::fldparatimint_->time();
 
       // set element id
-      my::eid_ = ele->Id();
+      my::eid_ = ele->id();
 
 
       //----------------------------------------------------------------------------
@@ -209,7 +209,7 @@ namespace Discret
         FOUR_C_THROW("compute error not implemented for nurbs");
       }  // Nurbs specific stuff
 
-      if (ele->IsAle())
+      if (ele->is_ale())
       {
         Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
         this->extract_values_from_global_vector(
@@ -227,7 +227,7 @@ namespace Discret
            ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
-        my::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+        my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -246,12 +246,12 @@ namespace Discret
         xyzint.multiply(my::xyze_, my::funct_);
 
         // get viscosity
-        if (mat->MaterialType() == Core::Materials::m_fluid)
+        if (mat->material_type() == Core::Materials::m_fluid)
         {
           const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
 
           // get constant kinematic viscosity
-          my::visc_ = actmat->Viscosity() / actmat->Density();
+          my::visc_ = actmat->viscosity() / actmat->density();
         }
         else
           FOUR_C_THROW("Material is not Newtonian Fluid");
@@ -322,7 +322,7 @@ namespace Discret
         double beta_maximum = 1.0;    // maximal advective velocity in domain
         double sigma =
             1. / my::fldparatimint_
-                     ->TimeFac();  // sigma scaling in Oseen results from time discretization
+                     ->time_fac();  // sigma scaling in Oseen results from time discretization
 
         double Phi_tmp = beta_maximum * Poincare_const /
                          sqrt(sigma * Poincare_const * Poincare_const + my::visc_);
@@ -388,7 +388,7 @@ namespace Discret
           Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           // get material
-          Core::Mat::PAR::Parameter* params = mat->Parameter();
+          Core::Mat::PAR::Parameter* params = mat->parameter();
           auto* fparams = dynamic_cast<Mat::PAR::NewtonianFluid*>(params);
 
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
@@ -530,7 +530,7 @@ namespace Discret
           }
 
           // get material
-          Core::Mat::PAR::Parameter* params = mat->Parameter();
+          Core::Mat::PAR::Parameter* params = mat->parameter();
           auto* fparams = dynamic_cast<Mat::PAR::NewtonianFluid*>(params);
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
@@ -658,16 +658,16 @@ namespace Discret
           if (nsd_ == 2)
           {
             const double u_exact_x =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 0);
             const double u_exact_y =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 1);
             const double p_exact =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 2);
 
             u(0) = u_exact_x;
@@ -676,15 +676,13 @@ namespace Discret
 
 
             std::vector<double> uder_exact_x =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 0);
             std::vector<double> uder_exact_y =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 1);
-            // std::vector<double> pder_exact   =
-            // Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func_no-1).evaluate_spatial_derivative(2,position,t,1);
 
             if (uder_exact_x.size())
             {
@@ -701,20 +699,20 @@ namespace Discret
           else if (nsd_ == 3)
           {
             const double u_exact_x =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 0);
             const double u_exact_y =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 1);
             const double u_exact_z =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 2);
             const double p_exact =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 3);
 
             u(0) = u_exact_x;
@@ -723,16 +721,16 @@ namespace Discret
             p = p_exact;
 
             std::vector<double> uder_exact_x =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 0);
             std::vector<double> uder_exact_y =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 1);
             std::vector<double> uder_exact_z =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 2);
 
             if (uder_exact_x.size())
@@ -805,7 +803,7 @@ namespace Discret
           Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
-      const double t = my::fldparatimint_->Time();
+      const double t = my::fldparatimint_->time();
 
 
       //----------------------------------------------------------------------------
@@ -826,9 +824,9 @@ namespace Discret
       Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
       Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
 
-      if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
+      if (ele->is_ale()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
       // add displacement when fluid nodes move in the ALE case
-      if (ele->IsAle()) my::xyze_ += edispnp;
+      if (ele->is_ale()) my::xyze_ += edispnp;
 
 
       // ---------------------------------------------------------------------
@@ -854,7 +852,7 @@ namespace Discret
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->PhysicalType() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->physical_type() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
 
 
       // ---------------------------------------------------------------------
@@ -967,10 +965,10 @@ namespace Discret
 
         //---------------------------------------------------------------------------------
         // set flags used for coupling with given levelset/mesh coupling side
-        bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
-        bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
+        bool is_ls_coupling_side = cond_manager->is_level_set_coupling(coup_sid);
+        bool is_mesh_coupling_side = cond_manager->is_mesh_coupling(coup_sid);
 
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->get_cutter_dis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -997,8 +995,8 @@ namespace Discret
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
-          side->LocationVector(*cutter_dis, cutla, false);
-          si->AddSlaveEleDisp(*cutter_dis, cutla[0].lm_);
+          side->location_vector(*cutter_dis, cutla, false);
+          si->add_slave_ele_disp(*cutter_dis, cutla[0].lm_);
 
           if (cond_type == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
               cond_type == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
@@ -1011,7 +1009,7 @@ namespace Discret
           if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
           {
             // force to get the embedded element, even if background-sided coupling is active
-            coupl_ele = cond_manager->GetCondElement(coup_sid);
+            coupl_ele = cond_manager->get_cond_element(coup_sid);
 
             Core::Geo::InitialPositionArray(coupl_xyze, coupl_ele);
 
@@ -1019,18 +1017,18 @@ namespace Discret
                 distype>::create_slave_element_representation(coupl_ele, coupl_xyze);
 
             // set velocity (and pressure) of coupling/slave element at current time step
-            const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
-            coupl_ele->LocationVector(
-                *cond_manager->GetCouplingByIdx(coup_idx)->GetCondDis(), coupl_la, false);
-            ci->SetSlaveState(
-                *cond_manager->GetCouplingByIdx(coup_idx)->GetCondDis(), coupl_la[0].lm_);
+            const int coup_idx = cond_manager->get_coupling_index(coup_sid, my::eid_);
+            coupl_ele->location_vector(
+                *cond_manager->get_coupling_by_idx(coup_idx)->get_cond_dis(), coupl_la, false);
+            ci->set_slave_state(
+                *cond_manager->get_coupling_by_idx(coup_idx)->get_cond_dis(), coupl_la[0].lm_);
           }
         }
 
         if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
         {
           h_k = XFEM::UTILS::ComputeCharEleLength<distype>(
-              ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->ViscStabHK());
+              ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
           inv_hk = 1.0 / h_k;
         }
 
@@ -1053,22 +1051,22 @@ namespace Discret
                 0.0;  // transformation factor between reference cell and linearized boundary cell
 
             const Core::LinAlg::Matrix<2, 1> eta(
-                iquad.Point());  // xi-coordinates with respect to side
+                iquad.point());  // xi-coordinates with respect to side
 
             Core::LinAlg::Matrix<3, 1> rst(true);  // local coordinates w.r.t background element
 
             Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
+            if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
             else  // MomentFitting approach
             {
               drs = 1.0;
-              normal = bc->GetNormalVector();
-              const double* gpcord = iquad.Point();
+              normal = bc->get_normal_vector();
+              const double* gpcord = iquad.point();
               for (int idim = 0; idim < 3; ++idim)
               {
                 x_gp_lin(idim, 0) = gpcord[idim];
@@ -1078,7 +1076,7 @@ namespace Discret
             // find element local position of gauss point
             Teuchos::RCP<Core::Geo::Cut::Position> pos =
                 Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
-            pos->Compute();
+            pos->compute();
             pos->local_coordinates(rst);
 
             //        if (!levelset_cut)
@@ -1115,7 +1113,7 @@ namespace Discret
             }
 
 
-            const double surf_fac = drs * iquad.Weight();
+            const double surf_fac = drs * iquad.weight();
 
             //--------------------------------------------
             // evaluate shape functions (and derivatives)
@@ -1144,7 +1142,7 @@ namespace Discret
 
             //----------------------------------------------
             // get convective velocity at integration point
-            my::set_convective_velint(ele->IsAle());
+            my::set_convective_velint(ele->is_ale());
 
             //--------------------------------------------
             // compute errors
@@ -1167,7 +1165,7 @@ namespace Discret
             Core::LinAlg::Matrix<nsd_, 1> velint_s;
             if (is_mesh_coupling_side)
             {
-              si->GetInterfaceVelnp(velint_s);
+              si->get_interface_velnp(velint_s);
             }
 
             if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
@@ -1180,7 +1178,7 @@ namespace Discret
               grad_u_err.update(1.0, my::vderxy_, -1.0, grad_u_side, 0.0);
 
               double press_coupl = 0.0;
-              ci->GetInterfacePresnp(press_coupl);
+              ci->get_interface_presnp(press_coupl);
               // p_err = p_background - p_emb;
               p_err = press - press_coupl;
             }
@@ -1248,11 +1246,11 @@ namespace Discret
                 kappa_s,  // weights (only existing for Nitsche currently!!)
                 my::convvelint_, velint_s,
                 visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
-                my::fldparatimint_->TimeFac(), my::fldparatimint_->IsStationary(), densaf_master_,
+                my::fldparatimint_->time_fac(), my::fldparatimint_->is_stationary(), densaf_master_,
                 densaf_slave_, fldparaxfem_->mass_conservation_scaling(),
-                fldparaxfem_->mass_conservation_combination(), fldparaxfem_->NITStabScaling(),
-                fldparaxfem_->ConvStabScaling(), fldparaxfem_->XffConvStabScaling(),
-                my::fldpara_->IsConservative(), true);
+                fldparaxfem_->mass_conservation_combination(), fldparaxfem_->nit_stab_scaling(),
+                fldparaxfem_->conv_stab_scaling(), fldparaxfem_->xff_conv_stab_scaling(),
+                my::fldpara_->is_conservative(), true);
 
             const double veln_normal = my::convvelint_.dot(normal);  // TODO: shift this to routine
             double NIT_inflow_stab = std::max(0.0, -veln_normal);
@@ -1308,7 +1306,7 @@ namespace Discret
       // determine, whether this is a Cauchy stress-based (MHCS)
       // or viscous stress-based LM approach (MHVS)
       //--------------------------------------------------------
-      Inpar::XFEM::CouplingMethod coupling_method = fldparaxfem_->GetCouplingMethod();
+      Inpar::XFEM::CouplingMethod coupling_method = fldparaxfem_->get_coupling_method();
 
       // check for valid boundary integration type
       switch (coupling_method)
@@ -1337,8 +1335,8 @@ namespace Discret
 
       // do we need convective stabilization?
       bool add_conv_stab(
-          fldparaxfem_->XffConvStabScaling() != Inpar::XFEM::XFF_ConvStabScaling_none ||
-          fldparaxfem_->ConvStabScaling() != Inpar::XFEM::ConvStabScaling_none);
+          fldparaxfem_->xff_conv_stab_scaling() != Inpar::XFEM::XFF_ConvStabScaling_none ||
+          fldparaxfem_->conv_stab_scaling() != Inpar::XFEM::ConvStabScaling_none);
 
       //----------------------------------------------------------------------------
       //                         ELEMENT GEOMETRY
@@ -1358,7 +1356,7 @@ namespace Discret
       Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
       Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
 
-      if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
+      if (ele->is_ale()) my::get_grid_disp_vel_ale(dis, lm, edispnp, egridv);
 
 
       // ---------------------------------------------------------------------
@@ -1388,11 +1386,11 @@ namespace Discret
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->PhysicalType() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->physical_type() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
 
       // compute characteristic element length based on the background element
       const double h_k = XFEM::UTILS::ComputeCharEleLength<distype>(
-          ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->ViscStabHK());
+          ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
 
       //--------------------------------------------------------
       // declaration of matrices & rhs
@@ -1448,7 +1446,7 @@ namespace Discret
         // (C^2 includes characteristic length scale);
         // the analogous MHVS-factor = 2 * n * mu * meas(\Gamma)/meas(\Omega_K)
         // gamma <--> 2 * n
-        double mhvs_param = fldparaxfem_->NITStabScaling() / 2.0;
+        double mhvs_param = fldparaxfem_->nit_stab_scaling() / 2.0;
         if (fabs(mhvs_param) < 1.e-8)
           FOUR_C_THROW(
               "MHVS stabilizing parameter n appears in denominator. Please avoid choosing 0.");
@@ -1493,10 +1491,10 @@ namespace Discret
 
         begids.insert(coup_sid);
 
-        if (!cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (!cond_manager->is_coupling(coup_sid, my::eid_))
           continue;  // no coupling with current side
 
-        if (cond_manager->IsLevelSetCoupling(coup_sid))
+        if (cond_manager->is_level_set_coupling(coup_sid))
           FOUR_C_THROW(
               "PatchLocationVector for level-set coupling not supported for hybrid-lm methods yet");
 
@@ -1588,8 +1586,8 @@ namespace Discret
             cond_manager->get_coupling_condition(coup_sid, my::eid_);
         const Inpar::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
-        const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
-        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
+        const int coup_idx = cond_manager->get_coupling_index(coup_sid, my::eid_);
+        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->get_coupling_by_idx(coup_idx);
 
         const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
@@ -1604,10 +1602,10 @@ namespace Discret
 
         //---------------------------------------------------------------------------------
         // set flags used for coupling with given levelset/mesh coupling side
-        bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
-        bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
+        bool is_ls_coupling_side = cond_manager->is_level_set_coupling(coup_sid);
+        bool is_mesh_coupling_side = cond_manager->is_mesh_coupling(coup_sid);
 
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->get_cutter_dis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -1642,8 +1640,8 @@ namespace Discret
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
-          side->LocationVector(*cutter_dis, cutla, false);
-          si->AddSlaveEleDisp(*cutter_dis, cutla[0].lm_);
+          side->location_vector(*cutter_dis, cutla, false);
+          si->add_slave_ele_disp(*cutter_dis, cutla[0].lm_);
 
           if (cond_type == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
               cond_type == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
@@ -1656,10 +1654,11 @@ namespace Discret
           }
         }
 
-        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ =
+            cond_manager->get_coupling_dis(coup_sid);
 
         if (!(is_ls_coupling_side and
-                !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
+                !cond_manager->is_coupling(coup_sid, my::eid_)))  // not level-set-WDBC case
         {
           if (averaging_strategy == Inpar::XFEM::Embedded_Sided or
               averaging_strategy == Inpar::XFEM::Mean)  // for coupling-sided and two-sided coupling
@@ -1673,7 +1672,7 @@ namespace Discret
           Core::Geo::InitialPositionArray(coupl_xyze, coupl_ele);
         }
 
-        if (!cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (!cond_manager->is_coupling(coup_sid, my::eid_))
         {
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
                                     // field, currently only one-sided
@@ -1721,26 +1720,26 @@ namespace Discret
               rhC_ui, eleGsui, eleGuis, fldparaxfem_->is_viscous_adjoint_symmetric());
         }
 
-        if (cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (cond_manager->is_coupling(coup_sid, my::eid_))
         {
           std::map<int, std::vector<int>>::const_iterator k = patchcouplm.find(coup_sid);
           const std::vector<int>& coupl_lm = k->second;
 
           // set velocity (and pressure) of coupling/slave element at current time step
-          ci[coup_sid]->SetSlaveState(*coupl_dis_, coupl_lm);
+          ci[coup_sid]->set_slave_state(*coupl_dis_, coupl_lm);
 
           // note: old state is handled by nitsche coupling si_nit
         }
 
 
         if (!(is_ls_coupling_side and
-                !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
+                !cond_manager->is_coupling(coup_sid, my::eid_)))  // not level-set-WDBC case
         {
           std::map<int, std::vector<int>>::const_iterator k = patchcouplm.find(coup_sid);
           const std::vector<int>& coupl_lm = k->second;
 
           // add displacement of coupling element at current time step
-          ci[coup_sid]->AddSlaveEleDisp(*coupl_dis_, coupl_lm);
+          ci[coup_sid]->add_slave_ele_disp(*coupl_dis_, coupl_lm);
         }
 
 
@@ -1758,7 +1757,7 @@ namespace Discret
             // create si_nit based on side and side_xyze and not w.r.t coup_ele, as no derivatives
             // are used in these coupling terms see also
             // hybrid_lm_create_special_contribution_matrices()
-            if (cond_manager->IsCoupling(coup_sid, my::eid_))  //... for two-sided problems
+            if (cond_manager->is_coupling(coup_sid, my::eid_))  //... for two-sided problems
             {
               // coupling matrices between background element and one! side
               std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>::iterator c =
@@ -1781,14 +1780,14 @@ namespace Discret
             }
 
             // set velocity for current time step
-            si_nit[coup_sid]->SetSlaveState(*cutter_dis, cutla[0].lm_);
+            si_nit[coup_sid]->set_slave_state(*cutter_dis, cutla[0].lm_);
 
             // set displacement of side for current time step
-            si_nit[coup_sid]->AddSlaveEleDisp(*cutter_dis, cutla[0].lm_);
+            si_nit[coup_sid]->add_slave_ele_disp(*cutter_dis, cutla[0].lm_);
           }
           else if (is_ls_coupling_side)
           {
-            if (cond_manager->IsCoupling(coup_sid, my::eid_))  //... for two-sided problems
+            if (cond_manager->is_coupling(coup_sid, my::eid_))  //... for two-sided problems
             {
               FOUR_C_THROW(
                   "convective terms for hybrid lm coupling not implemented yet for level-set cuts");
@@ -1805,12 +1804,12 @@ namespace Discret
         }
 
         // Set State for current and previous time
-        if (cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (cond_manager->is_coupling(coup_sid, my::eid_))
         {
           if (my::fldparatimint_->is_new_ost_implementation())
           {
             // set velocity for previous time step
-            si_nit[coup_sid]->SetSlaveStaten(*cutter_dis, cutla[0].lm_);
+            si_nit[coup_sid]->set_slave_staten(*cutter_dis, cutla[0].lm_);
           }
         }
 
@@ -1834,22 +1833,22 @@ namespace Discret
                 0.0;  // transformation factor between reference cell and linearized boundary cell
 
             const Core::LinAlg::Matrix<2, 1> eta(
-                iquad.Point());  // xi-coordinates with respect to side
+                iquad.point());  // xi-coordinates with respect to side
 
             Core::LinAlg::Matrix<3, 1> rst(true);  // local coordinates w.r.t background element
 
             Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
+            if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
             else  // MomentFitting approach
             {
               drs = 1.0;
-              normal = bc->GetNormalVector();
-              const double* gpcord = iquad.Point();
+              normal = bc->get_normal_vector();
+              const double* gpcord = iquad.point();
               for (int idim = 0; idim < 3; ++idim)
               {
                 x_gp_lin(idim, 0) = gpcord[idim];
@@ -1859,7 +1858,7 @@ namespace Discret
             // find element local position of gauss point
             Teuchos::RCP<Core::Geo::Cut::Position> pos =
                 Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
-            pos->Compute();
+            pos->compute();
             pos->local_coordinates(rst);
 
             // TODO unify project_on_side and Evaluate for different spatial dimensions of boundary
@@ -1889,7 +1888,7 @@ namespace Discret
             }
             else if (is_ls_coupling_side)
             {
-              if (cond_manager->IsCoupling(coup_sid, my::eid_))
+              if (cond_manager->is_coupling(coup_sid, my::eid_))
                 FOUR_C_THROW(
                     "coupling for level-sets not supported here");  // evaluate embedded element's
                                                                     // shape functions at
@@ -1898,8 +1897,8 @@ namespace Discret
 
 
             // integration factors
-            const double surf_fac = drs * iquad.Weight();
-            const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
+            const double surf_fac = drs * iquad.weight();
+            const double timefacfac = surf_fac * my::fldparatimint_->time_fac();
 
             //--------------------------------------------
 
@@ -1979,7 +1978,7 @@ namespace Discret
 
               hybrid_lm_evaluate_surf_based(ci[coup_sid], bK_ss, K_su, K_us, rhs_s, epreaf, K_uu,
                   rhs_uu, G_up, G_pu, rhs_up, rhs_pu, normal, timefacfac, ivelint_jump,
-                  itraction_jump, cond_manager->IsCoupling(coup_sid, my::eid_), is_MHVS);
+                  itraction_jump, cond_manager->is_coupling(coup_sid, my::eid_), is_MHVS);
 
               //--------------------------------------------
               // evaluate additional inflow/convective stabilization terms
@@ -1989,7 +1988,7 @@ namespace Discret
                 double NIT_full_stab_fac = 0.0;
                 const double NIT_visc_stab_fac = 0.0;
 
-                my::set_convective_velint(ele->IsAle());
+                my::set_convective_velint(ele->is_ale());
 
 
                 //-----------------------------------------------------------------------------
@@ -2003,10 +2002,10 @@ namespace Discret
                 // [| v |] := vm - vs
 
 
-                if (cond_manager->IsCoupling(coup_sid, my::eid_))
+                if (cond_manager->is_coupling(coup_sid, my::eid_))
                 {
                   Core::LinAlg::Matrix<nsd_, 1> velint_s;
-                  ci[coup_sid]->GetInterfaceVelnp(velint_s);
+                  ci[coup_sid]->get_interface_velnp(velint_s);
 
 
                   // Get Material parameters for the master side!
@@ -2016,7 +2015,7 @@ namespace Discret
                   bool non_xfluid_coupling;
                   double kappa_m;
                   double kappa_s;
-                  cond_manager->GetAverageWeights(
+                  cond_manager->get_average_weights(
                       coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
 
                   XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
@@ -2027,13 +2026,13 @@ namespace Discret
                       kappa_s,  // weights (only existing for Nitsche currently!!)
                       my::convvelint_, velint_s,
                       NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
-                      my::fldparatimint_->TimeFac(), my::fldparatimint_->IsStationary(),
+                      my::fldparatimint_->time_fac(), my::fldparatimint_->is_stationary(),
                       densaf_master_, densaf_slave_, fldparaxfem_->mass_conservation_scaling(),
-                      fldparaxfem_->mass_conservation_combination(), fldparaxfem_->NITStabScaling(),
-                      fldparaxfem_->ConvStabScaling(), fldparaxfem_->XffConvStabScaling(),
-                      my::fldpara_->IsConservative());
+                      fldparaxfem_->mass_conservation_combination(),
+                      fldparaxfem_->nit_stab_scaling(), fldparaxfem_->conv_stab_scaling(),
+                      fldparaxfem_->xff_conv_stab_scaling(), my::fldpara_->is_conservative());
 
-                  si_nit.at(coup_sid)->ApplyConvStabTerms(ci[coup_sid], my::funct_, my::velint_,
+                  si_nit.at(coup_sid)->apply_conv_stab_terms(ci[coup_sid], my::funct_, my::velint_,
                       normal,
                       my::densaf_,  // Look into this term when changing HybridLM
                       NIT_full_stab_fac, timefacfac, ivelint_jump, cond_type);
@@ -2041,7 +2040,7 @@ namespace Discret
                 else  // non-coupling
                 {
                   Core::LinAlg::Matrix<nsd_, 1> velint_s;
-                  ci[coup_sid]->GetInterfaceVelnp(velint_s);
+                  ci[coup_sid]->get_interface_velnp(velint_s);
 
                   // Get Material parameters for the master side!
                   get_material_parameters_volume_cell(
@@ -2050,7 +2049,7 @@ namespace Discret
                   bool non_xfluid_coupling;
                   double kappa_m;
                   double kappa_s;
-                  cond_manager->GetAverageWeights(
+                  cond_manager->get_average_weights(
                       coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
 
                   XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
@@ -2061,13 +2060,13 @@ namespace Discret
                       kappa_s,  // weights (only existing for Nitsche currently!!)
                       my::convvelint_, velint_s,
                       NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
-                      my::fldparatimint_->TimeFac(), my::fldparatimint_->IsStationary(),
+                      my::fldparatimint_->time_fac(), my::fldparatimint_->is_stationary(),
                       densaf_master_, densaf_slave_, fldparaxfem_->mass_conservation_scaling(),
-                      fldparaxfem_->mass_conservation_combination(), fldparaxfem_->NITStabScaling(),
-                      fldparaxfem_->ConvStabScaling(), fldparaxfem_->XffConvStabScaling(),
-                      my::fldpara_->IsConservative());
+                      fldparaxfem_->mass_conservation_combination(),
+                      fldparaxfem_->nit_stab_scaling(), fldparaxfem_->conv_stab_scaling(),
+                      fldparaxfem_->xff_conv_stab_scaling(), my::fldpara_->is_conservative());
 
-                  si_nit.at(coup_sid)->ApplyConvStabTerms(ci[coup_sid], my::funct_, my::velint_,
+                  si_nit.at(coup_sid)->apply_conv_stab_terms(ci[coup_sid], my::funct_, my::velint_,
                       normal, my::densaf_, NIT_full_stab_fac, timefacfac, ivelint_jump, cond_type);
                 }  // if coupling
               }    // if add conv stab
@@ -2151,7 +2150,7 @@ namespace Discret
         }    // end loop boundary cells of side
 
         if (assemble_iforce)
-          assemble_interface_force(mc_fsi->IForcecol(), *cutter_dis, cutla[0].lm_, iforce);
+          assemble_interface_force(mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
 
       }  // end loop cut sides
 
@@ -2161,19 +2160,19 @@ namespace Discret
 
       // compute inverse K_ss^-1
       Core::LinAlg::FixedSizeSerialDenseSolver<nen_, nen_> invsolver;
-      invsolver.SetMatrix(invbK_ss);
+      invsolver.set_matrix(invbK_ss);
       invsolver.invert();
 
       // the non-diagonal entries (shear stresses) lead to the factor 2 in the
       // K_ss matrix; inversion leads to 1/2 in the matrix blocks of the shear stress
       halfInvbK_ss.update(0.5, invbK_ss, 0.0);
 
-      invK_ss.AddView(Sigmaxx, Sigmaxx, invbK_ss);
-      invK_ss.AddView(Sigmaxy, Sigmaxy, halfInvbK_ss);
-      invK_ss.AddView(Sigmaxz, Sigmaxz, halfInvbK_ss);
-      invK_ss.AddView(Sigmayy, Sigmayy, invbK_ss);
-      invK_ss.AddView(Sigmayz, Sigmayz, halfInvbK_ss);
-      invK_ss.AddView(Sigmazz, Sigmazz, invbK_ss);
+      invK_ss.add_view(Sigmaxx, Sigmaxx, invbK_ss);
+      invK_ss.add_view(Sigmaxy, Sigmaxy, halfInvbK_ss);
+      invK_ss.add_view(Sigmaxz, Sigmaxz, halfInvbK_ss);
+      invK_ss.add_view(Sigmayy, Sigmayy, invbK_ss);
+      invK_ss.add_view(Sigmayz, Sigmayz, halfInvbK_ss);
+      invK_ss.add_view(Sigmazz, Sigmazz, invbK_ss);
 
       // create views
       Core::LinAlg::Matrix<numdofpernode_ * nen_, numdofpernode_ * nen_> elemat(
@@ -2259,7 +2258,7 @@ namespace Discret
         for (unsigned ibc = 0; ibc < numbcol; ++ibc)
         {
           // add -KusinvKssKsu
-          if (KusinvKssKsu.IsUsed(ibr, ibc))
+          if (KusinvKssKsu.is_used(ibr, ibc))
           {
             Core::LinAlg::Matrix<nen_, nen_>& bKusinvKssKsu = *KusinvKssKsu(ibr, ibc);
 
@@ -2290,7 +2289,7 @@ namespace Discret
            *
            * */
 
-          if (K_uu.IsUsed(ibr, ibc))
+          if (K_uu.is_used(ibr, ibc))
           {
             Core::LinAlg::Matrix<nen_, nen_>& bK_uu = *K_uu(ibr, ibc);
 
@@ -2315,7 +2314,7 @@ namespace Discret
 
         // ONLY MHVS: velocity-pressure coupling entries G_up
         // loop over row blocks
-        if (G_up.IsUsed(ibr, 0))
+        if (G_up.is_used(ibr, 0))
         {
           Core::LinAlg::Matrix<nen_, nen_>& bGup = *G_up(ibr, 0);
 
@@ -2343,7 +2342,7 @@ namespace Discret
         // loop over column blocks
         for (unsigned ibc = 0; ibc < numbcol; ++ibc)
         {
-          if (G_pu.IsUsed(0, ibc))
+          if (G_pu.is_used(0, ibc))
           {
             Core::LinAlg::Matrix<nen_, nen_>& bGpu = *G_pu(0, ibc);
 
@@ -2386,7 +2385,7 @@ namespace Discret
       // loop over row blocks
       for (unsigned ibr = 0; ibr < numbrow; ++ibr)
       {
-        if (KusinvKssrhs_s.IsUsed(ibr, 0))
+        if (KusinvKssrhs_s.is_used(ibr, 0))
         {
           Core::LinAlg::Matrix<nen_, 1>& bKusinvKssrhs_s = *KusinvKssrhs_s(ibr, 0);
 
@@ -2404,7 +2403,7 @@ namespace Discret
         // ONLY MHVS!
         if (!is_MHVS) continue;
 
-        if (rhs_uu.IsUsed(ibr, 0))
+        if (rhs_uu.is_used(ibr, 0))
         {
           Core::LinAlg::Matrix<nen_, 1>& brhs_uu = *rhs_uu(ibr, 0);
 
@@ -2418,7 +2417,7 @@ namespace Discret
           }
         }  // rhs_uu
 
-        if (rhs_up.IsUsed(ibr, 0))
+        if (rhs_up.is_used(ibr, 0))
         {
           Core::LinAlg::Matrix<nen_, 1>& brhs_up = *rhs_up(ibr, 0);
 
@@ -2556,7 +2555,7 @@ namespace Discret
       {
         for (int ibr = 0; ibr < numstressdof_; ++ibr)
         {
-          if (invK_ss.IsUsed(ibr, ibc))
+          if (invK_ss.is_used(ibr, ibc))
           {
             Core::LinAlg::Matrix<nen_, nen_>& binvK_ss = *invK_ss(ibr, ibc);
             for (int ic = 0; ic < nen_; ++ic)
@@ -2660,13 +2659,13 @@ namespace Discret
     {
       // full L2-projection means integration over the full background element,
       // not only the physical part
-      if (fldparaxfem_->HybridLM_L2Proj() == Inpar::XFEM::Hybrid_LM_L2_Proj_full)
+      if (fldparaxfem_->hybrid_lm_l2_proj() == Inpar::XFEM::Hybrid_LM_L2_Proj_full)
       {
         // get the standard set of gauss-points from the intersected element
         for (Core::FE::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
              iquad != my::intpoints_.end(); ++iquad)
         {
-          my::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+          my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
           if (is_MHVS)
           {
@@ -2689,7 +2688,7 @@ namespace Discret
                ++iquad)
           {
             // evaluate shape functions and derivatives at integration point
-            my::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+            my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
             if (is_MHVS)
             {
               mhvs_evaluate_vol_based(
@@ -2750,7 +2749,7 @@ namespace Discret
       double press = my::funct_.dot(epreaf);
 
       // time integration factor & spatial integration factor
-      const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
+      const double timefacfac = my::fldparatimint_->time_fac() * my::fac_;
 
 
       //--------------------------------------------
@@ -2872,7 +2871,7 @@ namespace Discret
       const double viscfac = -1.0 / (2.0 * my::visceff_);
 
       // time integration factor & spatial integration factor, scaled with mhvs-parameter 1/n
-      const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_ / mhvs_param;
+      const double timefacfac = my::fldparatimint_->time_fac() * my::fac_ / mhvs_param;
 
 
       /* K_ss
@@ -3231,7 +3230,7 @@ namespace Discret
       my::edispnp_.clear();
       my::egridv_.clear();
 
-      if (ele->IsAle()) my::get_grid_disp_vel_ale(dis, lm, my::edispnp_, my::egridv_);
+      if (ele->is_ale()) my::get_grid_disp_vel_ale(dis, lm, my::edispnp_, my::egridv_);
 
 
       // ---------------------------------------------------------------------
@@ -3261,7 +3260,7 @@ namespace Discret
       // ---------------------------------------------------------------------
       // set element advective field for Oseen problems
       // ---------------------------------------------------------------------
-      if (my::fldpara_->PhysicalType() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
+      if (my::fldpara_->physical_type() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
 
 
       //-----------------------------------------------------------------------------------
@@ -3285,7 +3284,7 @@ namespace Discret
       {
         const int coup_sid = bc->first;
 
-        if (!cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (!cond_manager->is_coupling(coup_sid, my::eid_))
           continue;  // no couplings to be evaluated for current side
 
         // get coupling matrices for the current side (boundary element)
@@ -3317,7 +3316,7 @@ namespace Discret
       if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
       {
         h_k = XFEM::UTILS::ComputeCharEleLength<distype>(
-            ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->ViscStabHK());
+            ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
         inv_hk = 1.0 / h_k;
       }
 
@@ -3394,8 +3393,8 @@ namespace Discret
             cond_manager->get_coupling_condition(coup_sid, my::eid_);
         const Inpar::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
-        const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
-        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
+        const int coup_idx = cond_manager->get_coupling_index(coup_sid, my::eid_);
+        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->get_coupling_by_idx(coup_idx);
 
 
         const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
@@ -3415,14 +3414,14 @@ namespace Discret
         double kappa_m;
         double kappa_s;
 
-        cond_manager->GetAverageWeights(coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
+        cond_manager->get_average_weights(coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
 
         //---------------------------------------------------------------------------------
         // set flags used for coupling with given levelset/mesh coupling side
-        bool is_ls_coupling_side = cond_manager->IsLevelSetCoupling(coup_sid);
-        bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
+        bool is_ls_coupling_side = cond_manager->is_level_set_coupling(coup_sid);
+        bool is_mesh_coupling_side = cond_manager->is_mesh_coupling(coup_sid);
 
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->get_cutter_dis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -3474,8 +3473,8 @@ namespace Discret
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
-          side->LocationVector(*cutter_dis, cutla, false);
-          si->AddSlaveEleDisp(*cutter_dis, cutla[0].lm_);
+          side->location_vector(*cutter_dis, cutla, false);
+          si->add_slave_ele_disp(*cutter_dis, cutla[0].lm_);
 
           if (cond_type == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
               cond_type == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
@@ -3488,18 +3487,19 @@ namespace Discret
           }
         }
 
-        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ = cond_manager->GetCouplingDis(coup_sid);
+        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ =
+            cond_manager->get_coupling_dis(coup_sid);
 
         if (!(is_ls_coupling_side and
-                !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
+                !cond_manager->is_coupling(coup_sid, my::eid_)))  // not level-set-WDBC case
         {
-          coupl_ele = cond_manager->GetCouplingElement(coup_sid, ele);
+          coupl_ele = cond_manager->get_coupling_element(coup_sid, ele);
           if (coupl_ele == nullptr)
             FOUR_C_THROW("Failed to obtain coupling element for global coup_sid %d", coup_sid);
           Core::Geo::InitialPositionArray(coupl_xyze, coupl_ele);
         }
 
-        if (!cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (!cond_manager->is_coupling(coup_sid, my::eid_))
         {
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
                                     // field, currently only one-sided
@@ -3548,34 +3548,34 @@ namespace Discret
           }
         }
 
-        if (cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (cond_manager->is_coupling(coup_sid, my::eid_))
         {
           std::map<int, std::vector<int>>::const_iterator k = patchcouplm.find(coup_sid);
           const std::vector<int>& coupl_lm = k->second;
 
           // set velocity (and pressure) of coupling/slave element at current time step
-          ci->SetSlaveState(*coupl_dis_, coupl_lm);
+          ci->set_slave_state(*coupl_dis_, coupl_lm);
 
           // set velocity (and pressure) of coupling element at old time step
           if (my::fldparatimint_->is_new_ost_implementation())
-            ci->SetSlaveStaten(*coupl_dis_, coupl_lm);
+            ci->set_slave_staten(*coupl_dis_, coupl_lm);
         }
 
         std::vector<double> eledisp;
         if (!(is_ls_coupling_side and
-                !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
+                !cond_manager->is_coupling(coup_sid, my::eid_)))  // not level-set-WDBC case
         {
           std::map<int, std::vector<int>>::const_iterator k = patchcouplm.find(coup_sid);
           const std::vector<int>& coupl_lm = k->second;
 
           // add displacement of coupling element at current time step
           eledisp = std::vector<double>(coupl_lm.size());
-          ci->AddSlaveEleDisp(*coupl_dis_, coupl_lm, eledisp);
+          ci->add_slave_ele_disp(*coupl_dis_, coupl_lm, eledisp);
         }
 
 
 
-        if (cond_manager->IsCoupling(coup_sid, my::eid_) and non_xfluid_coupling)
+        if (cond_manager->is_coupling(coup_sid, my::eid_) and non_xfluid_coupling)
         {
           //---------------------------------------------------------------------------------
           // compute characteristic element length for the case of embedded-sided coupling
@@ -3591,7 +3591,7 @@ namespace Discret
           {
             // compute characteristic element length based on the embedded element
             h_k = XFEM::UTILS::ComputeCharEleLength<distype>(coupl_ele, coupl_xyze, cond_manager,
-                vcSet, bcells, bintpoints, fldparaxfem_->ViscStabHK(), ci, side);
+                vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk(), ci, side);
             inv_hk = 1.0 / h_k;
           }
         }
@@ -3631,20 +3631,20 @@ namespace Discret
                 0.0;  // transformation factor between reference cell and linearized boundary cell
 
             const Core::LinAlg::Matrix<2, 1> eta(
-                iquad.Point());  // xi-coordinates with respect to side
+                iquad.point());  // xi-coordinates with respect to side
 
 
 
             // compute transformation factor, normal vector and global Gauss point coordinates
-            if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
+            if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin_, normal_, bc, eta);
             }
             else  // MomentFitting approach
             {
               drs = 1.0;
-              normal_ = bc->GetNormalVector();
-              const double* gpcord = iquad.Point();
+              normal_ = bc->get_normal_vector();
+              const double* gpcord = iquad.point();
               for (int idim = 0; idim < 3; ++idim)
               {
                 x_gp_lin_(idim, 0) = gpcord[idim];
@@ -3660,7 +3660,7 @@ namespace Discret
                 Core::LinAlg::Matrix<3, 1> x_ref = x_gp_lin_;
                 double tmp_drs;
                 Core::LinAlg::Matrix<3, 1> tmp_normal;
-                if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
+                if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
                 {
                   XFEM::UTILS::ComputeSurfaceTransformation(
                       tmp_drs, x_ref, tmp_normal, bc, eta, true);
@@ -3670,7 +3670,7 @@ namespace Discret
                 Teuchos::RCP<Core::Geo::Cut::Position> pos =
                     Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(
                         my::xyze_, x_ref);
-                pos->Compute();
+                pos->compute();
                 pos->local_coordinates(rst_);
               }
               else  // compute the local coordiante based on the current position
@@ -3679,7 +3679,7 @@ namespace Discret
                 Teuchos::RCP<Core::Geo::Cut::Position> pos =
                     Core::Geo::Cut::PositionFactory::build_position<nsd_, distype>(
                         my::xyze_, x_gp_lin_);
-                pos->Compute();
+                pos->compute();
                 pos->local_coordinates(rst_);
               }
             }
@@ -3703,14 +3703,14 @@ namespace Discret
             }
             else if (is_ls_coupling_side)
             {
-              if (cond_manager->IsCoupling(coup_sid, my::eid_))
+              if (cond_manager->is_coupling(coup_sid, my::eid_))
                 ci->evaluate(x_gp_lin_, rst_slave);  // evaluate embedded element's shape functions
                                                      // at gauss-point coordinates
             }
 
             // integration factors
-            const double surf_fac = drs * iquad.Weight();
-            const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
+            const double surf_fac = drs * iquad.weight();
+            const double timefacfac = surf_fac * my::fldparatimint_->time_fac();
 
             // evaluate background element shape functions
             eval_func_and_deriv(rst_);
@@ -3729,7 +3729,7 @@ namespace Discret
 
             //----------------------------------------------
             // get convective velocity at integration point
-            my::set_convective_velint(ele->IsAle());
+            my::set_convective_velint(ele->is_ale());
 
             //-----------------------------------------------------------------------------
             // compute stabilization factors
@@ -3737,18 +3737,18 @@ namespace Discret
             double NIT_full_stab_fac = 0.0;
 
             // Extract slave velocity at Gausspoint
-            ci->GetInterfaceVelnp(velint_s_);
+            ci->get_interface_velnp(velint_s_);
 
             XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
                 NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
                                     ///< (viscous+convective part)
                 normal_, h_k, kappa_m, kappa_s, my::convvelint_, velint_s_,
                 NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
-                my::fldparatimint_->TimeFac(), my::fldparatimint_->IsStationary(), densaf_master_,
+                my::fldparatimint_->time_fac(), my::fldparatimint_->is_stationary(), densaf_master_,
                 densaf_slave_, fldparaxfem_->mass_conservation_scaling(),
-                fldparaxfem_->mass_conservation_combination(), fldparaxfem_->NITStabScaling(),
-                fldparaxfem_->ConvStabScaling(), fldparaxfem_->XffConvStabScaling(),
-                my::fldpara_->IsConservative());
+                fldparaxfem_->mass_conservation_combination(), fldparaxfem_->nit_stab_scaling(),
+                fldparaxfem_->conv_stab_scaling(), fldparaxfem_->xff_conv_stab_scaling(),
+                my::fldpara_->is_conservative());
 
 
             //-----------------------------------------------------------------------------
@@ -3787,7 +3787,7 @@ namespace Discret
               TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::nit_evaluate_coupling");
               if (mc_fsi != Teuchos::null)
               {
-                if (mc_fsi->GetInterfaceLaw() == Inpar::XFEM::navierslip_contact)
+                if (mc_fsi->get_interface_law() == Inpar::XFEM::navierslip_contact)
                   fulltraction =
                       XFEM::UTILS::Evaluate_Full_Traction(press, my::vderxy_, viscaf_master_,
                           NIT_full_stab_fac, my::velint_, velint_s_, normal_, normal_, velint_s_);
@@ -3795,14 +3795,14 @@ namespace Discret
               else if (mc_fpi != Teuchos::null)
               {
                 double J = 0;
-                double porosity = mc_fpi->CalcPorosity(side, rst_slave, J);
+                double porosity = mc_fpi->calc_porosity(side, rst_slave, J);
                 static Core::LinAlg::Matrix<3, 1> vel_s(true);
                 static Core::LinAlg::Matrix<3, 1> velpf_s(true);
                 XFEM::UTILS::EvaluteStateatGP(side, rst_slave,
-                    *cond_manager->GetMeshCoupling("XFEMSurfFPIMono_ps_ps")->GetCutterDis(),
+                    *cond_manager->get_mesh_coupling("XFEMSurfFPIMono_ps_ps")->get_cutter_dis(),
                     "ivelnp", vel_s);
                 XFEM::UTILS::EvaluteStateatGP(side, rst_slave,
-                    *cond_manager->GetMeshCoupling("XFEMSurfFPIMono_pf_pf")->GetCutterDis(),
+                    *cond_manager->get_mesh_coupling("XFEMSurfFPIMono_pf_pf")->get_cutter_dis(),
                     "ivelnp", velpf_s);
                 fulltraction =
                     XFEM::UTILS::Evaluate_Full_Traction(press, my::vderxy_, viscaf_master_,
@@ -3811,10 +3811,10 @@ namespace Discret
 
               // Get Configuration Map
               std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>& configmap =
-                  coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_, my::densaf_,
-                      NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_, coupcond.second, ele,
-                      side, my::funct_.data(), my::derxy_.data(), rst_slave, normal_, my::velint_,
-                      &fulltraction);
+                  coupling->get_configurationmap(kappa_m, viscaf_master_, viscaf_slave_,
+                      my::densaf_, NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_,
+                      coupcond.second, ele, side, my::funct_.data(), my::derxy_.data(), rst_slave,
+                      normal_, my::velint_, &fulltraction);
 
               //-----------------------------------------------------------------------------
               // evaluate the coupling terms for coupling with current side
@@ -3826,7 +3826,7 @@ namespace Discret
                   my::fldparatimint_->is_new_ost_implementation());
 
               const double pres_timefacfac(
-                  isImplPressureNewOst ? my::fldparatimint_->Dt() * surf_fac : timefacfac);
+                  isImplPressureNewOst ? my::fldparatimint_->dt() * surf_fac : timefacfac);
 
               ci->nit_evaluate_coupling(normal_,  // normal vector
                   timefacfac,                     // theta*dt*fac
@@ -3905,7 +3905,7 @@ namespace Discret
                     Inpar::XFEM::PreviousState_full)
                 {
                   velintn_s_.clear();
-                  ci->GetInterfaceVeln(velintn_s_);
+                  ci->get_interface_veln(velintn_s_);
 
                   XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
                       NIT_full_stab_fac_n,  ///< to be filled: full Nitsche's penalty term scaling
@@ -3915,22 +3915,22 @@ namespace Discret
                       kappa_s,  // weights (only existing for Nitsche currently!!)
                       my::convvelintn_, velintn_s_,
                       NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
-                      my::fldparatimint_->TimeFac(), my::fldparatimint_->IsStationary(),
+                      my::fldparatimint_->time_fac(), my::fldparatimint_->is_stationary(),
                       densaf_master_, densaf_slave_, fldparaxfem_->mass_conservation_scaling(),
-                      fldparaxfem_->mass_conservation_combination(), fldparaxfem_->NITStabScaling(),
-                      fldparaxfem_->ConvStabScaling(), fldparaxfem_->XffConvStabScaling(),
-                      my::fldpara_->IsConservative());
+                      fldparaxfem_->mass_conservation_combination(),
+                      fldparaxfem_->nit_stab_scaling(), fldparaxfem_->conv_stab_scaling(),
+                      fldparaxfem_->xff_conv_stab_scaling(), my::fldpara_->is_conservative());
                 }
 
                 // Get Configuration Map
                 std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>> configmap_n =
-                    coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_,
+                    coupling->get_configurationmap(kappa_m, viscaf_master_, viscaf_slave_,
                         my::densaf_, NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_,
                         coupcond.second, ele, side, my::funct_.data(), my::derxy_.data(), rst_slave,
                         normal_, my::velint_, &fulltraction);
 
                 const double timefacfacn =
-                    surf_fac * (my::fldparatimint_->Dt() - my::fldparatimint_->TimeFac());
+                    surf_fac * (my::fldparatimint_->dt() - my::fldparatimint_->time_fac());
                 ci->nit_evaluate_coupling_old_state(normal_, timefacfacn, isImplPressureNewOst,
                     viscaf_master_,          // dynvisc viscosity in background fluid
                     viscaf_slave_,           // dynvisc viscosity in embedded fluid
@@ -3965,7 +3965,7 @@ namespace Discret
         }    // end loop boundary cells of side
 
         if (assemble_iforce)
-          assemble_interface_force(mc_fsi->IForcecol(), *cutter_dis, cutla[0].lm_, iforce);
+          assemble_interface_force(mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
       }  // end loop cut sides
 
 
@@ -4260,7 +4260,7 @@ namespace Discret
 
           // Pressure part
           double presn_s = 0.0;
-          si->GetInterfacePresn(presn_s);
+          si->get_interface_presn(presn_s);
 
           itractionn_jump.update(-(presn_m - presn_s), normal, 0.0);
 
@@ -4354,25 +4354,25 @@ namespace Discret
                                  ///< stabilizations
     )
     {
-      if (fldparaxfem_->GetCouplingMethod() != Inpar::XFEM::Hybrid_LM_Cauchy_stress &&
-          fldparaxfem_->GetCouplingMethod() != Inpar::XFEM::Hybrid_LM_viscous_stress)
+      if (fldparaxfem_->get_coupling_method() != Inpar::XFEM::Hybrid_LM_Cauchy_stress &&
+          fldparaxfem_->get_coupling_method() != Inpar::XFEM::Hybrid_LM_viscous_stress)
         FOUR_C_THROW("Do not call this method with a non-Lagrange multiplier based approach!");
 
       for (std::set<int>::const_iterator bgid = begids.begin(); bgid != begids.end(); ++bgid)
       {
         const int coup_sid = *bgid;
 
-        if (!cond_manager->IsCoupling(coup_sid, my::eid_))
+        if (!cond_manager->is_coupling(coup_sid, my::eid_))
           continue;  // no coupling with current side
 
-        if (cond_manager->IsLevelSetCoupling(coup_sid))
+        if (cond_manager->is_level_set_coupling(coup_sid))
           FOUR_C_THROW(
               "hybrid_lm_create_special_contribution_matrices for level-set coupling not supported "
               "yet");
 
         Teuchos::RCP<Core::FE::Discretization> cutter_dis = Teuchos::null;
-        if (cond_manager->IsMeshCoupling(coup_sid))
-          cutter_dis = cond_manager->GetCutterDis(coup_sid);
+        if (cond_manager->is_mesh_coupling(coup_sid))
+          cutter_dis = cond_manager->get_cutter_dis(coup_sid);
 
         Core::Elements::Element* side = cond_manager->get_side(
             coup_sid);  // for each boundary element there is one corresponding side
@@ -4380,7 +4380,7 @@ namespace Discret
         std::vector<int> patchlm;
         std::vector<int> patchlmowner;
         std::vector<int> patchlmstride;
-        side->LocationVector(*cutter_dis, patchlm, patchlmowner, patchlmstride);
+        side->location_vector(*cutter_dis, patchlm, patchlmowner, patchlmstride);
 
         // get coupling matrices for the current side (boundary element)
         std::vector<Core::LinAlg::SerialDenseMatrix>& side_matrices_extra =
@@ -4459,7 +4459,7 @@ namespace Discret
     {
       // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::assemble_interface_force");
 
-      const Epetra_Map* dofcolmap = cutdis.DofColMap();
+      const Epetra_Map* dofcolmap = cutdis.dof_col_map();
 
       for (int idof = 0; idof < (int)(lm.size()); ++idof)
       {
@@ -4525,7 +4525,7 @@ namespace Discret
     {
       Core::LinAlg::Matrix<numdofpernode_ * nen_, 1> elevec1(elevec1_epetra, true);
       Core::LinAlg::Matrix<numdofpernode_, nen_> tmpvel;
-      my::eid_ = ele->Id();
+      my::eid_ = ele->id();
 
       // get node coordinates and number of elements per node
       Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
@@ -4538,7 +4538,7 @@ namespace Discret
            iquad != intpoints.end(); ++iquad)
       {
         // evaluate shape functions and derivatives at integration point
-        my::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+        my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
         // Summe ueber alle Knoten
         for (int ui = 0; ui < nen_; ++ui)

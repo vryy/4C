@@ -132,28 +132,28 @@ namespace FLD
     /// print information about current time step to screen
     void print_time_step_info() override;
 
-    void Integrate() override { TimeLoop(); }
+    void integrate() override { time_loop(); }
 
     /// Do time integration (time loop)
-    void TimeLoop() override;
+    void time_loop() override;
 
     /// setup the variables to do a new time step
     void prepare_time_step() override;
 
     /// set theta for specific time integration scheme
-    void SetTheta() override;
+    void set_theta() override;
 
     /// do explicit predictor step
-    void DoPredictor();
+    void do_predictor();
 
     /// Implement Adapter::Fluid
-    virtual void PrepareXFEMSolve();
+    virtual void prepare_xfem_solve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
-    void Solve() override;
+    void solve() override;
 
     /// compute lift and drag values by integrating the true residuals
-    void LiftDrag() const override;
+    void lift_drag() const override;
 
     /// solve linearised fluid
     void linear_solve();
@@ -165,13 +165,13 @@ namespace FLD
     void check_matrix_nullspace() override;
 
     /// return Teuchos::rcp to linear solver
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; };
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
     Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;
 
     /// update velnp by increments
-    virtual void UpdateByIncrements(Teuchos::RCP<const Epetra_Vector>
+    virtual void update_by_increments(Teuchos::RCP<const Epetra_Vector>
             stepinc  ///< solution increment between time step n and n+1
     );
 
@@ -182,10 +182,10 @@ namespace FLD
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
-    void TimeUpdate() override;
+    void time_update() override;
 
     /// Implement Adapter::Fluid
-    void update() override { TimeUpdate(); }
+    void update() override { time_update(); }
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
@@ -195,13 +195,13 @@ namespace FLD
     bool newton_restart_monolithic() { return newton_restart_monolithic_; }
 
     /// ...
-    Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return permutation_map_; }
+    Teuchos::RCP<std::map<int, int>> get_permutation_map() { return permutation_map_; }
 
     /// update configuration and output to file/screen
     void output() override;
 
     /// set an initial flow field
-    void SetInitialFlowField(
+    void set_initial_flow_field(
         const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     //    /// compute interface velocities from function
@@ -214,39 +214,39 @@ namespace FLD
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
     Teuchos::RCP<const Epetra_Vector> initial_guess() override { return state_->incvel_; }
-    Teuchos::RCP<Epetra_Vector> Residual() override { return state_->residual_; }
+    Teuchos::RCP<Epetra_Vector> residual() override { return state_->residual_; }
     /// implement adapter fluid
-    Teuchos::RCP<const Epetra_Vector> RHS() override { return Residual(); }
-    Teuchos::RCP<const Epetra_Vector> TrueResidual() override
+    Teuchos::RCP<const Epetra_Vector> rhs() override { return residual(); }
+    Teuchos::RCP<const Epetra_Vector> true_residual() override
     {
       std::cout << "Xfluid_TrueResidual" << std::endl;
       return state_->trueresidual_;
     }
-    Teuchos::RCP<const Epetra_Vector> Velnp() override { return state_->velnp_; }
-    Teuchos::RCP<const Epetra_Vector> Velaf() override { return state_->velaf_; }
-    Teuchos::RCP<const Epetra_Vector> Veln() override { return state_->veln_; }
+    Teuchos::RCP<const Epetra_Vector> velnp() override { return state_->velnp_; }
+    Teuchos::RCP<const Epetra_Vector> velaf() override { return state_->velaf_; }
+    Teuchos::RCP<const Epetra_Vector> veln() override { return state_->veln_; }
     /*!
     \brief get the velocity vector based on standard dofs
 
     \return Teuchos::RCP to a copy of Velnp with only standard dofs
      */
-    Teuchos::RCP<Epetra_Vector> StdVelnp() override;
-    Teuchos::RCP<Epetra_Vector> StdVeln() override;
+    Teuchos::RCP<Epetra_Vector> std_velnp() override;
+    Teuchos::RCP<Epetra_Vector> std_veln() override;
 
-    Teuchos::RCP<const Epetra_Vector> GridVel() override
+    Teuchos::RCP<const Epetra_Vector> grid_vel() override
     {
       return gridvnp_;
     }  // full grid velocity (1st dofset)
 
-    Teuchos::RCP<const Epetra_Vector> Dispnp() override
+    Teuchos::RCP<const Epetra_Vector> dispnp() override
     {
       return dispnp_;
     }  // full Dispnp (1st dofset)
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() override
+    Teuchos::RCP<Epetra_Vector> write_access_dispnp() override
     {
       return dispnp_;
     }  // full Dispnp (1st dofset)
-    Teuchos::RCP<const Epetra_Vector> Dispn() override { return dispn_; }  // full Dispn(1st dofset)
+    Teuchos::RCP<const Epetra_Vector> dispn() override { return dispn_; }  // full Dispn(1st dofset)
     // @}
 
 
@@ -259,33 +259,33 @@ namespace FLD
       return state_->xfluiddofrowmap_.create_weak();  // return a weak rcp
     }
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter() override
     {
       return state_->velpressplitter_;
     }
-    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override
+    Teuchos::RCP<const Epetra_Map> velocity_row_map() override
     {
       return state_->velpressplitter_->other_map();
     }
-    Teuchos::RCP<const Epetra_Map> PressureRowMap() override
+    Teuchos::RCP<const Epetra_Map> pressure_row_map() override
     {
       return state_->velpressplitter_->cond_map();
     }
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(state_->sysmat_);
     }
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(state_->sysmat_, false);
     }
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_sx_Matrix(const std::string& cond_name);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_xs_Matrix(const std::string& cond_name);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ss_Matrix(const std::string& cond_name);
-    Teuchos::RCP<Epetra_Vector> RHS_s_Vec(const std::string& cond_name);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_sx_matrix(const std::string& cond_name);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_xs_matrix(const std::string& cond_name);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_ss_matrix(const std::string& cond_name);
+    Teuchos::RCP<Epetra_Vector> rhs_s_vec(const std::string& cond_name);
 
     /// Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
@@ -294,21 +294,21 @@ namespace FLD
     }
 
     /// set the maximal number of nonlinear steps
-    void SetItemax(int itemax) override { params_->set<int>("max nonlin iter steps", itemax); }
+    void set_itemax(int itemax) override { params_->set<int>("max nonlin iter steps", itemax); }
 
     /// scale the residual (inverse of the weighting of the quantities w.r.t the new timestep)
     double residual_scaling() const override
     {
-      if (TimIntScheme() == Inpar::FLUID::timeint_stationary)
+      if (tim_int_scheme() == Inpar::FLUID::timeint_stationary)
         return 1.0;
-      else if (TimIntScheme() == Inpar::FLUID::timeint_afgenalpha)
+      else if (tim_int_scheme() == Inpar::FLUID::timeint_afgenalpha)
         return alphaM_ / (gamma_ * dta_);
       else
         return 1.0 / (theta_ * dta_);
     }
 
     /// return time integration factor
-    double TimIntParam() const override;
+    double tim_int_param() const override;
 
     /// turbulence statistics manager
     Teuchos::RCP<FLD::TurbulenceStatisticManager> turbulence_statistic_manager() override
@@ -317,19 +317,19 @@ namespace FLD
     }
 
     /// create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     /// read restart data for fluid discretization
     void read_restart(int step) override;
 
 
     // -------------------------------------------------------------------
-    Teuchos::RCP<XFEM::MeshCoupling> GetMeshCoupling(const std::string& condname);
+    Teuchos::RCP<XFEM::MeshCoupling> get_mesh_coupling(const std::string& condname);
 
 
-    Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() override { return Teuchos::null; }
+    Teuchos::RCP<FLD::DynSmagFilter> dyn_smag_filter() override { return Teuchos::null; }
 
-    Teuchos::RCP<FLD::Vreman> Vreman() override { return Teuchos::null; }
+    Teuchos::RCP<FLD::Vreman> vreman() override { return Teuchos::null; }
 
     /*!
     \brief velocity required for evaluation of related quantites required on element level
@@ -338,35 +338,35 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return Teuchos::null; }
 
 
-    virtual void CreateInitialState();
+    virtual void create_initial_state();
 
     virtual void update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state = Teuchos::null);
 
-    void UpdateGridv() override;
+    void update_gridv() override;
 
     /// Get xFluid Background discretization
-    Teuchos::RCP<XFEM::DiscretizationXFEM> DiscretisationXFEM() { return xdiscret_; }
+    Teuchos::RCP<XFEM::DiscretizationXFEM> discretisation_xfem() { return xdiscret_; }
 
     /// Get XFEM Condition Manager
-    Teuchos::RCP<XFEM::ConditionManager> GetConditionManager() { return condition_manager_; }
+    Teuchos::RCP<XFEM::ConditionManager> get_condition_manager() { return condition_manager_; }
 
     /// evaluate the CUT for in the next fluid evaluate
-    void Set_EvaluateCut(bool evaluate_cut) { evaluate_cut_ = evaluate_cut; }
+    void set_evaluate_cut(bool evaluate_cut) { evaluate_cut_ = evaluate_cut; }
 
     /// Get Cut Wizard
-    Teuchos::RCP<Core::Geo::CutWizard> GetCutWizard()
+    Teuchos::RCP<Core::Geo::CutWizard> get_cut_wizard()
     {
       if (state_ != Teuchos::null)
-        return state_->Wizard();
+        return state_->wizard();
       else
         return Teuchos::null;
     }
 
     /// Get xFluid ParameterList
-    Teuchos::RCP<Teuchos::ParameterList> Params() { return params_; }
+    Teuchos::RCP<Teuchos::ParameterList> params() { return params_; }
 
     /// Set state vectors depending on time integration scheme
-    void SetStateTimInt() override;
+    void set_state_tim_int() override;
 
    protected:
     /// (pseudo-)timeloop finished?
@@ -427,15 +427,15 @@ namespace FLD
         const Inpar::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
         Teuchos::RCP<Epetra_Vector>& hist);
 
-    void SetGamma(Teuchos::ParameterList& eleparams) override;
+    void set_gamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    void Sep_Multiply() override { return; }
+    void sep_multiply() override { return; }
 
-    void OutputofFilteredVel(
+    void outputof_filtered_vel(
         Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override
     {
       return;

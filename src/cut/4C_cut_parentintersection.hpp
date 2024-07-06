@@ -118,7 +118,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// set the option if positions have to be determined or not
-      void SetFindPositions(bool positions) { options_.SetFindPositions(positions); }
+      void set_find_positions(bool positions) { options_.set_find_positions(positions); }
 
       /// set the option if positions have to be determined or not
       void set_nodal_dof_set_strategy(Core::Geo::Cut::NodalDofSetStrategy nodal_dofset_strategy)
@@ -133,17 +133,17 @@ namespace Core::Geo
       }
 
       /// get the options
-      void GetOptions(Options& options) { options = options_; };
+      void get_options(Options& options) { options = options_; };
 
       /// get the options
-      Options& GetOptions() { return options_; };
+      Options& get_options() { return options_; };
 
       /*========================================================================*/
       //! @name Cut functionality routines
       /*========================================================================*/
 
 
-      virtual void Cut_SelfCut(bool include_inner, bool screenoutput)
+      virtual void cut_self_cut(bool include_inner, bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
           Core::IO::cout << "\t * 2/6 Cut_SelfCut ... not performed";
@@ -157,7 +157,7 @@ namespace Core::Geo
         return;
       };
 
-      virtual void Cut_Mesh(bool screenoutput)
+      virtual void cut_mesh(bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
           Core::IO::cout << "\t * 4/6 Cut_Mesh (LevelSet-Cut) ... not performed";
@@ -175,7 +175,7 @@ namespace Core::Geo
       \brief The routine which splits the volumecell into integrationcells by tessellation, or
       create Gaussian integration rules by moment fitting equations
        */
-      void Cut_Finalize(bool include_inner, VCellGaussPts VCellgausstype,
+      void cut_finalize(bool include_inner, VCellGaussPts VCellgausstype,
           Core::Geo::Cut::BCellGaussPts BCellgausstype, bool tetcellsonly, bool screenoutput);
 
       /*========================================================================*/
@@ -183,7 +183,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// Create nodal dofset sets within the parallel cut framework
-      void CreateNodalDofSet(bool include_inner, const Core::FE::Discretization& dis);
+      void create_nodal_dof_set(bool include_inner, const Core::FE::Discretization& dis);
 
       /// fill parallel DofSetData with information that has to be communicated
       void fill_parallel_dof_set_data(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
@@ -195,7 +195,7 @@ namespace Core::Geo
           bool inside, VolumeCell* cell, std::map<int, int>& node_dofset_map);
 
       /// find cell sets around each node (especially for quadratic elements)
-      void FindNodalCellSets(bool include_inner, std::set<int>& eids,
+      void find_nodal_cell_sets(bool include_inner, std::set<int>& eids,
           std::vector<int>& sourrounding_elements,
           std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_inside,
           std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_outside,
@@ -204,7 +204,7 @@ namespace Core::Geo
           std::vector<plain_volumecell_set>& cell_sets);
 
       /// connect sets of volumecells for neighboring elements around a node
-      void ConnectNodalDOFSets(std::vector<Node*>& nodes, bool include_inner,
+      void connect_nodal_dof_sets(std::vector<Node*>& nodes, bool include_inner,
           const Core::FE::Discretization& dis,
           const std::vector<plain_volumecell_set>& connected_vc_sets,
           std::vector<std::vector<int>>& nodaldofset_vc_sets,
@@ -216,7 +216,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// get the node based on node id
-      Node* GetNode(int nid) const;
+      Node* get_node(int nid) const;
 
       /// get the mesh's side based on node ids and return the side
       SideHandle* get_side(std::vector<int>& nodeids) const;
@@ -225,13 +225,13 @@ namespace Core::Geo
       SideHandle* get_side(int sid) const;
 
       /// get the mesh's element based on element id
-      ElementHandle* GetElement(int eid) const;
+      ElementHandle* get_element(int eid) const;
 
       /// get the linear mesh
-      Mesh& NormalMesh() { return mesh_.LinearMesh(); }
+      Mesh& normal_mesh() { return mesh_.linear_mesh(); }
 
       /// get the mesh handle
-      MeshHandle& GetMeshHandle() { return mesh_; }
+      MeshHandle& get_mesh_handle() { return mesh_; }
 
       /*========================================================================*/
       //! @name GMSH output
@@ -243,7 +243,7 @@ namespace Core::Geo
           const Core::FE::Discretization& dis);
 
       /// write gmsh debug output for CellSets
-      void DumpGmshCellSets(
+      void dump_gmsh_cell_sets(
           std::vector<plain_volumecell_set>& cell_sets, const Core::FE::Discretization& dis);
 
       /// write gmsh cut output for number of dofsets and the connected vc sets

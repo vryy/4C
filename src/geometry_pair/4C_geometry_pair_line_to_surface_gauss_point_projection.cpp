@@ -29,7 +29,7 @@ GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line,
 {
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
-  int line_element_id = this->Element1()->Id();
+  int line_element_id = this->element1()->id();
   std::map<int, std::vector<bool>>& projection_tracker =
       this->line_to_surface_evaluation_data_->get_gauss_point_projection_tracker();
 
@@ -80,7 +80,7 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<S
     Surface>::get_line_projection_vector() const
 {
   // Get the Gauss point projection tracker for this line element.
-  int line_element_id = this->Element1()->Id();
+  int line_element_id = this->element1()->id();
   std::map<int, std::vector<bool>>& projection_tracker =
       this->line_to_surface_evaluation_data_->get_gauss_point_projection_tracker();
   return projection_tracker[line_element_id];

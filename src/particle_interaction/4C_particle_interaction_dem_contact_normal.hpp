@@ -49,7 +49,7 @@ namespace ParticleInteraction
     virtual double get_critical_normal_contact_stiffness() const final { return k_normal_crit_; };
 
     //! evaluate normal contact force
-    virtual void NormalContactForce(const double& gap, const double* radius_i,
+    virtual void normal_contact_force(const double& gap, const double* radius_i,
         const double* radius_j, const double& v_rel_normal, const double& m_eff,
         double& normalcontactforce) const = 0;
 
@@ -87,7 +87,7 @@ namespace ParticleInteraction
     void setup(const double& dens_max) override;
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
 
     //! evaluate normal potential energy
@@ -107,7 +107,7 @@ namespace ParticleInteraction
     void setup(const double& dens_max) override;
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
 
    private:
@@ -131,7 +131,7 @@ namespace ParticleInteraction
     void setup(const double& dens_max) override;
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff,
         double& normalcontactforce) const override = 0;
 
@@ -146,7 +146,7 @@ namespace ParticleInteraction
     explicit DEMContactNormalHertz(const Teuchos::ParameterList& params);
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
@@ -160,7 +160,7 @@ namespace ParticleInteraction
     void init() override;
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff,
         double& normalcontactforce) const override = 0;
 
@@ -176,7 +176,7 @@ namespace ParticleInteraction
     explicit DEMContactNormalLeeHerrmann(const Teuchos::ParameterList& params);
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
@@ -187,7 +187,7 @@ namespace ParticleInteraction
     explicit DEMContactNormalKuwabaraKono(const Teuchos::ParameterList& params);
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 
@@ -198,7 +198,7 @@ namespace ParticleInteraction
     explicit DEMContactNormalTsuji(const Teuchos::ParameterList& params);
 
     //! evaluate normal contact force
-    void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
+    void normal_contact_force(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff, double& normalcontactforce) const override;
   };
 

@@ -41,9 +41,9 @@ namespace ScaTra
 
     void setup() override;
 
-    void PreSolve() override{};
+    void pre_solve() override{};
 
-    void PostSolve() override{};
+    void post_solve() override{};
 
     void print_time_step_info() override;
 
@@ -60,15 +60,15 @@ namespace ScaTra
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
-    Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> phiaf() override { return Teuchos::null; }
 
-    Teuchos::RCP<Epetra_Vector> Phiam() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> phiam() override { return Teuchos::null; }
 
-    Teuchos::RCP<Epetra_Vector> Phidtam() override { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> phidtam() override { return Teuchos::null; }
 
-    Teuchos::RCP<Epetra_Vector> FsPhi() override
+    Teuchos::RCP<Epetra_Vector> fs_phi() override
     {
-      if (Sep_ != Teuchos::null) Sep_->Multiply(false, *phinp_, *fsphinp_);
+      if (Sep_ != Teuchos::null) Sep_->multiply(false, *phinp_, *fsphinp_);
       return fsphinp_;
     }
 
@@ -100,7 +100,7 @@ namespace ScaTra
     );
 
     //! clear state on micro scale in multi-scale simulations
-    void ClearState();
+    void clear_state();
 
     void pre_calc_initial_time_derivative() override;
 

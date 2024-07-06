@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -34,7 +34,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
                 numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -68,23 +68,23 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fa
 
   double J = 1.0;
   // only 3D cases:
-  if (bele->Shape() == Core::FE::CellType::tri3)
+  if (bele->shape() == Core::FE::CellType::tri3)
   {
-    if (pele->Shape() == Core::FE::CellType::tet4)
+    if (pele->shape() == Core::FE::CellType::tet4)
       J = calc_jat_int_point<Core::FE::CellType::tri3, Core::FE::CellType::tet4>(
           iquad, bele, pele, params, discretization);
-    else if (pele->Shape() == Core::FE::CellType::pyramid5)
+    else if (pele->shape() == Core::FE::CellType::pyramid5)
       J = calc_jat_int_point<Core::FE::CellType::tri3, Core::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
       FOUR_C_THROW("Parent element not supported here!");
   }
-  else if (bele->Shape() == Core::FE::CellType::quad4)
+  else if (bele->shape() == Core::FE::CellType::quad4)
   {
-    if (pele->Shape() == Core::FE::CellType::hex8)
+    if (pele->shape() == Core::FE::CellType::hex8)
       J = calc_jat_int_point<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
           iquad, bele, pele, params, discretization);
-    else if (pele->Shape() == Core::FE::CellType::pyramid5)
+    else if (pele->shape() == Core::FE::CellType::pyramid5)
       J = calc_jat_int_point<Core::FE::CellType::quad4, Core::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
@@ -135,17 +135,17 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
       pele, pxyze0);
   pxyze = pxyze0;
 
-  if (my::scatraparams_->IsAle())
+  if (my::scatraparams_->is_ale())
   {
     // get number of dof-set associated with displacement related dofs
-    const int ndsdisp = my::scatraparams_->NdsDisp();
+    const int ndsdisp = my::scatraparams_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // parent element location array
-    Core::Elements::Element::LocationArray pla(discretization.NumDofSets());
-    pele->LocationVector(discretization, pla, false);
+    Core::Elements::Element::LocationArray pla(discretization.num_dof_sets());
+    pele->location_vector(discretization, pla, false);
 
     // determine number of velocity related dofs per node
     const int numdispdofpernode = pla[ndsdisp].lm_.size() / pnen;
@@ -176,10 +176,10 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
   const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
       Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
-  Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
-  for (int biquad = 0; biquad < bintpoints.IP().nquad; ++biquad)
+  Core::LinAlg::SerialDenseMatrix gps(bintpoints.ip().nquad, bnsd);
+  for (int biquad = 0; biquad < bintpoints.ip().nquad; ++biquad)
   {
-    const double* gpcoord = (bintpoints.IP().qxg)[biquad];
+    const double* gpcoord = (bintpoints.ip().qxg)[biquad];
     for (int idim = 0; idim < bnsd; idim++)
     {
       gps(biquad, idim) = gpcoord[idim];
@@ -187,11 +187,11 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
   }
 
   // distinguish 2- and 3-D case
-  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, pnsd);
   if (pnsd == 2)
-    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bele->face_master_number());
   else if (pnsd == 3)
-    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bele->face_master_number());
 
 
   Core::LinAlg::Matrix<pnsd, 1> pxsi(true);

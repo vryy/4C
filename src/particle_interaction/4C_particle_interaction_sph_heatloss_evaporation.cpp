@@ -60,13 +60,13 @@ void ParticleInteraction::SPHHeatLossEvaporation::setup(
   particlematerial_ = particlematerial;
 
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   // allocate memory to hold particle types
   thermomaterial_.resize(typevectorsize);
 
   // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
     thermomaterial_[type_i] = dynamic_cast<const Mat::PAR::ParticleMaterialThermo*>(
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 }
@@ -83,14 +83,15 @@ void ParticleInteraction::SPHHeatLossEvaporation::evaluate_evaporation_induced_h
   const Mat::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[evaporatingphase_];
 
   // iterate over particles in container
-  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  for (int particle_i = 0; particle_i < container_i->particles_stored(); ++particle_i)
   {
-    const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
-    const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
+    const double* dens_i = container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i);
+    const double* temp_i = container_i->get_ptr_to_state(PARTICLEENGINE::Temperature, particle_i);
     const double* cfg_i =
-        container_i->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-    const double* ifn_i = container_i->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_i);
-    double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
+        container_i->get_ptr_to_state(PARTICLEENGINE::ColorfieldGradient, particle_i);
+    const double* ifn_i =
+        container_i->get_ptr_to_state(PARTICLEENGINE::InterfaceNormal, particle_i);
+    double* tempdot_i = container_i->get_ptr_to_state(PARTICLEENGINE::TemperatureDot, particle_i);
 
     // evaluation only for non-zero interface normal
     if (not(UTILS::VecNormTwo(ifn_i) > 0.0)) continue;

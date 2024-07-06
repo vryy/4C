@@ -70,11 +70,11 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<Epetra_Vector> residual, Core::LinAlg::SolverParams& solver_params) = 0;
 
     //! calculate norms for convergence checks
-    virtual void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
+    virtual void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
         std::vector<double>& prenorm, const Teuchos::RCP<const Epetra_Vector> increment) = 0;
 
     //! create the field test
-    virtual void CreateFieldTest() = 0;
+    virtual void create_field_test() = 0;
 
     //! restart
     virtual void read_restart(const int step) = 0;
@@ -87,14 +87,14 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::RCP<const Epetra_Vector> inc) = 0;
 
     // return arterial network time integrator
-    virtual Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt()
+    virtual Teuchos::RCP<Adapter::ArtNet> art_net_tim_int()
     {
       FOUR_C_THROW("ArtNetTimInt() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
     //! access dof row map
-    virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const
+    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const
     {
       FOUR_C_THROW("ArteryDofRowMap() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
@@ -109,27 +109,27 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! right-hand side alias the dynamic force residual for coupled system
-    virtual Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const
+    virtual Teuchos::RCP<const Epetra_Vector> artery_porofluid_rhs() const
     {
       FOUR_C_THROW("ArteryPorofluidRHS() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
     //! access to global (combined) increment of coupled problem
-    virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
+    virtual Teuchos::RCP<const Epetra_Vector> combined_increment(
         Teuchos::RCP<const Epetra_Vector> inc) const = 0;
 
     //! check if initial fields on coupled DOFs are equal (only for node-based coupling)
-    virtual void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const = 0;
+    virtual void check_initial_fields(Teuchos::RCP<const Epetra_Vector> vec_cont) const = 0;
 
     //! set the element pairs that are close as found by search algorithm
-    virtual void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) = 0;
+    virtual void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     //! setup the strategy
     virtual void setup() = 0;
 
     //! apply the mesh movement
-    virtual void ApplyMeshMovement() const = 0;
+    virtual void apply_mesh_movement() const = 0;
 
     //! return blood vessel volume fraction
     virtual Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction()

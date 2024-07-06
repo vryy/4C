@@ -103,7 +103,7 @@ namespace CONSTRAINTS
     /*!
      \brief Return norm of difference between actual and constraint values
     */
-    double GetErrorNorm() const
+    double get_error_norm() const
     {
       double foo;
       constrainterr_->Norm2(&foo);
@@ -118,7 +118,7 @@ namespace CONSTRAINTS
     /*!
      \brief Scale all lagrange multipliers by a double d
     */
-    void ScaleLagrMult(double d  ///< scale factor
+    void scale_lagr_mult(double d  ///< scale factor
     )
     {
       lagr_mult_vec_->Scale(d);
@@ -133,14 +133,14 @@ namespace CONSTRAINTS
     /*!
          \brief Update lagrange multiplier \f$\lambda_{n+1}=\lambda_{n}+factor*\f$(volerr)
     */
-    void UpdateLagrMult(double factor);
+    void update_lagr_mult(double factor);
 
     /// Add a vector as residual increment to the vector of Lagrange multipliers
-    void UpdateLagrMult(Teuchos::RCP<Epetra_Vector> vect  ///< vector to add
+    void update_lagr_mult(Teuchos::RCP<Epetra_Vector> vect  ///< vector to add
     );
 
     /// Add a vector as total increment to the vector of Lagrange multipliers
-    void UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> vect  ///< vector to add
+    void update_tot_lagr_mult(Teuchos::RCP<Epetra_Vector> vect  ///< vector to add
     );
 
     /*!
@@ -154,23 +154,23 @@ namespace CONSTRAINTS
     /*!
          \brief Return differences between prescribed and actual value of constraint number i
     */
-    double GetError(int i  ///< ID of constraint of interest
+    double get_error(int i  ///< ID of constraint of interest
     ) const
     {
       return (*constrainterr_)[i];
     }
 
     /// return vector of differences between prescribed and actual values
-    Teuchos::RCP<Epetra_Vector> GetError() const { return constrainterr_; }
+    Teuchos::RCP<Epetra_Vector> get_error() const { return constrainterr_; }
 
     /*!
      \brief Return EpetraMap that determined distribution of constraints and lagrange
      multiplier over processors
     */
-    Teuchos::RCP<Epetra_Map> GetConstraintMap() const { return constrmap_; };
+    Teuchos::RCP<Epetra_Map> get_constraint_map() const { return constrmap_; };
 
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
-    Teuchos::RCP<Core::LinAlg::SparseOperator> GetConstrMatrix()  // const
+    Teuchos::RCP<Core::LinAlg::SparseOperator> get_constr_matrix()  // const
     {
       return constr_matrix_;
     };
@@ -178,7 +178,7 @@ namespace CONSTRAINTS
     /*!
       \brief Return lagrange multiplier for constraint i
     */
-    double GetLagrMult(int i  ///< ID of constraint of interest
+    double get_lagr_mult(int i  ///< ID of constraint of interest
     ) const
     {
       return (*lagr_mult_vec_)[i];
@@ -187,7 +187,7 @@ namespace CONSTRAINTS
     /*!
       \brief Return lagrange multiplier vector
     */
-    Teuchos::RCP<Epetra_Vector> GetLagrMultVector() const { return lagr_mult_vec_; };
+    Teuchos::RCP<Epetra_Vector> get_lagr_mult_vector() const { return lagr_mult_vec_; };
 
     /*!
       \brief Return lagrange multiplier of last converged step
@@ -197,22 +197,22 @@ namespace CONSTRAINTS
     /*!
      \brief Return if there are constraints
     */
-    bool HaveConstraint() const { return haveconstraint_; };
+    bool have_constraint() const { return haveconstraint_; };
 
     /*!
      \brief Return if there are constraints
     */
-    bool HaveConstraintLagr() const { return havelagrconstr_; };
+    bool have_constraint_lagr() const { return havelagrconstr_; };
 
     /*!
      \brief Return if there are constraints
     */
-    bool HaveConstraintPen() const { return havepenaconstr_; };
+    bool have_constraint_pen() const { return havepenaconstr_; };
 
     /*!
        \brief Return if there are monitors
     */
-    bool HaveMonitor() const { return havemonitor_; };
+    bool have_monitor() const { return havemonitor_; };
 
     /*!
      \brief Read restart information
@@ -222,7 +222,7 @@ namespace CONSTRAINTS
     /*!
      \brief Return current value
     */
-    double GetCurrValue(int i  ///< ID of constraint of interest
+    double get_curr_value(int i  ///< ID of constraint of interest
     ) const
     {
       return (*actvalues_)[i];
@@ -231,7 +231,7 @@ namespace CONSTRAINTS
     /*!
          \brief Print out the values of current monitor values
      */
-    void PrintMonitorValues() const;
+    void print_monitor_values() const;
 
     /*!
        \brief Compute values described by a monitor boundary condition
@@ -246,12 +246,12 @@ namespace CONSTRAINTS
     );
 
     /// Reset reference base values for restart computations
-    void SetRefBaseValues(Teuchos::RCP<Epetra_Vector> newrefvals,  ///< new reference base values
-        const double& time                                         ///< current time
+    void set_ref_base_values(Teuchos::RCP<Epetra_Vector> newrefvals,  ///< new reference base values
+        const double& time                                            ///< current time
     );
 
     /// Reset lagrange multipliers
-    void SetLagrMultVector(Teuchos::RCP<Epetra_Vector> newlagrmult  ///< new lagrange multipliers
+    void set_lagr_mult_vector(Teuchos::RCP<Epetra_Vector> newlagrmult  ///< new lagrange multipliers
     )
     {
       lagr_mult_vec_->Update(1.0, *newlagrmult, 0.0);
@@ -260,7 +260,7 @@ namespace CONSTRAINTS
     }
 
     /// Return Reference base values to write restart
-    Teuchos::RCP<Epetra_Vector> GetRefBaseValues() const { return refbasevalues_; }
+    Teuchos::RCP<Epetra_Vector> get_ref_base_values() const { return refbasevalues_; }
 
     //! switch constraint matrix to block matrix
     void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,

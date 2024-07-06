@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Nurbs::Ale3NurbsType Discret::ELEMENTS::Nurbs::Ale3NurbsType::instance_;
 
-Discret::ELEMENTS::Nurbs::Ale3NurbsType& Discret::ELEMENTS::Nurbs::Ale3NurbsType::Instance()
+Discret::ELEMENTS::Nurbs::Ale3NurbsType& Discret::ELEMENTS::Nurbs::Ale3NurbsType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale3NurbsType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale3NurbsType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Nurbs::Ale3Nurbs* object = new Discret::ELEMENTS::Nurbs::Ale3Nurbs(-1, -1);
@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale3NurbsType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE3")
@@ -49,7 +49,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::C
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::Nurbs::Ale3Nurbs(id, owner));
@@ -67,7 +67,7 @@ void Discret::ELEMENTS::Nurbs::Ale3NurbsType::nodal_block_information(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Nurbs::Ale3NurbsType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Nurbs::Ale3NurbsType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -100,7 +100,7 @@ void Discret::ELEMENTS::Nurbs::Ale3Nurbs::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Nurbs::Ale3Nurbs::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Nurbs::Ale3Nurbs::shape() const
 {
   switch (num_node())
   {

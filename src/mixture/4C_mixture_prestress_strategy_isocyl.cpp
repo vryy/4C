@@ -116,7 +116,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
   double r = 0;
   for (unsigned i = 0; i < 3; ++i)
   {
-    r += cylinderCosy->GetRad()(i) * reference_coordinates(i);
+    r += cylinderCosy->get_rad()(i) * reference_coordinates(i);
   }
 
   double initial_constituent_reference_density =
@@ -128,7 +128,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
   while (std::abs(Res) > 1.0e-10)
   {
     Res =
-        matiso->Mue() * initial_constituent_reference_density *
+        matiso->mue() * initial_constituent_reference_density *
             std::pow(params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre,
                 -4. / 3.) *  // TODO: When deriving these equations by hand, I get -2.0 / 3.0. To be
                              //  compatible with the old implementation I decided for now to keep
@@ -138,14 +138,14 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
                     (params_->circumferential_prestretch_ * params_->circumferential_prestretch_ +
                         params_->axial_prestretch_ * params_->axial_prestretch_ +
                         lamb_pre * lamb_pre)) +
-        matvol->Kappa() * initial_constituent_reference_density *
+        matvol->kappa() * initial_constituent_reference_density *
             ((params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre) *
                     (params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre) -
                 (params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre)) +
         ((1.0 - (r - params_->inner_radius_) / params_->wall_thickness_) * params_->pressure_);
 
     dResdlamb_pre =
-        matiso->Mue() * initial_constituent_reference_density *
+        matiso->mue() * initial_constituent_reference_density *
             (-(4. / 3.) *
                 std::pow(
                     params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre,
@@ -156,13 +156,13 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
                     (params_->circumferential_prestretch_ * params_->circumferential_prestretch_ +
                         params_->axial_prestretch_ * params_->axial_prestretch_ +
                         lamb_pre * lamb_pre)) +
-        matiso->Mue() * initial_constituent_reference_density *
+        matiso->mue() * initial_constituent_reference_density *
             std::pow(params_->circumferential_prestretch_ * params_->circumferential_prestretch_ *
                          params_->axial_prestretch_ * params_->axial_prestretch_ * lamb_pre *
                          lamb_pre,
                 -2. / 3.) *
             (2.0 * lamb_pre - (1. / 3.) * (2.0 * lamb_pre)) +
-        matvol->Kappa() * initial_constituent_reference_density *
+        matvol->kappa() * initial_constituent_reference_density *
             (2.0 * (params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre) *
                     params_->circumferential_prestretch_ * params_->axial_prestretch_ -
                 params_->circumferential_prestretch_ * params_->axial_prestretch_);
@@ -171,10 +171,10 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
   }
 
   // Build prestretch tensor
-  G.multiply_nt(lamb_pre, cylinderCosy->GetRad(), cylinderCosy->GetRad(), 0.0);
-  G.multiply_nt(params_->axial_prestretch_, cylinderCosy->GetAxi(), cylinderCosy->GetAxi(), 1.0);
+  G.multiply_nt(lamb_pre, cylinderCosy->get_rad(), cylinderCosy->get_rad(), 0.0);
+  G.multiply_nt(params_->axial_prestretch_, cylinderCosy->get_axi(), cylinderCosy->get_axi(), 1.0);
   G.multiply_nt(
-      params_->circumferential_prestretch_, cylinderCosy->GetCir(), cylinderCosy->GetCir(), 1.0);
+      params_->circumferential_prestretch_, cylinderCosy->get_cir(), cylinderCosy->get_cir(), 1.0);
 }
 
 double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRule& mixtureRule,
@@ -202,10 +202,10 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRul
 
   Core::LinAlg::Matrix<6, 1> Acir(false);
   // Compute structural tensor
-  for (int i = 0; i < 3; ++i) Acir(i) = cylinderCosy->GetCir()(i) * cylinderCosy->GetCir()(i);
-  Acir(3) = 2.0 * cylinderCosy->GetCir()(0) * cylinderCosy->GetCir()(1);
-  Acir(4) = 2.0 * cylinderCosy->GetCir()(1) * cylinderCosy->GetCir()(2);
-  Acir(5) = 2.0 * cylinderCosy->GetCir()(0) * cylinderCosy->GetCir()(2);
+  for (int i = 0; i < 3; ++i) Acir(i) = cylinderCosy->get_cir()(i) * cylinderCosy->get_cir()(i);
+  Acir(3) = 2.0 * cylinderCosy->get_cir()(0) * cylinderCosy->get_cir()(1);
+  Acir(4) = 2.0 * cylinderCosy->get_cir()(1) * cylinderCosy->get_cir()(2);
+  Acir(5) = 2.0 * cylinderCosy->get_cir()(0) * cylinderCosy->get_cir()(2);
 
 
   // This prestress strategy is only valid for G&R simulations

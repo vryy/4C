@@ -44,7 +44,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ScaTraEleCalcPoroReacECM(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>*
-Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -54,7 +54,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
             new ScaTraEleCalcPoroReacECM<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -73,13 +73,13 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::materials(
     const int iquad  //!< id of current gauss point
 )
 {
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_scatra:
       pororeac::mat_scatra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
-      FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported", material->material_type());
       break;
   }
   return;
@@ -102,18 +102,18 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
   poro::compute_porosity(ele);
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
-  if (material->MaterialType() == Core::Materials::m_matlist_reactions)
+  if (material->material_type() == Core::Materials::m_matlist_reactions)
   {
     const Teuchos::RCP<Mat::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
-    for (int k = 0; k < actmat->NumReac(); ++k)
+    for (int k = 0; k < actmat->num_reac(); ++k)
     {
-      int matid = actmat->ReacID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->reac_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       Teuchos::RCP<Mat::ScatraMatPoroECM> scatramat =
           Teuchos::rcp_dynamic_cast<Mat::ScatraMatPoroECM>(singlemat);
@@ -121,11 +121,11 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
       if (scatramat != Teuchos::null)
       {
         Teuchos::RCP<Mat::StructPoroReactionECM> structmat =
-            Teuchos::rcp_dynamic_cast<Mat::StructPoroReactionECM>(my::ele_->Material(1));
+            Teuchos::rcp_dynamic_cast<Mat::StructPoroReactionECM>(my::ele_->material(1));
         if (structmat == Teuchos::null) FOUR_C_THROW("cast to Mat::StructPoroReactionECM failed!");
         double structpot = compute_struct_chem_potential(structmat, iquad);
 
-        scatramat->ComputeReacCoeff(structpot);
+        scatramat->compute_reac_coeff(structpot);
       }
     }
   }
@@ -209,8 +209,8 @@ double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
 
   double pot = 0.0;
 
-  structmat->ChemPotential(
-      glstrain, poro::diff_manager()->GetPorosity(0), pres, J, my::eid_, pot, gp);
+  structmat->chem_potential(
+      glstrain, poro::diff_manager()->get_porosity(0), pres, J, my::eid_, pot, gp);
 
   return pot;
 }

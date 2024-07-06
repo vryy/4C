@@ -79,9 +79,9 @@ namespace FLD
         const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
         Teuchos::ParameterList& extraparams, const int ndsvel);
 
-    void AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
+    void add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
-    void GetCv(double& Cv)
+    void get_cv(double& Cv)
     {
       Cv = Cv_;
       return;

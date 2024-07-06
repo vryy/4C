@@ -23,7 +23,7 @@
 void test_benedikt1()
 {
   Core::Geo::Cut::MeshIntersection intersection;
-  intersection.GetOptions().Init_for_Cuttests();  // use full cln
+  intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -43,7 +43,7 @@ void test_benedikt1()
     nids.push_back(1781);
     nids.push_back(1784);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -61,7 +61,7 @@ void test_benedikt1()
     nids.push_back(1784);
     nids.push_back(1785);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -79,7 +79,7 @@ void test_benedikt1()
     nids.push_back(1785);
     nids.push_back(1782);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
 
   sidecount = 595;
@@ -105,7 +105,7 @@ void test_benedikt1()
     nids.push_back(1788);
     nids.push_back(1785);
 
-    intersection.AddCutSide(595, nids, quad4_xyze, Core::FE::CellType::quad4);
+    intersection.add_cut_side(595, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
 
 
@@ -184,5 +184,5 @@ void test_benedikt1()
   int eid = 192551;
 
   intersection.add_element(eid, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+  intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }

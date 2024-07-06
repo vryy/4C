@@ -51,7 +51,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup()
   pre_evaluate_coupling_pairs();
 
   // print out summary of pairs
-  if (contdis_->Name() == "porofluid" &&
+  if (contdis_->name() == "porofluid" &&
       (Core::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
     output_coupling_pairs();
 
@@ -81,7 +81,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate
   // output
   int total_numactive_pairs = 0;
   int numactive_pairs = static_cast<int>(coupl_elepairs_.size());
-  comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
+  get_comm().SumAll(&numactive_pairs, &total_numactive_pairs, 1);
   if (myrank_ == 0)
   {
     std::cout << total_numactive_pairs
@@ -103,7 +103,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::SetupSystem(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup_system(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
@@ -112,14 +112,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::SetupSystem(
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(sysmat, rhs,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(sysmat, rhs,
       sysmat_cont, sysmat_art, rhs_cont, rhs_art, dbcmap_cont, dbcmap_art->cond_map(),
       dbcmap_art->cond_map());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::ApplyMeshMovement()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::apply_mesh_movement()
 {
   if (!evaluate_in_ref_config_)
     FOUR_C_THROW("Evaluation in current configuration not possible for node-to-point coupling");
@@ -152,14 +152,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::output_coupl
     std::cout << "\nSummary of coupling pairs (segments):" << std::endl;
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
   }
-  comm().Barrier();
+  get_comm().Barrier();
   for (const auto& coupl_elepair : coupl_elepairs_)
   {
     std::cout << "Proc " << std::right << std::setw(2) << myrank_ << ": Artery-ele " << std::right
-              << std::setw(5) << coupl_elepair->Ele1GID() << ": <---> continuous-ele " << std::right
-              << std::setw(7) << coupl_elepair->Ele2GID() << std::endl;
+              << std::setw(5) << coupl_elepair->ele1_gid() << ": <---> continuous-ele "
+              << std::right << std::setw(7) << coupl_elepair->ele2_gid() << std::endl;
   }
-  comm().Barrier();
+  get_comm().Barrier();
   if (myrank_ == 0) std::cout << "\n";
 }
 

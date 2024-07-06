@@ -58,7 +58,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void Timeloop() override;
+    void timeloop() override;
 
    private:
     /*!

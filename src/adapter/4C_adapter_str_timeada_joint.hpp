@@ -37,12 +37,12 @@ namespace Adapter
     explicit StructureTimeAdaJoint(Teuchos::RCP<Structure> structure);
 
     //! Provide the name
-    enum Inpar::Solid::TimAdaKind MethodName() const override
+    enum Inpar::Solid::TimAdaKind method_name() const override
     {
       return Inpar::Solid::timada_kind_joint_explicit;
     }
 
-    std::string MethodTitle() const override;
+    std::string method_title() const override;
 
     //! Provide local order of accuracy
     int method_order_of_accuracy_dis() const override;
@@ -57,7 +57,7 @@ namespace Adapter
     double method_lin_err_coeff_vel() const override;
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis() const override;
+    enum AdaEnum method_adapt_dis() const override;
 
    protected:
     /// setup of the auxiliary time integrator

@@ -62,7 +62,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
-      void EvaluateVelocities(const Teuchos::RCP<Epetra_Vector> velocities, const double time);
+      void evaluate_velocities(const Teuchos::RCP<Epetra_Vector> velocities, const double time);
 
 
       void insert_cond_vector(Epetra_Vector& vec1, Epetra_Vector& vec2);
@@ -116,7 +116,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
-      void EvaluateVelocities(
+      void evaluate_velocities(
           Teuchos::RCP<Epetra_Vector> velocities, double time, double theta, double dta);
 
       /*!
@@ -214,14 +214,14 @@ namespace FLD
       /*!
       \brief Evaluate velocities
       */
-      void EvaluateVelocities(
+      void evaluate_velocities(
           const double flowrate, const std::string ds_condname, const double time);
 
 
       /*!
       \brief Evaluate flowrate
       */
-      double EvaluateFlowrate(const std::string ds_condname, const double time);
+      double evaluate_flowrate(const std::string ds_condname, const double time);
 
 
       /*!
@@ -232,7 +232,7 @@ namespace FLD
       /*!
       \brief Evaluate velocities
       */
-      void Velocities(Teuchos::RCP<Core::FE::Discretization> disc,
+      void velocities(Teuchos::RCP<Core::FE::Discretization> disc,
           Teuchos::RCP<Epetra_Vector> bcdof, Teuchos::RCP<Epetra_Map> cond_noderowmap,
           Teuchos::RCP<Epetra_Vector> local_radii, Teuchos::RCP<Epetra_Vector> border_radii,
           Teuchos::RCP<std::vector<double>> normal, Teuchos::RCP<Teuchos::ParameterList> params);
@@ -240,19 +240,19 @@ namespace FLD
       /*!
       \brief Polynomail shaped velocity profile
       */
-      double PolynomailVelocity(double r, int order);
+      double polynomail_velocity(double r, int order);
 
       /*!
       \brief Womersley shaped velocity profile
       */
-      double WomersleyVelocity(double r, double R, double Bn,
+      double womersley_velocity(double r, double R, double Bn,
           // complex<double> Bn,
           double phi, int n, double t);
 
       /*!
       \brief Corrects the flow rate
       */
-      void CorrectFlowRate(const Teuchos::ParameterList eleparams, const std::string ds_condname,
+      void correct_flow_rate(const Teuchos::ParameterList eleparams, const std::string ds_condname,
           const FLD::BoundaryAction action, const double time, const bool force_correction);
 
       /*!
@@ -266,12 +266,12 @@ namespace FLD
       /*!
       \brief Calculate the Flowrate on a boundary
       */
-      void SetVelocities(const Teuchos::RCP<Epetra_Vector> velocities);
+      void set_velocities(const Teuchos::RCP<Epetra_Vector> velocities);
 
       /*!
       \brief Reset condition velocities
       */
-      void ResetVelocities();
+      void reset_velocities();
 
       /*!
       \brief evaluate the traction velocity component
@@ -294,7 +294,7 @@ namespace FLD
       /*!
       \brief Calculate the Flowrate on a boundary
       */
-      void DFT(Teuchos::RCP<std::vector<double>> f,
+      void dft(Teuchos::RCP<std::vector<double>> f,
           Teuchos::RCP<std::vector<std::complex<double>>>& F, int starting_pos);
 
 

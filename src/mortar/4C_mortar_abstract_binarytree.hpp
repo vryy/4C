@@ -42,19 +42,19 @@ namespace Mortar
     \brief Calculate slabs of dop
 
     */
-    virtual void CalculateSlabsDop() = 0;
+    virtual void calculate_slabs_dop() = 0;
 
     /*!
     \brief Update slabs of current treenode in bottom up way
 
     */
-    virtual void UpdateSlabsBottomUp(double& eps) = 0;
+    virtual void update_slabs_bottom_up(double& eps) = 0;
 
     /*!
     \brief Enlarge geometry of a Treenode by an offset, dependent on size
 
     */
-    virtual void EnlargeGeometry(double& eps) = 0;
+    virtual void enlarge_geometry(double& eps) = 0;
   };  // class AbstractBinaryTreeNode
 
 

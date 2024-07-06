@@ -3415,13 +3415,13 @@ namespace Core::LinAlg
       return data_;
     }
     /// Return the number of rows
-    static constexpr unsigned int m() { return numRows(); }
+    static constexpr unsigned int m() { return num_rows(); }
     /// Return the number of columns
-    static constexpr unsigned int n() { return numCols(); }
+    static constexpr unsigned int n() { return num_cols(); }
     /// Return the number of rows
-    static constexpr unsigned int numRows() { return rows; }
+    static constexpr unsigned int num_rows() { return rows; }
     /// Return the number of columns
-    static constexpr unsigned int numCols() { return cols; }
+    static constexpr unsigned int num_cols() { return cols; }
     /// Check whether the matrix is initialized
     /*!
       You cannot test whether the matrix is empty using m() and n(),
@@ -4793,19 +4793,19 @@ namespace Core::LinAlg
     /*!
       \return true if matrix is factored, false otherwise
      */
-    bool IsFactored() { return factored_; }
+    bool is_factored() { return factored_; }
 
     /// Is matrix inverted?
     /*!
       \return true if matrix is inverted, false otherwise
      */
-    bool IsInverted() { return inverted_; }
+    bool is_inverted() { return inverted_; }
 
     /// Is system solved?
     /*!
       \return true if system is solved, false otherwise
      */
-    bool IsSolved() { return solved_; }
+    bool is_solved() { return solved_; }
 
     /// Set the matrix
     /*!
@@ -4814,7 +4814,7 @@ namespace Core::LinAlg
       \param mat
         new matrix
      */
-    void SetMatrix(Matrix<rows, cols, double>& mat);
+    void set_matrix(Matrix<rows, cols, double>& mat);
 
     /// Set the vectors
     /*!
@@ -4825,7 +4825,7 @@ namespace Core::LinAlg
       \param B
         right hand side vector
      */
-    void SetVectors(Matrix<cols, dim_rhs, double>& X, Matrix<rows, dim_rhs, double>& B);
+    void set_vectors(Matrix<cols, dim_rhs, double>& X, Matrix<rows, dim_rhs, double>& B);
 
     /// Set the equilibration
     /*!
@@ -4843,14 +4843,14 @@ namespace Core::LinAlg
       \param b
         new value for transpose_
      */
-    void SolveWithTranspose(bool b) { transpose_ = b; }
+    void solve_with_transpose(bool b) { transpose_ = b; }
 
     /// Factor the matrix
     /*
       \return integer error code. 0 if successful, negative
       otherwise. This is a LAPACK error code.
      */
-    int Factor();
+    int factor();
 
     /// Solve the system
     /*
@@ -4859,7 +4859,7 @@ namespace Core::LinAlg
       the two vectors are the same, but may not be (when the matrix is
       inverted before the call to Solve).
      */
-    int Solve();
+    int solve();
 
     /// invert the matrix
     /*
@@ -4886,7 +4886,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::SetMatrix(Matrix<rows, cols, double>& mat)
+  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::set_matrix(Matrix<rows, cols, double>& mat)
   {
     c_.clear();
     r_.clear();
@@ -4897,7 +4897,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::SetVectors(
+  void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::set_vectors(
       Matrix<cols, dim_rhs, double>& X, Matrix<rows, dim_rhs, double>& B)
   {
     solved_ = false;
@@ -4916,7 +4916,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::Factor()
+  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::factor()
   {
 #ifdef FOUR_C_DEBUG
     if (inverted_) FOUR_C_THROW("Cannot factor the inverted matrix.");
@@ -4934,7 +4934,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::Solve()
+  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::solve()
   {
     int errnum = 0;
     if (equilibrate_)
@@ -4958,7 +4958,7 @@ namespace Core::LinAlg
     {
       if (!factored_)
       {
-        errnum = Factor();
+        errnum = factor();
         if (errnum != 0) return errnum;
       }
 
@@ -5051,7 +5051,7 @@ namespace Core::LinAlg
     int errnum;
     if (not factored_)
     {
-      errnum = Factor();
+      errnum = factor();
       if (errnum != 0) return errnum;
     }
 

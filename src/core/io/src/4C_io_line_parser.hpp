@@ -41,7 +41,7 @@ namespace Core::IO
     LineParser(std::string user_scope_message) : user_scope_(std::move(user_scope_message)) {}
 
     //! Read the next string in @p in and ensure it matches the expectation.
-    void Consume(std::istream& in, const std::string& expected)
+    void consume(std::istream& in, const std::string& expected)
     {
       std::string read_string;
       in >> read_string;
@@ -52,7 +52,7 @@ namespace Core::IO
 
     //! Read a single value of given type.
     template <typename T>
-    T Read(std::istream& in)
+    T read(std::istream& in)
     {
       T read_object;
       in >> read_object;

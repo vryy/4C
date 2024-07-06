@@ -18,17 +18,17 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | read element and set required information                  gjb 01/08 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Thermo::ReadElement(
+bool Discret::ELEMENTS::Thermo::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  SetDisType(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::StringToCellType(distype));
 
-  if (Shape() == Core::FE::CellType::nurbs27) SetNurbsElement() = true;
+  if (shape() == Core::FE::CellType::nurbs27) set_nurbs_element() = true;
 
   return true;
 }

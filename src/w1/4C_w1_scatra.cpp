@@ -17,12 +17,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Wall1ScatraType Discret::ELEMENTS::Wall1ScatraType::instance_;
 
-Discret::ELEMENTS::Wall1ScatraType& Discret::ELEMENTS::Wall1ScatraType::Instance()
+Discret::ELEMENTS::Wall1ScatraType& Discret::ELEMENTS::Wall1ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Wall1ScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::Wall1ScatraType::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Wall1Scatra* object = new Discret::ELEMENTS::Wall1Scatra(-1, -1);
@@ -31,7 +31,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Wall1ScatraType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLSCATRA")
@@ -44,7 +44,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::Create
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::Wall1Scatra(id, owner));
@@ -88,7 +88,7 @@ Discret::ELEMENTS::Wall1Scatra::Wall1Scatra(const Discret::ELEMENTS::Wall1Scatra
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Wall1Scatra::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1Scatra::clone() const
 {
   Discret::ELEMENTS::Wall1Scatra* newelement = new Discret::ELEMENTS::Wall1Scatra(*this);
   return newelement;
@@ -103,7 +103,7 @@ void Discret::ELEMENTS::Wall1Scatra::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // pack scalar transport impltype
   add_to_pack(data, impltype_);
@@ -123,7 +123,7 @@ void Discret::ELEMENTS::Wall1Scatra::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract scalar transport impltype
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(position, data));
@@ -147,11 +147,11 @@ void Discret::ELEMENTS::Wall1Scatra::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Wall1Scatra::ReadElement(
+bool Discret::ELEMENTS::Wall1Scatra::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
-  Wall1::ReadElement(eletype, eledistype, linedef);
+  Wall1::read_element(eletype, eledistype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;

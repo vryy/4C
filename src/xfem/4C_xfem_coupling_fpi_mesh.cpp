@@ -86,7 +86,7 @@ void XFEM::MeshCouplingFPI::init_state_vectors()
   XFEM::MeshCoupling::init_state_vectors();
 
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
-  const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
+  const Epetra_Map* cutterdofcolmap = cutter_dis_->dof_col_map();
 
   itrueresidual_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
   iforcecol_ = Core::LinAlg::CreateVector(*cutterdofcolmap, true);
@@ -118,10 +118,10 @@ void XFEM::MeshCouplingFPI::reconnect_parent_pointers()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::RegisterSideProc(int sid)
+void XFEM::MeshCouplingFPI::register_side_proc(int sid)
 {
   if (contact_ && coupled_field_ == MeshCouplingFPI::ps_ps)
-    Get_Contact_Comm()->RegisterSideProc(sid);
+    get_contact_comm()->register_side_proc(sid);
   return;
 }
 
@@ -274,7 +274,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp(double& kappa_m,  //< fl
   if (!contact_)
   {
     double J = 0;
-    double porosity = CalcPorosity(bele, rst_slave, J);
+    double porosity = calc_porosity(bele, rst_slave, J);
 
     double trperm = calctr_permeability(bele, porosity, J);
 
@@ -426,11 +426,11 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
       MAX_h * h_scaling_;  // initialize with large value as this should be the default value ...
   bool pure_fsi = true;
 
-  pure_fsi = xf_c_comm_->Get_Contact_State(bele->Id(), "XFEMSurfFPIMono_ps_ps", xsi, *fulltraction,
+  pure_fsi = xf_c_comm_->get_contact_state(bele->id(), "XFEMSurfFPIMono_ps_ps", xsi, *fulltraction,
       gap);  // get gap and if contact is integrated
 
   double J = 0;
-  double porosity = CalcPorosity(bele, rst_slave, J);
+  double porosity = calc_porosity(bele, rst_slave, J);
 
   double trperm = calctr_permeability(bele, porosity, J);
 
@@ -593,7 +593,7 @@ void XFEM::MeshCouplingFPI::read_restart(const int step)
 
   //-------- boundary discretization
   Core::IO::DiscretizationReader boundaryreader(
-      cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
+      cutter_dis_, Global::Problem::instance()->input_control_file(), step);
 
   const double time = boundaryreader.read_double("time");
   //  const int    step = boundaryreader.ReadInt("step");
@@ -626,7 +626,7 @@ void XFEM::MeshCouplingFPI::read_restart(const int step)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const int step,
+void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const int step,
     const int gmsh_step_diff, const bool gmsh_debug_out_screen)
 {
   std::ostringstream filename_base_fsi;
@@ -638,7 +638,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
 
 
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
-      filename_base_fsi.str(), cutter_dis_->Writer()->output()->file_name(), step, gmsh_step_diff,
+      filename_base_fsi.str(), cutter_dis_->writer()->output()->file_name(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
   std::ofstream gmshfilecontent(filename.c_str());
@@ -692,7 +692,7 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
 
   XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
 
-  XFEM::UTILS::PrintDiscretizationToStream(cond_dis_, cond_dis_->Name(), true, false, true, false,
+  XFEM::UTILS::PrintDiscretizationToStream(cond_dis_, cond_dis_->name(), true, false, true, false,
       false, false, gmshfilecontent, &currsolidpositions);
 }
 
@@ -722,7 +722,7 @@ void XFEM::MeshCouplingFPI::output(const int step, const double time, const bool
 void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
 {
   std::vector<Core::Conditions::Condition*> conditions_XFPI;
-  cutter_dis_->GetCondition(cond_name_, conditions_XFPI);
+  cutter_dis_->get_condition(cond_name_, conditions_XFPI);
 
   // Create maps for easy extraction at gausspoint level
   auto i = conditions_XFPI.begin();
@@ -764,10 +764,10 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
   if (contact_)  // compute h
   {
     double hmax = 0.0;
-    for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
+    for (int ele = 0; ele < bg_dis_->num_my_row_elements(); ++ele)
     {
-      Core::Elements::Element* fluid_ele = bg_dis_->lRowElement(ele);
-      if (fluid_ele->Shape() == Core::FE::CellType::hex8)
+      Core::Elements::Element* fluid_ele = bg_dis_->l_row_element(ele);
+      if (fluid_ele->shape() == Core::FE::CellType::hex8)
       {
         Core::LinAlg::Matrix<3, 8> xyze(true);
         Core::Geo::fillInitialPositionArray(fluid_ele, xyze);
@@ -777,14 +777,14 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
       else
         FOUR_C_THROW("Element type != hex8, add it here!");
     }
-    bg_dis_->Comm().MaxAll(&hmax, &h_scaling_, 1);
+    bg_dis_->get_comm().MaxAll(&hmax, &h_scaling_, 1);
     std::cout << "==| XFEM::MeshCouplingFPI: Computed h_scaling for fluidele is: " << h_scaling_
-              << "(Proc: " << bg_dis_->Comm().MyPID() << ")! |==" << std::endl;
+              << "(Proc: " << bg_dis_->get_comm().MyPID() << ")! |==" << std::endl;
 
-    fpsi_contact_hfraction_ = (Global::Problem::Instance()->XFluidDynamicParams())
+    fpsi_contact_hfraction_ = (Global::Problem::instance()->x_fluid_dynamic_params())
                                   .sublist("XFPSI MONOLITHIC")
                                   .get<double>("POROCONTACTFPSI_HFRACTION");
-    fpsi_contact_fullpcfraction_ = (Global::Problem::Instance()->XFluidDynamicParams())
+    fpsi_contact_fullpcfraction_ = (Global::Problem::instance()->x_fluid_dynamic_params())
                                        .sublist("XFPSI MONOLITHIC")
                                        .get<double>("POROCONTACTFPSI_FULLPCFRACTION");
   }
@@ -831,7 +831,7 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
 // of the corresponding nodes. The contribution of the end node of a line is entirely
 // added to a present L&D force.
 /*----------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
+void XFEM::MeshCouplingFPI::lift_drag(const int step, const double time) const
 {
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
@@ -842,12 +842,12 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
   {
     // compute force components
     const int nsd = 3;
-    const Epetra_Map* dofcolmap = cutter_dis_->DofColMap();
+    const Epetra_Map* dofcolmap = cutter_dis_->dof_col_map();
     Core::LinAlg::Matrix<3, 1> c(true);
-    for (int inode = 0; inode < cutter_dis_->NumMyColNodes(); ++inode)
+    for (int inode = 0; inode < cutter_dis_->num_my_col_nodes(); ++inode)
     {
-      const Core::Nodes::Node* node = cutter_dis_->lColNode(inode);
-      const std::vector<int> dof = cutter_dis_->Dof(node);
+      const Core::Nodes::Node* node = cutter_dis_->l_col_node(inode);
+      const std::vector<int> dof = cutter_dis_->dof(node);
       for (int isd = 0; isd < nsd; ++isd)
       {
         // [// minus to get correct sign of lift and drag (force acting on the body) ]
@@ -866,7 +866,7 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
       << std::right << std::setw(16) << std::scientific << c(2);
 
     std::ofstream f;
-    const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name() +
+    const std::string fname = Global::Problem::instance()->output_control_file()->file_name() +
                               ".liftdrag." + cond_name_ + ".txt";
     if (step <= 1)
     {
@@ -898,22 +898,22 @@ double XFEM::MeshCouplingFPI::calctr_permeability(
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
   Teuchos::RCP<Mat::FluidPoro> poromat;
   // access second material in structure element
-  if (coupl_ele->NumMaterial() > 1)
-    poromat = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(coupl_ele->Material(1));
+  if (coupl_ele->num_material() > 1)
+    poromat = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(coupl_ele->material(1));
   else
-    FOUR_C_THROW("no second material defined for element %i", ele->Id());
+    FOUR_C_THROW("no second material defined for element %i", ele->id());
 
   static Core::LinAlg::Matrix<3, 3> reactiontensor(true);
   poromat->compute_reaction_tensor(reactiontensor, J, porosity);
 
   return sqrt((1. / reactiontensor(0, 0) + 1. / reactiontensor(1, 1) + 1. / reactiontensor(2, 2)) /
-              (poromat->Viscosity() * 3));
+              (poromat->viscosity() * 3));
 }
 
 // --------------------------------------------------------------------
 // Caluculate the Porosity for this FaceElement Gausspoint   ager 12/16
 // --------------------------------------------------------------------
-double XFEM::MeshCouplingFPI::CalcPorosity(
+double XFEM::MeshCouplingFPI::calc_porosity(
     Core::Elements::Element* ele, Core::LinAlg::Matrix<3, 1>& rst_slave, double& J)
 {
   Core::Elements::FaceElement* fele = dynamic_cast<Core::Elements::FaceElement*>(ele);
@@ -927,16 +927,16 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
 
   Teuchos::RCP<Mat::StructPoro> poromat;
   // access second material in structure element
-  if (coupl_ele->NumMaterial() > 1)
+  if (coupl_ele->num_material() > 1)
   {
-    poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(coupl_ele->Material(0));
-    if (poromat->MaterialType() != Core::Materials::m_structporo and
-        poromat->MaterialType() != Core::Materials::m_structpororeaction and
-        poromat->MaterialType() != Core::Materials::m_structpororeactionECM)
+    poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(coupl_ele->material(0));
+    if (poromat->material_type() != Core::Materials::m_structporo and
+        poromat->material_type() != Core::Materials::m_structpororeaction and
+        poromat->material_type() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
   else
-    FOUR_C_THROW("no second material defined for element %i", ele->Id());
+    FOUR_C_THROW("no second material defined for element %i", ele->id());
 
   Teuchos::ParameterList params;  // empty parameter list;
   double porosity;
@@ -957,7 +957,7 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
 
   Core::Elements::Element* coupl_ele = fele->parent_element();
 
-  if (fele->Shape() == Core::FE::CellType::quad4)
+  if (fele->shape() == Core::FE::CellType::quad4)
   {
     pres = 0.0;
 
@@ -965,14 +965,14 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
 
     Core::FE::CollectedGaussPoints intpoints =
         Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
-    intpoints.Append(rst_slave(0, 0), rst_slave(1, 0), 0.0, 1.0);
+    intpoints.append(rst_slave(0, 0), rst_slave(1, 0), 0.0, 1.0);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
     Core::LinAlg::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
     Core::LinAlg::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
 
     Core::FE::BoundaryGPToParentGP<SLAVE_NUMDOF>(
-        pqxg, derivtrafo, intpoints, coupl_ele->Shape(), fele->Shape(), fele->FaceParentNumber());
+        pqxg, derivtrafo, intpoints, coupl_ele->shape(), fele->shape(), fele->face_parent_number());
 
     Core::LinAlg::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
 
@@ -981,7 +981,7 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
     {
       pxsi(idim) = pqxg(0, idim);
     }
-    if (coupl_ele->Shape() == Core::FE::CellType::hex8)
+    if (coupl_ele->shape() == Core::FE::CellType::hex8)
     {
       const size_t PARENT_NEN = Core::FE::num_nodes<Core::FE::CellType::hex8>;
       Core::LinAlg::Matrix<PARENT_NEN, 1> pfunc_loc(
@@ -1019,14 +1019,15 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
 
       // update element geometry of parent element
       {
-        Core::Nodes::Node** nodes = coupl_ele->Nodes();
+        Core::Nodes::Node** nodes = coupl_ele->nodes();
         for (unsigned int inode = 0; inode < PARENT_NEN; ++inode)
         {
           for (unsigned int idof = 0; idof < SLAVE_NUMDOF; ++idof)
           {
-            int lid = fulldispnp_->Map().LID(GetCondDis()->Dof(0, coupl_ele->Nodes()[inode], idof));
+            int lid =
+                fulldispnp_->Map().LID(get_cond_dis()->dof(0, coupl_ele->nodes()[inode], idof));
 
-            const auto& x = nodes[inode]->X();
+            const auto& x = nodes[inode]->x();
             xrefe(idof, inode) = x[idof];
 
             if (lid != -1)
@@ -1034,8 +1035,8 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
             else
               FOUR_C_THROW("Local ID for dispnp not found (lid = -1)!");
           }
-          int lidp = fullpres_->Map().LID(
-              lm_struct_x_lm_pres_.operator[](GetCondDis()->Dof(0, coupl_ele->Nodes()[inode], 2)));
+          int lidp = fullpres_->Map().LID(lm_struct_x_lm_pres_.operator[](
+              get_cond_dis()->dof(0, coupl_ele->nodes()[inode], 2)));
 
           if (lidp != -1)
             pres += fullpres_->operator[](lidp) * pfunc_loc(inode);
@@ -1054,13 +1055,13 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
     else
       FOUR_C_THROW(
           "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
-          (Core::FE::CellTypeToString(coupl_ele->Shape())).c_str());
+          (Core::FE::CellTypeToString(coupl_ele->shape())).c_str());
     return -1.0;
   }
   else
     FOUR_C_THROW(
         "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
-        (Core::FE::CellTypeToString(fele->Shape())).c_str());
+        (Core::FE::CellTypeToString(fele->shape())).c_str());
   return -1.0;
 }
 
@@ -1072,7 +1073,7 @@ bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWi
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {
   if (contact_)
-    Get_Contact_Comm()->initialize_fluid_state(cutwizard, fluiddis, condition_manager, fluidparams);
+    get_contact_comm()->initialize_fluid_state(cutwizard, fluiddis, condition_manager, fluidparams);
   return contact_;
 }
 

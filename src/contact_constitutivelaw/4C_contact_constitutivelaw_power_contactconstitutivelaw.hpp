@@ -44,9 +44,9 @@ namespace CONTACT
       /// @name get-functions for the Constitutive Law parameters of a power law function
       //@{
       /// Get the scaling factor
-      double Getdata() const { return a_; };
+      double getdata() const { return a_; };
       /// Get the power coefficient
-      double GetB() const { return b_; };
+      double get_b() const { return b_; };
       //@}
 
      private:
@@ -79,19 +79,19 @@ namespace CONTACT
       }
 
       /// Get scaling factor of power law
-      double Getdata() { return params_->Getdata(); }
+      double getdata() { return params_->getdata(); }
       /// Get power coefficient of power law
-      double GetB() { return params_->GetB(); }
+      double get_b() { return params_->get_b(); }
 
       /// Return quick accessible contact constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const override { return params_; }
+      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
 
       //! @name Evaluation methods
       //@{
       /// evaluate the constitutive law
       double evaluate(double gap, CONTACT::Node* cnode) override;
       /// Evaluate derivative of the constitutive law
-      double EvaluateDeriv(double gap, CONTACT::Node* cnode) override;
+      double evaluate_deriv(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

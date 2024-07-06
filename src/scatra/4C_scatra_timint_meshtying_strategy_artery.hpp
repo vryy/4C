@@ -61,17 +61,17 @@ namespace ScaTra
     const Epetra_Map& dof_row_map() const override;
 
     //! return global map of degrees of freedom
-    Teuchos::RCP<const Epetra_Map> ArtScatraDofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> art_scatra_dof_row_map() const;
 
     //! evaluate mesh-tying
     //! \note  nothing is done here
     //!        actual coupling (meshtying) is evaluated in Solve
     //!        reason for that is that we need the system matrix of the continuous scatra
     //!        problem with DBCs applied which is performed directly before calling solve
-    void EvaluateMeshtying() override{};
+    void evaluate_meshtying() override{};
 
     //! init
-    void InitMeshtying() override;
+    void init_meshtying() override;
 
     bool system_matrix_initialization_needed() const override { return false; }
 
@@ -85,7 +85,7 @@ namespace ScaTra
       return Teuchos::null;
     }
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const override
     {
       FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
       return Teuchos::null;
@@ -95,13 +95,13 @@ namespace ScaTra
     void setup_meshtying() override;
 
     //! solver
-    const Core::LinAlg::Solver& Solver() const override;
+    const Core::LinAlg::Solver& solver() const override;
 
     //! init the convergence check
     void init_conv_check_strategy() override;
 
     //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
+    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
         const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
@@ -109,7 +109,7 @@ namespace ScaTra
         const int iteration,                       //!< number of current Newton-Raphson iteration
         Core::LinAlg::SolverParams& solver_params) const override;
 
-    void SetupSystem(
+    void setup_system(
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& residual                      //!< residual vector
     ) const;
@@ -121,16 +121,16 @@ namespace ScaTra
     void set_artery_time_integrator(Teuchos::RCP<Adapter::ArtNet> arttimint);
 
     //! set the element pairs that are close as found by search algorithm
-    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
+    void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs);
 
     //! prepare a time step
     void prepare_time_step() const;
 
     //! set the artery pressure
-    void SetArteryPressure() const;
+    void set_artery_pressure() const;
 
     //! apply mesh movement
-    void ApplyMeshMovement();
+    void apply_mesh_movement();
 
     //! block systemmatrix
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> combined_system_matrix()
@@ -139,19 +139,19 @@ namespace ScaTra
     }
 
     //! get the combined rhs
-    Teuchos::RCP<Epetra_Vector> CombinedRHS() const { return rhs_; }
+    Teuchos::RCP<Epetra_Vector> combined_rhs() const { return rhs_; }
 
     //! get the combined increment
-    Teuchos::RCP<Epetra_Vector> CombinedIncrement() const { return comb_increment_; }
+    Teuchos::RCP<Epetra_Vector> combined_increment() const { return comb_increment_; }
 
     //! access to time integrator
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ArtScatraField() { return artscatratimint_; }
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> art_scatra_field() { return artscatratimint_; }
 
     //! check if initial fields match
-    void CheckInitialFields() const;
+    void check_initial_fields() const;
 
     //! update increment of 1D discretization
-    void UpdateArtScatraIter(Teuchos::RCP<const Epetra_Vector> combined_inc);
+    void update_art_scatra_iter(Teuchos::RCP<const Epetra_Vector> combined_inc);
 
     /*!
      * extract single field vectors

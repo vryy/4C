@@ -49,7 +49,7 @@ namespace FLD
     /*!
     \brief evaluate dissipation
     */
-    void EvaluateResiduals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs,
+    void evaluate_residuals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs,
         std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss,
         const double thermpressaf, const double thermpressam, const double thermpressdtaf,
         const double thermpressdtam);
@@ -62,13 +62,13 @@ namespace FLD
     \brief Dump the result to file.
     */
 
-    void DumpStatistics(const int step);
+    void dump_statistics(const int step);
 
     /*!
     \brief reset values
     */
 
-    void ClearStatistics();
+    void clear_statistics();
 
 
    private:

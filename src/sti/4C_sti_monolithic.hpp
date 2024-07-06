@@ -64,7 +64,7 @@ namespace STI
 
     //! output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix
     //! components in ascending order across all processors
-    static void OutputMatrixToFile(
+    static void output_matrix_to_file(
         const Teuchos::RCP<const Core::LinAlg::SparseOperator>
             sparseoperator,           //!< sparse or block sparse matrix to be output
         const int precision = 16,     //!< output precision
@@ -73,13 +73,13 @@ namespace STI
 
     //! output vector to *.csv file for debugging purposes, with global IDs of vector components in
     //! ascending order across all processors
-    static void OutputVectorToFile(const Epetra_MultiVector& vector,  //!< vector to be output
-        const int precision = 16,                                     //!< output precision
-        const double tolerance = -1.                                  //!< output omission tolerance
+    static void output_vector_to_file(const Epetra_MultiVector& vector,  //!< vector to be output
+        const int precision = 16,                                        //!< output precision
+        const double tolerance = -1.  //!< output omission tolerance
     );
 
     //! return algebraic solver for global system of equations
-    const Core::LinAlg::Solver& Solver() const { return *solver_; };
+    const Core::LinAlg::Solver& solver() const { return *solver_; };
 
    private:
     //! Apply Dirichlet conditions to assembled OD blocks

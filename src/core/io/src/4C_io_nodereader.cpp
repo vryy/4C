@@ -28,8 +28,8 @@ namespace
   {
     std::vector<Teuchos::RCP<Core::FE::Discretization>> list_of_discretizations;
     for (const auto& element_reader : element_readers)
-      if (element_reader.HasNode(global_node_id))
-        list_of_discretizations.emplace_back(element_reader.GetDis());
+      if (element_reader.has_node(global_node_id))
+        list_of_discretizations.emplace_back(element_reader.get_dis());
 
     return list_of_discretizations;
   }
@@ -43,7 +43,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
 {
   // Check if there are any nodes to be read. If not, leave right away.
   const int numnodes = reader.excluded_section_length(node_section_name);
-  const auto& comm = reader.Comm();
+  const auto& comm = reader.get_comm();
 
   if (numnodes == 0) return;
   const int myrank = comm->MyPID();
@@ -69,7 +69,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
 
   // open input file at the right position
   // note that stream is valid on proc 0 only!
-  const std::string inputfile_name = reader.MyInputfileName();
+  const std::string inputfile_name = reader.my_inputfile_name();
   std::ifstream file;
   if (myrank == 0)
   {
@@ -107,7 +107,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
             // create node and add to discretization
             Teuchos::RCP<Core::Nodes::Node> node =
                 Teuchos::rcp(new Core::Nodes::Node(nodeid, coords, myrank));
-            di->AddNode(node);
+            di->add_node(node);
           }
 
           ++block_counter;
@@ -136,7 +136,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
             // create node and add to discretization
             Teuchos::RCP<Core::Nodes::Node> node =
                 Teuchos::rcp(new Core::Nodes::ImmersedNode(nodeid, coords, myrank));
-            dis->AddNode(node);
+            dis->add_node(node);
           }
 
           ++block_counter;
@@ -169,7 +169,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
             // create node/control point and add to discretization
             Teuchos::RCP<Core::FE::Nurbs::ControlPoint> node =
                 Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(cpid, coords, weight, myrank));
-            dis->AddNode(node);
+            dis->add_node(node);
           }
 
           ++block_counter;
@@ -290,7 +290,7 @@ void Core::IO::ReadNodes(const Core::IO::DatFileReader& reader,
           {
             auto node = Teuchos::rcp(
                 new Core::Nodes::FiberNode(nodeid, coords, cosyDirections, fibers, angles, myrank));
-            dis->AddNode(node);
+            dis->add_node(node);
           }
 
           ++block_counter;

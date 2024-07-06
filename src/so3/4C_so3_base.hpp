@@ -82,10 +82,10 @@ namespace Discret
       void unpack(const std::vector<char>& data) override;
 
       // get the kinematic type from the element
-      Inpar::Solid::KinemType KinematicType() const { return kintype_; }
+      Inpar::Solid::KinemType kinematic_type() const { return kintype_; }
 
       // get the kinematic type from the element
-      void SetKinematicType(Inpar::Solid::KinemType kintype) { kintype_ = kintype; }
+      void set_kinematic_type(Inpar::Solid::KinemType kintype) { kintype_ = kintype; }
 
       /*!
       \brief Does this element use EAS?
@@ -94,7 +94,7 @@ namespace Discret
             class has to implement this function. This can be done during the up-coming
             cleaning procedure.                                      hiermeier 09/15
       */
-      virtual bool HaveEAS() const { return false; };
+      virtual bool have_eas() const { return false; };
 
       /*!
       \brief Return the material of this element
@@ -105,7 +105,7 @@ namespace Discret
 
       \param nummat (in): number of requested material
       */
-      virtual Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
+      virtual Teuchos::RCP<Mat::So3Material> solid_material(int nummat = 0) const;
 
       /*!
        * @brief Evaluate Cauchy stress contracted with the normal vector and another direction
@@ -269,13 +269,13 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
 
      protected:
       /** \brief get access to the interface
@@ -284,7 +284,7 @@ namespace Discret
        *  \date 04/16 */
       inline Core::Elements::ParamsInterface& params_interface()
       {
-        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+        if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 

@@ -60,7 +60,7 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     //! assemble RHS
-    void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
+    void assemble_rhs(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
         Teuchos::RCP<const Epetra_Vector> rhs_structure,
         Teuchos::RCP<const Epetra_Vector> rhs_manifold);
 

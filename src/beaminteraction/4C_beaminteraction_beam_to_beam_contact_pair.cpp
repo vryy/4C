@@ -74,8 +74,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
     ele2pos_(i) = 0.0;
   }
 
-  r1_ = BEAMINTERACTION::CalcEleRadius(Element1());
-  r2_ = BEAMINTERACTION::CalcEleRadius(Element2());
+  r1_ = BEAMINTERACTION::CalcEleRadius(element1());
+  r2_ = BEAMINTERACTION::CalcEleRadius(element2());
 
   maxactivegap_ = get_max_active_dist();
 
@@ -83,7 +83,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
   // order to avoid strong discontinuities in the integrand) we have to check, if a master beam
   // element node coincides with a beams endpoint!
   bool determine_neighbors = false;
-  if (Params()->beam_to_beam_contact_params()->EndPointPenalty()) determine_neighbors = true;
+  if (params()->beam_to_beam_contact_params()->end_point_penalty()) determine_neighbors = true;
 
 #ifdef ENDPOINTSEGMENTATION
   determine_neighbors = true;
@@ -91,24 +91,24 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
 
   if (determine_neighbors)
   {
-    neighbors1_ = BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(Element1());
-    neighbors2_ = BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(Element2());
+    neighbors1_ = BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(element1());
+    neighbors2_ = BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(element2());
 
     bool leftboundarynode1 = false;
     bool rightboundarynode1 = false;
 
-    if (neighbors1_->GetLeftNeighbor() == nullptr) leftboundarynode1 = true;
+    if (neighbors1_->get_left_neighbor() == nullptr) leftboundarynode1 = true;
 
-    if (neighbors1_->GetRightNeighbor() == nullptr) rightboundarynode1 = true;
+    if (neighbors1_->get_right_neighbor() == nullptr) rightboundarynode1 = true;
 
     boundarynode1_ = std::make_pair(leftboundarynode1, rightboundarynode1);
 
     bool leftboundarynode2 = false;
     bool rightboundarynode2 = false;
 
-    if (neighbors2_->GetLeftNeighbor() == nullptr) leftboundarynode2 = true;
+    if (neighbors2_->get_left_neighbor() == nullptr) leftboundarynode2 = true;
 
-    if (neighbors2_->GetRightNeighbor() == nullptr) rightboundarynode2 = true;
+    if (neighbors2_->get_right_neighbor() == nullptr) rightboundarynode2 = true;
 
     boundarynode2_ = std::make_pair(leftboundarynode2, rightboundarynode2);
   }
@@ -117,37 +117,37 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
   // TODO maybe we can even cast the class variables element1_ and element2_ to Beam3Base here in
   // Constructor?! Calculate initial length of beam elements
   const Discret::ELEMENTS::Beam3Base* ele1ptr =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1());
-  double l1 = ele1ptr->RefLength();
+      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1());
+  double l1 = ele1ptr->ref_length();
   const Discret::ELEMENTS::Beam3Base* ele2ptr =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element2());
-  double l2 = ele2ptr->RefLength();
+      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element2());
+  double l2 = ele2ptr->ref_length();
 
-  if (Element1()->ElementType() != Element2()->ElementType())
+  if (element1()->element_type() != element2()->element_type())
     FOUR_C_THROW(
         "The class BeamToBeamContactPair only works for contact pairs of the same beam element "
         "type!");
 
-  if (Element1()->Id() >= Element2()->Id())
+  if (element1()->id() >= element2()->id())
   {
     FOUR_C_THROW(
         "Element 1 has to have the smaller element-ID. Ele1GID: %d, Ele2GID: %d. Adapt your "
         "contact search!",
-        Element1()->Id(), Element2()->Id());
+        element1()->id(), element2()->id());
   }
 
   cpvariables_.resize(0);
   gpvariables_.resize(0);
   epvariables_.resize(0);
 
-  if (Params()->beam_to_beam_contact_params()->GapShift() != 0.0 and
-      Params()->beam_to_beam_contact_params()->PenaltyLaw() != Inpar::BEAMCONTACT::pl_lpqp)
+  if (params()->beam_to_beam_contact_params()->gap_shift() != 0.0 and
+      params()->beam_to_beam_contact_params()->penalty_law() != Inpar::BEAMCONTACT::pl_lpqp)
     FOUR_C_THROW("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
   double perpshiftangle1 =
-      Params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
+      params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
   double parshiftangle2 =
-      Params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle2();
+      params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle2();
 
 
   // Todo
@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
   //    FOUR_C_THROW("Choose larger shifting angle BEAMS_PERPSHIFTANGLE1 in order to enable a unique
   //    CPP!");
 
-  double segangle = Params()->beam_to_beam_contact_params()->SegmentationAngle();
+  double segangle = params()->beam_to_beam_contact_params()->segmentation_angle();
 
   double safetyfac = 1.5;
   // Determine bound for search of large-angle contact pairs
@@ -177,7 +177,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
   // the not evenly distributed locations of the Gauss points -> this does hold for a number of
   // Gauss points <= 10!!!)
   Core::FE::IntegrationPoints1D gausspoints = Core::FE::IntegrationPoints1D(BEAMCONTACTGAUSSRULE);
-  int intintervals = Params()->beam_to_beam_contact_params()->num_integration_intervals();
+  int intintervals = params()->beam_to_beam_contact_params()->num_integration_intervals();
 
   //  double deltal1=1.5*l1/(intintervals*gausspoints.nquad);
 
@@ -256,7 +256,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate(
   // since most of the elements leave directly after the closest point projection!
   clear_class_variables();
 
-  double pp = Params()->beam_to_beam_contact_params()->beam_to_beam_point_penalty_param();
+  double pp = params()->beam_to_beam_contact_params()->beam_to_beam_point_penalty_param();
 
   // Subdevide the two elements in segments with linear approximation
   std::vector<Core::LinAlg::Matrix<3, 1, double>> endpoints1(0);
@@ -265,8 +265,8 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate(
   // TODO: remove 0 and 1: So far the number 0 and 1 are used in order to distinguish
   // between element 1 and element 2. However, this is only necessary for debugging purposes
   // and can be removed later!
-  maxsegdist1_ = create_segments(Element1(), endpoints1, numseg1_, 0);
-  maxsegdist2_ = create_segments(Element2(), endpoints2, numseg2_, 1);
+  maxsegdist1_ = create_segments(element1(), endpoints1, numseg1_, 0);
+  maxsegdist2_ = create_segments(element2(), endpoints2, numseg2_, 1);
 
   // Make pairs of close segments: Most of the pairs are already sorted out
   // at this point and don't have to be considered further in the following CPP
@@ -278,7 +278,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate(
   closelargeanglesegments.clear();
   closesmallanglesegments.clear();
 
-  bool endpoint_penalty = Params()->beam_to_beam_contact_params()->EndPointPenalty();
+  bool endpoint_penalty = params()->beam_to_beam_contact_params()->end_point_penalty();
 
 // Sub-devision of contact elements in search segments or not?
 #ifndef NOSEGMENTATION
@@ -424,8 +424,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
 
     for (unsigned int i = 0; i < cpvariables_.size(); i++)
     {
-      double eta1_eval = Core::FADUtils::CastToDouble(cpvariables_[i]->GetCP().first);
-      double eta2_eval = Core::FADUtils::CastToDouble(cpvariables_[i]->GetCP().second);
+      double eta1_eval = Core::FADUtils::CastToDouble(cpvariables_[i]->get_cp().first);
+      double eta2_eval = Core::FADUtils::CastToDouble(cpvariables_[i]->get_cp().second);
 
       if (std::fabs(eta1_eval - Core::FADUtils::CastToDouble(closestpoint.first)) <
               XIETARESOLUTIONFAC * XIETAITERATIVEDISPTOL and
@@ -479,8 +479,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     Core::LinAlg::Matrix<3, 1, TYPE> r2_xixi(true);  // = r2,etaeta
     Core::LinAlg::Matrix<3, 1, TYPE> delta_r(true);  // = r1-r2
 
-    TYPE eta1 = cpvariables_[numcp]->GetCP().first;
-    TYPE eta2 = cpvariables_[numcp]->GetCP().second;
+    TYPE eta1 = cpvariables_[numcp]->get_cp().first;
+    TYPE eta2 = cpvariables_[numcp]->get_cp().second;
 
 #ifdef AUTOMATICDIFF
     BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
@@ -500,9 +500,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 
     // get shift angles from input file
     double perpshiftangle1 =
-        Params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
+        params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
     double perpshiftangle2 =
-        Params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle2();
+        params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle2();
 
     // call function to compute scale factor of penalty parameter
     calc_perp_penalty_scale_fac(
@@ -511,7 +511,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     // In case of large-angle-contact, the length specific energy and the 'real' energy are
     // identical
     double lengthspec_energy = Core::FADUtils::CastToDouble(cpvariables_[numcp]->get_energy());
-    cpvariables_[numcp]->SetIntegratedEnergy(lengthspec_energy);
+    cpvariables_[numcp]->set_integrated_energy(lengthspec_energy);
 
     //    std::cout << "cpvariables_[numcp]->GetNormal(): " << cpvariables_[numcp]->GetNormal() <<
     //    std::endl; std::cout << "numcp: " << numcp << std::endl; std::cout << "xi: " <<
@@ -558,7 +558,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
   int numpairs = closesmallanglesegments.size();
   std::vector<std::pair<double, double>> inversepairs(numpairs, std::make_pair(0.0, 0.0));
   int pairiter = 0;
-  int intintervals = Params()->beam_to_beam_contact_params()->num_integration_intervals();
+  int intintervals = params()->beam_to_beam_contact_params()->num_integration_intervals();
 
   std::map<std::pair<int, int>, Core::LinAlg::Matrix<3, 1, double>>::iterator iter;
 
@@ -882,10 +882,10 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
                 std::pair<TYPE, TYPE> closestpoint(std::make_pair(eta1, eta2));
                 std::pair<int, int> integration_ids = std::make_pair(numgp, interval);
                 std::pair<int, int> leftpoint_ids = std::make_pair(leftpoint_id1, leftpoint_id2);
-                TYPE jacobi = get_jacobi_at_xi(Element1(), eta1_slave) * jacobi_interval;
+                TYPE jacobi = get_jacobi_at_xi(element1(), eta1_slave) * jacobi_interval;
 
                 const double parallel_pp =
-                    Params()->beam_to_beam_contact_params()->beam_to_beam_line_penalty_param();
+                    params()->beam_to_beam_contact_params()->beam_to_beam_line_penalty_param();
 
                 if (parallel_pp < 0.0) FOUR_C_THROW("BEAMS_BTBLINEPENALTYPARAM not set!");
 
@@ -972,7 +972,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
   // Evaluate all active Gauss points
   for (int numgptot = 0; numgptot < (int)gpvariables_.size(); numgptot++)
   {
-    std::pair<TYPE, TYPE> closestpoint = gpvariables_[numgptot]->GetCP();
+    std::pair<TYPE, TYPE> closestpoint = gpvariables_[numgptot]->get_cp();
     TYPE eta1 = closestpoint.first;
     TYPE eta2 = closestpoint.second;
 
@@ -1011,9 +1011,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 
     // get shift angles from input file
     double parshiftangle1 =
-        Params()->beam_to_beam_contact_params()->beam_to_beam_parallel_shifting_angle1();
+        params()->beam_to_beam_contact_params()->beam_to_beam_parallel_shifting_angle1();
     double parshiftangle2 =
-        Params()->beam_to_beam_contact_params()->beam_to_beam_parallel_shifting_angle2();
+        params()->beam_to_beam_contact_params()->beam_to_beam_parallel_shifting_angle2();
 
     // call function to compute scale factor of penalty parameter
     calc_par_penalty_scale_fac(
@@ -1032,7 +1032,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     //    std::endl;
 
     // Determine the integration-segment-local Gauss point-ID of the considered gpvariable
-    int numgploc = gpvariables_[numgptot]->GetIntIds().first;
+    int numgploc = gpvariables_[numgptot]->get_int_ids().first;
 
     double weight = gausspoints.qwgt[numgploc];
     TYPE jacobi = gpvariables_[numgptot]->get_jacobi();
@@ -1051,7 +1051,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     // integrated) energy is a pure output variable and can therefore be of type double!
     double lengthspec_energy = Core::FADUtils::CastToDouble(gpvariables_[numgptot]->get_energy());
     double integrated_energy = lengthspec_energy * intfac;
-    gpvariables_[numgptot]->SetIntegratedEnergy(integrated_energy);
+    gpvariables_[numgptot]->set_integrated_energy(integrated_energy);
 
     // call function to compute contact contribution to residual vector
     if (forcevec1 != nullptr and forcevec2 != nullptr)
@@ -1404,8 +1404,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     Core::LinAlg::Matrix<3, 1, TYPE> r2_xixi(true);  // = r2,etaeta
     Core::LinAlg::Matrix<3, 1, TYPE> delta_r(true);  // = r1-r2
 
-    TYPE eta1 = epvariables_[numep]->GetCP().first;
-    TYPE eta2 = epvariables_[numep]->GetCP().second;
+    TYPE eta1 = epvariables_[numep]->get_cp().first;
+    TYPE eta2 = epvariables_[numep]->get_cp().second;
 
 #ifdef AUTOMATICDIFF
     BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
@@ -1423,12 +1423,12 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     // call function to compute penalty force
     calc_penalty_law(epvariables_[numep]);
 
-    epvariables_[numep]->SetPPfac(1.0);
-    epvariables_[numep]->SetDPPfac(0.0);
+    epvariables_[numep]->set_p_pfac(1.0);
+    epvariables_[numep]->set_dp_pfac(0.0);
 
     // In case of endpoint-contact, the length specific energy and the 'real' energy are identical
     double lengthspec_energy = Core::FADUtils::CastToDouble(epvariables_[numep]->get_energy());
-    epvariables_[numep]->SetIntegratedEnergy(lengthspec_energy);
+    epvariables_[numep]->set_integrated_energy(lengthspec_energy);
 
     //    std::cout << "epvariables_[numep]->GetNormal(): " << epvariables_[numep]->GetNormal() <<
     //    std::endl; std::cout << "numep: " << numep << std::endl; std::cout << "xi: " <<
@@ -1442,8 +1442,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     //    std::cout << "epvariables_[numep]->Getfp(): " << epvariables_[numep]->Getfp() <<
     //    std::endl;
 
-    bool fixedendpointxi = epvariables_[numep]->GetIntIds().first;
-    bool fixedendpointeta = epvariables_[numep]->GetIntIds().second;
+    bool fixedendpointxi = epvariables_[numep]->get_int_ids().first;
+    bool fixedendpointeta = epvariables_[numep]->get_int_ids().second;
 
     // call function to compute contact contribution to residual vector
     if (forcevec1 != nullptr and forcevec2 != nullptr)
@@ -1470,16 +1470,16 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
     Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables)
 {
   // First parameter for contact force regularization
-  double g0 = Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
+  double g0 = params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
   TYPE fp = 0.0;
   TYPE dfp = 0.0;
   TYPE e = 0.0;
-  double pp = variables->GetPP();
-  TYPE gap = variables->GetGap();
+  double pp = variables->get_pp();
+  TYPE gap = variables->get_gap();
 
   if (!check_contact_status(Core::FADUtils::CastToDouble(gap))) return;
 
-  switch (Params()->beam_to_beam_contact_params()->PenaltyLaw())
+  switch (params()->beam_to_beam_contact_params()->penalty_law())
   {
     case Inpar::BEAMCONTACT::pl_lp:  // linear penalty force law
     {
@@ -1523,7 +1523,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Parameter to shift penalty law
-      double gbar = Params()->beam_to_beam_contact_params()->GapShift();
+      double gbar = params()->beam_to_beam_contact_params()->gap_shift();
       gap = gap + gbar;
 
       double f0 = g0 * pp / 2.0;
@@ -1555,7 +1555,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
 
       // Third parameter for contact force regularization
       double c0 =
-          Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_c0();
+          params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_c0();
       if (c0 == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
@@ -1591,13 +1591,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
 
       // Third parameter for contact force regularization
       double c0 =
-          Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_c0();
+          params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_c0();
       if (c0 == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
       // Second parameter for contact force regularization
       double f0 =
-          Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_f0();
+          params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_f0();
       if (f0 == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
@@ -1640,7 +1640,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
 
       // Second parameter for contact force regularization
       double f0 =
-          Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_f0();
+          params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_f0();
       if (f0 == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
@@ -1667,9 +1667,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
     }
   }
 
-  variables->Setfp(fp);
-  variables->Setdfp(dfp);
-  variables->SetEnergy(e);
+  variables->setfp(fp);
+  variables->setdfp(dfp);
+  variables->set_energy(e);
 
   return;
 }
@@ -1736,8 +1736,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_perp
   }
 
   // set class variable
-  cpvariables->SetPPfac(ppfac);
-  cpvariables->SetDPPfac(dppfac);
+  cpvariables->set_p_pfac(ppfac);
+  cpvariables->set_dp_pfac(dppfac);
 
   return;
 }
@@ -1793,8 +1793,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_par_
   }
 
   // set class variable
-  gpvariables->SetPPfac(ppfac);
-  gpvariables->SetDPPfac(dppfac);
+  gpvariables->set_p_pfac(ppfac);
+  gpvariables->set_dp_pfac(dppfac);
 
   return;
 }
@@ -1813,7 +1813,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::create_
   // endpoints of the segments
   std::vector<Core::LinAlg::Matrix<3, 1, double>> endpoints(
       (int)MAXNUMSEG + 1, Core::LinAlg::Matrix<3, 1, double>(true));
-  double segangle = Params()->beam_to_beam_contact_params()->SegmentationAngle();
+  double segangle = params()->beam_to_beam_contact_params()->segmentation_angle();
 
   numsegment = 1;
   double deltaxi = 2.0;
@@ -1916,7 +1916,7 @@ template <unsigned int numnodes, unsigned int numnodalvalues>
 double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_max_active_dist()
 {
   double maxactivedist = 0.0;
-  int penaltylaw = Params()->beam_to_beam_contact_params()->PenaltyLaw();
+  int penaltylaw = params()->beam_to_beam_contact_params()->penalty_law();
 
   switch (penaltylaw)
   {
@@ -1930,12 +1930,12 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_max
     case Inpar::BEAMCONTACT::pl_lpqp:
     {
       double g0 =
-          Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
+          params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
       if (g0 == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Parameter to shift penalty law
-      double gbar = Params()->beam_to_beam_contact_params()->GapShift();
+      double gbar = params()->beam_to_beam_contact_params()->gap_shift();
 
       maxactivedist = g0 - gbar;
 
@@ -1946,7 +1946,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_max
     case Inpar::BEAMCONTACT::pl_lpep:
     {
       maxactivedist =
-          Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
+          params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
       if (maxactivedist == -1.0)
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
       break;
@@ -1970,7 +1970,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::check_seg
   double angle1(0.0);
   double angle2(0.0);
   double dist(0.0);
-  double segangle = Params()->beam_to_beam_contact_params()->SegmentationAngle();
+  double segangle = params()->beam_to_beam_contact_params()->segmentation_angle();
 
   // Calculate tangent and midpint of linear nodal interpolation
   for (int i = 0; i < 3; i++)
@@ -2031,7 +2031,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_close
   Core::LinAlg::Matrix<3, 1, double> r2_b(true);
   double angle(0.0);
 
-  bool endpoint_penalty = Params()->beam_to_beam_contact_params()->EndPointPenalty();
+  bool endpoint_penalty = params()->beam_to_beam_contact_params()->end_point_penalty();
 
   // Safety factor for determination of close segments
   double safetyfac = 1.1;
@@ -2277,8 +2277,8 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
 
       TYPE jacobi1 = 1.0;
       TYPE jacobi2 = 1.0;
-      jacobi1 = get_jacobi(Element1());
-      jacobi2 = get_jacobi(Element2());
+      jacobi1 = get_jacobi(element1());
+      jacobi2 = get_jacobi(element2());
 
       // compute the scalar residuum
       // The residual is scaled with 1/element_length since an absolute
@@ -2388,7 +2388,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
           eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
         double perpshiftangle1 =
-            Params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
+            params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
         // Here, we apply the conservative estimate that the closest-point gap is by 0.1*R2_ smaller
         // than g_min
         double g_min_estimate = g_min - 0.1 * r2_;
@@ -2399,8 +2399,8 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
           std::cout << std::endl
                     << "Serious Warning!!!!! Local CPP not converged: CP-Approximation applied!"
                     << std::endl;
-          std::cout << "Element1()->Id(): " << Element1()->Id() << std::endl;
-          std::cout << "Element2()->Id(): " << Element2()->Id() << std::endl;
+          std::cout << "Element1()->Id(): " << element1()->id() << std::endl;
+          std::cout << "Element2()->Id(): " << element2()->id() << std::endl;
           std::cout << "R2_: " << r2_ << std::endl;
           std::cout << "g_min: " << g_min << std::endl;
           std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "degrees" << std::endl;
@@ -2427,7 +2427,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
           //          pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element2_->Id()));
           //
           //          const Core::Elements::ElementType & eot = element1->ElementType();
-          //          if (eot == Discret::ELEMENTS::Beam3ebType::Instance())
+          //          if (eot == Discret::ELEMENTS::Beam3ebType::instance())
           //          {
           //            const Discret::ELEMENTS::Beam3eb* beam3ebelement1 = dynamic_cast<const
           //            Discret::ELEMENTS::Beam3eb*>(element1); double kappamax1 =
@@ -2510,7 +2510,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
                 Core::FADUtils::CastToDouble<TYPE, 3, 1>(r2_xi)));
 
         double perpshiftangle1 =
-            Params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
+            params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle1();
 
         if (check_contact_status(gap) and angle >= perpshiftangle1) validpairfound = true;
 
@@ -2629,7 +2629,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
       N2_xixi.clear();
 
       bool inversion_possible = false;
-      bool endpointpenalty = Params()->beam_to_beam_contact_params()->EndPointPenalty();
+      bool endpointpenalty = params()->beam_to_beam_contact_params()->end_point_penalty();
       if (endpointpenalty) inversion_possible = true;
 
 #ifdef ENDPOINTSEGMENTATION
@@ -2709,21 +2709,21 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
 
       if (invertpairs == false and orthogonalprojection == false)  // default case
       {
-        jacobi = get_jacobi(Element2());
+        jacobi = get_jacobi(element2());
       }
       else if (invertpairs == false and orthogonalprojection == true)
       {
-        jacobi = get_jacobi(Element1());
+        jacobi = get_jacobi(element1());
       }
       else if (invertpairs == true and orthogonalprojection == false)
       {
-        jacobi = get_jacobi(Element1());
+        jacobi = get_jacobi(element1());
       }
       else if (invertpairs == true and orthogonalprojection == true)
       {
-        jacobi = get_jacobi(Element2());
+        jacobi = get_jacobi(element2());
       }
-      jacobi = get_jacobi(Element2());
+      jacobi = get_jacobi(element2());
 
       // compute the scalar residuum
       // The residual is scaled with 1/element_length since r_xi scales with the element_length
@@ -2842,8 +2842,8 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
 
           if (throw_error)
           {
-            std::cout << "ID1: " << Element1()->Id() << std::endl;
-            std::cout << "ID2: " << Element2()->Id() << std::endl;
+            std::cout << "ID1: " << element1()->id() << std::endl;
+            std::cout << "ID2: " << element2()->id() << std::endl;
             std::cout << "eta1: " << eta1 << std::endl;
             std::cout << "eta2: " << eta2 << std::endl;
             // TODO: In some cases a warning is sufficient, but in general we need the
@@ -2882,7 +2882,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
         if (smallanglepair)
         {
           double parshiftangle2 =
-              Params()->beam_to_beam_contact_params()->beam_to_beam_parallel_shifting_angle2();
+              params()->beam_to_beam_contact_params()->beam_to_beam_parallel_shifting_angle2();
 
           if (angle > parshiftangle2) relevant_angle = false;
         }
@@ -2927,7 +2927,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
   Core::LinAlg::Matrix<3, 1, double> lengthvec1(true);
   for (int i = 0; i < 3; i++)
   {
-    lengthvec1(i) = (Element1()->Nodes())[0]->X()[i] - (Element1()->Nodes())[1]->X()[i];
+    lengthvec1(i) = (element1()->nodes())[0]->x()[i] - (element1()->nodes())[1]->x()[i];
   }
   // length1 = physical length; l1=length in parameter space
   double length1 = lengthvec1.norm2();
@@ -3073,12 +3073,12 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate_
   // flag indicating assembly
   bool DoNotAssemble = true;
 
-  TYPE gap = variables->GetGap();
-  Core::LinAlg::Matrix<3, 1, TYPE> normal = variables->GetNormal();
-  TYPE fp = variables->Getfp();
+  TYPE gap = variables->get_gap();
+  Core::LinAlg::Matrix<3, 1, TYPE> normal = variables->get_normal();
+  TYPE fp = variables->getfp();
   // The factor ppfac reduces the penalty parameter for the large-angle and small-angle formulation
   // in dependence of the current contact angle
-  TYPE ppfac = variables->GetPPfac();
+  TYPE ppfac = variables->get_p_pfac();
 
   //**********************************************************************
   // evaluate contact forces for active pairs
@@ -3254,15 +3254,15 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate_
 
   // flag indicating assembly
   bool DoNotAssemble = true;
-  TYPE gap = variables->GetGap();
+  TYPE gap = variables->get_gap();
   // The factor ppfac reduces the penalty parameter for the large-angle and small-angle formulation
   // in dependence of the current contact angle
-  TYPE ppfac = variables->GetPPfac();
-  TYPE dppfac = variables->GetDPPfac();
+  TYPE ppfac = variables->get_p_pfac();
+  TYPE dppfac = variables->get_dp_pfac();
 
   // In order to accelerate convergence, we only apply the basic stiffness part in case of very
   // large gaps!
-  double basicstiffgap = Params()->beam_to_beam_contact_params()->BasicStiffGap();
+  double basicstiffgap = params()->beam_to_beam_contact_params()->basic_stiff_gap();
   bool completestiff = true;
   if (basicstiffgap != -1.0)
   {
@@ -3302,9 +3302,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate_
 
     Core::LinAlg::Matrix<3, 1, TYPE> delta_r = Core::FADUtils::DiffVector(r1, r2);
     TYPE norm_delta_r = Core::FADUtils::VectorNorm<3>(delta_r);
-    Core::LinAlg::Matrix<3, 1, TYPE> normal = variables->GetNormal();
-    TYPE fp = variables->Getfp();
-    TYPE dfp = variables->Getdfp();
+    Core::LinAlg::Matrix<3, 1, TYPE> normal = variables->get_normal();
+    TYPE fp = variables->getfp();
+    TYPE dfp = variables->getdfp();
 
     //********************************************************************
     // evaluate linearizations and distance
@@ -4356,8 +4356,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
     const TYPE& eta2)
 {
   // get both discretization types
-  const Core::FE::CellType distype1 = Element1()->Shape();
-  const Core::FE::CellType distype2 = Element2()->Shape();
+  const Core::FE::CellType distype1 = element1()->shape();
+  const Core::FE::CellType distype2 = element2()->shape();
 
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i(true);
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N1_i_xi(true);
@@ -4379,8 +4379,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
   else if (numnodalvalues == 2)
   {
     // TODO maybe cast class variables to Beam3Base upon construction ?!
-    double length1 = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1()))->RefLength();
-    double length2 = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element2()))->RefLength();
+    double length1 = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1()))->ref_length();
+    double length2 = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element2()))->ref_length();
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
@@ -4422,7 +4422,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
     const Core::Elements::Element* ele) const
 {
   // get both discretization types
-  const Core::FE::CellType distype = ele->Shape();
+  const Core::FE::CellType distype = ele->shape();
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, TYPE> N_i(true);
 
   if (numnodalvalues == 1)
@@ -4449,7 +4449,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
   }
   else if (numnodalvalues == 2)
   {
-    double length = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele))->RefLength();
+    double length = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele))->ref_length();
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
@@ -4502,7 +4502,7 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r(
   Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N(true);
   get_shape_functions(N, eta, 0, ele);
 
-  if (ele->Id() == Element1()->Id())
+  if (ele->id() == element1()->id())
   {
     // compute output variable
     for (unsigned int i = 0; i < 3; i++)
@@ -4513,7 +4513,7 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r(
       }
     }
   }
-  else if (ele->Id() == Element2()->Id())
+  else if (ele->id() == element2()->id())
   {
     // compute output variable
     for (unsigned int i = 0; i < 3; i++)
@@ -4545,7 +4545,7 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r_xi(
   Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE> N_xi(true);
   get_shape_functions(N_xi, eta, 1, ele);
 
-  if (ele->Id() == Element1()->Id())
+  if (ele->id() == element1()->id())
   {
     // compute output variable
     for (unsigned int i = 0; i < 3; i++)
@@ -4556,7 +4556,7 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r_xi(
       }
     }
   }
-  else if (ele->Id() == Element2()->Id())
+  else if (ele->id() == element2()->id())
   {
     // compute output variable
     for (unsigned int i = 0; i < 3; i++)
@@ -4815,8 +4815,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_n
 
   TYPE gap = norm_delta_r - r1_ - r2_;
 
-  variables->SetGap(gap);
-  variables->SetNormal(normal);
+  variables->set_gap(gap);
+  variables->set_normal(normal);
   variables->set_angle(BEAMINTERACTION::CalcAngle(Core::FADUtils::CastToDouble<TYPE, 3, 1>(r1_xi),
       Core::FADUtils::CastToDouble<TYPE, 3, 1>(r2_xi)));
 
@@ -4843,10 +4843,10 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::check_con
     const double& gap)
 {
   // First parameter for contact force regularization
-  double g0 = Params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
+  double g0 = params()->beam_to_beam_contact_params()->beam_to_beam_penalty_law_regularization_g0();
   bool contactflag = false;
 
-  int penaltylaw = Params()->beam_to_beam_contact_params()->PenaltyLaw();
+  int penaltylaw = params()->beam_to_beam_contact_params()->penalty_law();
 
   if (penaltylaw == Inpar::BEAMCONTACT::pl_lp)
   {
@@ -4874,7 +4874,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::check_con
     if (g0 == -1.0) FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
     // Parameter to shift penalty law
-    double gbar = Params()->beam_to_beam_contact_params()->GapShift();
+    double gbar = params()->beam_to_beam_contact_params()->gap_shift();
     TYPE g = gap + gbar;
 
     if (g < g0)
@@ -4938,7 +4938,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::clear_cla
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ResetState(
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::reset_state(
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
@@ -4961,19 +4961,19 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_jac
     const Core::Elements::Element* element1)
 {
   double jacobi = 1.0;
-  const Core::Elements::ElementType& eot1 = element1->ElementType();
+  const Core::Elements::ElementType& eot1 = element1->element_type();
 
   // The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
   // the jacobi_ factor corresponding to the first gauss point of the beam element
-  if (eot1 == Discret::ELEMENTS::Beam3ebType::Instance())
+  if (eot1 == Discret::ELEMENTS::Beam3ebType::instance())
   {
     jacobi = (static_cast<const Discret::ELEMENTS::Beam3eb*>(element1))->get_jacobi();
   }
-  else if (eot1 == Discret::ELEMENTS::Beam3rType::Instance())
+  else if (eot1 == Discret::ELEMENTS::Beam3rType::instance())
   {
     jacobi = (static_cast<const Discret::ELEMENTS::Beam3r*>(element1))->get_jacobi();
   }
-  else if (eot1 == Discret::ELEMENTS::Beam3kType::Instance())
+  else if (eot1 == Discret::ELEMENTS::Beam3kType::instance())
   {
     jacobi = (static_cast<const Discret::ELEMENTS::Beam3k*>(element1))->get_jacobi();
   }
@@ -4994,8 +4994,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::print(
 {
   check_init_setup();
 
-  out << "\nInstance of BeamToBeamContactPair (EleGIDs " << Element1()->Id() << " & "
-      << Element2()->Id() << "):";
+  out << "\nInstance of BeamToBeamContactPair (EleGIDs " << element1()->id() << " & "
+      << element2()->id() << "):";
   out << "\nele1 dofvec: " << ele1pos_;
   out << "\nele2 dofvec: " << ele2pos_;
 
@@ -5037,33 +5037,33 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 
   for (unsigned int i = 0; i < numactivelargeanglesegmentpairs; ++i)
   {
-    out << "    " << std::setw(5) << std::left << Element1()->Id() << "(" << std::setw(3)
-        << std::right << cpvariables_[i]->GetSegIds().first + 1 << "/" << std::setw(3) << numseg1_
+    out << "    " << std::setw(5) << std::left << element1()->id() << "(" << std::setw(3)
+        << std::right << cpvariables_[i]->get_seg_ids().first + 1 << "/" << std::setw(3) << numseg1_
         << ")"
-        << " " << std::setw(5) << std::left << Element2()->Id() << "(" << std::setw(3) << std::right
-        << cpvariables_[i]->GetSegIds().second + 1 << "/" << std::setw(3) << numseg2_ << ")"
+        << " " << std::setw(5) << std::left << element2()->id() << "(" << std::setw(3) << std::right
+        << cpvariables_[i]->get_seg_ids().second + 1 << "/" << std::setw(3) << numseg2_ << ")"
         << "  CP    ";
     cpvariables_[i]->print_summary_in_one_line(out);
     out << "\n";
   }
   for (unsigned int i = 0; i < numactivesmallanglesegmentpairs; ++i)
   {
-    out << "    " << std::setw(5) << std::left << Element1()->Id() << "(" << std::setw(3)
-        << std::right << gpvariables_[i]->GetSegIds().first + 1 << "/" << std::setw(3) << numseg1_
+    out << "    " << std::setw(5) << std::left << element1()->id() << "(" << std::setw(3)
+        << std::right << gpvariables_[i]->get_seg_ids().first + 1 << "/" << std::setw(3) << numseg1_
         << ")"
-        << " " << std::setw(5) << std::left << Element2()->Id() << "(" << std::setw(3) << std::right
-        << gpvariables_[i]->GetSegIds().second + 1 << "/" << std::setw(3) << numseg2_ << ")"
+        << " " << std::setw(5) << std::left << element2()->id() << "(" << std::setw(3) << std::right
+        << gpvariables_[i]->get_seg_ids().second + 1 << "/" << std::setw(3) << numseg2_ << ")"
         << "  GP    ";
     gpvariables_[i]->print_summary_in_one_line(out);
     out << "\n";
   }
   for (unsigned int i = 0; i < numactiveendpointsegmentpairs; ++i)
   {
-    out << "    " << std::setw(5) << std::left << Element1()->Id() << "(" << std::setw(3)
-        << std::right << epvariables_[i]->GetSegIds().first + 1 << "/" << std::setw(3) << numseg1_
+    out << "    " << std::setw(5) << std::left << element1()->id() << "(" << std::setw(3)
+        << std::right << epvariables_[i]->get_seg_ids().first + 1 << "/" << std::setw(3) << numseg1_
         << ")"
-        << " " << std::setw(5) << std::left << Element2()->Id() << "(" << std::setw(3) << std::right
-        << epvariables_[i]->GetSegIds().second + 1 << "/" << std::setw(3) << numseg2_ << ")"
+        << " " << std::setw(5) << std::left << element2()->id() << "(" << std::setw(3) << std::right
+        << epvariables_[i]->get_seg_ids().second + 1 << "/" << std::setw(3) << numseg2_ << ")"
         << "  EP    ";
     epvariables_[i]->print_summary_in_one_line(out);
     out << "\n";
@@ -5085,8 +5085,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
 
   for (int i = 0; i < size1; ++i)
   {
-    TYPE eta1 = cpvariables_[i]->GetCP().first;
-    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta1, Element1())(j));
+    TYPE eta1 = cpvariables_[i]->get_cp().first;
+    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1())(j));
     /* Todo: Element1 might no longer be available on this proc after re-distribution!
      * take care that this method is called BEFORE any re-distribution
      * OR reformulate this such that Element1() is no longer required;
@@ -5096,14 +5096,14 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
 
   for (int i = size1; i < size2 + size1; ++i)
   {
-    TYPE eta1 = gpvariables_[i - size1]->GetCP().first;
-    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta1, Element1())(j));
+    TYPE eta1 = gpvariables_[i - size1]->get_cp().first;
+    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1())(j));
   }
 
   for (int i = size1 + size2; i < size1 + size2 + size3; ++i)
   {
-    TYPE eta1 = epvariables_[i - size1 - size2]->GetCP().first;
-    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta1, Element1())(j));
+    TYPE eta1 = epvariables_[i - size1 - size2]->get_cp().first;
+    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1())(j));
   }
 }
 
@@ -5122,20 +5122,20 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
 
   for (int i = 0; i < size1; ++i)
   {
-    TYPE eta2 = cpvariables_[i]->GetCP().second;
-    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta2, Element2())(j));
+    TYPE eta2 = cpvariables_[i]->get_cp().second;
+    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2())(j));
   }
 
   for (int i = size1; i < size2 + size1; ++i)
   {
-    TYPE eta2 = gpvariables_[i - size1]->GetCP().second;
-    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta2, Element2())(j));
+    TYPE eta2 = gpvariables_[i - size1]->get_cp().second;
+    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2())(j));
   }
 
   for (int i = size1 + size2; i < size1 + size2 + size3; ++i)
   {
-    TYPE eta2 = epvariables_[i - size1 - size2]->GetCP().second;
-    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta2, Element2())(j));
+    TYPE eta2 = epvariables_[i - size1 - size2]->get_cp().second;
+    for (int j = 0; j < 3; j++) coords[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2())(j));
   }
 }
 
@@ -5154,19 +5154,19 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
   for (int i = 0; i < size1; i++)
   {
     forces[i] =
-        Core::FADUtils::CastToDouble(cpvariables_[i]->Getfp() * cpvariables_[i]->GetPPfac());
+        Core::FADUtils::CastToDouble(cpvariables_[i]->getfp() * cpvariables_[i]->get_p_pfac());
   }
 
   for (int i = size1; i < size2 + size1; i++)
   {
     forces[i] = Core::FADUtils::CastToDouble(
-        gpvariables_[i - size1]->Getfp() * gpvariables_[i - size1]->GetPPfac());
+        gpvariables_[i - size1]->getfp() * gpvariables_[i - size1]->get_p_pfac());
   }
 
   for (int i = size1 + size2; i < size1 + size2 + size3; i++)
   {
     forces[i] = Core::FADUtils::CastToDouble(
-        epvariables_[i - size1 - size2]->Getfp() * epvariables_[i - size1 - size2]->GetPPfac());
+        epvariables_[i - size1 - size2]->getfp() * epvariables_[i - size1 - size2]->get_p_pfac());
   }
 }
 
@@ -5184,17 +5184,17 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_all_a
 
   for (int i = 0; i < size1; i++)
   {
-    gaps[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->GetGap());
+    gaps[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->get_gap());
   }
 
   for (int i = size1; i < size2 + size1; i++)
   {
-    gaps[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->GetGap());
+    gaps[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_gap());
   }
 
   for (int i = size1 + size2; i < size1 + size2 + size3; i++)
   {
-    gaps[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->GetGap());
+    gaps[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_gap());
   }
 }
 
@@ -5203,31 +5203,31 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_all_a
 template <unsigned int numnodes, unsigned int numnodalvalues>
 double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_energy() const
 {
-  if (Params()->beam_to_beam_contact_params()->PenaltyLaw() != Inpar::BEAMCONTACT::pl_lp and
-      Params()->beam_to_beam_contact_params()->PenaltyLaw() != Inpar::BEAMCONTACT::pl_qp and
-      Params()->beam_to_beam_contact_params()->PenaltyLaw() != Inpar::BEAMCONTACT::pl_lpqp)
+  if (params()->beam_to_beam_contact_params()->penalty_law() != Inpar::BEAMCONTACT::pl_lp and
+      params()->beam_to_beam_contact_params()->penalty_law() != Inpar::BEAMCONTACT::pl_qp and
+      params()->beam_to_beam_contact_params()->penalty_law() != Inpar::BEAMCONTACT::pl_lpqp)
     FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
   double energy = 0.0;
 
   for (unsigned int i = 0; i < cpvariables_.size(); ++i)
   {
-    double ppfac = Core::FADUtils::CastToDouble(cpvariables_[i]->GetPPfac());
-    double e = -cpvariables_[i]->GetIntegratedEnergy();
+    double ppfac = Core::FADUtils::CastToDouble(cpvariables_[i]->get_p_pfac());
+    double e = -cpvariables_[i]->get_integrated_energy();
     energy += ppfac * e;
   }
 
   for (unsigned int i = 0; i < gpvariables_.size(); ++i)
   {
-    double ppfac = Core::FADUtils::CastToDouble(gpvariables_[i]->GetPPfac());
-    double e = -gpvariables_[i]->GetIntegratedEnergy();
+    double ppfac = Core::FADUtils::CastToDouble(gpvariables_[i]->get_p_pfac());
+    double e = -gpvariables_[i]->get_integrated_energy();
     energy += ppfac * e;
   }
 
   for (unsigned int i = 0; i < epvariables_.size(); ++i)
   {
-    double ppfac = Core::FADUtils::CastToDouble(epvariables_[i]->GetPPfac());
-    double e = -epvariables_[i]->GetIntegratedEnergy();
+    double ppfac = Core::FADUtils::CastToDouble(epvariables_[i]->get_p_pfac());
+    double e = -epvariables_[i]->get_integrated_energy();
     energy += ppfac * e;
   }
 

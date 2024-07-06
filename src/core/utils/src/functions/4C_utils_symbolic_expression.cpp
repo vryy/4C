@@ -134,10 +134,10 @@ namespace Core::UTILS::SymbolicExpressionDetails
     Lexer(std::string funct) : funct_(std::move(funct)), pos_(0) {}
 
     //! delivers funct_ character at position pos_++
-    int GetNext();
+    int get_next();
 
     //! identifies a token (value and kind) in the funct_ string
-    void Lexan();
+    void lexan();
 
     //! type of identifiable tokens in string funct_
     enum TokenType
@@ -222,7 +222,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
      * evaluate the parsed expression
      * @return Value of the parsed expression
      */
-    T EvaluateExpression(const std::map<std::string, T>& variable_values) const;
+    T evaluate_expression(const std::map<std::string, T>& variable_values) const;
 
     /*!
      * @brief evaluates the derivative of the parsed expression with respect to a given set of
@@ -236,11 +236,11 @@ namespace Core::UTILS::SymbolicExpressionDetails
      * @return  Derivative of the parsed expression with respect to the variables
      */
     template <typename T2, std::enable_if_t<IsFAD<T2>::value, void*> = nullptr>
-    T EvaluateDerivative(const std::map<std::string, T2>& variable_values,
+    T evaluate_derivative(const std::map<std::string, T2>& variable_values,
         const std::map<std::string, double>& constants = {}) const;
 
     //! Check if a variable with name 'varname' exists
-    [[nodiscard]] bool IsVariable(const std::string& varname) const;
+    [[nodiscard]] bool is_variable(const std::string& varname) const;
 
    private:
     NodePtr parse_primary(Lexer& lexer);
@@ -281,7 +281,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
   \brief method used to step through std::string funct_
          delivers its character at position pos_++
   */
-  int Lexer::GetNext()
+  int Lexer::get_next()
   {
     if (pos_ < funct_.length())
     {
@@ -300,11 +300,11 @@ namespace Core::UTILS::SymbolicExpressionDetails
          value: integer_, real_,
          operator name: str_
   */
-  void Lexer::Lexan()
+  void Lexer::lexan()
   {
     for (;;)
     {
-      int t = GetNext();
+      int t = get_next();
       if ((t == ' ') || (t == '\t'))
       {
         /* ignore whitespaces */
@@ -327,7 +327,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
           str_ = &(funct_[pos_ - 1]);
           while (isdigit(t))
           {
-            t = GetNext();
+            t = get_next();
           }
           if ((t != '.') && (t != 'E') && (t != 'e'))
           {
@@ -341,12 +341,12 @@ namespace Core::UTILS::SymbolicExpressionDetails
           }
           if (t == '.')
           {
-            t = GetNext();
+            t = get_next();
             if (isdigit(t))
             {
               while (isdigit(t))
               {
-                t = GetNext();
+                t = get_next();
               }
             }
             else
@@ -356,16 +356,16 @@ namespace Core::UTILS::SymbolicExpressionDetails
           }
           if ((t == 'E') || (t == 'e'))
           {
-            t = GetNext();
+            t = get_next();
             if ((t == '-') || (t == '+'))
             {
-              t = GetNext();
+              t = get_next();
             }
             if (isdigit(t))
             {
               while (isdigit(t))
               {
-                t = GetNext();
+                t = get_next();
               }
             }
             else
@@ -386,7 +386,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
           str_ = &(funct_[pos_ - 1]);
           while (isalnum(t) || (t == '_'))
           {
-            t = GetNext();
+            t = get_next();
           }
           if (t != EOF)
           {
@@ -466,7 +466,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
     Lexer lexer{std::move(funct)};
 
     //! retrieve first token of funct
-    lexer.Lexan();
+    lexer.lexan();
 
     //! create syntax tree equivalent to funct
     expr_ = parse(lexer);
@@ -477,7 +477,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
   \brief Check if input is a variable name
   */
   template <class T>
-  bool Parser<T>::IsVariable(const std::string& varname) const
+  bool Parser<T>::is_variable(const std::string& varname) const
   {
     //! check if variable exists
     return (parsed_variable_constant_names_.count(varname) != 0);
@@ -485,7 +485,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
 
 
   template <class T>
-  T Parser<T>::EvaluateExpression(const std::map<std::string, T>& variable_values) const
+  T Parser<T>::evaluate_expression(const std::map<std::string, T>& variable_values) const
   {
     return evaluate(variable_values);
   }
@@ -493,7 +493,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
 
   template <class T>
   template <typename T2, std::enable_if_t<IsFAD<T2>::value, void*>>
-  T Parser<T>::EvaluateDerivative(const std::map<std::string, T2>& variable_values,
+  T Parser<T>::evaluate_derivative(const std::map<std::string, T2>& variable_values,
       const std::map<std::string, double>& constants) const
   {
     return evaluate(variable_values, constants);
@@ -568,25 +568,25 @@ namespace Core::UTILS::SymbolicExpressionDetails
     switch (lexer.tok_)
     {
       case Lexer::tok_lpar:
-        lexer.Lexan();
+        lexer.lexan();
         lhs = parse_expr(lexer);
         if (lexer.tok_ != Lexer::tok_rpar) FOUR_C_THROW("')' expected");
-        lexer.Lexan();
+        lexer.lexan();
         break;
       case Lexer::tok_int:
         lhs = std::make_unique<SyntaxTreeNode<T>>(SyntaxTreeNode<T>::lt_number, nullptr, nullptr);
         lhs->v_.number = lexer.integer_;
-        lexer.Lexan();
+        lexer.lexan();
         break;
       case Lexer::tok_real:
         lhs = std::make_unique<SyntaxTreeNode<T>>(SyntaxTreeNode<T>::lt_number, nullptr, nullptr);
         lhs->v_.number = lexer.real_;
-        lexer.Lexan();
+        lexer.lexan();
         break;
       case Lexer::tok_sub:
       {
         NodePtr rhs;
-        lexer.Lexan();
+        lexer.lexan();
         /*rhs = parse_primary();*/
         rhs = parse_pow(lexer);
         if (rhs->type_ == SyntaxTreeNode<T>::lt_number)
@@ -612,7 +612,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
         {
           lhs = std::make_unique<SyntaxTreeNode<T>>(SyntaxTreeNode<T>::lt_number, nullptr, nullptr);
           lhs->v_.number = M_PI;
-          lexer.Lexan();
+          lexer.lexan();
           break;
         }
         else
@@ -626,13 +626,13 @@ namespace Core::UTILS::SymbolicExpressionDetails
             lhs = std::make_unique<SyntaxTreeNode<T>>(
                 SyntaxTreeNode<T>::lt_function, nullptr, nullptr);
             lhs->function_ = name;
-            lexer.Lexan();
+            lexer.lexan();
             if (lexer.tok_ != Lexer::tok_lpar)
               FOUR_C_THROW("'(' expected after function name '%s'", name.c_str());
-            lexer.Lexan();
+            lexer.lexan();
             lhs->lhs_ = parse_expr(lexer);
             if (lexer.tok_ != Lexer::tok_rpar) FOUR_C_THROW("')' expected");
-            lexer.Lexan();
+            lexer.lexan();
             break;
           }
           else if (name == "atan2")
@@ -640,17 +640,17 @@ namespace Core::UTILS::SymbolicExpressionDetails
             lhs = std::make_unique<SyntaxTreeNode<T>>(
                 SyntaxTreeNode<T>::lt_function, nullptr, nullptr);
             lhs->function_ = name;
-            lexer.Lexan();
+            lexer.lexan();
             if (lexer.tok_ != Lexer::tok_lpar)
               FOUR_C_THROW("'(' expected after function name '%s'", name.c_str());
-            lexer.Lexan();
+            lexer.lexan();
             lhs->lhs_ = parse_expr(lexer);
             if (lexer.tok_ != Lexer::tok_comma) FOUR_C_THROW("',' expected");
-            lexer.Lexan();
+            lexer.lexan();
             lhs->rhs_ = parse_expr(lexer);
             if (lexer.tok_ != Lexer::tok_rpar)
               FOUR_C_THROW("')' expected for function name '%s'", name.c_str());
-            lexer.Lexan();
+            lexer.lexan();
             break;
           }
           else
@@ -659,7 +659,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
                 SyntaxTreeNode<T>::lt_variable, nullptr, nullptr);
             lhs->variable_ = name;
             parsed_variable_constant_names_.insert(name);
-            lexer.Lexan();
+            lexer.lexan();
           }
         }
         break;
@@ -688,7 +688,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
     {
       if (lexer.tok_ == Lexer::tok_pow)
       {
-        lexer.Lexan();
+        lexer.lexan();
         rhs = parse_primary(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
@@ -719,7 +719,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
     {
       if (lexer.tok_ == Lexer::tok_mul)
       {
-        lexer.Lexan();
+        lexer.lexan();
         rhs = parse_pow(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
@@ -727,7 +727,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
       }
       else if (lexer.tok_ == Lexer::tok_div)
       {
-        lexer.Lexan();
+        lexer.lexan();
         rhs = parse_pow(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
@@ -778,7 +778,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
     {
       if (lexer.tok_ == Lexer::tok_add)
       {
-        lexer.Lexan();
+        lexer.lexan();
         rhs = parse_term(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
@@ -786,7 +786,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
       }
       else if (lexer.tok_ == Lexer::tok_sub)
       {
-        lexer.Lexan();
+        lexer.lexan();
         rhs = parse_term(lexer);
         lhs = std::make_unique<SyntaxTreeNode<T>>(
             SyntaxTreeNode<T>::lt_operator, std::move(lhs), std::move(rhs));
@@ -976,28 +976,28 @@ Core::UTILS::SymbolicExpression<T>::SymbolicExpression(const std::string& expres
 
 
 template <typename T>
-auto Core::UTILS::SymbolicExpression<T>::Value(
+auto Core::UTILS::SymbolicExpression<T>::value(
     const std::map<std::string, ValueType>& variable_values) const -> ValueType
 {
-  return parser_for_value_->EvaluateExpression(variable_values);
+  return parser_for_value_->evaluate_expression(variable_values);
 }
 
 
 template <typename T>
-auto Core::UTILS::SymbolicExpression<T>::FirstDerivative(
+auto Core::UTILS::SymbolicExpression<T>::first_derivative(
     std::map<std::string, FirstDerivativeType> variable_values,
     const std::map<std::string, ValueType>& constant_values) const -> FirstDerivativeType
 {
-  return parser_for_firstderivative_->EvaluateDerivative(variable_values, constant_values);
+  return parser_for_firstderivative_->evaluate_derivative(variable_values, constant_values);
 }
 
 
 template <typename T>
-auto Core::UTILS::SymbolicExpression<T>::SecondDerivative(
+auto Core::UTILS::SymbolicExpression<T>::second_derivative(
     const std::map<std::string, SecondDerivativeType>& variable_values,
     const std::map<std::string, ValueType>& constant_values) const -> SecondDerivativeType
 {
-  return parser_for_secondderivative_->EvaluateDerivative(variable_values, constant_values);
+  return parser_for_secondderivative_->evaluate_derivative(variable_values, constant_values);
 }
 
 

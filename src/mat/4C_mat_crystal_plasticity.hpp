@@ -276,11 +276,11 @@ namespace Mat
   class CrystalPlasticityType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "CrystalPlasticityType"; }
+    std::string name() const override { return "CrystalPlasticityType"; }
 
-    static CrystalPlasticityType& Instance() { return instance_; };
+    static CrystalPlasticityType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static CrystalPlasticityType instance_;
@@ -309,9 +309,9 @@ namespace Mat
     //-----------------------------------------------------------------------------
 
     //! Return unique ParObject id
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return CrystalPlasticityType::Instance().UniqueParObjectId();
+      return CrystalPlasticityType::instance().unique_par_object_id();
     }
 
     //! Pack this class so it can be communicated
@@ -333,32 +333,33 @@ namespace Mat
     //-----------------------------------------------------------------------------
 
     //! return material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_crystplast;
     }
 
     //! check whether element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("Element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new CrystalPlasticity(*this));
     }
 
     //! return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -377,7 +378,7 @@ namespace Mat
 
     //! set up the slip/twinning directions and slip/twinning plane normals for the given lattice
     //! type
-    void SetupLatticeVectors();
+    void setup_lattice_vectors();
 
     //! read lattice orientation matrix from .dat file
     void setup_lattice_orientation(Input::LineDefinition* linedef);
@@ -411,17 +412,17 @@ namespace Mat
     );
 
     //! check if two vectors are parallel by checking the angle between them
-    bool CheckParallel(const Core::LinAlg::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
-        const Core::LinAlg::Matrix<3, 1>& vector_2                  //!< [IN] vector 2
+    bool check_parallel(const Core::LinAlg::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
+        const Core::LinAlg::Matrix<3, 1>& vector_2                   //!< [IN] vector 2
     );
     //! check if two vectors are orthogonal by checking the angle between them
-    bool CheckOrthogonal(const Core::LinAlg::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
-        const Core::LinAlg::Matrix<3, 1>& vector_2                    //!< [IN] vector 2
+    bool check_orthogonal(const Core::LinAlg::Matrix<3, 1>& vector_1,  //!< [IN] vector 1
+        const Core::LinAlg::Matrix<3, 1>& vector_2                     //!< [IN] vector 2
     );
     //! local Newton-Raphson iteration
     //! this method identifies the plastic shears gamma_res and defect densities def_dens_res
     //! as well as the stress PK2_res for a given deformation gradient F
-    void NewtonRaphson(Core::LinAlg::Matrix<3, 3>& deform_grad,  //!< [IN] deformation gradient
+    void newton_raphson(Core::LinAlg::Matrix<3, 3>& deform_grad,  //!< [IN] deformation gradient
         std::vector<double>& gamma_res,  //!< [OUT] result vector of plastic shears
         std::vector<double>&
             defect_densites_result,  //!< [OUT] result vector of defect densities (dislocation
@@ -435,7 +436,7 @@ namespace Mat
     //! and a given vector of plastic shears gamma_trial and
     //! sets up the respective residuals residuals_trial, the 2nd Piola-Kirchhoff stress PK2_trial
     //! and trial defect densities def_dens_trial
-    void SetupFlowRule(Core::LinAlg::Matrix<3, 3> deform_grad,  //!< [IN] deformation gradient
+    void setup_flow_rule(Core::LinAlg::Matrix<3, 3> deform_grad,  //!< [IN] deformation gradient
         std::vector<double> gamma_trial,  //!< [OUT] trial vector of plastic shears
         Core::LinAlg::Matrix<3, 3>&
             plastic_deform_grad_trial,  //!< [OUT] plastic deformation gradient

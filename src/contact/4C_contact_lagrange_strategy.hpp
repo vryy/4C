@@ -64,7 +64,7 @@ namespace CONTACT
     */
     bool active_set_semi_smooth_converged() const override
     {
-      bool semismooth = Core::UTILS::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
+      bool semismooth = Core::UTILS::IntegralValue<int>(params(), "SEMI_SMOOTH_NEWTON");
       if (semismooth)
         return activesetssconv_;
       else
@@ -83,7 +83,7 @@ namespace CONTACT
     */
     bool active_set_converged() override
     {
-      bool semismooth = Core::UTILS::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
+      bool semismooth = Core::UTILS::IntegralValue<int>(params(), "SEMI_SMOOTH_NEWTON");
       if (!semismooth)
         return activesetconv_;
       else
@@ -165,7 +165,7 @@ namespace CONTACT
      * @param kteff Jacobian matrix
      * @param rhs ?? Right-hand side of linear system or residual?
      */
-    virtual void CondenseFriction(
+    virtual void condense_friction(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs);
 
     /*! recover condensed Lagrange multiplier after linear solve
@@ -502,7 +502,7 @@ namespace CONTACT
     void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
-    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
 
    protected:

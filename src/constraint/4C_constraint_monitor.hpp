@@ -60,7 +60,7 @@ namespace CONSTRAINTS
     /*!
      \brief Return if there are monitors
     */
-    bool HaveMonitor() { return montype_ != none; };
+    bool have_monitor() { return montype_ != none; };
 
     /// Set state of the underlying discretization
     void set_state(const std::string& state,  ///< name of state to set
@@ -78,7 +78,7 @@ namespace CONSTRAINTS
 
 
     /// Return type of monitor
-    MoniType Type() { return montype_; }
+    MoniType type() { return montype_; }
 
 
    protected:

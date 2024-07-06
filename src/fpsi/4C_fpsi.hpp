@@ -25,16 +25,16 @@ namespace FPSI
     FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams);
 
     /// setup
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     /// setup solver
-    virtual void SetupSolver() = 0;
+    virtual void setup_solver() = 0;
 
     /// timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    virtual void TestResults(const Epetra_Comm& comm) = 0;
+    virtual void test_results(const Epetra_Comm& comm) = 0;
 
     /// read restart
     void read_restart(int restartstep) override = 0;

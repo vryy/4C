@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 void caldyn_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
   switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
@@ -70,16 +70,16 @@ void caldyn_drt()
 void dyn_nlnstructural_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // access the structural discretization
   Teuchos::RCP<Core::FE::Discretization> structdis =
-      Global::Problem::Instance()->GetDis("structure");
+      Global::Problem::instance()->get_dis("structure");
 
   // connect degrees of freedom for periodic boundary conditions
   {
     Core::Conditions::PeriodicBoundaryConditions pbc_struct(structdis);
 
-    if (pbc_struct.HasPBC())
+    if (pbc_struct.has_pbc())
     {
       pbc_struct.update_dofs_for_periodic_boundary_conditions();
     }
@@ -120,12 +120,12 @@ void dyn_nlnstructural_drt()
   }
 
   const bool write_initial_state = Core::UTILS::IntegralValue<int>(
-      Global::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
-  const bool write_final_state =
-      Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
+      Global::Problem::instance()->io_params(), "WRITE_INITIAL_STATE");
+  const bool write_final_state = Core::UTILS::IntegralValue<int>(
+      Global::Problem::instance()->io_params(), "WRITE_FINAL_STATE");
 
   // do restart
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
     structadapter->read_restart(restart);
@@ -138,12 +138,12 @@ void dyn_nlnstructural_drt()
       constexpr bool force_prepare = true;
       structadapter->prepare_output(force_prepare);
       structadapter->output();
-      structadapter->PostOutput();
+      structadapter->post_output();
     }
   }
 
   // run time integration
-  structadapter->Integrate();
+  structadapter->integrate();
 
   if (write_final_state && !structadapter->has_final_state_been_written())
   {
@@ -151,16 +151,16 @@ void dyn_nlnstructural_drt()
     constexpr bool force_prepare = true;
     structadapter->prepare_output(force_prepare);
     structadapter->output(forceWriteRestart);
-    structadapter->PostOutput();
+    structadapter->post_output();
   }
 
   // test results
-  Global::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
-  Global::Problem::Instance()->TestAll(structadapter->dof_row_map()->Comm());
+  Global::Problem::instance()->add_field_test(structadapter->create_field_test());
+  Global::Problem::instance()->test_all(structadapter->dof_row_map()->Comm());
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      Core::Communication::toTeuchosComm<int>(structdis->Comm());
+      Core::Communication::toTeuchosComm<int>(structdis->get_comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
 
   // time to go home...

@@ -80,26 +80,27 @@ namespace Adapter
         const std::string& couplingcond) override;
 
     /// perform interface integration
-    virtual void Integrate(Teuchos::RCP<const Epetra_Vector> disp, const double dt);
+    virtual void integrate(Teuchos::RCP<const Epetra_Vector> disp, const double dt);
 
     /// perform condensation of contact Lagrange multipliers
-    virtual void CondenseContact(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    virtual void condense_contact(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<const Epetra_Vector> disp,
         const double dt);
-    virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc, Teuchos::RCP<Epetra_Vector> tinc);
+    virtual void recover_coupled(
+        Teuchos::RCP<Epetra_Vector> sinc, Teuchos::RCP<Epetra_Vector> tinc);
 
-    void EvaluateRelMov();
+    void evaluate_rel_mov();
     void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps);
 
     /// check whether this displacement state has already been evaluated
-    virtual bool AlreadyEvaluated(Teuchos::RCP<const Epetra_Vector> disp);
+    virtual bool already_evaluated(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// Assemble linearization D_{ij,k}*x_i
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> AssembleEHLLinD(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_ehl_lin_d(
         const Teuchos::RCP<Epetra_Vector> x);
 
     /// Assemble linearization M_{il,k}*x_i
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> AssembleEHLLinM(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_ehl_lin_m(
         const Teuchos::RCP<Epetra_Vector> x);
 
     /// Assemble linearization G_{ij,k}*x_i
@@ -110,48 +111,54 @@ namespace Adapter
     virtual void read_restart(Core::IO::DiscretizationReader& reader);
     void create_active_slip_toggle(Teuchos::RCP<Epetra_Vector>* active,
         Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old = nullptr);
-    void CreateForceVec(Teuchos::RCP<Epetra_Vector>& n, Teuchos::RCP<Epetra_Vector>& t);
-    bool HasContact() { return contact_regularization_; }
-    double ContactRes() { return contact_rhs_norm_; }
-    double ContactIncr() { return contact_LM_incr_norm_; }
-    int ActiveContact();
-    int SlipContact();
+    void create_force_vec(Teuchos::RCP<Epetra_Vector>& n, Teuchos::RCP<Epetra_Vector>& t);
+    bool has_contact() { return contact_regularization_; }
+    double contact_res() { return contact_rhs_norm_; }
+    double contact_incr() { return contact_LM_incr_norm_; }
+    int active_contact();
+    int slip_contact();
     //@}
 
     //! @name Access
     //@{
 
     /// relative tangential velocity
-    virtual Teuchos::RCP<Epetra_Vector> RelTangVel() { return relTangVel_; }
+    virtual Teuchos::RCP<Epetra_Vector> rel_tang_vel() { return relTangVel_; }
     /// relative tangential velocity derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> RelTangVelDeriv() { return relTangVel_deriv_; }
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> rel_tang_vel_deriv()
+    {
+      return relTangVel_deriv_;
+    }
     /// average tangential velocity
-    virtual Teuchos::RCP<Epetra_Vector> AvTangVel() { return avTangVel_; }
+    virtual Teuchos::RCP<Epetra_Vector> av_tang_vel() { return avTangVel_; }
     /// average tangential velocity derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> AvTangVelDeriv() { return avTangVel_deriv_; }
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> av_tang_vel_deriv()
+    {
+      return avTangVel_deriv_;
+    }
     /// nodal gap (not weighted)
-    virtual Teuchos::RCP<Epetra_Vector> Nodal_Gap() { return nodal_gap_; }
+    virtual Teuchos::RCP<Epetra_Vector> nodal_gap() { return nodal_gap_; }
     /// nodal gap (not weighted) derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> Nodal_GapDeriv() { return deriv_nodal_gap_; }
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> nodal_gap_deriv() { return deriv_nodal_gap_; }
     /// nodal normals
-    virtual Teuchos::RCP<Epetra_Vector> Normals() { return normals_; }
+    virtual Teuchos::RCP<Epetra_Vector> normals() { return normals_; }
     /// nodal normals derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> NderivMatrix() { return Nderiv_; }
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> nderiv_matrix() { return Nderiv_; }
     /// surfrace gradient operator
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SurfGradMatrix() { return SurfGrad_; }
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> surf_grad_matrix() { return SurfGrad_; }
     /// slave+master dof map
-    virtual Teuchos::RCP<const Epetra_Map> SMdofMap() { return smdofrowmap_; }
+    virtual Teuchos::RCP<const Epetra_Map> s_mdof_map() { return smdofrowmap_; }
     //@}
 
    private:
     //! @name Unwanted parent functions
     //@{
-    Teuchos::RCP<Epetra_Vector> Gap() override
+    Teuchos::RCP<Epetra_Vector> gap() override
     {
       FOUR_C_THROW("stop");
       return Teuchos::null;
     }
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> NMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> n_matrix() override
     {
       FOUR_C_THROW("stop");
       return Teuchos::null;
@@ -169,7 +176,7 @@ namespace Adapter
       FOUR_C_THROW("stop");
     }
 
-    void EvaluateGeometry(std::vector<Teuchos::RCP<Mortar::IntCell>>&
+    void evaluate_geometry(std::vector<Teuchos::RCP<Mortar::IntCell>>&
             intcells  //!< vector of mortar integration cells
         ) override
     {

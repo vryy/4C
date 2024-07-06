@@ -31,8 +31,8 @@ void Discret::ELEMENTS::FluidPoroEleType::pre_evaluate(Core::FE::Discretization&
   if (action == FLD::set_poro_parameter)
   {
     Discret::ELEMENTS::FluidEleParameterPoro* fldpara =
-        Discret::ELEMENTS::FluidEleParameterPoro::Instance();
-    fldpara->set_element_poro_parameter(p, dis.Comm().MyPID());
+        Discret::ELEMENTS::FluidEleParameterPoro::instance();
+    fldpara->set_element_poro_parameter(p, dis.get_comm().MyPID());
   }
   else
   {
@@ -52,7 +52,7 @@ int Discret::ELEMENTS::FluidPoro::evaluate(Teuchos::ParameterList& params,
   const auto act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   std::string impltype = "poro";
@@ -77,7 +77,7 @@ int Discret::ELEMENTS::FluidPoro::evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
           ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -88,7 +88,7 @@ int Discret::ELEMENTS::FluidPoro::evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_porousflow_fluid_coupling:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
           ->evaluate(this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2,
               elevec3, true);
     }
@@ -116,8 +116,8 @@ int Discret::ELEMENTS::FluidPoro::evaluate(Teuchos::ParameterList& params,
     break;
     case FLD::calc_volume:
     {
-      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
-          ->EvaluateService(
+      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
+          ->evaluate_service(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
     case FLD::set_poro_parameter:

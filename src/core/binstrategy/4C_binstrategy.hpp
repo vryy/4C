@@ -154,14 +154,14 @@ namespace Core::Binstrategy
      *
      * \return const pointer to binning discretization
      */
-    inline Teuchos::RCP<Core::FE::Discretization> const& BinDiscret() const { return bindis_; }
+    inline Teuchos::RCP<Core::FE::Discretization> const& bin_discret() const { return bindis_; }
 
     /*!
      * \brief get const list of pointer to boundary row bins
      *
      * \return reference to const list of pointer to boundary row bins
      */
-    inline std::list<Core::Elements::Element*> const& BoundaryRowBins() const
+    inline std::list<Core::Elements::Element*> const& boundary_row_bins() const
     {
       return boundaryrowbins_;
     }
@@ -171,14 +171,14 @@ namespace Core::Binstrategy
      *
      * \return const set of boundary col bins ids
      */
-    inline std::set<int> const& BoundaryColBinsIds() const { return boundarycolbins_; }
+    inline std::set<int> const& boundary_col_bins_ids() const { return boundarycolbins_; }
 
     /*!
      * \brief get lower bound for bin size
      *
      * \return const ref to bin_size_lower_bound_
      */
-    inline double const& BinSizeLowerBound() const { return bin_size_lower_bound_; }
+    inline double const& bin_size_lower_bound() const { return bin_size_lower_bound_; }
 
     /*!
      * \brief get bin size in all three directions (does not have to be equal to
@@ -186,14 +186,14 @@ namespace Core::Binstrategy
      *
      * \return const pointer to array containing bin sizes in all tree directions
      */
-    inline std::array<double, 3> BinSize() const { return bin_size_; }
+    inline std::array<double, 3> bin_size() const { return bin_size_; }
 
     /*!
      * \brief get number of bins in all three directions
      *
      * \return const pointer to array containing number of bins in all directions
      */
-    inline std::array<int, 3> BinPerDir() const { return bin_per_dir_; }
+    inline std::array<int, 3> bin_per_dir() const { return bin_per_dir_; }
 
     /*!
      * \brief check if periodic boundary conditions are applied in at least one direction
@@ -259,7 +259,7 @@ namespace Core::Binstrategy
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether the gids are woned from myrank
      */
-    void GidsInijkRange(const int* ijk_range, std::set<int>& binIds, bool checkexistence) const;
+    void gids_inijk_range(const int* ijk_range, std::set<int>& binIds, bool checkexistence) const;
     /*!
      * \brief get all bin ids for given range of ijk
      *
@@ -267,7 +267,8 @@ namespace Core::Binstrategy
      * \param[out] binIds all bin ids in the specified range
      * \param[in] checkexistence check can be added whether gids are owned from myrank
      */
-    void GidsInijkRange(const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const;
+    void gids_inijk_range(
+        const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const;
 
     /*!
      * \brief get number of bins in ijk range
@@ -285,7 +286,7 @@ namespace Core::Binstrategy
      *
      * \return gid of requested bin
      */
-    int ConvertijkToGid(int* ijk) const;
+    int convertijk_to_gid(int* ijk) const;
 
     /*!
      * \brief convert bin id into ijk specification of bin
@@ -293,7 +294,7 @@ namespace Core::Binstrategy
      * \param[in] gid bin id to be converted in ijk
      * \param[out] ijk  resulting ijk
      */
-    void ConvertGidToijk(int gid, int* ijk) const;
+    void convert_gid_toijk(int gid, int* ijk) const;
 
     /*!
      * \brief convert a position to its corresponding bin
@@ -302,7 +303,7 @@ namespace Core::Binstrategy
      *
      * \return global id of corresponding bin
      */
-    int ConvertPosToGid(const double* pos) const;
+    int convert_pos_to_gid(const double* pos) const;
 
     /*!
      * \brief convert a position to its corresponding ijk
@@ -310,7 +311,7 @@ namespace Core::Binstrategy
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void ConvertPosToijk(const double* pos, int* ijk) const;
+    void convert_pos_toijk(const double* pos, int* ijk) const;
 
     /*!
      * \brief convert a position to its corresponding ijk
@@ -318,7 +319,7 @@ namespace Core::Binstrategy
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void ConvertPosToijk(const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const;
+    void convert_pos_toijk(const Core::LinAlg::Matrix<3, 1>& pos, int* ijk) const;
 
     /*!
      * \brief convert position to bin id
@@ -327,7 +328,7 @@ namespace Core::Binstrategy
      *
      * \return position of which the corresponding bin id is asked for
      */
-    int ConvertPosToGid(const Core::LinAlg::Matrix<3, 1>& pos) const;
+    int convert_pos_to_gid(const Core::LinAlg::Matrix<3, 1>& pos) const;
 
     /*!
      * \brief get 26 neighboring bin ids (one bin layer) to binID (if existing)
@@ -335,7 +336,7 @@ namespace Core::Binstrategy
      * \param[in] binId bin id whose connectivity is asked for
      * \param[out] binIds all neighboring bins on axes
      */
-    void GetNeighborBinIds(const int binId, std::vector<int>& binIds) const;
+    void get_neighbor_bin_ids(const int binId, std::vector<int>& binIds) const;
 
     /*!
      * \brief  27 neighboring bin ids to binId and myself
@@ -351,7 +352,8 @@ namespace Core::Binstrategy
      * \param[in] binId bin id of which corners are calculated
      * \param[out] bincorners position of corners of given bin
      */
-    void GetBinCorners(const int binId, std::vector<Core::LinAlg::Matrix<3, 1>>& bincorners) const;
+    void get_bin_corners(
+        const int binId, std::vector<Core::LinAlg::Matrix<3, 1>>& bincorners) const;
 
     /*!
      * \brief get all bin centers (needed for repartitioning)
@@ -359,7 +361,7 @@ namespace Core::Binstrategy
      * \param[in] binrowmap bin row map
      * \param[out] bincenters centers of all row bins
      */
-    void GetAllBinCenters(
+    void get_all_bin_centers(
         Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters) const;
 
     /*!
@@ -369,26 +371,26 @@ namespace Core::Binstrategy
      *
      * \return centroid of requested bin
      */
-    Core::LinAlg::Matrix<3, 1> GetBinCentroid(const int binId) const;
+    Core::LinAlg::Matrix<3, 1> get_bin_centroid(const int binId) const;
 
     /*!
      * \brief get minimal size of bins
      *
      * \return minimal bin size
      */
-    double GetMinBinSize() const;
+    double get_min_bin_size() const;
 
     /*!
      * \brief get maximal size of bins
      *
      * \return maximal bin size
      */
-    double GetMaxBinSize() const;
+    double get_max_bin_size() const;
 
     /*!
      * \brief build periodic boundary conditions
      */
-    void BuildPeriodicBC(const Teuchos::ParameterList& binning_params);
+    void build_periodic_bc(const Teuchos::ParameterList& binning_params);
 
     /*!
      * \brief determine boundary row bins
@@ -417,7 +419,7 @@ namespace Core::Binstrategy
      * \param[in] step current step
      * \param[out] time current time
      */
-    void WriteBinOutput(int const step, double const time);
+    void write_bin_output(int const step, double const time);
 
     /*!
      * \brief distribute bins via recursive coordinate bisection
@@ -528,7 +530,7 @@ namespace Core::Binstrategy
      * \param[in] extended_bin_to_row_ele_map map containing bins [key] and elements[std::set]
      * that belong to it
      */
-    void AssignElesToBins(Teuchos::RCP<Core::FE::Discretization> discret,
+    void assign_eles_to_bins(Teuchos::RCP<Core::FE::Discretization> discret,
         std::map<int, std::set<int>> const& extended_bin_to_row_ele_map,
         const std::function<Utils::BinContentType(const Core::Elements::Element* element)>&) const;
 
@@ -540,7 +542,7 @@ namespace Core::Binstrategy
      * \param[in] binIds bins you want to look for your element type
      * \param[in] roweles flag indicating to just consider elements owned by myrank
      */
-    void GetBinContent(std::set<Core::Elements::Element*>& eles,
+    void get_bin_content(std::set<Core::Elements::Element*>& eles,
         const std::vector<Core::Binstrategy::Utils::BinContentType>& bincontent,
         std::vector<int>& binIds, bool roweles = false) const;
 
@@ -641,7 +643,7 @@ namespace Core::Binstrategy
      *
      * \return extended element column map
      */
-    Teuchos::RCP<Epetra_Map> ExtendElementColMap(
+    Teuchos::RCP<Epetra_Map> extend_element_col_map(
         std::map<int, std::set<int>> const& bin_to_row_ele_map,
         std::map<int, std::set<int>>& bin_to_row_ele_map_to_lookup_requests,
         std::map<int, std::set<int>>& ext_bin_to_ele_map,

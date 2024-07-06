@@ -229,7 +229,7 @@ namespace Core::Geo
        \brief checks, if this node has a parent node
        \return true if node has parent
        */
-      bool hasParent() const
+      bool has_parent() const
       {
         if (parent_ != nullptr)
           return true;
@@ -241,46 +241,46 @@ namespace Core::Geo
        \brief sets element list of a treenode
        \param elementsByLabel                elements sorted according XFEM label
        */
-      void setElementList(const std::map<int, std::set<int>>& elementsByLabel);
+      void set_element_list(const std::map<int, std::set<int>>& elementsByLabel);
 
       /*!
        \brief sets nearestObject  of a treenode
        \param nearestObject                 nearestObject
        */
-      void setNearestObject(const Core::Geo::NearestObject& nearestObject);
+      void set_nearest_object(const Core::Geo::NearestObject& nearestObject);
 
       /*!
        \brief returns tree node type INNER_NODE or LEAF_NODE
        \return returns tree node type INNER_NODE or LEAF_NODE
        */
-      TreeNodeType getTreeNodeType() const { return tree_node_type_; };
+      TreeNodeType get_tree_node_type() const { return tree_node_type_; };
 
       /*!
        \brief returns tree type OCTTREE or QUADTREE
        \return returns tree type OCTTREE or QUADTREE
        */
-      TreeType getTreeType() const { return tree_type_; };
+      TreeType get_tree_type() const { return tree_type_; };
 
       /*!
        \brief return number of children for tree type
        \return return number of children for tree type
        */
-      int getNumChildren() const;
+      int get_num_children() const;
 
       /*!
        \brief return pointer to the child node determined by the child index
        \param index   child node index
        \return retruns pointer to child node
        */
-      Teuchos::RCP<Core::Geo::SearchTree::TreeNode> getChild(const int index) const;
+      Teuchos::RCP<Core::Geo::SearchTree::TreeNode> get_child(const int index) const;
 
       /*!
        \brief return pointer to the parent node
        \return pointer to parent tree node
        */
-      const TreeNode* getParent() const
+      const TreeNode* get_parent() const
       {
-        if (this->hasParent()) return parent_;
+        if (this->has_parent()) return parent_;
         return nullptr;
       };
 
@@ -288,14 +288,14 @@ namespace Core::Geo
        \brief returns elementList
        \return element list
        */
-      const std::map<int, std::set<int>>& getElementList() const { return element_list_; };
+      const std::map<int, std::set<int>>& get_element_list() const { return element_list_; };
 
       /*!
        \brief insert an element into the tree
        \param labelId              label id
        \param eleId                global ele id
        */
-      void insertElement(const int labelId, const int eleId);
+      void insert_element(const int labelId, const int eleId);
 
       /*!
        \brief returns a set of gids of nodes lying in a radius around a given point
@@ -331,7 +331,7 @@ namespace Core::Geo
        \param collisions          ids of elements of overlapping current AABBs
        \return set of master contact element gids
        */
-      void searchCollisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
+      void search_collisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
           const Core::LinAlg::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions);
 
       /*!
@@ -343,7 +343,7 @@ namespace Core::Geo
        \param collisions          ids of elements of overlapping current 18-DOPs
        \return set of master contact element gids
        */
-      void searchCollisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentBVs,
+      void search_collisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentBVs,
           const Core::LinAlg::Matrix<9, 2>& queryBV, const int label, std::set<int>& collisions);
     };  // class TreeNode
 
@@ -367,7 +367,7 @@ namespace Core::Geo
      \param elementsByLabel      elementsByLabel
      \param treetype             octtree or quadtree
      */
-    void initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
+    void initialize_tree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
         const std::map<int, std::set<int>>& elementsByLabel, const TreeType treetype);
 
     /*!
@@ -378,10 +378,10 @@ namespace Core::Geo
      \param dis                  discretization
      \param treetype             octtree or quadtree
      */
-    void initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
+    void initialize_tree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
         const Core::FE::Discretization& dis, const TreeType treetype);
 
-    void initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox, const TreeType treetype);
+    void initialize_tree(const Core::LinAlg::Matrix<3, 2>& nodeBox, const TreeType treetype);
 
     /*!
      \brief destroys the old tree if its exists and builds the root node of a
@@ -394,7 +394,7 @@ namespace Core::Geo
     void initialize_tree_slide_ale(const Core::LinAlg::Matrix<3, 2>& nodeBox,
         std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const TreeType treetype);
 
-    void insertElement(const int eid);
+    void insert_element(const int eid);
 
     /*!
      \brief returns a set of gids of nodes lying in a radius around a given point for each object
@@ -429,7 +429,7 @@ namespace Core::Geo
      \param label               label ???
      \return set of master contact element gids
      */
-    void searchCollisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
+    void search_collisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
         const Core::LinAlg::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions);
 
     /*!
@@ -440,7 +440,7 @@ namespace Core::Geo
      \param label               label ???
      \return set of master contact element gids
      */
-    void searchCollisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs,
+    void search_collisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs,
         const Core::LinAlg::Matrix<9, 2>& queryKDOP, const int label, std::set<int>& contactEleIds);
 
    private:

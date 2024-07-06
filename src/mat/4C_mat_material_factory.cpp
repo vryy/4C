@@ -187,17 +187,17 @@ namespace
 Teuchos::RCP<Core::Mat::Material> Mat::Factory(int matnum)
 {
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::instance(probinst)->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matnum);
+  auto* curmat = Global::Problem::instance(probinst)->materials()->parameter_by_id(matnum);
   return curmat->create_material();
 }
 

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>::CreateGeometryPair(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>::create_geometry_pair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
@@ -31,7 +31,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>::Creat
 
   // Explicitly create the cross section projection geometry pair here and check that the correct
   // parameter is set in the input file.
-  Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
+  Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->get_strategy();
   if (strategy != Inpar::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
     FOUR_C_THROW(
         "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
@@ -52,13 +52,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam,
 {
   auto evaluate_position = [&](const auto& q, auto& r_beam)
   {
-    const auto eta = integration_point.GetEta();
+    const auto eta = integration_point.get_eta();
     Core::LinAlg::Matrix<3, 3, double> triad;
     get_triad_at_xi_double(eta, triad, reference);
     Core::LinAlg::Matrix<3, 1, double> r_cross_section_ref, r_cross_section_cur;
     r_cross_section_ref(0) = 0.0;
-    r_cross_section_ref(1) = integration_point.GetEtaCrossSection()(0);
-    r_cross_section_ref(2) = integration_point.GetEtaCrossSection()(1);
+    r_cross_section_ref(1) = integration_point.get_eta_cross_section()(0);
+    r_cross_section_ref(2) = integration_point.get_eta_cross_section()(1);
     r_cross_section_cur.multiply(triad, r_cross_section_ref);
     GEOMETRYPAIR::EvaluatePosition<Beam>(eta, q, r_beam);
     r_beam += r_cross_section_cur;
@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam,
   }
   else
   {
-    evaluate_position(GEOMETRYPAIR::ElementDataToDouble<Beam>::ToDouble(this->ele1pos_), r_beam);
+    evaluate_position(GEOMETRYPAIR::ElementDataToDouble<Beam>::to_double(this->ele1pos_), r_beam);
   }
 }
 

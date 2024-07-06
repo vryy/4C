@@ -32,17 +32,18 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::setup(
   patch_dof_gid_.clear();
   std::vector<int> lmrowowner;
   std::vector<int> lmstride;
-  this->GetDrtFaceElement()->LocationVector(*discret, this->patch_dof_gid_, lmrowowner, lmstride);
+  this->get_drt_face_element()->location_vector(
+      *discret, this->patch_dof_gid_, lmrowowner, lmstride);
 
   // Set the reference position from the nodes connected to this face.
   // At the moment we need to get the structure discretization at this point since the beam
   // interaction discretization is a copy - without the nurbs information
-  face_reference_position_ =
-      GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(this->GetDrtFaceElement());
-  const Core::Nodes::Node* const* nodes = drt_face_element_->Nodes();
+  face_reference_position_ = GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(
+      this->get_drt_face_element());
+  const Core::Nodes::Node* const* nodes = drt_face_element_->nodes();
   for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      face_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
+      face_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->x()[i_dim];
 }
 
 /**
@@ -59,7 +60,7 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::set_state(
 
   // Create the full length FAD types.
   face_position_ = GEOMETRYPAIR::InitializeElementData<Surface, ScalarType>::initialize(
-      this->GetDrtFaceElement());
+      this->get_drt_face_element());
   const unsigned int n_patch_dof = patch_dof_gid_.size();
   std::vector<ScalarType> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
@@ -112,9 +113,9 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::evaluate_face_norma
     auto get_position_double = [&]()
     {
       if (reference)
-        return ElementDataToDouble<Surface>::ToDouble(face_reference_position_);
+        return ElementDataToDouble<Surface>::to_double(face_reference_position_);
       else
-        return ElementDataToDouble<Surface>::ToDouble(face_position_);
+        return ElementDataToDouble<Surface>::to_double(face_position_);
     };
 
     const auto position_double = get_position_double();
@@ -149,9 +150,9 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
   // First add the node GIDs of this face.
   for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
   {
-    const Core::Nodes::Node* my_node = this->drt_face_element_->Nodes()[i_node];
-    my_node_gid.push_back(my_node->Id());
-    discret->Dof(my_node, 0, temp_node_dof_gid);
+    const Core::Nodes::Node* my_node = this->drt_face_element_->nodes()[i_node];
+    my_node_gid.push_back(my_node->id());
+    discret->dof(my_node, 0, temp_node_dof_gid);
   }
 
   // Add the node GIDs of the connected faces.
@@ -159,32 +160,32 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
   for (int i_node = 0; i_node < this->drt_face_element_->num_node(); i_node++)
   {
     // Loop over all elements connected to a node of this face.
-    const Core::Nodes::Node* node = this->drt_face_element_->Nodes()[i_node];
-    for (int i_element = 0; i_element < node->NumElement(); i_element++)
+    const Core::Nodes::Node* node = this->drt_face_element_->nodes()[i_node];
+    for (int i_element = 0; i_element < node->num_element(); i_element++)
     {
-      const Core::Elements::Element* element = node->Elements()[i_element];
+      const Core::Elements::Element* element = node->elements()[i_element];
 
       // Do nothing for this element.
-      if (element->Id() == this->drt_face_element_->ParentElementId()) continue;
+      if (element->id() == this->drt_face_element_->parent_element_id()) continue;
 
       // Check if the element was already searched for.
-      if (connected_faces_.find(element->Id()) == connected_faces_.end())
+      if (connected_faces_.find(element->id()) == connected_faces_.end())
       {
         temp_connected_face.node_lid_map_.clear();
         temp_connected_face.my_node_patch_lid_.clear();
 
         // Check if the element is part of the surface condition.
-        auto find_in_faces = face_elements.find(element->Id());
+        auto find_in_faces = face_elements.find(element->id());
         if (find_in_faces != face_elements.end())
         {
           // Add the node GIDs of this element.
           for (int i_node_connected_element = 0;
-               i_node_connected_element < find_in_faces->second->GetDrtFaceElement()->num_node();
+               i_node_connected_element < find_in_faces->second->get_drt_face_element()->num_node();
                i_node_connected_element++)
           {
             const Core::Nodes::Node* other_node =
-                find_in_faces->second->GetDrtFaceElement()->Nodes()[i_node_connected_element];
-            const int other_node_id = other_node->Id();
+                find_in_faces->second->get_drt_face_element()->nodes()[i_node_connected_element];
+            const int other_node_id = other_node->id();
 
             // Check if the other node is part of this face element.
             auto it = std::find(my_node_gid.begin(), my_node_gid.end(), other_node_id);
@@ -198,7 +199,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
               {
                 // This node was not processed yet, so add it to other_faces_node_gid.
                 other_faces_node_gid.push_back(other_node_id);
-                discret->Dof(other_node, 0, temp_node_dof_gid);
+                discret->dof(other_node, 0, temp_node_dof_gid);
                 for (const auto& value : temp_node_dof_gid) this->patch_dof_gid_.push_back(value);
 
                 // Add the patch id of this other node to the face element tracker.
@@ -223,7 +224,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
           }
 
           // Add this element to the already searched connected elements.
-          connected_faces_[element->Id()] = temp_connected_face;
+          connected_faces_[element->id()] = temp_connected_face;
         }
       }
     }
@@ -251,7 +252,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
 
   // Create the full length FAD types.
   this->face_position_ = GEOMETRYPAIR::InitializeElementData<Surface, ScalarType>::initialize(
-      this->GetDrtFaceElement());
+      this->get_drt_face_element());
   const unsigned int n_patch_dof = this->patch_dof_gid_.size();
   std::vector<ScalarType> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
@@ -287,8 +288,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
 
       // Setup an element data container for the other element, but with the FAD type and ordering
       // for this patch
-      auto q_other_face =
-          InitializeElementData<Surface, ScalarType>::initialize(face_element->GetDrtFaceElement());
+      auto q_other_face = InitializeElementData<Surface, ScalarType>::initialize(
+          face_element->get_drt_face_element());
       for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -422,8 +423,8 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
   std::vector<int> surface_gid;
   std::vector<int> lmrowowner;
   std::vector<int> lmstride;
-  this->GetDrtFaceElement()->LocationVector(*discret, surface_gid, lmrowowner, lmstride);
-  this->GetDrtFaceElement()->parent_element()->LocationVector(
+  this->get_drt_face_element()->location_vector(*discret, surface_gid, lmrowowner, lmstride);
+  this->get_drt_face_element()->parent_element()->location_vector(
       *discret, this->patch_dof_gid_, lmrowowner, lmstride);
 
   // Safety checks.
@@ -449,10 +450,10 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
       GEOMETRYPAIR::InitializeElementData<Volume, double>::initialize(nullptr);
   this->face_reference_position_ =
       GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(nullptr);
-  const Core::Nodes::Node* const* nodes = this->drt_face_element_->parent_element()->Nodes();
+  const Core::Nodes::Node* const* nodes = this->drt_face_element_->parent_element()->nodes();
   for (unsigned int i_node = 0; i_node < Volume::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      volume_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
+      volume_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->x()[i_dim];
   for (unsigned int i_dof_surf = 0; i_dof_surf < Surface::n_dof_; i_dof_surf++)
     this->face_reference_position_.element_position_(i_dof_surf) =
         volume_reference_position_.element_position_(surface_dof_lid_map_(i_dof_surf));
@@ -526,7 +527,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
     FOUR_C_THROW("Could not map face to volume.");
 
   // Calculate the reference normals.
-  CalculateNormals(volume_reference_position_, this->face_reference_position_,
+  calculate_normals(volume_reference_position_, this->face_reference_position_,
       this->face_reference_position_.nodal_normals_);
 }
 
@@ -560,7 +561,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
     this->face_position_.element_position_(i_dof) =
         volume_position_.element_position_(surface_dof_lid_map_(i_dof));
 
-  CalculateNormals(volume_position_, this->face_position_, this->face_position_.nodal_normals_);
+  calculate_normals(volume_position_, this->face_position_, this->face_position_.nodal_normals_);
 }
 
 /**
@@ -568,8 +569,9 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
  */
 template <typename Surface, typename ScalarType, typename Volume>
 template <typename ScalarTypeNormal>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>::CalculateNormals(
-    const GEOMETRYPAIR::ElementData<Volume, ScalarTypeNormal>& volume_position,
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType,
+    Volume>::calculate_normals(const GEOMETRYPAIR::ElementData<Volume, ScalarTypeNormal>&
+                                   volume_position,
     const GEOMETRYPAIR::ElementData<Surface, ScalarTypeNormal>& surface_position,
     Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, ScalarTypeNormal>& normals) const
 {
@@ -655,7 +657,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   const bool is_fad = fad_order > 0;
   if (not is_fad)
   {
-    switch (face_element->Shape())
+    switch (face_element->shape())
     {
       case Core::FE::CellType::quad4:
         return Teuchos::rcp(
@@ -693,7 +695,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
       {
         case 1:
         {
-          switch (face_element->Shape())
+          switch (face_element->shape())
           {
             case Core::FE::CellType::quad4:
               return Teuchos::rcp(new FaceElementPatchTemplate<t_quad4,
@@ -723,7 +725,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
         }
         case 2:
         {
-          switch (face_element->Shape())
+          switch (face_element->shape())
           {
             case Core::FE::CellType::quad4:
               return Teuchos::rcp(
@@ -759,7 +761,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
     }
     else if (surface_normal_strategy == Inpar::GEOMETRYPAIR::SurfaceNormals::extended_volume)
     {
-      switch (face_element->Shape())
+      switch (face_element->shape())
       {
         case Core::FE::CellType::quad4:
           return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad4,

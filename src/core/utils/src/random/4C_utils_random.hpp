@@ -27,25 +27,25 @@ namespace Core::UTILS
   {
    public:
     /// get a random number
-    double Uni();
+    double uni();
 
     /// get a vector of random numbers of size count
-    void Uni(std::vector<double>& randvec, int count);
+    void uni(std::vector<double>& randvec, int count);
 
     /// get a random number
-    double Normal();
+    double normal();
 
     /// get a vector of random numbers of size count
-    void Normal(std::vector<double>& randvec, int count);
+    void normal(std::vector<double>& randvec, int count);
 
     /// set the random seed
-    void SetRandSeed(const unsigned int seed);
+    void set_rand_seed(const unsigned int seed);
 
     /// set the range for the uniform rng
-    void SetRandRange(const double lower, const double upper);
+    void set_rand_range(const double lower, const double upper);
 
     /// set the mean and variance for the normal rng
-    void SetMeanVariance(const double mean, const double var);
+    void set_mean_variance(const double mean, const double var);
 
    private:
     /// @name Random number generation

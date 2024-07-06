@@ -68,7 +68,7 @@ namespace
   // available.
   auto CreateBuiltinFunctionDispatch(const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    switch (Global::Problem::Instance()->NDim())
+    switch (Global::Problem::instance()->n_dim())
     {
       case 1:
         return CreateBuiltinFunction<1>(function_line_defs);
@@ -77,7 +77,7 @@ namespace
       case 3:
         return CreateBuiltinFunction<3>(function_line_defs);
       default:
-        FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
+        FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
     }
   }
 }  // namespace
@@ -158,7 +158,7 @@ void Core::UTILS::FunctionManager::add_function_definition(
 }
 
 
-void Core::UTILS::FunctionManager::ReadInput(Core::IO::DatFileReader& reader)
+void Core::UTILS::FunctionManager::read_input(Core::IO::DatFileReader& reader)
 {
   functions_.clear();
 
@@ -193,7 +193,7 @@ void Core::UTILS::FunctionManager::ReadInput(Core::IO::DatFileReader& reader)
 
           // If we end up here, the current sections function definition could not be parsed.
           {
-            const auto section_line_defs = reader.Section("--FUNCT" + std::to_string(funct_suffix));
+            const auto section_line_defs = reader.section("--FUNCT" + std::to_string(funct_suffix));
             std::stringstream ss;
             for (const auto& line : section_line_defs)
             {

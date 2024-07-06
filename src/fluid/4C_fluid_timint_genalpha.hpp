@@ -58,7 +58,7 @@ namespace FLD
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
 
     */
-    void SetTheta() override;
+    void set_theta() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -90,13 +90,13 @@ namespace FLD
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    void SetStateTimInt() override;
+    void set_state_tim_int() override;
 
     /*!
     \brief Set time factor in GenAlpha
 
     */
-    double SetTimeFac() override;
+    double set_time_fac() override;
 
     /*!
     \brief Calculate time derivatives for
@@ -123,25 +123,25 @@ namespace FLD
     \brief Set gamma to a value
 
     */
-    void SetGamma(Teuchos::ParameterList& eleparams) override;
+    void set_gamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    void Sep_Multiply() override;
+    void sep_multiply() override;
 
     /*!
     \brief Update velaf_ for GenAlpha
 
     */
-    void UpdateVelafGenAlpha() override;
+    void update_velaf_gen_alpha() override;
 
     /*!
     \brief Output of filtered velocity
 
     */
-    void OutputofFilteredVel(
+    void outputof_filtered_vel(
         Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
 
     /*!
@@ -157,13 +157,13 @@ namespace FLD
     \brief return scheme-specific time integration parameter
 
     */
-    double TimIntParam() const override { return (1.0 - alphaF_); }
+    double tim_int_param() const override { return (1.0 - alphaF_); }
 
-    virtual double AlphaM() const { return alphaM_; }
+    virtual double alpha_m() const { return alphaM_; }
 
     //! @name methods for fsi
     /// Extrapolation of vectors from mid-point to end-point t_{n+1}
-    Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
+    Teuchos::RCP<Epetra_Vector> extrapolate_end_point(
         Teuchos::RCP<Epetra_Vector> vecn,  ///< vector at time level t_n
         Teuchos::RCP<Epetra_Vector> vecm   ///< vector at time level of equilibrium
         ) override;

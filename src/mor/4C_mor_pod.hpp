@@ -52,25 +52,25 @@ namespace ModelOrderRed
      * Number of Columns: int
      * Values (row-wise): float
      */
-    void ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
+    void read_matrix(std::string filename, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ReduceDiagnoal(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_diagnoal(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ReduceOffDiagonal(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_off_diagonal(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
 
-    Teuchos::RCP<Epetra_MultiVector> ReduceRHS(Teuchos::RCP<Epetra_MultiVector> v);
+    Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Teuchos::RCP<Epetra_MultiVector> v);
 
-    Teuchos::RCP<Epetra_Vector> ReduceResidual(Teuchos::RCP<Epetra_Vector> v);
+    Teuchos::RCP<Epetra_Vector> reduce_residual(Teuchos::RCP<Epetra_Vector> v);
 
-    Teuchos::RCP<Epetra_Vector> ExtendSolution(Teuchos::RCP<Epetra_Vector> v);
+    Teuchos::RCP<Epetra_Vector> extend_solution(Teuchos::RCP<Epetra_Vector> v);
 
-    bool HaveMOR() { return havemor_; };
+    bool have_mor() { return havemor_; };
 
-    Teuchos::RCP<Epetra_MultiVector> GetPODMatrix() { return projmatrix_; };
+    Teuchos::RCP<Epetra_MultiVector> get_pod_matrix() { return projmatrix_; };
 
-    int GetRedDim() { return projmatrix_->NumVectors(); };
+    int get_red_dim() { return projmatrix_->NumVectors(); };
 
    private:
     void multiply_epetra_multi_vectors(Teuchos::RCP<Epetra_MultiVector>, char,

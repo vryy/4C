@@ -54,7 +54,7 @@ namespace
     x_test(2, 7) = 1.0;
 
     unsigned rc = 0;
-    EXPECT_EQ(analyser_->isValid(x_test, &rc), true);
+    EXPECT_EQ(analyser_->is_valid(x_test, &rc), true);
     EXPECT_EQ(rc, 0);
   }
 
@@ -90,7 +90,7 @@ namespace
     x_test(2, 7) = 1.45521546591891;
 
     unsigned rc = 0;
-    EXPECT_EQ(analyser_->isValid(x_test, &rc), false);
+    EXPECT_EQ(analyser_->is_valid(x_test, &rc), false);
     EXPECT_EQ(rc, 3);
   }
 
@@ -126,7 +126,7 @@ namespace
     x_test(2, 7) = 1.93234;
 
     unsigned rc = 0;
-    EXPECT_EQ(analyser_->isValid(x_test, &rc), true);
+    EXPECT_EQ(analyser_->is_valid(x_test, &rc), true);
     EXPECT_EQ(rc, 1);
   }
 
@@ -162,7 +162,7 @@ namespace
     x_test(2, 7) = 0.0115054780724508;
 
     unsigned rc = 0;
-    EXPECT_EQ(analyser_->isValid(x_test, &rc), false);
+    EXPECT_EQ(analyser_->is_valid(x_test, &rc), false);
     EXPECT_EQ(rc, 0);
   }
 }  // namespace

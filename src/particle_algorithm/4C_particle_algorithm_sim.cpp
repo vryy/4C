@@ -25,16 +25,16 @@ FOUR_C_NAMESPACE_OPEN
 void particle_drt()
 {
   // get instance of global problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // get local communicator
-  const Epetra_Comm& comm = *problem->GetCommunicators()->LocalComm().get();
+  const Epetra_Comm& comm = *problem->get_communicators()->local_comm().get();
 
   // get parameter lists
-  const Teuchos::ParameterList& params = problem->ParticleParams();
+  const Teuchos::ParameterList& params = problem->particle_params();
 
   // reference to vector of initial particles
-  std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles = problem->Particles();
+  std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles = problem->particles();
 
   // create and init particle algorithm
   auto particlealgorithm = std::unique_ptr<PARTICLEALGORITHM::ParticleAlgorithm>(
@@ -49,20 +49,20 @@ void particle_drt()
   particlealgorithm->setup();
 
   // solve particle problem
-  particlealgorithm->Timeloop();
+  particlealgorithm->timeloop();
 
   // perform result tests
   {
     // create particle field specific result test objects
     std::vector<std::shared_ptr<Core::UTILS::ResultTest>> allresulttests =
-        particlealgorithm->CreateResultTests();
+        particlealgorithm->create_result_tests();
 
     // add particle field specific result test objects
     for (auto& resulttest : allresulttests)
-      if (resulttest) problem->AddFieldTest(Teuchos::rcp(resulttest));
+      if (resulttest) problem->add_field_test(Teuchos::rcp(resulttest));
 
     // perform all tests
-    problem->TestAll(comm);
+    problem->test_all(comm);
   }
 
   // print summary statistics for all timers

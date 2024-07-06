@@ -44,7 +44,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
     :  // call constructor for "nontrivial" objects
       solver_(solver),
       params_(params),
-      myrank_(actdis->Comm().MyPID()),
+      myrank_(actdis->get_comm().MyPID()),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
       modified_reynolds_(Core::UTILS::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
@@ -61,7 +61,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
       dtele_(0.0),
       dtsolve_(0.0),
       iternum_(0),
-      nsd_(Global::Problem::Instance()->NDim()),
+      nsd_(Global::Problem::instance()->n_dim()),
       // Initialization of degrees of freedom variables
       prenp_(Teuchos::null),
       nds_disp_(-1),
@@ -98,10 +98,10 @@ void LUBRICATION::TimIntImpl::init()
   // -------------------------------------------------------------------
   incremental_ = true;
 
-  discret_->compute_null_space_if_necessary(solver_->Params(), true);
+  discret_->compute_null_space_if_necessary(solver_->params(), true);
 
   // ensure that degrees of freedom in the discretization have been set
-  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
+  if ((not discret_->filled()) or (not discret_->have_dofs()))
     FOUR_C_THROW("discretization not completed");
 
   // -------------------------------------------------------------------
@@ -135,7 +135,7 @@ void LUBRICATION::TimIntImpl::init()
     // other parameters needed by the elements
     eleparams.set("total time", time_);
     eleparams.set<const Core::UTILS::FunctionManager*>(
-        "function_manager", &Global::Problem::Instance()->FunctionManager());
+        "function_manager", &Global::Problem::instance()->function_manager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -285,20 +285,20 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
   int err(0);
   const int heightfuncno = params_->get<int>("HFUNCNO");
   // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
   {
     // get the processor local node
-    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
     // get dofs associated with current node
-    std::vector<int> nodedofs = discret_->Dof(nds, lnode);
+    std::vector<int> nodedofs = discret_->dof(nds, lnode);
 
     for (int index = 0; index < nsd_; ++index)
     {
       double heightfuncvalue =
-          Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
-              .evaluate(lnode->X().data(), time_, index);
+          Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
+              .evaluate(lnode->x().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -329,19 +329,19 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   int err(0);
   const int velfuncno = params_->get<int>("VELFUNCNO");
   // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
   {
     // get the processor local node
-    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
     // get dofs associated with current node
-    std::vector<int> nodedofs = discret_->Dof(nds, lnode);
+    std::vector<int> nodedofs = discret_->dof(nds, lnode);
 
     for (int index = 0; index < nsd_; ++index)
     {
-      double velfuncvalue = Global::Problem::Instance()
-                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
-                                .evaluate(lnode->X().data(), time_, index);
+      double velfuncvalue = Global::Problem::instance()
+                                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+                                .evaluate(lnode->x().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -359,7 +359,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
 /*----------------------------------------------------------------------*
  | contains the time loop                                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::TimeLoop()
+void LUBRICATION::TimIntImpl::time_loop()
 {
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:  + time loop");
@@ -385,14 +385,14 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     else
     {
       set_height_field(1, Teuchos::null);
-      SetHeightDotField(1, Teuchos::null);
+      set_height_dot_field(1, Teuchos::null);
       set_relative_velocity_field(1, Teuchos::null);
       set_average_velocity_field(1, Teuchos::null);
     }
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
-    Solve();
+    solve();
 
     // -------------------------------------------------------------------
     // evaluate error for problems with analytical solution
@@ -416,7 +416,7 @@ void LUBRICATION::TimIntImpl::TimeLoop()
 /*----------------------------------------------------------------------*
  | contains the call of linear/nonlinear solver             wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::Solve()
+void LUBRICATION::TimIntImpl::solve()
 {
   // -----------------------------------------------------------------
   //                    always solve nonlinear equation
@@ -431,7 +431,7 @@ void LUBRICATION::TimIntImpl::Solve()
 /*----------------------------------------------------------------------*
  | apply moving mesh data                                     gjb 05/09 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp, int nds)
+void LUBRICATION::TimIntImpl::apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp, int nds)
 {
   //---------------------------------------------------------------------------
   // only required in ALE case
@@ -489,7 +489,7 @@ void LUBRICATION::TimIntImpl::output(const int num)
     if (outputgmsh_) output_to_gmsh(step_, time_);
 
     // write mean values of pressure(s)
-    OutputMeanPressures(num);
+    output_mean_pressures(num);
   }
 
   if ((step_ != 0) and (output_state_matlab_))
@@ -530,13 +530,13 @@ void LUBRICATION::TimIntImpl::apply_dirichlet_bc(
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
   p.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+      "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->evaluate_dirichlet(p, prenp, predt, Teuchos::null, Teuchos::null, dbcmaps_);
-  discret_->ClearState();
+  discret_->clear_state();
 
   return;
 }  // LUBRICATION::TimIntImpl::apply_dirichlet_bc
@@ -585,7 +585,7 @@ void LUBRICATION::TimIntImpl::apply_neumann_bc(
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1}
   // (otherwise)
   discret_->evaluate_neumann(condparams, *neumann_loads);
-  discret_->ClearState();
+  discret_->clear_state();
 
   return;
 }  // LUBRICATION::TimIntImpl::apply_neumann_bc
@@ -598,11 +598,11 @@ void LUBRICATION::TimIntImpl::add_cavitation_penalty()
   const double penalty_param = params_->get<double>("PENALTY_CAVITATION");
   for (int i = 0; i < dof_row_map()->NumMyElements(); ++i)
   {
-    const double pressure = Prenp()->operator[](i);
+    const double pressure = prenp()->operator[](i);
     if (pressure >= 0.) continue;
 
     const int gid = dof_row_map()->GID(i);
-    sysmat_->Assemble(-penalty_param, gid, gid);
+    sysmat_->assemble(-penalty_param, gid, gid);
     residual_->operator[](i) += penalty_param * pressure;
   }
 }
@@ -621,7 +621,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   const double tcpuele = Teuchos::Time::wallTime();
 
   // zero out matrix entries
-  sysmat_->Zero();
+  sysmat_->zero();
 
   // reset the residual vector
   residual_->PutScalar(0.0);
@@ -642,14 +642,14 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
 
   // add state vectors according to time-integration scheme
   add_time_integration_specific_vectors();
 
   // call loop over elements
   discret_->evaluate(eleparams, sysmat_, residual_);
-  discret_->ClearState();
+  discret_->clear_state();
 
   // add cavitation penalty
   add_cavitation_penalty();
@@ -658,7 +658,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   scaling_and_neumann();  // TODO: do we have to call this function twice??
 
   // finalize assembly of system matrix
-  sysmat_->Complete();
+  sysmat_->complete();
 
   // end time measurement for element
   dtele_ = Teuchos::Time::wallTime() - tcpuele;
@@ -744,9 +744,9 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
       // strategy_->Solve(solver_,sysmat_,increment_,residual_,prenp_,iternum_,projector_);
       solver_params.refactor = true;
       solver_params.reset = true;
-      solver_->Solve(sysmat_->EpetraOperator(), increment_, residual_, solver_params);
+      solver_->solve(sysmat_->epetra_operator(), increment_, residual_, solver_params);
 
-      solver_->ResetTolerance();
+      solver_->reset_tolerance();
 
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -863,7 +863,7 @@ void LUBRICATION::TimIntImpl::set_height_field(const int nds, Teuchos::RCP<const
  | Set nodal value of film height time derivative(hdot)    Faraji 03/18 |
    at time n+1
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::SetHeightDotField(
+void LUBRICATION::TimIntImpl::set_height_dot_field(
     const int nds, Teuchos::RCP<const Epetra_Vector> heightdot)
 {
   if (heightdot == Teuchos::null) FOUR_C_THROW("hdot vector is empty.");
@@ -878,7 +878,8 @@ void LUBRICATION::TimIntImpl::SetHeightDotField(
 void LUBRICATION::TimIntImpl::set_relative_velocity_field(
     const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel)
 {
-  if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
+  if (nds >= discret_->num_dof_sets())
+    FOUR_C_THROW("Too few dofsets on lubrication discretization!");
   if (rel_vel == Teuchos::null) FOUR_C_THROW("no velocity provided.");
   discret_->set_state(nds, "rel_tang_vel", rel_vel);
 }
@@ -889,7 +890,8 @@ void LUBRICATION::TimIntImpl::set_relative_velocity_field(
 void LUBRICATION::TimIntImpl::set_average_velocity_field(
     const int nds, Teuchos::RCP<const Epetra_Vector> av_vel)
 {
-  if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
+  if (nds >= discret_->num_dof_sets())
+    FOUR_C_THROW("Too few dofsets on lubrication discretization!");
   if (av_vel == Teuchos::null) FOUR_C_THROW("no velocity provided");
 
   discret_->set_state(nds, "av_tang_vel", av_vel);
@@ -1001,19 +1003,19 @@ void LUBRICATION::TimIntImpl::output_state()
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(nds_disp_, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->get_state(nds_disp_, "dispnp");
     if (dispnp == Teuchos::null)
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
-        Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
+        Teuchos::rcp(new Epetra_MultiVector(*discret_->node_row_map(), nsd_, true));
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
       for (int idim = 0; idim < nsd_; ++idim)
-        (*dispnp_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] =
-            (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_, node, idim))];
+        (*dispnp_multi)[idim][discret_->node_row_map()->LID(node->id())] =
+            (*dispnp)[dispnp->Map().LID(discret_->dof(nds_disp_, node, idim))];
     }
 
     output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
@@ -1070,14 +1072,14 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("prenp", prenp_);
 
   // get (squared) error values
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
       Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
-  discret_->EvaluateScalars(eleparams, errors);
-  discret_->ClearState();
+  discret_->evaluate_scalars(eleparams, errors);
+  discret_->clear_state();
 
   // std::vector containing
   // [0]: relative L2 pressure error
@@ -1097,7 +1099,7 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   {
     // print last error in a separate file
 
-    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->file_name();
+    const std::string simulation = Global::Problem::instance()->output_control_file()->file_name();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)
@@ -1137,8 +1139,8 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
 
   // create Gmsh postprocessing file
   const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
-      "solution_field_pressure", discret_->Writer()->output()->file_name(), step, 500, screen_out,
-      discret_->Comm().MyPID());
+      "solution_field_pressure", discret_->writer()->output()->file_name(), step, 500, screen_out,
+      discret_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file
@@ -1157,12 +1159,12 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
 /*----------------------------------------------------------------------*
  | output mean values of pressure(s)                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
+void LUBRICATION::TimIntImpl::output_mean_pressures(const int num)
 {
   if (outmean_)
   {
     // set pressure values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("prenp", prenp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
@@ -1175,8 +1177,8 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
     // evaluate integrals of pressure(s) and domain
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> pressures =
         Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
-    discret_->EvaluateScalars(eleparams, pressures);
-    discret_->ClearState();  // clean up
+    discret_->evaluate_scalars(eleparams, pressures);
+    discret_->clear_state();  // clean up
 
     // extract domain integral
     const double domint = (*pressures)[1];
@@ -1194,11 +1196,11 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
       // file output
       std::stringstream number;
       number << num;
-      const std::string fname = Global::Problem::Instance()->OutputControlFile()->file_name() +
+      const std::string fname = Global::Problem::instance()->output_control_file()->file_name() +
                                 number.str() + ".meanvalues.txt";
 
       std::ofstream f;
-      if (Step() <= 1)
+      if (step() <= 1)
       {
         f.open(fname.c_str(), std::fstream::trunc);
         f << "#| Step | Time | Domain integral |";
@@ -1209,7 +1211,7 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
       else
         f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
 
-      f << Step() << " " << Time() << " " << std::setprecision(9) << domint;
+      f << step() << " " << time() << " " << std::setprecision(9) << domint;
       f << " " << std::setprecision(9) << (*pressures)[0];
       f << " " << std::setprecision(9) << (*pressures)[0] / domint;
       f << "\n";
@@ -1224,7 +1226,7 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as sparse matrix         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> LUBRICATION::TimIntImpl::system_matrix()
 {
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
 }
@@ -1280,7 +1282,7 @@ void LUBRICATION::TimIntImpl::update_iter_incrementally(
 /*----------------------------------------------------------------------*
  | update Newton step                                       wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> prei)
+void LUBRICATION::TimIntImpl::update_newton(Teuchos::RCP<const Epetra_Vector> prei)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And

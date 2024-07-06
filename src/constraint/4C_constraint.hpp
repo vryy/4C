@@ -80,7 +80,7 @@ namespace CONSTRAINTS
     /*!
      \brief Return if there are constraints
     */
-    bool HaveConstraint() { return constrtype_ != none; };
+    bool have_constraint() { return constrtype_ != none; };
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
@@ -115,10 +115,10 @@ namespace CONSTRAINTS
     );
 
     /// Return type of constraint
-    ConstrType Type() { return constrtype_; }
+    ConstrType type() { return constrtype_; }
 
     /// Return vector with IDs of active conditions
-    std::vector<int> GetActiveCondID();
+    std::vector<int> get_active_cond_id();
 
    protected:
     Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization

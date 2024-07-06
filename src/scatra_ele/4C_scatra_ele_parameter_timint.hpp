@@ -34,21 +34,21 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterTimInt* Instance(const std::string& disname);
+      static ScaTraEleParameterTimInt* instance(const std::string& disname);
 
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters) override;
+      void set_parameters(Teuchos::ParameterList& parameters) override;
 
-      bool IsGenAlpha() const { return is_genalpha_; };
-      bool IsStationary() const { return is_stationary_; };
-      bool IsIncremental() const { return is_incremental_; };
-      double Time() const { return time_; };
-      double TimeDerivativeFac() const { return timederivativefac_; }
-      double Dt() const { return dt_; };
-      double TimeFac() const { return timefac_; };
-      double TimeFacRhs() const { return timefacrhs_; };
-      double TimeFacRhsTau() const { return timefacrhstau_; };
-      double AlphaF() const { return alpha_f_; };
+      bool is_gen_alpha() const { return is_genalpha_; };
+      bool is_stationary() const { return is_stationary_; };
+      bool is_incremental() const { return is_incremental_; };
+      double time() const { return time_; };
+      double time_derivative_fac() const { return timederivativefac_; }
+      double dt() const { return dt_; };
+      double time_fac() const { return timefac_; };
+      double time_fac_rhs() const { return timefacrhs_; };
+      double time_fac_rhs_tau() const { return timefacrhstau_; };
+      double alpha_f() const { return alpha_f_; };
 
      private:
       //! private constructor for singletons

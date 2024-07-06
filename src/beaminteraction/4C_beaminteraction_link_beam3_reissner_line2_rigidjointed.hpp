@@ -38,11 +38,11 @@ namespace BEAMINTERACTION
   class BeamLinkBeam3rLine2RigidJointedType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "BeamLinkBeam3rLine2RigidJointedType"; };
+    std::string name() const override { return "BeamLinkBeam3rLine2RigidJointedType"; };
 
-    static BeamLinkBeam3rLine2RigidJointedType& Instance() { return instance_; };
+    static BeamLinkBeam3rLine2RigidJointedType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static BeamLinkBeam3rLine2RigidJointedType instance_;
@@ -85,9 +85,9 @@ namespace BEAMINTERACTION
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return BeamLinkBeam3rLine2RigidJointedType::Instance().UniqueParObjectId();
+      return BeamLinkBeam3rLine2RigidJointedType::instance().unique_par_object_id();
     };
 
     /*!
@@ -107,7 +107,7 @@ namespace BEAMINTERACTION
     void unpack(const std::vector<char>& data) override;
 
     /// return copy of this linking object
-    Teuchos::RCP<BeamLink> Clone() const override;
+    Teuchos::RCP<BeamLink> clone() const override;
 
     //@}
 
@@ -115,10 +115,10 @@ namespace BEAMINTERACTION
     //! @name Access methods
 
     //! get internal linker energy
-    double GetInternalEnergy() const override;
+    double get_internal_energy() const override;
 
     //! get kinetic linker energy
-    double GetKineticEnergy() const override;
+    double get_kinetic_energy() const override;
 
     //! scale linker element reference length
     void scale_linker_reference_length(double scalefac) override
@@ -127,7 +127,7 @@ namespace BEAMINTERACTION
     }
 
     //! get force in first or second binding spot
-    void GetBindingSpotForce(
+    void get_binding_spot_force(
         int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const override
     {
       bspotforce = bspotforces_[bspotid];

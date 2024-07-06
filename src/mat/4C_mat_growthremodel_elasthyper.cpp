@@ -109,7 +109,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthRemodelElastHyper::create_mate
 Mat::GrowthRemodelElastHyperType Mat::GrowthRemodelElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::GrowthRemodelElastHyperType::Create(
+Core::Communication::ParObject* Mat::GrowthRemodelElastHyperType::create(
     const std::vector<char>& data)
 {
   Mat::GrowthRemodelElastHyper* gr_elhy = new Mat::GrowthRemodelElastHyper();
@@ -154,7 +154,7 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
   {
     const int matid = *m;
     Teuchos::RCP<Mat::Elastic::RemodelFiber> sum =
-        Teuchos::rcp_static_cast<Mat::Elastic::RemodelFiber>(Mat::Elastic::Summand::Factory(matid));
+        Teuchos::rcp_static_cast<Mat::Elastic::RemodelFiber>(Mat::Elastic::Summand::factory(matid));
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsumrf_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
@@ -164,9 +164,9 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
   for (m = params_->matids_elastinmem_.begin(); m != params_->matids_elastinmem_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-    if (sum->MaterialType() != Core::Materials::mes_isoneohooke)
+    if (sum->material_type() != Core::Materials::mes_isoneohooke)
       FOUR_C_THROW(
           "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
           "prestretching algorithm needs it. "
@@ -181,9 +181,9 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
     for (m = params_->matids_elastiniso_.begin(); m != params_->matids_elastiniso_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-      if (sum->MaterialType() != Core::Materials::mes_isoneohooke)
+      if (sum->material_type() != Core::Materials::mes_isoneohooke)
         FOUR_C_THROW(
             "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
             "prestretching algorithm needs it"
@@ -194,9 +194,9 @@ Mat::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Mat::PAR::GrowthRemodelEla
 
     // VolPenalty
     Teuchos::RCP<Mat::Elastic::Summand> sum =
-        Mat::Elastic::Summand::Factory(params_->matid_penalty_);
+        Mat::Elastic::Summand::factory(params_->matid_penalty_);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-    if (sum->MaterialType() != Core::Materials::mes_volsussmanbathe)
+    if (sum->material_type() != Core::Materials::mes_volsussmanbathe)
       FOUR_C_THROW(
           "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
           "prestretching algorithm needs it. "
@@ -217,11 +217,11 @@ void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
 
@@ -249,17 +249,17 @@ void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) c
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
-    for (const auto& p : potsumrf_) p->PackSummand(data);
+    for (const auto& p : potsumrf_) p->pack_summand(data);
 
     // loop map of associated potential summands
-    for (const auto& p : potsumelmem_) p->PackSummand(data);
+    for (const auto& p : potsumelmem_) p->pack_summand(data);
 
     if (params_->membrane_ != 1)
     {
       // loop map of associated potential summands
-      for (const auto& p : potsumeliso_) p->PackSummand(data);
+      for (const auto& p : potsumeliso_) p->pack_summand(data);
 
-      potsumelpenalty_->PackSummand(data);
+      potsumelpenalty_->pack_summand(data);
     }
   }
 }
@@ -277,23 +277,23 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::GrowthRemodelElastHyper*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -330,14 +330,14 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
       const int matid = *m;
       Teuchos::RCP<Mat::Elastic::RemodelFiber> sum =
           Teuchos::rcp_static_cast<Mat::Elastic::RemodelFiber>(
-              Mat::Elastic::Summand::Factory(matid));
+              Mat::Elastic::Summand::factory(matid));
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsumrf_.push_back(sum);
     }
     // loop map of associated potential summands
     for (auto& p : potsumrf_)
     {
-      p->UnpackSummand(data, position);
+      p->unpack_summand(data, position);
       p->register_anisotropy_extensions(anisotropy_);
     }
 
@@ -345,9 +345,9 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
     for (m = params_->matids_elastinmem_.begin(); m != params_->matids_elastinmem_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-      if (sum->MaterialType() != Core::Materials::mes_isoneohooke)
+      if (sum->material_type() != Core::Materials::mes_isoneohooke)
         FOUR_C_THROW(
             "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
             "prestretching algorithm needs it. "
@@ -357,7 +357,7 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (auto& p : potsumelmem_)
     {
-      p->UnpackSummand(data, position);
+      p->unpack_summand(data, position);
       p->register_anisotropy_extensions(anisotropy_);
     }
 
@@ -367,9 +367,9 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
       for (m = params_->matids_elastiniso_.begin(); m != params_->matids_elastiniso_.end(); ++m)
       {
         const int matid = *m;
-        Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+        Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
         if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-        if (sum->MaterialType() != Core::Materials::mes_isoneohooke)
+        if (sum->material_type() != Core::Materials::mes_isoneohooke)
           FOUR_C_THROW(
               "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
               "prestretching algorithm needs it"
@@ -379,21 +379,21 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
       // loop map of associated potential summands
       for (auto& p : potsumeliso_)
       {
-        p->UnpackSummand(data, position);
+        p->unpack_summand(data, position);
         p->register_anisotropy_extensions(anisotropy_);
       }
 
       // VolPenalty
       Teuchos::RCP<Mat::Elastic::Summand> sum =
-          Mat::Elastic::Summand::Factory(params_->matid_penalty_);
+          Mat::Elastic::Summand::factory(params_->matid_penalty_);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-      if (sum->MaterialType() != Core::Materials::mes_volsussmanbathe)
+      if (sum->material_type() != Core::Materials::mes_volsussmanbathe)
         FOUR_C_THROW(
             "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
             "prestretching algorithm needs it. "
             "This can easily be expanded to other materials!");
       potsumelpenalty_ = sum;
-      potsumelpenalty_->UnpackSummand(data, position);
+      potsumelpenalty_->unpack_summand(data, position);
 
       // in the postprocessing mode, we do not unpack everything we have packed
       // -> position check cannot be done in this case
@@ -453,7 +453,7 @@ void Mat::GrowthRemodelElastHyper::setup(int numgp, Input::LineDefinition* lined
   mue_frac_.resize(numgp, 1.0);
 
   // total number of remodel fibers
-  for (auto& p : potsumrf_) nr_rf_tot_ += p->GetNumFibers();
+  for (auto& p : potsumrf_) nr_rf_tot_ += p->get_num_fibers();
 }
 
 void Mat::GrowthRemodelElastHyper::post_setup(Teuchos::ParameterList& params, const int eleGID)
@@ -650,7 +650,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_prestretch(
   double lamb_pre = 1. / (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_);
   while (fabs(R) > 1.0e-10)
   {
-    R = matiso->Mue() * init_rho_el_[gp] *
+    R = matiso->mue() * init_rho_el_[gp] *
             std::pow(params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ *
                          params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ * lamb_pre *
                          lamb_pre,
@@ -659,14 +659,14 @@ void Mat::GrowthRemodelElastHyper::evaluate_prestretch(
                 (1. / 3.) * (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ +
                                 params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ +
                                 lamb_pre * lamb_pre)) +
-        matvol->Kappa() * init_rho_el_[gp] *
+        matvol->kappa() * init_rho_el_[gp] *
             ((params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_ * lamb_pre) *
                     (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_ * lamb_pre) -
                 (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_ * lamb_pre)) +
         ((1.0 - (gp_rad_[gp] - 10.0e-3) / params_->t_ref_) * params_->p_mean_);
 
     dRdlamb_pre =
-        matiso->Mue() * init_rho_el_[gp] *
+        matiso->mue() * init_rho_el_[gp] *
             (-(4. / 3.) *
                 std::pow(params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_ * lamb_pre,
                     -7. / 3.) *
@@ -675,13 +675,13 @@ void Mat::GrowthRemodelElastHyper::evaluate_prestretch(
                 (1. / 3.) * (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ +
                                 params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ +
                                 lamb_pre * lamb_pre)) +
-        matiso->Mue() * init_rho_el_[gp] *
+        matiso->mue() * init_rho_el_[gp] *
             std::pow(params_->lamb_prestretch_cir_ * params_->lamb_prestretch_cir_ *
                          params_->lamb_prestretch_ax_ * params_->lamb_prestretch_ax_ * lamb_pre *
                          lamb_pre,
                 -2. / 3.) *
             (2.0 * lamb_pre - (1. / 3.) * (2.0 * lamb_pre)) +
-        matvol->Kappa() * init_rho_el_[gp] *
+        matvol->kappa() * init_rho_el_[gp] *
             (2.0 * (params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_ * lamb_pre) *
                     params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_ -
                 params_->lamb_prestretch_cir_ * params_->lamb_prestretch_ax_);
@@ -757,7 +757,7 @@ void Mat::GrowthRemodelElastHyper::setup_g_r3_d(Core::LinAlg::Matrix<3, 3> const
     if (params_->growthtype_ == 1) setup_aniso_growth_tensors();
 
     // Update fiber directions with new local coordinate system (radaxicirc_)
-    for (auto& k : potsumrf_) k->UpdateFiberDirs(radaxicirc_, dt);
+    for (auto& k : potsumrf_) k->update_fiber_dirs(radaxicirc_, dt);
   }
 
   // Evaluate radial and axial distance between origin and current Gauss-Point
@@ -899,7 +899,7 @@ void Mat::GrowthRemodelElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* de
           p->evaluate_additional_growth_remodel_cmat(
               defgrd, nr_grf_proc, iFgM, diFgdrhoM, drhodC, dlambrdC, cmatanisoadd, gp, eleGID);
           cmat->update(1.0, cmatanisoadd, 1.0);
-          nr_grf_proc += p->GetNumFibers();
+          nr_grf_proc += p->get_num_fibers();
         }
 
         // Evaluate 3D elastin material
@@ -973,7 +973,7 @@ void Mat::GrowthRemodelElastHyper::solve_for_rho_lambr(Core::LinAlg::SerialDense
       l = 0;
       for (auto& p : potsumrf_)
       {
-        for (unsigned k = 0; k < p->GetNumFibers(); ++k)
+        for (unsigned k = 0; k < p->get_num_fibers(); ++k)
         {
           // update inelastic fiber stretch and current mass density
           p->update_growth_remodel_parameter(dsol(l, 0), dsol(nr_rf_tot_ + l, 0), k, gp);
@@ -990,7 +990,7 @@ void Mat::GrowthRemodelElastHyper::solve_for_rho_lambr(Core::LinAlg::SerialDense
     {
       p->evaluate_derivatives_internal_newton(defgrd, nr_grf_proc, nr_rf_tot_, gp, dt, eleGID, iFgM,
           dFgdrhoM, diFgdrhoM, dWdrho, dWdlambr, W, dEdrho, dEdlambr, E);
-      nr_grf_proc += p->GetNumFibers();
+      nr_grf_proc += p->get_num_fibers();
     }
 
     // Assembly
@@ -1039,7 +1039,7 @@ void Mat::GrowthRemodelElastHyper::solve_fordrhod_cdlambrd_c(
   for (const auto& p : potsumrf_)
   {
     p->evaluate_derivatives_cauchy_green(defgrd, nr_grf_proc, gp, dt, iFgM, dWdC, dEdC, eleGID);
-    nr_grf_proc += p->GetNumFibers();
+    nr_grf_proc += p->get_num_fibers();
   }
 
   // Assembly
@@ -1442,7 +1442,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
   for (const auto& k : potsumelmem_)
   {
     matmem = Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(k);
-    mue_el_mem += matmem->Mue();
+    mue_el_mem += matmem->mue();
   }
 
   FAD X_det = XM_fad(0, 0) * (XM_fad(1, 1) * XM_fad(2, 2) - XM_fad(1, 2) * XM_fad(2, 1)) -
@@ -1466,7 +1466,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
   stress_fad.update(-0.5 * mue_el_mem * cur_rho_el_[gp] * mue_frac_[gp] / X_det, ZTM_fad, 1.0);
 
   static Core::LinAlg::Matrix<3, 3> stressM(true);
-  stressM = stress_fad.ConverttoDouble();
+  stressM = stress_fad.convertto_double();
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(stressM, stress);
 
   // Derivative of 2nd Piola Kirchhoff stress w.r.t. the inverse growth deformation gradient
@@ -1483,9 +1483,9 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_membrane(
   static Core::LinAlg::Matrix<3, 3> ZM(true);
   static Core::LinAlg::Matrix<3, 3> ZTM(true);
   static Core::LinAlg::Matrix<3, 3> XM(true);
-  ZM = ZM_fad.ConverttoDouble();
-  ZTM = ZTM_fad.ConverttoDouble();
-  XM = XM_fad.ConverttoDouble();
+  ZM = ZM_fad.convertto_double();
+  ZTM = ZTM_fad.convertto_double();
+  XM = XM_fad.convertto_double();
   // Y = Z^T + Z
   static Core::LinAlg::Matrix<3, 3> YM(true);
   YM.update(1.0, ZM, 0.0);
@@ -1526,7 +1526,8 @@ void Mat::GrowthRemodelElastHyper::evaluate_growth_def_grad(Core::LinAlg::Matrix
   double rho_col_sum = 0.0;
   // evaluate volume change
   for (auto& p : potsumrf_)
-    for (unsigned k = 0; k < p->GetNumFibers(); ++k) rho_col_sum += p->GetCurMassDensity(k, gp);
+    for (unsigned k = 0; k < p->get_num_fibers(); ++k)
+      rho_col_sum += p->get_cur_mass_density(k, gp);
   v_[gp] = (rho_col_sum + cur_rho_el_[gp]) / params_->density_;
 
   switch (params_->growthtype_)
@@ -1586,7 +1587,7 @@ void Mat::GrowthRemodelElastHyper::setup_g_r2_d(
     if (params_->growthtype_ == 1) setup_aniso_growth_tensors();
 
     // Update fiber directions with new local coordinate system (radaxicirc_)
-    for (auto& k : potsumrf_) k->UpdateFiberDirs(radaxicirc_, dt);
+    for (auto& k : potsumrf_) k->update_fiber_dirs(radaxicirc_, dt);
   }
 
   for (int i = 0; i < 3; ++i) axdir(i, 0) = radaxicirc_(i, 1);
@@ -1601,7 +1602,7 @@ void Mat::GrowthRemodelElastHyper::setup_g_r2_d(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::EvaluateMembrane(Core::LinAlg::Matrix<3, 3> const& defgrd_glob,
+void Mat::GrowthRemodelElastHyper::evaluate_membrane(Core::LinAlg::Matrix<3, 3> const& defgrd_glob,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<3, 3>& pk2M_glob,
     Core::LinAlg::Matrix<6, 6>& cmat_glob, const int gp, const int eleGID)
 {
@@ -1695,7 +1696,7 @@ double Mat::GrowthRemodelElastHyper::evaluate_membrane_thickness_stretch(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::VisNames(std::map<std::string, int>& names)
+void Mat::GrowthRemodelElastHyper::vis_names(std::map<std::string, int>& names)
 {
   std::string result_mass_fraction_el;
   result_mass_fraction_el = "mass_fraction_el";
@@ -1711,25 +1712,25 @@ void Mat::GrowthRemodelElastHyper::VisNames(std::map<std::string, int>& names)
 
   // loop map of associated potential summands
   // remodelfiber
-  for (unsigned int p = 0; p < potsumrf_.size(); ++p) potsumrf_[p]->VisNames(names, p);
+  for (unsigned int p = 0; p < potsumrf_.size(); ++p) potsumrf_[p]->vis_names(names, p);
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) p->VisNames(names);
+  for (auto& p : potsumelmem_) p->vis_names(names);
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) p->VisNames(names);
+    for (auto& p : potsumeliso_) p->vis_names(names);
 
     // volpenalty
-    potsumelpenalty_->VisNames(names);
+    potsumelpenalty_->vis_names(names);
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Mat::GrowthRemodelElastHyper::VisData(
+bool Mat::GrowthRemodelElastHyper::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   int return_val = 0;
@@ -1761,20 +1762,20 @@ bool Mat::GrowthRemodelElastHyper::VisData(
   // loop map of associated potential summands
   // remodelfiber
   if (name.at(name.length() - 3) == '0')
-    return_val += potsumrf_[0]->VisData(name, data, numgp, eleID);
+    return_val += potsumrf_[0]->vis_data(name, data, numgp, eleID);
   if (name.at(name.length() - 3) == '1')
-    return_val += potsumrf_[1]->VisData(name, data, numgp, eleID);
+    return_val += potsumrf_[1]->vis_data(name, data, numgp, eleID);
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) return_val += p->VisData(name, data, numgp, eleID);
+  for (auto& p : potsumelmem_) return_val += p->vis_data(name, data, numgp, eleID);
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) return_val += p->VisData(name, data, numgp, eleID);
+    for (auto& p : potsumeliso_) return_val += p->vis_data(name, data, numgp, eleID);
 
     // volpenalty
-    return_val += potsumelpenalty_->VisData(name, data, numgp, eleID);
+    return_val += potsumelpenalty_->vis_data(name, data, numgp, eleID);
   }
 
   return (bool)return_val;

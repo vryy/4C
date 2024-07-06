@@ -158,23 +158,23 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   }
 
   if (scalarB == 0.)
-    B.PutScalar(0.0);
+    B.put_scalar(0.0);
   else if (scalarB != 1.0)
-    B.Scale(scalarB);
+    B.scale(scalarB);
 
-  int rowsAdded = DoAdd(*Aprime, scalarA, *B.EpetraMatrix(), scalarB);
+  int rowsAdded = DoAdd(*Aprime, scalarA, *B.epetra_matrix(), scalarB);
   int localSuccess = rowsAdded == Aprime->RowMap().NumMyElements();
   int globalSuccess = 0;
   B.Comm().MinAll(&localSuccess, &globalSuccess, 1);
   if (!globalSuccess)
   {
-    if (!B.Filled()) FOUR_C_THROW("Unexpected state of B (expected: B not filled, got: B filled)");
+    if (!B.filled()) FOUR_C_THROW("Unexpected state of B (expected: B not filled, got: B filled)");
 
     // not successful -> matrix structure must be un-completed to be able to add new
     // indices.
-    B.UnComplete();
-    DoAdd(*Aprime, scalarA, *B.EpetraMatrix(), scalarB, rowsAdded);
-    B.Complete();
+    B.un_complete();
+    DoAdd(*Aprime, scalarA, *B.epetra_matrix(), scalarB, rowsAdded);
+    B.complete();
   }
 }
 

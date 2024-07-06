@@ -49,8 +49,8 @@ void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::setup(
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
 
-  if (!Params().isSublist("Belos Parameters")) FOUR_C_THROW("Do not have belos parameter list");
-  Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
+  if (!params().isSublist("Belos Parameters")) FOUR_C_THROW("Do not have belos parameter list");
+  Teuchos::ParameterList& belist = params().sublist("Belos Parameters");
 
   const int reuse = belist.get("reuse", 0);
   const bool create = !allow_reuse_preconditioner(reuse, reset);
@@ -70,15 +70,15 @@ void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::Solve()
+int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
 {
-  Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
+  Teuchos::ParameterList& belist = params().sublist("Belos Parameters");
 
   auto problem = Teuchos::rcp(new Belos::LinearProblem<double, VectorType, MatrixType>(a_, x_, b_));
 
   if (preconditioner_ != Teuchos::null)
   {
-    auto belosPrec = Teuchos::rcp(new Belos::EpetraPrecOp(preconditioner_->PrecOperator()));
+    auto belosPrec = Teuchos::rcp(new Belos::EpetraPrecOp(preconditioner_->prec_operator()));
     problem->setRightPrec(belosPrec);
   }
 
@@ -126,11 +126,11 @@ bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::allow_reuse_pr
     const int reuse, const bool reset)
 {
   // first, check some parameters with information that has to be updated
-  const Teuchos::ParameterList& linSysParams = Params().sublist("Belos Parameters");
+  const Teuchos::ParameterList& linSysParams = params().sublist("Belos Parameters");
 
   bool bAllowReuse = check_reuse_status_of_active_set(linSysParams);
 
-  const bool create = reset or not Ncall() or not reuse or (Ncall() % reuse) == 0;
+  const bool create = reset or not ncall() or not reuse or (ncall() % reuse) == 0;
   if (create) bAllowReuse = false;
 
   // here, each processor has its own local decision made
@@ -206,25 +206,25 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
     // get type of preconditioner and build either Ifpack or ML
     // if we have an ifpack parameter list, we do ifpack
     // if we have an ml parameter list we do ml
-    if (Params().isSublist("IFPACK Parameters"))
+    if (params().isSublist("IFPACK Parameters"))
     {
       preconditioner = Teuchos::rcp(new Core::LinearSolver::IFPACKPreconditioner(
-          Params().sublist("IFPACK Parameters"), solverlist));
+          params().sublist("IFPACK Parameters"), solverlist));
     }
-    else if (Params().isSublist("ML Parameters"))
+    else if (params().isSublist("ML Parameters"))
     {
       preconditioner =
-          Teuchos::rcp(new Core::LinearSolver::MLPreconditioner(Params().sublist("ML Parameters")));
+          Teuchos::rcp(new Core::LinearSolver::MLPreconditioner(params().sublist("ML Parameters")));
     }
-    else if (Params().isSublist("MueLu Parameters"))
+    else if (params().isSublist("MueLu Parameters"))
     {
       preconditioner = Teuchos::rcp(
-          new Core::LinearSolver::MueLuPreconditioner(Params().sublist("MueLu Parameters")));
+          new Core::LinearSolver::MueLuPreconditioner(params().sublist("MueLu Parameters")));
     }
-    else if (Params().isSublist("MueLu (BeamSolid) Parameters"))
+    else if (params().isSublist("MueLu (BeamSolid) Parameters"))
     {
       preconditioner =
-          Teuchos::rcp(new Core::LinearSolver::MueLuBeamSolidBlockPreconditioner(Params()));
+          Teuchos::rcp(new Core::LinearSolver::MueLuBeamSolidBlockPreconditioner(params()));
     }
     else
       FOUR_C_THROW(
@@ -240,35 +240,35 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
   else
   {
     // assume block matrix
-    if (Params().isSublist("CheapSIMPLE Parameters"))
+    if (params().isSublist("CheapSIMPLE Parameters"))
     {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::SimplePreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::SimplePreconditioner(params()));
     }
-    else if (Params().isSublist("BGS Parameters"))
+    else if (params().isSublist("BGS Parameters"))
     {
       preconditioner = Teuchos::rcp(
-          new Core::LinearSolver::BGSPreconditioner(Params(), Params().sublist("BGS Parameters")));
+          new Core::LinearSolver::BGSPreconditioner(params(), params().sublist("BGS Parameters")));
     }
-    else if (Params().isSublist("MueLu (Fluid) Parameters"))
+    else if (params().isSublist("MueLu (Fluid) Parameters"))
     {
       preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuFluidBlockPreconditioner(
-          Params().sublist("MueLu (Fluid) Parameters")));
+          params().sublist("MueLu (Fluid) Parameters")));
     }
-    else if (Params().isSublist("MueLu (TSI) Parameters"))
+    else if (params().isSublist("MueLu (TSI) Parameters"))
     {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuTsiBlockPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuTsiBlockPreconditioner(params()));
     }
-    else if (Params().isSublist("MueLu (Contact) Parameters"))
+    else if (params().isSublist("MueLu (Contact) Parameters"))
     {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuContactSpPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuContactSpPreconditioner(params()));
     }
-    else if (Params().isSublist("MueLu (FSI) Parameters"))
+    else if (params().isSublist("MueLu (FSI) Parameters"))
     {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuFsiBlockPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuFsiBlockPreconditioner(params()));
     }
-    else if (Params().isSublist("AMGnxn Parameters"))
+    else if (params().isSublist("AMGnxn Parameters"))
     {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::AmGnxnPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::AmGnxnPreconditioner(params()));
     }
     else
       FOUR_C_THROW(

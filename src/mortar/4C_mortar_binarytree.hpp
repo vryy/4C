@@ -84,25 +84,25 @@ namespace Mortar
     \brief Update slabs of current treenode in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& enlarge) final;
+    void update_slabs_bottom_up(double& enlarge) final;
 
     /*!
     \brief Initialize Tree
 
     */
-    void InitializeTree(double& enlarge);
+    void initialize_tree(double& enlarge);
 
     /*!
     \brief Divide a TreeNode into two child nodes
 
     */
-    void DivideTreeNode();
+    void divide_tree_node();
 
     /*!
     \brief Print type of tree node to std::cout
 
     */
-    void PrintType() final;
+    void print_type() final;
     //@}
 
     //! @name Access and modification methods
@@ -111,25 +111,25 @@ namespace Mortar
     \brief Get communicator
 
     */
-    const Epetra_Comm& Comm() const;
+    const Epetra_Comm& get_comm() const;
 
     /*!
     \brief Return type of treenode
 
     */
-    BinaryTreeNodeType Type() const { return type_; }
+    BinaryTreeNodeType type() const { return type_; }
 
     /*!
     \brief Return pointer to right child
 
     */
-    Teuchos::RCP<BinaryTreeNode> Rightchild() const { return rightchild_; }
+    Teuchos::RCP<BinaryTreeNode> rightchild() const { return rightchild_; }
 
     /*!
     \brief Return pointer to left child
 
     */
-    Teuchos::RCP<BinaryTreeNode> Leftchild() const { return leftchild_; }
+    Teuchos::RCP<BinaryTreeNode> leftchild() const { return leftchild_; }
     //@}
 
    private:
@@ -236,7 +236,7 @@ namespace Mortar
     \brief Get communicator
 
     */
-    const Epetra_Comm& comm() const;
+    const Epetra_Comm& get_comm() const;
 
     /*!
     \brief Return reference to slave treenodesmap

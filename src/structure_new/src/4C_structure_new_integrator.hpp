@@ -423,11 +423,11 @@ namespace Solid
       double get_total() const;
 
       /// average quantities based on the used averaging type
-      Teuchos::RCP<const Epetra_Vector> Average(
+      Teuchos::RCP<const Epetra_Vector> average(
           const Epetra_Vector& state_np, const Epetra_Vector& state_n, const double fac_n) const;
 
       /// copy current state to old state (during update)
-      void CopyNpToN();
+      void copy_np_to_n();
 
       /// internal energy at \f$t_{n+1}\f$
       double int_energy_np_ = 0.0;

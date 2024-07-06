@@ -65,12 +65,12 @@ namespace SSTI
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) = 0;
 
     //! assemble RHS
-    void AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS, Teuchos::RCP<const Epetra_Vector> RHSscatra,
+    void assemble_rhs(Teuchos::RCP<Epetra_Vector> RHS, Teuchos::RCP<const Epetra_Vector> RHSscatra,
         Teuchos::RCP<const Epetra_Vector> RHSstructure,
         Teuchos::RCP<const Epetra_Vector> RHSthermo);
 
     //! assemble ScaTra-Block into system matrix
-    virtual void AssembleScatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    virtual void assemble_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain) = 0;
 
     //! assemble ScaTra-Structure-Block (domain contributions) into system matrix
@@ -88,7 +88,7 @@ namespace SSTI
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface) = 0;
 
     //! assemble Structure-Block into system matrix
-    virtual void AssembleStructure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    virtual void assemble_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain) = 0;
 
     //! assemble Structure-ScaTra-Block (domain contributions) into system matrix
@@ -96,7 +96,7 @@ namespace SSTI
         Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain) = 0;
 
     //! assemble Thermo-Block into system matrix
-    virtual void AssembleThermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    virtual void assemble_thermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain) = 0;
 
     //! assemble Thermo-ScaTra-Block into system matrix
@@ -145,7 +145,7 @@ namespace SSTI
     //@}
 
     //! SSTI mono maps
-    Teuchos::RCP<SSTI::SSTIMapsMono> all_maps() const { return ssti_mono_->AllMaps(); }
+    Teuchos::RCP<SSTI::SSTIMapsMono> all_maps() const { return ssti_mono_->all_maps(); }
 
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure_field() const
     {
@@ -173,7 +173,7 @@ namespace SSTI
     void apply_structural_dbc_system_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) override;
 
-    void AssembleScatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain) override = 0;
 
     void assemble_scatra_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
@@ -186,13 +186,13 @@ namespace SSTI
     void assemble_scatra_thermo_interface(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface) override = 0;
 
-    void AssembleStructure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain) override = 0;
 
     void assemble_structure_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain) override = 0;
 
-    void AssembleThermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_thermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain) override = 0;
 
     void assemble_thermo_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
@@ -237,7 +237,7 @@ namespace SSTI
     void apply_meshtying_system_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) override;
 
-    void AssembleScatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain) override;
 
     void assemble_scatra_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
@@ -250,13 +250,13 @@ namespace SSTI
     void assemble_scatra_thermo_interface(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface) override;
 
-    void AssembleStructure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain) override;
 
     void assemble_structure_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain) override;
 
-    void AssembleThermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_thermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain) override;
 
     void assemble_thermo_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
@@ -286,7 +286,7 @@ namespace SSTI
     void apply_meshtying_system_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) override;
 
-    void AssembleScatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain) override;
 
     void assemble_scatra_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
@@ -299,13 +299,13 @@ namespace SSTI
     void assemble_scatra_thermo_interface(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface) override;
 
-    void AssembleStructure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain) override;
 
     void assemble_structure_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain) override;
 
-    void AssembleThermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_thermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain) override;
 
     void assemble_thermo_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
@@ -338,7 +338,7 @@ namespace SSTI
     void apply_structural_dbc_system_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) override;
 
-    void AssembleScatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain) override;
 
     void assemble_scatra_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
@@ -351,13 +351,13 @@ namespace SSTI
     void assemble_scatra_thermo_interface(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface) override;
 
-    void AssembleStructure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_structure(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain) override;
 
     void assemble_structure_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain) override;
 
-    void AssembleThermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    void assemble_thermo(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain) override;
 
     void assemble_thermo_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,

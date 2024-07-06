@@ -330,8 +330,8 @@ double MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_deposition_stretch(
     return params_->deposition_stretch_;
   }
 
-  return Global::Problem::Instance()
-      ->FunctionById<Core::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
+  return Global::Problem::instance()
+      ->function_by_id<Core::UTILS::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
       .evaluate(time);
 }
 void MIXTURE::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(

@@ -79,7 +79,7 @@ namespace THR
     //@{
 
     //! Print thermo time logo
-    void Logo();
+    void logo();
 
     //! Constructor
     TimInt(const Teuchos::ParameterList& ioparams,           //!< ioflags
@@ -97,7 +97,7 @@ namespace THR
     TimInt(const TimInt& old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    virtual void ResizeMStep() = 0;
+    virtual void resize_m_step() = 0;
 
     //@}
 
@@ -139,10 +139,10 @@ namespace THR
     void prepare_time_step() override = 0;
 
     //! Do time integration of single step
-    virtual void IntegrateStep() = 0;
+    virtual void integrate_step() = 0;
 
     /// tests if there are more time steps to do
-    bool NotFinished() const override
+    bool not_finished() const override
     {
       return timen_ <= timemax_ + 1.0e-8 * (*dt_)[0] and stepn_ <= stepmax_;
     }
@@ -152,7 +152,7 @@ namespace THR
     //! Do the nonlinear solve, i.e. (multiple) corrector,
     //! for the time step. All boundary conditions have
     //! been set.
-    Inpar::THR::ConvergenceStatus Solve() override = 0;
+    Inpar::THR::ConvergenceStatus solve() override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -167,22 +167,22 @@ namespace THR
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next
     //! time step.
-    virtual void UpdateStepState() = 0;
+    virtual void update_step_state() = 0;
 
     //! Update everything on element level after time step and after output
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
-    virtual void UpdateStepElement() = 0;
+    virtual void update_step_element() = 0;
 
     //! Update time and step counter
-    void UpdateStepTime();
+    void update_step_time();
 
     //! update at time step end
     void update() override = 0;
 
     //! update Newton step
-    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
+    void update_newton(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
 
     //! Reset configuration after time step
     //!
@@ -192,8 +192,8 @@ namespace THR
     void reset_step() override;
 
     //! set the initial thermal field
-    void SetInitialField(const Inpar::THR::InitialField,  //!< type of initial field
-        const int startfuncno                             //!< number of spatial function
+    void set_initial_field(const Inpar::THR::InitialField,  //!< type of initial field
+        const int startfuncno                               //!< number of spatial function
     );
 
     //@}
@@ -202,17 +202,17 @@ namespace THR
     //@{
 
     //! print summary after step
-    void PrintStep() override = 0;
+    void print_step() override = 0;
 
     //! Output to file
     //! This routine always prints the last converged state, i.e.
     //! \f$T_{n}, R_{n}\f$. So, #UpdateIncrement should be called
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
-    void OutputStep(bool forced_writerestart);
+    void output_step(bool forced_writerestart);
 
     //! output
-    void output(bool forced_writerestart = false) override { OutputStep(forced_writerestart); }
+    void output(bool forced_writerestart = false) override { output_step(forced_writerestart); }
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -240,10 +240,10 @@ namespace THR
     void output_energy();
 
     //! Write internal and external forces (if necessary for restart)
-    virtual void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
+    virtual void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
 
     //! Check wether energy output file is attached
-    bool AttachedEnergyFile()
+    bool attached_energy_file()
     {
       if (energyfile_)
         return true;
@@ -252,19 +252,19 @@ namespace THR
     }
 
     //! Attach file handle for energy file #energyfile_
-    void AttachEnergyFile()
+    void attach_energy_file()
     {
       if (not energyfile_)
       {
         std::string energyname =
-            Global::Problem::Instance()->OutputControlFile()->file_name() + ".thermo.energy";
+            Global::Problem::instance()->output_control_file()->file_name() + ".thermo.energy";
         energyfile_ = new std::ofstream(energyname.c_str());
         *energyfile_ << "# timestep time internal_energy" << std::endl;
       }
     }
 
     //! Detach file handle for energy file #energyfile_
-    void DetachEnergyFile()
+    void detach_energy_file()
     {
       if (energyfile_) delete energyfile_;
     }
@@ -278,7 +278,7 @@ namespace THR
     void prepare_partition_step() override = 0;
 
     //! thermal result test
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     //@}
 
@@ -349,7 +349,7 @@ namespace THR
     //@{
 
     //! Set external loads (heat flux) due to tfsi interface
-    void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload  //!< thermal interface load
+    void set_force_interface(Teuchos::RCP<Epetra_Vector> ithermoload  //!< thermal interface load
         ) override;
 
     //@}
@@ -358,26 +358,26 @@ namespace THR
     //@{
 
     //! Provide Name
-    virtual enum Inpar::THR::DynamicType MethodName() const = 0;
+    virtual enum Inpar::THR::DynamicType method_name() const = 0;
 
     //! Provide title
-    std::string MethodTitle() const { return Inpar::THR::DynamicTypeString(MethodName()); }
+    std::string method_title() const { return Inpar::THR::DynamicTypeString(method_name()); }
 
     //! Return true, if time integrator is implicit
-    virtual bool MethodImplicit() = 0;
+    virtual bool method_implicit() = 0;
 
     //! Return true, if time integrator is explicit
-    bool MethodExplicit() { return (not MethodImplicit()); }
+    bool method_explicit() { return (not method_implicit()); }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a \f$m\f$-multistep method returns \f$m\f$
-    virtual int MethodSteps() = 0;
+    virtual int method_steps() = 0;
 
     //! Give order of accuracy
     virtual int method_order_of_accuracy() = 0;
 
     //! Return linear error coefficient of temperatures
-    virtual double MethodLinErrCoeff() = 0;
+    virtual double method_lin_err_coeff() = 0;
 
     //@}
 
@@ -402,13 +402,13 @@ namespace THR
     }
 
     //! Access solver
-    Teuchos::RCP<Core::LinAlg::Solver> Solver() { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> solver() { return solver_; }
 
     //! get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; }
 
     //! Access output object
-    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override { return output_; }
+    Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override { return output_; }
 
     //! prepare output (do nothing)
     void prepare_output() override { ; }
@@ -418,86 +418,86 @@ namespace THR
         ) override;
 
     //! Read and set restart state
-    void ReadRestartState();
+    void read_restart_state();
 
     //! Read and set restart forces
-    virtual void ReadRestartForce() = 0;
+    virtual void read_restart_force() = 0;
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Temp() { return (*temp_)(0); }
+    Teuchos::RCP<Epetra_Vector> temp() { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessTempn() override { return (*temp_)(0); }
+    Teuchos::RCP<Epetra_Vector> write_access_tempn() override { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Tempn() override { return (*temp_)(0); }
+    Teuchos::RCP<const Epetra_Vector> tempn() override { return (*temp_)(0); }
 
     //! initial guess of Newton's method
     Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessTempnp() override { return tempn_; }
+    Teuchos::RCP<Epetra_Vector> write_access_tempnp() override { return tempn_; }
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Tempnp() override { return tempn_; }
+    Teuchos::RCP<const Epetra_Vector> tempnp() override { return tempn_; }
 
     //! Return temperature rates \f$R_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Rate() { return (*rate_)(0); }
+    Teuchos::RCP<Epetra_Vector> rate() { return (*rate_)(0); }
 
     //! Return temperature rates \f$R_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> RateNew() { return raten_; }
+    Teuchos::RCP<Epetra_Vector> rate_new() { return raten_; }
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> fext() = 0;
 
     //! Return reaction forces
-    virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> freact() = 0;
 
     //! right-hand side alias the dynamic thermal residual
-    Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
+    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
 
     //! Return tangent, i.e. thermal residual differentiated by temperatures
     //! (system_matrix()/stiff_ in STR)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override { return tang_; }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override { return tang_; }
 
     //! Return domain map
-    const Epetra_Map& GetDomainMap() { return tang_->DomainMap(); }
+    const Epetra_Map& get_domain_map() { return tang_->domain_map(); }
 
     //! Return domain map
-    const Epetra_Map& DomainMap() override { return tang_->DomainMap(); }
+    const Epetra_Map& domain_map() override { return tang_->domain_map(); }
 
     //! Return current time \f$t_{n}\f$
-    double TimeOld() const override { return (*time_)[0]; }
+    double time_old() const override { return (*time_)[0]; }
 
     //! Return target time \f$t_{n+1}\f$
-    double Time() const override { return timen_; }
+    double time() const override { return timen_; }
 
     //! Get upper limit of time range of interest
-    double GetTimeEnd() const override { return timemax_; }
+    double get_time_end() const override { return timemax_; }
 
     //! Get time step size \f$\Delta t_n\f$
-    double Dt() const override { return (*dt_)[0]; }
+    double dt() const override { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
     void set_dt(double timestepsize) override { (*dt_)[0] = timestepsize; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
-    void SetTimen(const double time) override { timen_ = time; }
+    void set_timen(const double time) override { timen_ = time; }
 
     //! Return current step number $n$
-    int StepOld() const override { return step_; }
+    int step_old() const override { return step_; }
 
     //! Return current step number $n+1$
-    int Step() const override { return stepn_; }
+    int step() const override { return stepn_; }
 
     //! Get number of time steps
-    int NumStep() const override { return stepmax_; }
+    int num_step() const override { return stepmax_; }
 
     //! Update number of time steps (in adaptivity)
-    virtual void SetNumStep(const int newNumStep) { stepmax_ = newNumStep; }
+    virtual void set_num_step(const int newNumStep) { stepmax_ = newNumStep; }
 
     //! Get communicator
-    virtual inline const Epetra_Comm& Comm() const { return discret_->Comm(); }
+    virtual inline const Epetra_Comm& get_comm() const { return discret_->get_comm(); }
 
     //! Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const

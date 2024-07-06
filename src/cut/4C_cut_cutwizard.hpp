@@ -82,31 +82,31 @@ namespace Core::Geo
       void init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
           const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
 
-      const Teuchos::RCP<Core::FE::Discretization>& GetPtr() { return back_discret_; }
+      const Teuchos::RCP<Core::FE::Discretization>& get_ptr() { return back_discret_; }
 
       Core::FE::Discretization& get() { return *back_discret_; }
 
       const Core::FE::Discretization& get() const { return *back_discret_; }
 
-      virtual int NumMyColElements() const;
+      virtual int num_my_col_elements() const;
 
-      virtual const Core::Elements::Element* lColElement(int lid) const;
+      virtual const Core::Elements::Element* l_col_element(int lid) const;
 
-      inline bool IsBackDisp() const { return (not back_disp_col_.is_null()); }
+      inline bool is_back_disp() const { return (not back_disp_col_.is_null()); }
 
-      const Epetra_Vector& BackDispCol() const
+      const Epetra_Vector& back_disp_col() const
       {
-        if (not IsBackDisp())
+        if (not is_back_disp())
           FOUR_C_THROW("The background displacement was not initialized correctly!");
 
         return *back_disp_col_;
       }
 
-      inline bool IsLevelSet() const { return (not back_levelset_col_.is_null()); }
+      inline bool is_level_set() const { return (not back_levelset_col_.is_null()); }
 
-      const Epetra_Vector& BackLevelSetCol() const
+      const Epetra_Vector& back_level_set_col() const
       {
-        if (not IsLevelSet())
+        if (not is_level_set())
           FOUR_C_THROW("No level-set values set for the background discretization!");
 
         return *back_levelset_col_;
@@ -186,7 +186,7 @@ namespace Core::Geo
     /*========================================================================*/
 
     //! set options and flags used during the cut
-    void SetOptions(const Teuchos::ParameterList& cutparams,  //!< parameter list for cut options
+    void set_options(const Teuchos::ParameterList& cutparams,  //!< parameter list for cut options
         Cut::NodalDofSetStrategy nodal_dofset_strategy,  //!< strategy for nodal dofset management
         Cut::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
         Cut::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
@@ -197,7 +197,7 @@ namespace Core::Geo
         bool screenoutput   //!< print screen output
     );
 
-    virtual void SetBackgroundState(
+    virtual void set_background_state(
         Teuchos::RCP<const Epetra_Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::RCP<const Epetra_Vector>
@@ -205,10 +205,10 @@ namespace Core::Geo
         int level_set_sid       //!< global id for level-set side
     );
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
+    void add_cutter_state(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col);
 
-    void AddCutterState(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
+    void add_cutter_state(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
         Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
 
     // Find marked background-boundary sides.
@@ -226,9 +226,9 @@ namespace Core::Geo
     /*========================================================================*/
 
     //! prepare the cut, add background elements and cutting sides
-    void Prepare();
+    void prepare();
 
-    void Cut(bool include_inner  //!< perform cut in the interior of the cutting mesh
+    void cut(bool include_inner  //!< perform cut in the interior of the cutting mesh
     );
 
     /*========================================================================*/
@@ -242,22 +242,22 @@ namespace Core::Geo
     Core::Geo::Cut::SideHandle* get_side(int sid);
 
     //! Get this side from cut meshes from the cut libraries
-    Core::Geo::Cut::SideHandle* GetCutSide(int sid);
+    Core::Geo::Cut::SideHandle* get_cut_side(int sid);
 
     //! Get this element from the cut libraries by element id
-    Core::Geo::Cut::ElementHandle* GetElement(const int eleid) const;
+    Core::Geo::Cut::ElementHandle* get_element(const int eleid) const;
 
     //! Get this element from the cut libraries by element pointer
-    Core::Geo::Cut::ElementHandle* GetElement(const Core::Elements::Element* ele) const;
+    Core::Geo::Cut::ElementHandle* get_element(const Core::Elements::Element* ele) const;
 
     //! Get this node from the cut libraries
-    Core::Geo::Cut::Node* GetNode(int nid);
+    Core::Geo::Cut::Node* get_node(int nid);
 
     //! Get the sidehandle for cutting sides
-    Core::Geo::Cut::SideHandle* GetMeshCuttingSide(int sid, int mi);
+    Core::Geo::Cut::SideHandle* get_mesh_cutting_side(int sid, int mi);
 
     //! is there a level-set side with the given sid?
-    bool HasLSCuttingSide(int sid);
+    bool has_ls_cutting_side(int sid);
 
     //! update the coordinates of the cut boundary cells
     void update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discretization> cutterdis,

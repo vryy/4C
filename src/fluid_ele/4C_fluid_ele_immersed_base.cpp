@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersedBase::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersedBase::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDIMMERSED")

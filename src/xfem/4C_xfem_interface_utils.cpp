@@ -401,16 +401,16 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
 
   // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface
   // transformation factor
-  switch (bc->Shape())
+  switch (bc->shape())
   {
     case Core::FE::CellType::tri3:
     {
-      bc->Transform<Core::FE::CellType::tri3>(eta, x_gp_lin, normal, drs, referencepos);
+      bc->transform<Core::FE::CellType::tri3>(eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
     case Core::FE::CellType::quad4:
     {
-      bc->Transform<Core::FE::CellType::quad4>(eta, x_gp_lin, normal, drs, referencepos);
+      bc->transform<Core::FE::CellType::quad4>(eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
     default:
@@ -465,29 +465,29 @@ double XFEM::UTILS::ComputeMeasCutSurf(const std::map<int, std::vector<Core::FE:
         double drs =
             0.0;  // transformation factor between reference cell and linearized boundary cell
 
-        const Core::LinAlg::Matrix<2, 1> eta(iquad.Point());  // xi-coordinates with respect to side
+        const Core::LinAlg::Matrix<2, 1> eta(iquad.point());  // xi-coordinates with respect to side
 
         Core::LinAlg::Matrix<3, 1> normal(true);
 
         Core::LinAlg::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
-        if (bc->Shape() != Core::FE::CellType::dis_none)  // Tessellation approach
+        if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
         {
           XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
         }
         else  // MomentFitting approach
         {
           drs = 1.0;
-          normal = bc->GetNormalVector();
-          const double *gpcord = iquad.Point();
+          normal = bc->get_normal_vector();
+          const double *gpcord = iquad.point();
           for (int idim = 0; idim < 3; ++idim)
           {
             x_gp_lin(idim, 0) = gpcord[idim];
           }
         }
 
-        const double surf_fac = drs * iquad.Weight();
+        const double surf_fac = drs * iquad.weight();
 
         surf += surf_fac;
 
@@ -508,14 +508,14 @@ double XFEM::UTILS::ComputeMeasFace(Core::Elements::Element *ele,  ///< fluid el
 )
 {
   // get the shape of the face
-  Core::FE::CellType face_shape = Core::FE::getEleFaceShapeType(ele->Shape(), local_face_id);
+  Core::FE::CellType face_shape = Core::FE::getEleFaceShapeType(ele->shape(), local_face_id);
 
   // get the current node coordinates, extract them from the element's node coordinates
   const int numnode_face = Core::FE::getNumberOfElementNodes(face_shape);
   Core::LinAlg::SerialDenseMatrix xyze_face(nsd, numnode_face);
 
   // map for numbering of nodes of the surfaces
-  std::vector<std::vector<int>> map = Core::FE::getEleNodeNumberingFaces(ele->Shape());
+  std::vector<std::vector<int>> map = Core::FE::getEleNodeNumberingFaces(ele->shape());
 
   // extract the surface's node coordinates from the element's nodes coordinates
   for (int n = 0; n < numnode_face; ++n)
@@ -589,8 +589,8 @@ double XFEM::UTILS::EvalElementVolume(Core::LinAlg::Matrix<3, Core::FE::num_node
   Core::FE::IntPointsAndWeights<nsd> intpoints_stab(
       Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
-  const double *gpcoord = intpoints_stab.IP().qxg[0];   // actual integration point (coords)
-  const double gpweight = intpoints_stab.IP().qwgt[0];  // actual integration point (weight)
+  const double *gpcoord = intpoints_stab.ip().qxg[0];   // actual integration point (coords)
+  const double gpweight = intpoints_stab.ip().qwgt[0];  // actual integration point (weight)
 
   Core::LinAlg::Matrix<nsd, 1> xsi(gpcoord, true);
   static Core::LinAlg::Matrix<nen, 1> funct;
@@ -678,7 +678,7 @@ double XFEM::UTILS::ComputeCharEleLength(Core::Elements::Element *ele,  ///< flu
   Core::LinAlg::Matrix<3, Core::FE::num_nodes<distype>> xyze(ele_xyze, true);
   const int coup_sid = bintpoints.begin()->first;
   const Inpar::XFEM::AveragingStrategy averaging_strategy =
-      cond_manager->get_averaging_strategy(coup_sid, ele->Id());
+      cond_manager->get_averaging_strategy(coup_sid, ele->id());
   if (emb == Teuchos::null and averaging_strategy == Inpar::XFEM::Embedded_Sided)
     FOUR_C_THROW("no coupling interface available, however Embedded_Sided coupling is activated!");
 
@@ -702,7 +702,7 @@ double XFEM::UTILS::ComputeCharEleLength(Core::Elements::Element *ele,  ///< flu
       if (averaging_strategy == Inpar::XFEM::Embedded_Sided)
       {
         // evaluate shape functions and derivatives at element center w.r.t embedded element
-        meas_vol = emb->EvalElementVolume();
+        meas_vol = emb->eval_element_volume();
       }
       else
       {
@@ -737,7 +737,7 @@ double XFEM::UTILS::ComputeCharEleLength(Core::Elements::Element *ele,  ///< flu
            ++i)
       {
         Core::Geo::Cut::VolumeCell *vc = *i;
-        meas_vol += vc->Volume();
+        meas_vol += vc->volume();
       }
 
       if (meas_vol < 0.0)
@@ -782,10 +782,10 @@ double XFEM::UTILS::ComputeCharEleLength(Core::Elements::Element *ele,  ///< flu
 
       //---------------------------------------------------
       // compute the uncut element's surface measure
-      meas_surf = XFEM::UTILS::ComputeMeasFace(ele, ele_xyze, fele->FaceParentNumber(), nsd);
+      meas_surf = XFEM::UTILS::ComputeMeasFace(ele, ele_xyze, fele->face_parent_number(), nsd);
 
       // compute the full element volume measure
-      meas_vol = emb->EvalElementVolume();
+      meas_vol = emb->eval_element_volume();
 
       break;
     }
@@ -799,7 +799,7 @@ double XFEM::UTILS::ComputeCharEleLength(Core::Elements::Element *ele,  ///< flu
               "Embedded_Sided_Coupling!");
 
         // compute the uncut element's surface measure
-        const int numfaces = Core::FE::getNumberOfElementFaces(ele->Shape());
+        const int numfaces = Core::FE::getNumberOfElementFaces(ele->shape());
 
         // loop all surfaces
         for (int lid = 0; lid < numfaces; ++lid)
@@ -1055,12 +1055,12 @@ void XFEM::UTILS::EvaluteStateatGP(const Core::Elements::Element *sele,
 
   std::vector<double> ivel;
   Core::Elements::Element::LocationArray las(1);
-  sele->LocationVector(discret, las, false);
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discret.GetState(state);
+  sele->location_vector(discret, las, false);
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discret.get_state(state);
   Core::FE::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
 
   // 4 // evaluate slave velocity at guasspoint
-  if (sele->Shape() == Core::FE::CellType::quad4)
+  if (sele->shape() == Core::FE::CellType::quad4)
   {
     Core::LinAlg::Matrix<3, 4> vels;
     for (int n = 0; n < sele->num_node(); ++n)

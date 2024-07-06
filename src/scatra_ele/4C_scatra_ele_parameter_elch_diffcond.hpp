@@ -37,25 +37,25 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterElchDiffCond* Instance(
+      static ScaTraEleParameterElchDiffCond* instance(
           const std::string& disname  //!< name of discretization
       );
 
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_parameters(Teuchos::ParameterList& parameters  //!< parameter list
           ) override;
 
       //! return flag for current as solution variable
-      bool CurSolVar() const { return cursolvar_; }
+      bool cur_sol_var() const { return cursolvar_; }
 
       //! return flag for diffusion potential
-      bool DiffusionCoeffBased() const { return diffusioncoefbased_; }
+      bool diffusion_coeff_based() const { return diffusioncoefbased_; }
 
       //! return Newman constants
-      double NewmanConstdata() const { return newmanconsta_; }
-      double NewmanConstB() const { return newmanconstb_; }
-      double NewmanConstC() const { return newmanconstc_; }
-      double Epsilon0() const { return epsilon_0_; }
+      double newman_constdata() const { return newmanconsta_; }
+      double newman_const_b() const { return newmanconstb_; }
+      double newman_const_c() const { return newmanconstc_; }
+      double epsilon0() const { return epsilon_0_; }
 
      private:
       //! private constructor for singletons

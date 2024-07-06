@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Wall1LineType Discret::ELEMENTS::Wall1LineType::instance_;
 
-Discret::ELEMENTS::Wall1LineType& Discret::ELEMENTS::Wall1LineType::Instance() { return instance_; }
+Discret::ELEMENTS::Wall1LineType& Discret::ELEMENTS::Wall1LineType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
@@ -27,8 +27,8 @@ Discret::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int*
     Core::Nodes::Node** nodes, Discret::ELEMENTS::Wall1* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lline);
   return;
 }
@@ -46,7 +46,7 @@ Discret::ELEMENTS::Wall1Line::Wall1Line(const Discret::ELEMENTS::Wall1Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Wall1Line::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1Line::clone() const
 {
   Discret::ELEMENTS::Wall1Line* newelement = new Discret::ELEMENTS::Wall1Line(*this);
   return newelement;
@@ -56,11 +56,11 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1Line::Clone() const
  |                                                             (public) |
  |                                                          farah 02/14 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Wall1Line::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Wall1Line::shape() const
 {
   Core::FE::CellType distype_line = Core::FE::CellType::dis_none;
 
-  switch (ParentMasterElement()->Shape())
+  switch (parent_master_element()->shape())
   {
     case Core::FE::CellType::tri3:
     {

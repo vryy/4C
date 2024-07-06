@@ -32,26 +32,27 @@ Core::UTILS::ParsedFunctionVariable::ParsedFunctionVariable(
 }
 
 
-double Core::UTILS::ParsedFunctionVariable::Value(const double t)
+double Core::UTILS::ParsedFunctionVariable::value(const double t)
 {
   // evaluate the value of the function
-  double value = timefunction_->Value({{"t", t}});
+  double value = timefunction_->value({{"t", t}});
 
   return value;
 }
 
 
-double Core::UTILS::ParsedFunctionVariable::TimeDerivativeValue(const double t, const unsigned deg)
+double Core::UTILS::ParsedFunctionVariable::time_derivative_value(
+    const double t, const unsigned deg)
 {
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> tfad(1, 0, t);
   tfad.val() = Sacado::Fad::DFad<double>(1, 0, t);
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> vfad;
 
-  vfad = timefunction_->SecondDerivative({{"t", tfad}}, {});
+  vfad = timefunction_->second_derivative({{"t", tfad}}, {});
 
   if (deg == 0)
   {
-    const double v = Value(t);
+    const double v = value(t);
     return v;
   }
   if (deg == 1)
@@ -72,7 +73,7 @@ double Core::UTILS::ParsedFunctionVariable::TimeDerivativeValue(const double t, 
 }
 
 
-bool Core::UTILS::ParsedFunctionVariable::ContainTime(const double t) { return true; }
+bool Core::UTILS::ParsedFunctionVariable::contain_time(const double t) { return true; }
 
 
 Core::UTILS::LinearInterpolationVariable::LinearInterpolationVariable(std::string name,
@@ -87,7 +88,7 @@ Core::UTILS::LinearInterpolationVariable::LinearInterpolationVariable(std::strin
 }
 
 
-double Core::UTILS::LinearInterpolationVariable::Value(const double t)
+double Core::UTILS::LinearInterpolationVariable::value(const double t)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -98,13 +99,11 @@ double Core::UTILS::LinearInterpolationVariable::Value(const double t)
     t_equivalent = fmod(t + 1.0e-14, times_[times_.size() - 1] - times_[0]) - 1.0e-14;
   }
 
-  const auto value = Value<double>(t_equivalent);
-
-  return value;
+  return LinearInterpolationVariable::value<double>(t_equivalent);
 }
 
 template <typename ScalarT>
-ScalarT Core::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
+ScalarT Core::UTILS::LinearInterpolationVariable::value(const ScalarT& t)
 {
   ScalarT value = 0.0;
 
@@ -143,7 +142,7 @@ ScalarT Core::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
 }
 
 
-double Core::UTILS::LinearInterpolationVariable::TimeDerivativeValue(
+double Core::UTILS::LinearInterpolationVariable::time_derivative_value(
     const double t, const unsigned deg)
 {
   // evaluate an equivalent time for a periodic variable
@@ -158,11 +157,11 @@ double Core::UTILS::LinearInterpolationVariable::TimeDerivativeValue(
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> tfad(1, 0, t_equivalent);
   tfad.val() = Sacado::Fad::DFad<double>(1, 0, t_equivalent);
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> vfad =
-      Value<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(tfad);
+      value<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(tfad);
 
   if (deg == 0)
   {
-    const double v = Value(t);
+    const double v = value(t);
     return v;
   }
   if (deg == 1)
@@ -183,7 +182,7 @@ double Core::UTILS::LinearInterpolationVariable::TimeDerivativeValue(
 }
 
 
-bool Core::UTILS::LinearInterpolationVariable::ContainTime(const double t)
+bool Core::UTILS::LinearInterpolationVariable::contain_time(const double t)
 {
   /// check the inclusion of the considered time
   double t_equivalent = t;
@@ -224,7 +223,7 @@ Core::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
 }
 
 
-double Core::UTILS::MultiFunctionVariable::Value(const double t)
+double Core::UTILS::MultiFunctionVariable::value(const double t)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -261,18 +260,18 @@ double Core::UTILS::MultiFunctionVariable::Value(const double t)
   double value;
   if (index == 0)
   {
-    value = timefunction_[0]->Value({{"t", t_equivalent}});
+    value = timefunction_[0]->value({{"t", t_equivalent}});
   }
   else
   {
-    value = timefunction_[index - 1]->Value({{"t", t_equivalent}});
+    value = timefunction_[index - 1]->value({{"t", t_equivalent}});
   }
 
   return value;
 }
 
 
-double Core::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, const unsigned deg)
+double Core::UTILS::MultiFunctionVariable::time_derivative_value(const double t, const unsigned deg)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -312,16 +311,16 @@ double Core::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, c
   // evaluate the derivative of the function considering the different possibilities
   if (index == 0)
   {
-    vfad = timefunction_[0]->SecondDerivative({{"t", tfad}}, {});
+    vfad = timefunction_[0]->second_derivative({{"t", tfad}}, {});
   }
   else
   {
-    vfad = timefunction_[index - 1]->SecondDerivative({{"t", tfad}}, {});
+    vfad = timefunction_[index - 1]->second_derivative({{"t", tfad}}, {});
   }
 
   if (deg == 0)
   {
-    const double v = Value(t);
+    const double v = value(t);
     return v;
   }
   if (deg == 1)
@@ -342,7 +341,7 @@ double Core::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, c
 }
 
 
-bool Core::UTILS::MultiFunctionVariable::ContainTime(const double t)
+bool Core::UTILS::MultiFunctionVariable::contain_time(const double t)
 {
   /// check the inclusion of the considered time
   double t_equivalent = t;
@@ -375,7 +374,7 @@ Core::UTILS::FourierInterpolationVariable::FourierInterpolationVariable(std::str
 {
 }
 
-double Core::UTILS::FourierInterpolationVariable::Value(const double t)
+double Core::UTILS::FourierInterpolationVariable::value(const double t)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -386,13 +385,11 @@ double Core::UTILS::FourierInterpolationVariable::Value(const double t)
     t_equivalent = fmod(t + 1.0e-14, times_[times_.size() - 1] - times_[0]) - 1.0e-14;
   }
 
-  const auto value = Value<double>(t_equivalent);
-
-  return value;
+  return value<double>(t_equivalent);
 }
 
 template <typename ScalarT>
-ScalarT Core::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
+ScalarT Core::UTILS::FourierInterpolationVariable::value(const ScalarT& t)
 {
   // source: https://en.wikipedia.org/wiki/Trigonometric_interpolation
   ScalarT value = 0.0;
@@ -432,7 +429,7 @@ ScalarT Core::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
 }
 
 
-double Core::UTILS::FourierInterpolationVariable::TimeDerivativeValue(
+double Core::UTILS::FourierInterpolationVariable::time_derivative_value(
     const double t, const unsigned deg)
 {
   // evaluate an equivalent time for a periodic variable
@@ -447,11 +444,11 @@ double Core::UTILS::FourierInterpolationVariable::TimeDerivativeValue(
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> tfad(1, 0, t_equivalent);
   tfad.val() = Sacado::Fad::DFad<double>(1, 0, t_equivalent);
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> vfad =
-      Value<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(tfad);
+      value<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(tfad);
 
   if (deg == 0)
   {
-    const double v = Value(t);
+    const double v = value(t);
     return v;
   }
   if (deg == 1)
@@ -472,7 +469,7 @@ double Core::UTILS::FourierInterpolationVariable::TimeDerivativeValue(
 }
 
 
-bool Core::UTILS::FourierInterpolationVariable::ContainTime(const double t)
+bool Core::UTILS::FourierInterpolationVariable::contain_time(const double t)
 {
   /// check the inclusion of the considered time
   double t_equivalent = t;
@@ -503,22 +500,22 @@ Core::UTILS::PiecewiseVariable::PiecewiseVariable(
 }
 
 
-double Core::UTILS::PiecewiseVariable::Value(const double t)
+double Core::UTILS::PiecewiseVariable::value(const double t)
 {
-  return find_piece_for_time(t).Value(t);
+  return find_piece_for_time(t).value(t);
 }
 
 
-double Core::UTILS::PiecewiseVariable::TimeDerivativeValue(const double t, const unsigned int deg)
+double Core::UTILS::PiecewiseVariable::time_derivative_value(const double t, const unsigned int deg)
 {
-  return find_piece_for_time(t).TimeDerivativeValue(t, deg);
+  return find_piece_for_time(t).time_derivative_value(t, deg);
 }
 
 
-bool Core::UTILS::PiecewiseVariable::ContainTime(const double t)
+bool Core::UTILS::PiecewiseVariable::contain_time(const double t)
 {
   const auto active_piece =
-      std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });
+      std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->contain_time(t); });
 
   return active_piece != pieces_.end();
 }
@@ -527,15 +524,15 @@ bool Core::UTILS::PiecewiseVariable::ContainTime(const double t)
 Core::UTILS::FunctionVariable& Core::UTILS::PiecewiseVariable::find_piece_for_time(const double t)
 {
   auto active_piece =
-      std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });
+      std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->contain_time(t); });
 
   if (active_piece == pieces_.end())
-    FOUR_C_THROW("Piece-wise variable <%s> is not defined at time %f.", Name().c_str(), t);
+    FOUR_C_THROW("Piece-wise variable <%s> is not defined at time %f.", name().c_str(), t);
 
   return **active_piece;
 }
 
-std::vector<double> Core::UTILS::INTERNAL::ExtractTimeVector(const Input::LineDefinition& timevar)
+std::vector<double> Core::UTILS::INTERNAL::extract_time_vector(const Input::LineDefinition& timevar)
 {
   // read the number of points
   int numpoints;

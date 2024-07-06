@@ -152,32 +152,32 @@ namespace ALE
         ) override;
 
     /// linear solve
-    int Solve() override;
+    int solve() override;
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; }
 
     //! update displacement with iterative increment
-    void UpdateIter() override;
+    void update_iter() override;
 
     /// take the current solution to be the final one for this time step
     void update() override;
 
     /// convergence test for newton
-    virtual bool Converged(const int iter);
+    virtual bool converged(const int iter);
 
     /// Evaluate all elements
     virtual void evaluate_elements();
 
     /// Convert element action enum to std::string
-    virtual std::string ElementActionString(
+    virtual std::string element_action_string(
         const enum Inpar::ALE::AleDynamic name  ///< enum to convert
     );
 
     //! @name Time step helpers
 
     /// a very simple time loop to be used for standalone ALE problems
-    int Integrate() override;
+    int integrate() override;
 
     /// start a new time step
     void prepare_time_step() override;
@@ -186,8 +186,8 @@ namespace ALE
      *
      *  Perform Newton iteration to solve the nonlinear problem.
      */
-    void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                      ALE::UTILS::MapExtractor::dbc_set_std) override;
+    void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+                       ALE::UTILS::MapExtractor::dbc_set_std) override;
 
     /// write output
     void output() override;
@@ -215,13 +215,13 @@ namespace ALE
     void reset_time(const double dtold) override;
 
     /// Get current simulation time
-    double Time() const override { return time_; }
+    double time() const override { return time_; }
 
     /// Get current step counter
-    double Step() const override { return step_; }
+    double step() const override { return step_; }
 
     /// Get the time step size
-    double Dt() const override { return dt_; }
+    double dt() const override { return dt_; }
 
     /// set time step step size
     void set_dt(const double dtnew) override;
@@ -235,17 +235,17 @@ namespace ALE
     //@{
 
     /// get the whole displacement field at time step \f$t^{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp() const override { return dispnp_; }
+    Teuchos::RCP<const Epetra_Vector> dispnp() const override { return dispnp_; }
 
     /// get the whole displacement field at time step \f$t^{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn() const override { return dispn_; }
+    Teuchos::RCP<const Epetra_Vector> dispn() const override { return dispn_; }
 
     //@}
 
     //! @name Writing access to displacement
 
     /// write access to whole displacement field at time step \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const override { return dispnp_; }
+    Teuchos::RCP<Epetra_Vector> write_access_dispnp() const override { return dispnp_; }
 
     //@}
 
@@ -255,7 +255,7 @@ namespace ALE
     Teuchos::RCP<const Epetra_Vector> initial_guess() const override { return zeros_; }
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() const override { return rhs_; }
 
     //@}
 
@@ -265,10 +265,10 @@ namespace ALE
     Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     /// direct access to discretization
     Teuchos::RCP<const Core::FE::Discretization> discretization() const override
@@ -291,7 +291,7 @@ namespace ALE
      *  like evaluate, an adapter classes can assure, that its very own Dirichlet
      *  map extractor is used.
      */
-    void SetupDBCMapEx(
+    void setup_dbc_map_ex(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
@@ -303,7 +303,7 @@ namespace ALE
         ) override;
 
     /// create result test for encapsulated algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
@@ -317,10 +317,10 @@ namespace ALE
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Update slave dofs for multifield simulations with ale
-    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) override;
+    void update_slave_dof(Teuchos::RCP<Epetra_Vector>& a) override;
 
     //! Return locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override { return locsysman_; }
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     void apply_dirichlet_bc(Teuchos::ParameterList& params,
@@ -338,7 +338,7 @@ namespace ALE
     void reset() override;
 
     //! Set time and step
-    void SetTimeStep(const double time, const int step) override
+    void set_time_step(const double time, const int step) override
     {
       time_ = time;
       step_ = step;
@@ -556,8 +556,8 @@ namespace ALE
      *
      *  \author mayr.mt \date 11/2015
      */
-    void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                      ALE::UTILS::MapExtractor::dbc_set_std) override;
+    void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+                       ALE::UTILS::MapExtractor::dbc_set_std) override;
 
     /*! \brief Evaluate all elements
      *

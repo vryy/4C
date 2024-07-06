@@ -51,7 +51,7 @@ namespace Adapter
         PoroElast::Coupltype coupltype = PoroElast::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator
-    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter();
+    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter();
 
     /*!
       \brief Write extra output for specified step and time.

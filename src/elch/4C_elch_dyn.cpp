@@ -31,18 +31,18 @@ FOUR_C_NAMESPACE_OPEN
 void elch_dyn(int restart)
 {
   // pointer to problem
-  auto* problem = Global::Problem::Instance();
+  auto* problem = Global::Problem::instance();
 
   // access the communicator
-  const auto& comm = problem->GetDis("fluid")->Comm();
+  const auto& comm = problem->get_dis("fluid")->get_comm();
 
   // print ELCH-Logo to screen
   if (comm.MyPID() == 0) printlogo();
 
   // access the fluid discretization
-  auto fluiddis = problem->GetDis("fluid");
+  auto fluiddis = problem->get_dis("fluid");
   // access the scatra discretization
-  auto scatradis = problem->GetDis("scatra");
+  auto scatradis = problem->get_dis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra/elch dof
@@ -50,7 +50,7 @@ void elch_dyn(int restart)
   scatradis->fill_complete();
 
   // access the problem-specific parameter list
-  const auto& elchcontrol = problem->ELCHControlParams();
+  const auto& elchcontrol = problem->elch_control_params();
 
   // print default parameters to screen
   if (comm.MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, elchcontrol);
@@ -67,7 +67,7 @@ void elch_dyn(int restart)
     case Inpar::ScaTra::velocity_function:  // spatial function
     {
       // we directly use the elements from the scalar transport elements section
-      if (scatradis->NumGlobalNodes() == 0)
+      if (scatradis->num_global_nodes() == 0)
         FOUR_C_THROW("No elements in the ---TRANSPORT ELEMENTS section");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
@@ -81,14 +81,14 @@ void elch_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       auto scatraonly = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
-          scatradyn, scatradyn, Global::Problem::Instance()->SolverParams(linsolvernumber)));
+          scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       auto dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-          Global::Problem::Instance()->NDim() + 1, 0, 0, true));
-      if (scatradis->AddDofSet(dofsetaux) != 1)
+          Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+      if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
+      scatraonly->sca_tra_field()->set_number_of_dof_set_velocity(1);
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -109,33 +109,33 @@ void elch_dyn(int restart)
       scatraonly->setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->ScaTraField()->read_restart(restart);
+      if (restart) scatraonly->sca_tra_field()->read_restart(restart);
 
       // set velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      scatraonly->ScaTraField()->set_velocity_field();
+      scatraonly->sca_tra_field()->set_velocity_field();
 
       // enter time loop to solve problem with given convective velocity
-      scatraonly->ScaTraField()->TimeLoop();
+      scatraonly->sca_tra_field()->time_loop();
 
       // perform the result test if required
-      scatraonly->ScaTraField()->TestResults();
+      scatraonly->sca_tra_field()->test_results();
 
       break;
     }
     case Inpar::ScaTra::velocity_Navier_Stokes:  // Navier_Stokes
     {
       // we use the fluid discretization as layout for the scalar transport discretization
-      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
+      if (fluiddis->num_global_nodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       // create scatra elements if the scatra discretization is empty
-      if (scatradis->NumGlobalNodes() == 0)
+      if (scatradis->num_global_nodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
         Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
-            fluiddis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
+            fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
         scatradis->fill_complete();
         // determine implementation type of cloned scatra elements
         Inpar::ScaTra::ImplType impltype = Inpar::ScaTra::impltype_undefined;
@@ -145,13 +145,13 @@ void elch_dyn(int restart)
           impltype = Inpar::ScaTra::impltype_elch_NP;
 
         // set implementation type
-        for (int i = 0; i < scatradis->NumMyColElements(); ++i)
+        for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
         {
-          auto* element = dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->lColElement(i));
+          auto* element = dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->l_col_element(i));
           if (element == nullptr)
             FOUR_C_THROW("Invalid element type!");
           else
-            element->SetImplType(impltype);
+            element->set_impl_type(impltype);
         }
       }
 
@@ -159,10 +159,10 @@ void elch_dyn(int restart)
         FOUR_C_THROW("Fluid AND ScaTra discretization present. This is not supported.");
 
       // support for turbulent flow statistics
-      const auto& fdyn = (problem->FluidDynamicParams());
+      const auto& fdyn = (problem->fluid_dynamic_params());
 
-      Teuchos::RCP<Core::FE::Discretization> aledis = problem->GetDis("ale");
-      if (!aledis->Filled()) aledis->fill_complete(false, false, false);
+      Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
+      if (!aledis->filled()) aledis->fill_complete(false, false, false);
       // is ALE needed or not?
       const auto withale = Core::UTILS::IntegralValue<Inpar::ElCh::ElchMovingBoundary>(
           elchcontrol, "MOVINGBOUNDARY");
@@ -170,11 +170,11 @@ void elch_dyn(int restart)
       if (withale != Inpar::ElCh::elch_mov_bndry_no)
       {
         // create ale elements only if the ale discretization is empty
-        if (aledis->NumGlobalNodes() == 0)
+        if (aledis->num_global_nodes() == 0)
         {
           // clone ALE discretization from fluid discretization
           Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
-              fluiddis, aledis, Global::Problem::Instance()->CloningMaterialMap());
+              fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
 
           aledis->fill_complete(true, true, false);
           // setup material in every ALE element
@@ -197,17 +197,17 @@ void elch_dyn(int restart)
         // create an ElCh::MovingBoundaryAlgorithm instance
         // NOTE: elch reads time parameters from scatra dynamic section!
         auto elch = Teuchos::rcp(new ElCh::MovingBoundaryAlgorithm(
-            comm, elchcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
+            comm, elchcontrol, scatradyn, problem->solver_params(linsolvernumber)));
 
         // add proxy of fluid degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+        if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->ScaTraField()->set_number_of_dof_set_velocity(1);
+        elch->sca_tra_field()->set_number_of_dof_set_velocity(1);
 
         // add proxy of ALE degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
+        if (scatradis->add_dof_set(aledis->get_dof_set_proxy()) != 2)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->ScaTraField()->set_number_of_dof_set_displacement(2);
+        elch->sca_tra_field()->set_number_of_dof_set_displacement(2);
 
         // now we must call init()
         elch->init();
@@ -225,13 +225,13 @@ void elch_dyn(int restart)
         if (restart) elch->read_restart(restart);
 
         // solve the whole electrochemistry problem
-        elch->TimeLoop();
+        elch->time_loop();
 
         // summarize the performance measurements
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        elch->TestResults();
+        elch->test_results();
       }
       else
       {
@@ -247,12 +247,12 @@ void elch_dyn(int restart)
         // create an ElCh::Algorithm instance
         // NOTE: elch reads time parameters from scatra dynamic section!
         auto elch = Teuchos::rcp(new ElCh::Algorithm(
-            comm, elchcontrol, scatradyn, fdyn, problem->SolverParams(linsolvernumber)));
+            comm, elchcontrol, scatradyn, fdyn, problem->solver_params(linsolvernumber)));
 
         // add proxy of fluid degrees of freedom to scatra discretization
-        if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+        if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->ScaTraField()->set_number_of_dof_set_velocity(1);
+        elch->sca_tra_field()->set_number_of_dof_set_velocity(1);
 
         // now we must call init()
         elch->init();
@@ -270,13 +270,13 @@ void elch_dyn(int restart)
         if (restart) elch->read_restart(restart);
 
         // solve the whole electrochemistry problem
-        elch->TimeLoop();
+        elch->time_loop();
 
         // summarize the performance measurements
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        elch->TestResults();
+        elch->test_results();
       }
 
       break;

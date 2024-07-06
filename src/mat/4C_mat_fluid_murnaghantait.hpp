@@ -62,11 +62,11 @@ namespace Mat
   class MurnaghanTaitFluidType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "MurnaghanTaitFluidType"; }
+    std::string name() const override { return "MurnaghanTaitFluidType"; }
 
-    static MurnaghanTaitFluidType& Instance() { return instance_; };
+    static MurnaghanTaitFluidType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static MurnaghanTaitFluidType instance_;
@@ -93,9 +93,9 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return MurnaghanTaitFluidType::Instance().UniqueParObjectId();
+      return MurnaghanTaitFluidType::instance().unique_par_object_id();
     }
 
     /*!
@@ -103,7 +103,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
 
       \param data (in/out): char vector to store class information
@@ -117,7 +117,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -127,43 +127,43 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_fluid_murnaghantait;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new MurnaghanTaitFluid(*this));
     }
 
     /// compute density
-    double ComputeDensity(const double press) const;
+    double compute_density(const double press) const;
 
     /// return material parameters for element calculation
     //@{
 
     /// return viscosity
-    double Viscosity() const { return params_->viscosity_; }
+    double viscosity() const { return params_->viscosity_; }
 
     /// return reference density
-    double RefDensity() const { return params_->refdensity_; }
+    double ref_density() const { return params_->refdensity_; }
 
     /// return reference pressure
-    double RefPressure() const { return params_->refpressure_; }
+    double ref_pressure() const { return params_->refpressure_; }
 
     /// return reference bulk modulus
-    double RefBulkModulus() const { return params_->refbulkmodulus_; }
+    double ref_bulk_modulus() const { return params_->refbulkmodulus_; }
 
     /// return material parameter according to Murnaghan-Tait
-    double MatParameter() const { return params_->matparameter_; }
+    double mat_parameter() const { return params_->matparameter_; }
 
     /// return surface tension coefficient
-    double Gamma() const { return params_->gamma_; }
+    double gamma() const { return params_->gamma_; }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /// my material parameters

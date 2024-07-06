@@ -39,23 +39,23 @@ namespace Discret
     class SoSh8p8Type : public SoSh8Type
     {
      public:
-      std::string Name() const override { return "So_sh8p8Type"; }
+      std::string name() const override { return "So_sh8p8Type"; }
 
-      static SoSh8p8Type& Instance();
+      static SoSh8p8Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -210,15 +210,18 @@ namespace Discret
 
       /// Deep copy this instance of Solid3 and return pointer to the copy
       ///
-      /// The Clone() method is used from the virtual base class Element in cases
+      /// The clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      int UniqueParObjectId() const override { return SoSh8p8Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return SoSh8p8Type::instance().unique_par_object_id();
+      }
 
       /// Pack this class so it can be communicated
       ///
@@ -233,7 +236,7 @@ namespace Discret
       /// Print this element
       void print(std::ostream& os) const override;
 
-      SoSh8p8Type& ElementType() const override { return SoSh8p8Type::Instance(); }
+      SoSh8p8Type& element_type() const override { return SoSh8p8Type::instance(); }
 
       //@}
 
@@ -241,7 +244,7 @@ namespace Discret
       //@{
 
       /// Read input for this element
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
 
@@ -258,7 +261,7 @@ namespace Discret
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 4; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 4; }
 
       /// Get number of degrees of freedom per element
       /// (implements pure virtual Core::Elements::Element)
@@ -272,7 +275,7 @@ namespace Discret
       int num_dof_per_element() const override { return 0; }
 
       /// Set ANS type
-      void SetANS(const AnsType& newans  ///< ANS to set
+      void set_ans(const AnsType& newans  ///< ANS to set
       )
       {
         ans_ = newans;

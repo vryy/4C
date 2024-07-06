@@ -92,7 +92,7 @@ namespace Mortar
     \brief Get Epetra communicator
 
     */
-    const Epetra_Comm& Comm() const { return *comm_; }
+    const Epetra_Comm& get_comm() const { return *comm_; }
 
     /*!
     \brief Return the object for the solving strategy.
@@ -101,7 +101,7 @@ namespace Mortar
     have to be specialized in subclasses of StrategyBase
 
     */
-    Mortar::StrategyBase& GetStrategy() { return *strategy_; }
+    Mortar::StrategyBase& get_strategy() { return *strategy_; }
 
     //@}
 

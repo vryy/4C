@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Visualize mortar stuff with gmsh                          popp 08/08|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
+void Mortar::Interface::visualize_gmsh(const int step, const int iter)
 {
   //**********************************************************************
   // GMSH output of all interface elements
@@ -32,7 +32,7 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
   // basic information
   std::ostringstream filename;
   const std::string filebase =
-      Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
+      Global::Problem::instance()->output_control_file()->file_name_only_prefix();
   filename << "o/gmsh_output/" << filebase << "_mt_id";
   if (id_ < 10)
     filename << 0;
@@ -86,9 +86,9 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
   //**********************************************************************
   // Start GMSH output
   //**********************************************************************
-  for (int proc = 0; proc < Comm().NumProc(); ++proc)
+  for (int proc = 0; proc < get_comm().NumProc(); ++proc)
   {
-    if (proc == Comm().MyPID())
+    if (proc == get_comm().MyPID())
     {
       // open files (overwrite if proc==0, else append)
       if (proc == 0)
@@ -121,21 +121,21 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
       //******************************************************************
       // plot elements
       //******************************************************************
-      for (int i = 0; i < idiscret_->NumMyRowElements(); ++i)
+      for (int i = 0; i < idiscret_->num_my_row_elements(); ++i)
       {
-        Mortar::Element* element = dynamic_cast<Mortar::Element*>(idiscret_->lRowElement(i));
+        Mortar::Element* element = dynamic_cast<Mortar::Element*>(idiscret_->l_row_element(i));
         int nnodes = element->num_node();
         Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
-        element->GetNodalCoords(coord);
-        double color = (double)element->Owner();
+        element->get_nodal_coords(coord);
+        double color = (double)element->owner();
 
         // local center
         double xi[2] = {0.0, 0.0};
 
         // 2D linear case (2noded line elements)
-        if (element->Shape() == Core::FE::CellType::line2)
+        if (element->shape() == Core::FE::CellType::line2)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SL(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -162,9 +162,9 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 2D quadratic case (3noded line elements)
-        if (element->Shape() == Core::FE::CellType::line3)
+        if (element->shape() == Core::FE::CellType::line3)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SL2(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -197,9 +197,9 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D linear case (3noded triangular elements)
-        if (element->Shape() == Core::FE::CellType::tri3)
+        if (element->shape() == Core::FE::CellType::tri3)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "ST(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -234,9 +234,9 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D bilinear case (4noded quadrilateral elements)
-        if (element->Shape() == Core::FE::CellType::quad4)
+        if (element->shape() == Core::FE::CellType::quad4)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SQ(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -273,9 +273,9 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D quadratic case (6noded triangular elements)
-        if (element->Shape() == Core::FE::CellType::tri6)
+        if (element->shape() == Core::FE::CellType::tri6)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "ST2(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -324,9 +324,9 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D serendipity case (8noded quadrilateral elements)
-        if (element->Shape() == Core::FE::CellType::quad8)
+        if (element->shape() == Core::FE::CellType::quad8)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "ST(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 4) << "," << coord(1, 4) << ","
@@ -459,9 +459,9 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D biquadratic case (9noded quadrilateral elements)
-        if (element->Shape() == Core::FE::CellType::quad9)
+        if (element->shape() == Core::FE::CellType::quad9)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SQ2(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -523,55 +523,55 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
 
         // plot element number in element center
         double elec[3];
-        element->LocalToGlobal(xi, elec, 0);
+        element->local_to_global(xi, elec, 0);
 
-        if (element->IsSlave())
+        if (element->is_slave())
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2]
                           << "," << 17 << ")";
           gmshfilecontent << "{\""
-                          << "S" << element->Id() << "\"};" << std::endl;
+                          << "S" << element->id() << "\"};" << std::endl;
           gmshfilecontentslave << "T3(" << std::scientific << elec[0] << "," << elec[1] << ","
                                << elec[2] << "," << 17 << ")";
           gmshfilecontentslave << "{\""
-                               << "S" << element->Id() << "\"};" << std::endl;
+                               << "S" << element->id() << "\"};" << std::endl;
         }
         else
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2]
                           << "," << 17 << ")";
           gmshfilecontent << "{\""
-                          << "M" << element->Id() << "\"};" << std::endl;
+                          << "M" << element->id() << "\"};" << std::endl;
           gmshfilecontentmaster << "T3(" << std::scientific << elec[0] << "," << elec[1] << ","
                                 << elec[2] << "," << 17 << ")";
           gmshfilecontentmaster << "{\""
-                                << "M" << element->Id() << "\"};" << std::endl;
+                                << "M" << element->id() << "\"};" << std::endl;
         }
 
         // plot node numbers at the nodes
         for (int j = 0; j < nnodes; ++j)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j) << ","
                             << coord(2, j) << "," << 17 << ")";
             gmshfilecontent << "{\""
-                            << "SN" << element->NodeIds()[j] << "\"};" << std::endl;
+                            << "SN" << element->node_ids()[j] << "\"};" << std::endl;
             gmshfilecontentslave << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j)
                                  << "," << coord(2, j) << "," << 17 << ")";
             gmshfilecontentslave << "{\""
-                                 << "SN" << element->NodeIds()[j] << "\"};" << std::endl;
+                                 << "SN" << element->node_ids()[j] << "\"};" << std::endl;
           }
           else
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j) << ","
                             << coord(2, j) << "," << 17 << ")";
             gmshfilecontent << "{\""
-                            << "MN" << element->NodeIds()[j] << "\"};" << std::endl;
+                            << "MN" << element->node_ids()[j] << "\"};" << std::endl;
             gmshfilecontentmaster << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j)
                                   << "," << coord(2, j) << "," << 17 << ")";
             gmshfilecontentmaster << "{\""
-                                  << "MN" << element->NodeIds()[j] << "\"};" << std::endl;
+                                  << "MN" << element->node_ids()[j] << "\"};" << std::endl;
           }
         }
       }
@@ -582,7 +582,7 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
       for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
       {
         int gid = snoderowmap_->GID(i);
-        Core::Nodes::Node* node = idiscret_->gNode(gid);
+        Core::Nodes::Node* node = idiscret_->g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* mtrnode = dynamic_cast<Node*>(node);
         if (!mtrnode) FOUR_C_THROW("Static Cast to Node* failed");
@@ -593,7 +593,7 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
         for (int j = 0; j < 3; ++j)
         {
           nc[j] = mtrnode->xspatial()[j];
-          nn[j] = mtrnode->MoData().n()[j];
+          nn[j] = mtrnode->mo_data().n()[j];
         }
 
         gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2]
@@ -603,7 +603,7 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
       }
 
       // end GMSH output section in all files
-      if (proc == Comm().NumProc() - 1)
+      if (proc == get_comm().NumProc() - 1)
       {
         gmshfilecontent << "};" << std::endl;
         gmshfilecontentslave << "};" << std::endl;
@@ -618,7 +618,7 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
       fclose(fps);
       fclose(fpm);
     }
-    Comm().Barrier();
+    get_comm().Barrier();
   }
 
 
@@ -636,7 +636,7 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
   const std::string filebasetn =
-      Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
+      Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
   filenametn << "o/gmsh_output/" << filebasetn << "_";
 
   if (step < 10)
@@ -807,7 +807,7 @@ void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
 #ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
   const std::string filebasectn =
-      Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
+      Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
   filenamectn << "o/gmsh_output/" << filebasectn << "_";
   if (step < 10)
     filenamectn << 0 << 0 << 0 << 0;

@@ -39,7 +39,7 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::unpack_anisotropy(
   is_initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
 }
 
-double Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::GetScalarProduct(int gp) const
+double Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::get_scalar_product(int gp) const
 {
   if (!is_initialized_)
   {
@@ -200,24 +200,24 @@ void Mat::Elastic::CoupAnisoExpoShear::register_anisotropy_extensions(Mat::Aniso
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void Mat::Elastic::CoupAnisoExpoShear::PackSummand(Core::Communication::PackBuffer& data) const
+void Mat::Elastic::CoupAnisoExpoShear::pack_summand(Core::Communication::PackBuffer& data) const
 {
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::CoupAnisoExpoShear::UnpackSummand(
+void Mat::Elastic::CoupAnisoExpoShear::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   anisotropy_extension_.unpack_anisotropy(data, position);
 }
 
-void Mat::Elastic::CoupAnisoExpoShear::GetFiberVecs(
+void Mat::Elastic::CoupAnisoExpoShear::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
 {
   // no fibers to export here
 }
 
-void Mat::Elastic::CoupAnisoExpoShear::SetFiberVecs(const double newgamma,
+void Mat::Elastic::CoupAnisoExpoShear::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   FOUR_C_THROW("This function is not implemented for this summand!");

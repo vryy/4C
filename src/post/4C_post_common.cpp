@@ -224,7 +224,7 @@ int PostProblem::field_pos(const PostField* field) const
 /*----------------------------------------------------------------------*
  * returns the Epetra Communicator object
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Comm> PostProblem::comm() { return comm_; }
+Teuchos::RCP<Epetra_Comm> PostProblem::get_comm() { return comm_; }
 
 
 /*----------------------------------------------------------------------*
@@ -477,23 +477,23 @@ void PostProblem::read_meshes()
       const char* fn;
       if (!map_find_string(meshmap, "mesh_file", &fn))
         FOUR_C_THROW(
-            "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
+            "No meshfile name for discretization %s.", currfield.discretization()->name().c_str());
       std::string filename = fn;
       Core::IO::HDFReader reader = Core::IO::HDFReader(input_dir_);
-      reader.Open(filename, num_output_procs, comm_->NumProc(), comm_->MyPID());
+      reader.open(filename, num_output_procs, comm_->NumProc(), comm_->MyPID());
 
       if (currfield.num_nodes() != 0)
       {
         Teuchos::RCP<std::vector<char>> node_data =
-            reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
-        currfield.discretization()->UnPackMyNodes(node_data);
+            reader.read_node_data(step, comm_->NumProc(), comm_->MyPID());
+        currfield.discretization()->un_pack_my_nodes(node_data);
       }
 
       if (currfield.num_elements() != 0)
       {
         Teuchos::RCP<std::vector<char>> element_data =
-            reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
-        currfield.discretization()->UnPackMyElements(element_data);
+            reader.read_element_data(step, comm_->NumProc(), comm_->MyPID());
+        currfield.discretization()->un_pack_my_elements(element_data);
       }
 
       Teuchos::RCP<std::vector<char>> cond_pbcsline;
@@ -510,18 +510,18 @@ void PostProblem::read_meshes()
 
           if (nurbsdis == nullptr)
             FOUR_C_THROW("discretization %s is not a NurbsDiscretization",
-                currfield.discretization()->Name().c_str());
+                currfield.discretization()->name().c_str());
 
           Teuchos::RCP<std::vector<char>> packed_knots;
           if (comm_->MyPID() == 0)
-            packed_knots = reader.ReadKnotvector(step);
+            packed_knots = reader.read_knotvector(step);
           else
             packed_knots = Teuchos::rcp(new std::vector<char>());
 
           // distribute knots to all procs
           if (comm_->NumProc() > 1)
           {
-            Core::Communication::Exporter exporter(nurbsdis->Comm());
+            Core::Communication::Exporter exporter(nurbsdis->get_comm());
 
             if (comm_->MyPID() == 0)
             {
@@ -547,7 +547,7 @@ void PostProblem::read_meshes()
 
               std::vector<char> rblock;
 
-              exporter.ReceiveAny(frompid, mypid, rblock, length);
+              exporter.receive_any(frompid, mypid, rblock, length);
 
               *packed_knots = rblock;
             }
@@ -563,22 +563,22 @@ void PostProblem::read_meshes()
             FOUR_C_THROW("expected a nurbs discretisation for spatial approx. Nurbs\n");
           }
 
-          if (nurbsdis->Comm().NumProc() != 1)
-            nurbsdis->SetupGhosting(false, false, false);
+          if (nurbsdis->get_comm().NumProc() != 1)
+            nurbsdis->setup_ghosting(false, false, false);
           else
             nurbsdis->fill_complete(false, false, false);
 
 
-          if (!(nurbsdis->Filled()))
+          if (!(nurbsdis->filled()))
           {
             FOUR_C_THROW("nurbsdis was not fc\n");
           }
 
-          int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
+          int smallest_gid_in_dis = nurbsdis->element_row_map()->MinAllGID();
 
-          knots->FinishKnots(smallest_gid_in_dis);
+          knots->finish_knots(smallest_gid_in_dis);
 
-          nurbsdis->SetKnotVector(knots);
+          nurbsdis->set_knot_vector(knots);
 
           // do initialisation
           currfield.discretization()->fill_complete();
@@ -588,8 +588,8 @@ void PostProblem::read_meshes()
         default:
         {
           // setup of parallel layout: create ghosting of already distributed nodes+elems
-          if (currfield.discretization()->Comm().NumProc() != 1)
-            currfield.discretization()->SetupGhosting(true, true, true);
+          if (currfield.discretization()->get_comm().NumProc() != 1)
+            currfield.discretization()->setup_ghosting(true, true, true);
           else
             currfield.discretization()->fill_complete();
 
@@ -855,7 +855,7 @@ int PostResult::match_field_result(MAP* result_group) const
 /*----------------------------------------------------------------------*
  * closes all the currently open result files
  *----------------------------------------------------------------------*/
-void PostResult::close_result_files() { file_.Close(); }
+void PostResult::close_result_files() { file_.close(); }
 
 /*----------------------------------------------------------------------*
  * opens result files. The name is taken from the "result_file" entry
@@ -870,8 +870,8 @@ void PostResult::open_result_files(MAP* field_info)
   }
   const std::string basename = map_read_string(field_info, "result_file");
   // field_->problem()->set_basename(basename);
-  Epetra_Comm& comm = *field_->problem()->comm();
-  file_.Open(basename, num_output_procs, comm.NumProc(), comm.MyPID());
+  Epetra_Comm& comm = *field_->problem()->get_comm();
+  file_.open(basename, num_output_procs, comm.NumProc(), comm.MyPID());
 }
 
 /*----------------------------------------------------------------------*
@@ -899,7 +899,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
 {
   using namespace FourC;
 
-  Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
+  Teuchos::RCP<Epetra_Comm> comm = field_->problem()->get_comm();
   MAP* result = map_read_map(group_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
@@ -928,7 +928,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
     (*mapdata)[elemap->GID(i)] = gpstress;
   }
 
-  const Epetra_Map& elecolmap = *field_->discretization()->ElementColMap();
+  const Epetra_Map& elecolmap = *field_->discretization()->element_col_map();
   Core::Communication::Exporter ex(*elemap, elecolmap, *comm);
   ex.Export(*mapdata);
 
@@ -941,7 +941,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> PostResult::read_multi_result(const std::string name)
 {
-  const Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
+  const Teuchos::RCP<Epetra_Comm> comm = field_->problem()->get_comm();
   MAP* result = map_read_map(group_, name.c_str());
   const std::string id_path = map_read_string(result, "ids");
   const std::string value_path = map_read_string(result, "values");
@@ -950,7 +950,7 @@ Teuchos::RCP<Epetra_MultiVector> PostResult::read_multi_result(const std::string
   {
     columns = 1;
   }
-  return file_.ReadResultData(id_path, value_path, columns, *comm);
+  return file_.read_result_data(id_path, value_path, columns, *comm);
 }
 
 //! returns time of this result

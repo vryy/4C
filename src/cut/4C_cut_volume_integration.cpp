@@ -33,7 +33,7 @@ Core::LinAlg::SerialDenseVector Core::Geo::Cut::VolumeIntegration::compute_rhs_m
 {
   Core::LinAlg::SerialDenseVector rhs_mom(num_func_);
 
-  const plain_facet_set &facete = volcell_->Facets();
+  const plain_facet_set &facete = volcell_->facets();
 
   // integrate each base function over this volumecell
   for (int fnc = 1; fnc <= num_func_; fnc++)
@@ -71,7 +71,7 @@ Core::LinAlg::SerialDenseVector Core::Geo::Cut::VolumeIntegration::compute_rhs_m
   // set the volume of this volumecell
   // the volume from local coordinates is converted in terms of global coordinates
   double volGlobal = 0.0;
-  switch (elem1_->Shape())
+  switch (elem1_->shape())
   {
     case Core::FE::CellType::hex8:
     {
@@ -99,10 +99,10 @@ Core::LinAlg::SerialDenseVector Core::Geo::Cut::VolumeIntegration::compute_rhs_m
     }
     default:
       FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-          Core::FE::CellTypeToString(elem1_->Shape()).c_str());
+          Core::FE::CellTypeToString(elem1_->shape()).c_str());
       exit(EXIT_FAILURE);
   }
-  volcell_->SetVolume(volGlobal);
+  volcell_->set_volume(volGlobal);
 
   return rhs_mom;
 }
@@ -115,7 +115,7 @@ Core::LinAlg::SerialDenseVector Core::Geo::Cut::VolumeIntegration::compute_rhs_m
 *-----------------------------------------------------------------------------*/
 bool Core::Geo::Cut::VolumeIntegration::compute_gaussian_points(int numeach)
 {
-  Teuchos::RCP<BoundingBox> box1 = Teuchos::rcp(BoundingBox::Create(*volcell_, elem1_));
+  Teuchos::RCP<BoundingBox> box1 = Teuchos::rcp(BoundingBox::create(*volcell_, elem1_));
   double minn[3], maxx[3];
   minn[0] = box1->minx();
   maxx[0] = box1->maxx();
@@ -254,7 +254,7 @@ intersection point lies inside the volume or not
 void Core::Geo::Cut::VolumeIntegration::get_zcoordinates(
     std::vector<std::vector<double>> &zcoord, std::vector<std::vector<double>> &ycoord)
 {
-  const plain_facet_set &facete = volcell_->Facets();
+  const plain_facet_set &facete = volcell_->facets();
   int faceno = 0;
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
   {
@@ -271,7 +271,7 @@ void Core::Geo::Cut::VolumeIntegration::get_zcoordinates(
     }
     Facet *face1 = *i;
     std::vector<std::vector<double>> corLocal;
-    face1->CornerPointsLocal(elem1_, corLocal);
+    face1->corner_points_local(elem1_, corLocal);
     for (std::vector<std::vector<double>>::iterator k = corLocal.begin(); k != corLocal.end(); k++)
     {
       std::vector<double> &coords1 = *k;
@@ -396,7 +396,7 @@ bool Core::Geo::Cut::VolumeIntegration::is_intersect(double *pt, double *mini, d
       interPoints[inter1] = fa1;
     }
 
-    const plain_facet_set &facete = volcell_->Facets();
+    const plain_facet_set &facete = volcell_->facets();
     plain_facet_set::const_iterator f = facete.begin();
     unsigned cut_count = 0;
     for (std::map<std::vector<double>, int>::iterator i = interPoints.begin();
@@ -417,11 +417,11 @@ bool Core::Geo::Cut::VolumeIntegration::is_intersect(double *pt, double *mini, d
       i--;
 
       // Among two consequetive facets which are cut by the line, one must be the cut surface
-      if (facet1->OnCutSide())
+      if (facet1->on_cut_side())
       {
         if (eqn_facets_[face1][0] < 0.0) ptsInside = true;
       }
-      else if (facet2->OnCutSide())
+      else if (facet2->on_cut_side())
       {
         if (eqn_facets_[face2][0] > 0.0) ptsInside = true;
       }
@@ -1069,9 +1069,9 @@ void Core::Geo::Cut::VolumeIntegration::error_for_specific_function(
  * Check whether the point with this element Local coordinates is inside,              *
  * outside or on boundary of this volumecell                            sudhakar 07/12 *
  *-------------------------------------------------------------------------------------*/
-std::string Core::Geo::Cut::VolumeIntegration::IsPointInside(Core::LinAlg::Matrix<3, 1> &rst)
+std::string Core::Geo::Cut::VolumeIntegration::is_point_inside(Core::LinAlg::Matrix<3, 1> &rst)
 {
-  const plain_facet_set &facete = volcell_->Facets();
+  const plain_facet_set &facete = volcell_->facets();
 
   //--------------------------------------------------------------------------------
   // Step 1: Classify facets into facets having zero normal in x-direction and other
@@ -1084,7 +1084,7 @@ std::string Core::Geo::Cut::VolumeIntegration::IsPointInside(Core::LinAlg::Matri
   {
     Facet *fe = *i;
     std::vector<std::vector<double>> cornersLocal;
-    fe->CornerPointsLocal(elem1_, cornersLocal);
+    fe->corner_points_local(elem1_, cornersLocal);
 
     FacetIntegration faee1(fe, elem1_, position_, false, false);
     std::vector<double> eqnFacet = faee1.equation_plane(cornersLocal);
@@ -1106,7 +1106,7 @@ std::string Core::Geo::Cut::VolumeIntegration::IsPointInside(Core::LinAlg::Matri
     // check whether the infinite ray thru given (y,z) intersect the facet
     Facet *fe = *XFacets[i];
     std::vector<std::vector<double>> cornersLocal;
-    fe->CornerPointsLocal(elem1_, cornersLocal);
+    fe->corner_points_local(elem1_, cornersLocal);
     int cutno = pnpoly(cornersLocal, rst, Core::Geo::Cut::proj_x);
     if (cutno == 1)
     {
@@ -1137,7 +1137,7 @@ std::string Core::Geo::Cut::VolumeIntegration::IsPointInside(Core::LinAlg::Matri
       {
         Facet *fe = *NotXFacets[i];
         std::vector<std::vector<double>> cornersLocal;
-        fe->CornerPointsLocal(elem1_, cornersLocal);
+        fe->corner_points_local(elem1_, cornersLocal);
         int cutno = pnpoly(cornersLocal, rst, Core::Geo::Cut::proj_y);
         if (cutno == 1)  // make sure pt is within facet area
         {
@@ -1152,7 +1152,7 @@ std::string Core::Geo::Cut::VolumeIntegration::IsPointInside(Core::LinAlg::Matri
       {
         Facet *fe = *NotXFacets[i];
         std::vector<std::vector<double>> cornersLocal;
-        fe->CornerPointsLocal(elem1_, cornersLocal);
+        fe->corner_points_local(elem1_, cornersLocal);
         int cutno = pnpoly(cornersLocal, rst, Core::Geo::Cut::proj_z);
         if (cutno == 1)
         {

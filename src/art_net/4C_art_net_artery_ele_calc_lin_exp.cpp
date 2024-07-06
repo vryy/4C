@@ -48,7 +48,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ArteryEleCalcLinExp(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ArteryEleCalcLinExp<distype>*
-Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(
+Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
@@ -61,7 +61,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].Instance(Core::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].instance(Core::UTILS::SingletonAction::create, numdofpernode, disname);
 }
 
 
@@ -102,7 +102,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
+  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
   //  Teuchos::RCP<Epetra_Vector> Wfnp        = discretization.GetState("Wfnp");
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
@@ -133,7 +133,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele,
+int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_service(Artery* ele,
     const Arteries::Action action, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -146,22 +146,22 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele
   {
     case Arteries::get_initial_artery_state:
     {
-      Initial(ele, params, discretization, la[0].lm_, mat);
+      initial(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case Arteries::set_term_bc:
     {
-      EvaluateTerminalBC(ele, params, discretization, la[0].lm_, mat);
+      evaluate_terminal_bc(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case Arteries::set_scatra_term_bc:
     {
-      EvaluateScatraBC(ele, params, discretization, la[0].lm_, mat);
+      evaluate_scatra_bc(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case Arteries::solve_riemann_problem:
     {
-      SolveRiemann(ele, params, discretization, la[0].lm_, mat);
+      solve_riemann(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case Arteries::calc_postpro_vals:
@@ -176,7 +176,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele
     break;
     case Arteries::evaluate_wf_wb:
     {
-      EvaluateWfAndWb(ele, params, discretization, la[0].lm_, mat);
+      evaluate_wf_and_wb(ele, params, discretization, la[0].lm_, mat);
     }
     break;
     case Arteries::evaluate_scatra_analytically:
@@ -192,7 +192,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
+int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -264,7 +264,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
     escatran(2 * i) = myescatran[2 * i];
     escatran(2 * i + 1) = myescatran[2 * i + 1];
     // get element scalar transport
-    int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+    int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
     //    escatran(i)     = (*scatran)[local_id];
     ewfnp(i) = (*wfnp)[local_id] - (*wfo)[local_id];
     ewbnp(i) = (*wbnp)[local_id] - (*wbo)[local_id];
@@ -273,7 +273,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
   }
 
   // call routine for calculating element matrix and right hand side
-  ScatraSysmat(ele, escatran, ewfnp, ewbnp, eareanp, earean, elemat1, elevec1, mat, dt);
+  scatra_sysmat(ele, escatran, ewfnp, ewbnp, eareanp, earean, elemat1, elevec1, mat, dt);
   return 0;
 }
 
@@ -283,7 +283,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
  |  calculate element matrix and right hand side (private)  ismail 07/09|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
+void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
@@ -291,33 +291,33 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
   Teuchos::RCP<Epetra_Vector> wfo = params.get<Teuchos::RCP<Epetra_Vector>>("wfo");
   Teuchos::RCP<Epetra_Vector> wbo = params.get<Teuchos::RCP<Epetra_Vector>>("wbo");
 
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
 
-  int myrank = discretization.Comm().MyPID();
-  if (material->MaterialType() == Core::Materials::m_cnst_art)
+  int myrank = discretization.get_comm().MyPID();
+  if (material->material_type() == Core::Materials::m_cnst_art)
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     //    std::vector<int>::iterator it = lm.begin();
 
-    if (myrank == nodes[0]->Owner())
+    if (myrank == nodes[0]->owner())
     {
       int gid = lm[0];
-      double val = M_PI * pow(actmat->Diam() / 2, 2);
+      double val = M_PI * pow(actmat->diam() / 2, 2);
       qa0->ReplaceGlobalValues(1, &val, &gid);
     }
-    if (myrank == nodes[0]->Owner())
+    if (myrank == nodes[0]->owner())
     {
       int gid = lm[1];
       double val = 0.0;
       qa0->ReplaceGlobalValues(1, &val, &gid);
     }
-    if (myrank == nodes[1]->Owner())
+    if (myrank == nodes[1]->owner())
     {
       int gid = lm[2];
-      double val = M_PI * pow(actmat->Diam() / 2, 2);
+      double val = M_PI * pow(actmat->diam() / 2, 2);
       qa0->ReplaceGlobalValues(1, &val, &gid);
     }
-    if (myrank == nodes[1]->Owner())
+    if (myrank == nodes[1]->owner())
     {
       int gid = lm[3];
       double val = 0.0;
@@ -325,41 +325,41 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
     }
     // Calculate Wfo and Wbo
     // Read in initial cross-sectional area at node 1
-    const double Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
+    const double Ao1 = M_PI * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     const double Ao2 = Ao1;
     // Read in blood density
-    const double dens = actmat->Density();
+    const double dens = actmat->density();
     // Read in blood viscosity
     // const double visc  = actmat->Viscosity();
     // Read in artery's thickness at node 1
-    const double t1 = actmat->Th();
+    const double t1 = actmat->th();
     // Read in artery's thickness at node 2
     const double t2 = t1;
     // Read in artery's Youngs modulus of elasticity thickness at node 1
-    const double E1 = actmat->Young();
+    const double E1 = actmat->young();
     // Read in artery's Youngs modulus of elasticity thickness at node 2
     const double E2 = E1;
     // Read in artery's Poisson's ratio
-    const double nue = actmat->Nue();
+    const double nue = actmat->nue();
     const double co1 =
         sqrt(sqrt(M_PI) * E1 * t1 / (1.0 - pow(nue, 2)) * sqrt(Ao1) / (2.0 * Ao1 * dens));
     const double co2 =
         sqrt(sqrt(M_PI) * E2 * t2 / (1.0 - pow(nue, 2)) * sqrt(Ao2) / (2.0 * Ao2 * dens));
 
-    int gid = ele->Nodes()[0]->Id();
+    int gid = ele->nodes()[0]->id();
     double val = 4.0 * co1;
     wfo->ReplaceGlobalValues(1, &val, &gid);
 
-    gid = ele->Nodes()[0]->Id();
+    gid = ele->nodes()[0]->id();
     val = -4.0 * co2;
     wbo->ReplaceGlobalValues(1, &val, &gid);
 
-    gid = ele->Nodes()[1]->Id();
+    gid = ele->nodes()[1]->id();
     val = 4.0 * co2;
     wfo->ReplaceGlobalValues(1, &val, &gid);
 
-    gid = ele->Nodes()[1]->Id();
+    gid = ele->nodes()[1]->id();
     val = -4.0 * co2;
     wbo->ReplaceGlobalValues(1, &val, &gid);
   }
@@ -408,11 +408,11 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
   // set element data
   const int numnode = my::iel_;
   // get node coordinates and number of elements per node
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   Core::LinAlg::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {
-    const auto& x = nodes[inode]->X();
+    const auto& x = nodes[inode]->x();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -437,27 +437,27 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
   double pext1 = 0.0;
   double pext2 = 0.0;
   // check here, if we really have an artery !!
-  if (material->MaterialType() == Core::Materials::m_cnst_art)
+  if (material->material_type() == Core::Materials::m_cnst_art)
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
+    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
-    dens = actmat->Density();
+    dens = actmat->density();
     // Read in blood viscosity
-    visc = actmat->Viscosity();
+    visc = actmat->viscosity();
     // Read in artery's thickness at node 1
-    t1 = actmat->Th();
+    t1 = actmat->th();
     // Read in artery's thickness at node 2
     t2 = t1;
     // Read in artery's Youngs modulus of elasticity thickness at node 1
-    E1 = actmat->Young();
+    E1 = actmat->young();
     // Read in artery's Youngs modulus of elasticity thickness at node 2
     E2 = E1;
     // Read in artery's Poisson's ratio
-    nue = actmat->Nue();
+    nue = actmat->nue();
     // Read in artery's external forces at node 1
     pext1 = actmat->pext(0);
     // Read in artery's external forces at node 1
@@ -583,7 +583,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
 
 
   // gaussian points
-  const Core::FE::IntegrationPoints1D intpoints(ele->GaussRule());
+  const Core::FE::IntegrationPoints1D intpoints(ele->gauss_rule());
 
   // integration loop
 
@@ -857,7 +857,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
+void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::scatra_sysmat(Artery* ele,
     const Core::LinAlg::Matrix<2 * my::iel_, 1>& escatran,
     const Core::LinAlg::Matrix<my::iel_, 1>& ewfnp, const Core::LinAlg::Matrix<my::iel_, 1>& ewbnp,
     const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
@@ -867,11 +867,11 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
     double dt)
 {
   // get the nodal coordinates of the element
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   Core::LinAlg::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
-    const auto& x = nodes[inode]->X();
+    const auto& x = nodes[inode]->x();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -915,7 +915,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
  |       no Riemann solution is required                                |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
+bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
@@ -935,27 +935,27 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   double pext1 = 0.0;
   double pext2 = 0.0;
   // check here, if we really have an artery !!
-  if (material->MaterialType() == Core::Materials::m_cnst_art)
+  if (material->material_type() == Core::Materials::m_cnst_art)
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
+    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
-    dens = actmat->Density();
+    dens = actmat->density();
     // Read in blood viscosity
     //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
-    t1 = actmat->Th();
+    t1 = actmat->th();
     // Read in artery's thickness at node 2
     t2 = t1;
     // Read in artery's Youngs modulus of elasticity thickness at node 1
-    E1 = actmat->Young();
+    E1 = actmat->young();
     // Read in artery's Youngs modulus of elasticity thickness at node 2
     E2 = E1;
     // Read in artery's Poisson's ratio
-    nue = actmat->Nue();
+    nue = actmat->nue();
     // Read in artery's external forces at node 1
     pext1 = actmat->pext(0);
     // Read in artery's external forces at node 1
@@ -980,7 +980,7 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   const int numnode = my::iel_;
   std::vector<int>::iterator it_vcr;
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
+  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
   Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
   Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
 
@@ -1008,11 +1008,11 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   }
 
   // get the nodal coordinates of the element
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   Core::LinAlg::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
-    const auto& x = nodes[inode]->X();
+    const auto& x = nodes[inode]->x();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -1044,19 +1044,19 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   if (3.0 / sqrt(3.0) * lambda_max * dt / L >= 1.0)
   {
     FOUR_C_THROW(
-        "CFL number at element %d is %f", ele->Id(), 3.0 / sqrt(3.0) * lambda_max * dt / L);
+        "CFL number at element %d is %f", ele->id(), 3.0 / sqrt(3.0) * lambda_max * dt / L);
   }
 
   // Solve Riemann problem at the terminals
   // loop over the terminal nodes
   for (int i = 0; i < 2; i++)
   {
-    if (ele->Nodes()[i]->GetCondition("ArtInOutCond"))
+    if (ele->nodes()[i]->get_condition("ArtInOutCond"))
     {
       double TermIO = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType = (ele->Nodes()[i]
-                                      ->GetCondition("ArtInOutCond")
+      std::string TerminalType = (ele->nodes()[i]
+                                      ->get_condition("ArtInOutCond")
                                       ->parameters()
                                       .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
@@ -1099,10 +1099,10 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       // ---------------------------------------------------------------------------
       // Modify the global backkward characteristics speeds vector
       // ---------------------------------------------------------------------------
-      int myrank = discretization.Comm().MyPID();
-      if (myrank == ele->Nodes()[i]->Owner())
+      int myrank = discretization.get_comm().MyPID();
+      if (myrank == ele->nodes()[i]->owner())
       {
-        int gid = ele->Nodes()[i]->Id();
+        int gid = ele->nodes()[i]->id();
         double val = Wnp;
         if (TermIO == -1.0)
           Wbnp->ReplaceGlobalValues(1, &val, &gid);
@@ -1113,7 +1113,7 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       // -----------------------------------------------------------------------------
       // Update the information needed for solving the junctions
       // -----------------------------------------------------------------------------
-      if (ele->Nodes()[i]->GetCondition("ArtJunctionCond"))
+      if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
       {
         // Update the characteristic wave speed
         Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>
@@ -1121,11 +1121,11 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
                 std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
                 "Junctions Parameters");
 
-        int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+        int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
         if (local_id < 0)
         {
-          FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
-              discretization.Comm().MyPID());
+          FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
+              discretization.get_comm().MyPID());
           exit(1);
         }
         if (TermIO == -1.0)
@@ -1152,7 +1152,7 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele,
+void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1179,27 +1179,27 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
   double pext1 = 0.0;
   double pext2 = 0.0;
   // check here, if we really have an artery !!
-  if (material->MaterialType() == Core::Materials::m_cnst_art)
+  if (material->material_type() == Core::Materials::m_cnst_art)
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
+    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
-    dens = actmat->Density();
+    dens = actmat->density();
     // Read in blood viscosity
     //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
-    t1 = actmat->Th();
+    t1 = actmat->th();
     // Read in artery's thickness at node 2
     t2 = t1;
     // Read in artery's Youngs modulus of elasticity thickness at node 1
-    E1 = actmat->Young();
+    E1 = actmat->young();
     // Read in artery's Youngs modulus of elasticity thickness at node 2
     E2 = E1;
     // Read in artery's Poisson's ratio
-    nue = actmat->Nue();
+    nue = actmat->nue();
     // Read in artery's external forces at node 1
     pext1 = actmat->pext(0);
     // Read in artery's external forces at node 1
@@ -1223,7 +1223,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
   const int numnode = my::iel_;
   std::vector<int>::iterator it_vcr;
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
+  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
@@ -1254,12 +1254,12 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
   // IO_BC_HERE
   for (int i = 0; i < 2; i++)
   {
-    if (ele->Nodes()[i]->GetCondition("ArtInOutCond"))
+    if (ele->nodes()[i]->get_condition("ArtInOutCond"))
     {
       double TermIO = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType = (ele->Nodes()[i]
-                                      ->GetCondition("ArtInOutCond")
+      std::string TerminalType = (ele->nodes()[i]
+                                      ->get_condition("ArtInOutCond")
                                       ->parameters()
                                       .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
@@ -1294,11 +1294,11 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       Cparams.set<double>("artery beta", beta);
       Cparams.set<double>("artery area", area0_(i));
       Cparams.set<double>("blood density", dens);
-      int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+      int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
       if (local_id < 0)
       {
-        FOUR_C_THROW(
-            "node (%d) doesn't exist on proc(%d)", ele->Nodes()[i], discretization.Comm().MyPID());
+        FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
+            discretization.get_comm().MyPID());
         exit(1);
       }
 
@@ -1315,10 +1315,10 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       // -----------------------------------------------------------------------------
       // Solve any possible prescribed boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->Nodes()[i]->GetCondition("ArtPrescribedCond"))
+      if (ele->nodes()[i]->get_condition("ArtPrescribedCond"))
       {
         const Core::Conditions::Condition* condition =
-            ele->Nodes()[i]->GetCondition("ArtPrescribedCond");
+            ele->nodes()[i]->get_condition("ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
         Arteries::UTILS::SolvePrescribedTerminalBC(
             Teuchos::rcp(&discretization, false), condition, Cparams);
@@ -1327,12 +1327,12 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       // -----------------------------------------------------------------------------
       // Solve any possible 3-D/reduced-D coupled boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+      if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
       {
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
         const Core::Conditions::Condition* condition =
-            ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+            ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
         Cparams.set<Teuchos::RCP<Teuchos::ParameterList>>(
             "coupling with 3D fluid params", CoupledTo3DParams);
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
@@ -1344,9 +1344,9 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       // -----------------------------------------------------------------------------
       // Solve any possible reflection boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->Nodes()[i]->GetCondition("ArtRfCond"))
+      if (ele->nodes()[i]->get_condition("ArtRfCond"))
       {
-        const Core::Conditions::Condition* condition = ele->Nodes()[i]->GetCondition("ArtRfCond");
+        const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtRfCond");
         Arteries::UTILS::SolveReflectiveTerminal(
             Teuchos::rcp(&discretization, false), condition, Cparams);
       }
@@ -1354,9 +1354,9 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       // -----------------------------------------------------------------------------
       // Solve any possible windkessel boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->Nodes()[i]->GetCondition("ArtWkCond"))
+      if (ele->nodes()[i]->get_condition("ArtWkCond"))
       {
-        const Core::Conditions::Condition* condition = ele->Nodes()[i]->GetCondition("ArtWkCond");
+        const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtWkCond");
         Cparams.set<double>("time step size", dt);
         Cparams.set<double>("external pressure", pext_(i));
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
@@ -1369,7 +1369,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       // break the for loop if the boundary condition is a junction,
       // since it will be solved later
       // -----------------------------------------------------------------------------
-      if (ele->Nodes()[i]->GetCondition("ArtJunctionCond") == nullptr)
+      if (ele->nodes()[i]->get_condition("ArtJunctionCond") == nullptr)
       {
         Wf = Cparams.get<double>("forward characteristic wave speed");
         Wb = Cparams.get<double>("backward characteristic wave speed");
@@ -1377,10 +1377,10 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
         // -----------------------------------------------------------------------------
         // Modify the global forward and backward characteristics speeds vector
         // -----------------------------------------------------------------------------
-        int myrank = discretization.Comm().MyPID();
-        if (myrank == ele->Nodes()[i]->Owner())
+        int myrank = discretization.get_comm().MyPID();
+        if (myrank == ele->nodes()[i]->owner())
         {
-          int gid = ele->Nodes()[i]->Id();
+          int gid = ele->nodes()[i]->id();
           if (TermIO == -1.0)
           {
             double val1 = Wf;
@@ -1390,7 +1390,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
           {
             double val2 = Wb;
             Wbnp->ReplaceGlobalValues(1, &val2, &gid);
-            int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+            int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
             Wf = (*Wfnp)[local_id];
           }
         }
@@ -1427,7 +1427,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
   // ---------------------------------------------------------------------------------
   for (int i = 0; i < 2; i++)
   {
-    if (ele->Nodes()[i]->GetCondition("ArtJunctionCond"))
+    if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
     {
       Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>
           junc_nodal_vals;
@@ -1441,7 +1441,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
       // -------------------------------------------------------------------------------
       // Update the Dirichlet BC vector
       // -------------------------------------------------------------------------------
-      int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+      int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
       int gid;
       double val;
       // set A at node i
@@ -1468,7 +1468,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery*
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
+void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& disctretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1477,7 +1477,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* e
   // loop over the nodes
   for (int i = 0; i < 2; i++)
   {
-    if (ele->Nodes()[i]->GetCondition("ArtInOutCond"))
+    if (ele->nodes()[i]->get_condition("ArtInOutCond"))
     {
       Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
       Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
@@ -1486,23 +1486,23 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* e
       //
       // calculating Q at node i
       const Core::Conditions::Condition* condition =
-          ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
+          ele->nodes()[i]->get_condition("ArtPrescribedScatraCond");
 
-      const auto* curve = condition->parameters().GetIf<int>("curve");
+      const auto* curve = condition->parameters().get_if<int>("curve");
 
       double curvefac = condition->parameters().get<double>("val");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       if (curvenum > 0)
       {
-        curvefac = Global::Problem::Instance()
-                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
+        curvefac = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
                        .evaluate(time);
       }
 
 
-      std::string TerminalType = (ele->Nodes()[i]
-                                      ->GetCondition("ArtInOutCond")
+      std::string TerminalType = (ele->nodes()[i]
+                                      ->get_condition("ArtInOutCond")
                                       ->parameters()
                                       .get<std::string>("terminaltype"));
       int dof = 0;
@@ -1540,7 +1540,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
+  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
   //  Teuchos::RCP<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
   //  Teuchos::RCP<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
 
@@ -1568,11 +1568,11 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
   double pext1 = 0.0;
   double pext2 = 0.0;
   // check here, if we really have an artery !!
-  if (material->MaterialType() == Core::Materials::m_cnst_art)
+  if (material->material_type() == Core::Materials::m_cnst_art)
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
+    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
@@ -1580,15 +1580,15 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
     // Read in blood viscosity
     //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
-    t1 = actmat->Th();
+    t1 = actmat->th();
     // Read in artery's thickness at node 2
     t2 = t1;
     // Read in artery's Youngs modulus of elasticity thickness at node 1
-    E1 = actmat->Young();
+    E1 = actmat->young();
     // Read in artery's Youngs modulus of elasticity thickness at node 2
     E2 = E1;
     // Read in artery's Poisson's ratio
-    nue = actmat->Nue();
+    nue = actmat->nue();
     // Read in artery's external forces at node 1
     pext1 = actmat->pext(0);
     // Read in artery's external forces at node 1
@@ -1652,17 +1652,17 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
   {
     const double beta = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - nue * nue);
 
-    int myrank = discretization.Comm().MyPID();
-    if (myrank == ele->Nodes()[i]->Owner())
+    int myrank = discretization.get_comm().MyPID();
+    if (myrank == ele->nodes()[i]->owner())
     {
-      int gid = ele->Nodes()[i]->Id();
+      int gid = ele->nodes()[i]->id();
       double val;
 
       // calculating P at node i
       double pressure = 0.0;
       pressure = beta * (sqrt(an_(i)) - sqrt(area0_(i))) / area0_(i) + pext_(i);
 
-      gid = ele->Nodes()[i]->Id();
+      gid = ele->nodes()[i]->id();
       val = pressure;
       pn->ReplaceGlobalValues(1, &val, &gid);
 
@@ -1704,7 +1704,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw
   {
     // split area and volumetric flow rate, insert into element arrays
     val = myscatra_fb[i * 2] + myscatra_fb[i * 2 + 1];
-    gid = ele->Nodes()[i]->Id();
+    gid = ele->nodes()[i]->id();
     scatra->ReplaceGlobalValues(1, &val, &gid);
   }
 }
@@ -1715,7 +1715,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
+void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1735,27 +1735,27 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* el
   double pext1 = 0.0;
   double pext2 = 0.0;
   // check here, if we really have an artery !!
-  if (material->MaterialType() == Core::Materials::m_cnst_art)
+  if (material->material_type() == Core::Materials::m_cnst_art)
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->Diam() / 2, 2);
+    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
-    dens = actmat->Density();
+    dens = actmat->density();
     // Read in blood viscosity
     //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
-    t1 = actmat->Th();
+    t1 = actmat->th();
     // Read in artery's thickness at node 2
     t2 = t1;
     // Read in artery's Youngs modulus of elasticity thickness at node 1
-    E1 = actmat->Young();
+    E1 = actmat->young();
     // Read in artery's Youngs modulus of elasticity thickness at node 2
     E2 = E1;
     // Read in artery's Poisson's ratio
-    nue = actmat->Nue();
+    nue = actmat->nue();
     // Read in artery's external forces at node 1
     pext1 = actmat->pext(0);
     // Read in artery's external forces at node 1
@@ -1778,7 +1778,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* el
   const int numnode = my::iel_;
   std::vector<int>::iterator it_vcr;
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
+  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
   Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
   Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
 
@@ -1806,11 +1806,11 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* el
   }
 
   // get the nodal coordinates of the element
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   Core::LinAlg::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
-    const auto& x = nodes[inode]->X();
+    const auto& x = nodes[inode]->x();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -1836,7 +1836,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* el
     double Wb = eqn(i) / earean(i) - 4.0 * c;
 
     //    std::cout<<"Wb:  "<<Wb<<std::endl;
-    int gid = ele->Nodes()[i]->Id();
+    int gid = ele->nodes()[i]->id();
     Wbnp->ReplaceGlobalValues(1, &Wb, &gid);
     Wfnp->ReplaceGlobalValues(1, &Wf, &gid);
   }
@@ -1896,7 +1896,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(
     escatran(2 * i) = myescatran[2 * i];
     escatran(2 * i + 1) = myescatran[2 * i + 1];
     // get element scalar transport
-    int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+    int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
     //    escatran(i)     = (*scatran)[local_id];
     ewfn(i) = (*wfn)[local_id] - (*wfo)[local_id];
     ewbn(i) = (*wbn)[local_id] - (*wbo)[local_id];
@@ -1904,11 +1904,11 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(
 
   // Get length of the element
   // get node coordinates and number of elements per node
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   Core::LinAlg::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {
-    const auto& x = nodes[inode]->X();
+    const auto& x = nodes[inode]->x();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];

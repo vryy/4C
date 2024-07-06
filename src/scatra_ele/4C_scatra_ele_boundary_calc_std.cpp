@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -39,7 +39,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
             new ScaTraEleBoundaryCalcStd<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 

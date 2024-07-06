@@ -100,7 +100,7 @@ namespace Discret
           const Core::FE::GaussIntegration& intpoints, bool offdiag = false) = 0;
 
       /// Evaluate the XFEM cut element
-      virtual int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele,
+      virtual int evaluate_xfem(Discret::ELEMENTS::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -123,7 +123,7 @@ namespace Discret
           const Core::Geo::Cut::plain_volumecell_set& cells) = 0;
 
       /// Evaluate supporting methods of the element
-      virtual int EvaluateService(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,

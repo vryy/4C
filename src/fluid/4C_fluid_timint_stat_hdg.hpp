@@ -68,7 +68,7 @@ namespace FLD
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    void SetStateTimInt() override;
+    void set_state_tim_int() override;
 
     /*!
     \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
@@ -80,7 +80,7 @@ namespace FLD
     \brief set initial flow field for analytical test problems
 
     */
-    void SetInitialFlowField(
+    void set_initial_flow_field(
         const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     /*!

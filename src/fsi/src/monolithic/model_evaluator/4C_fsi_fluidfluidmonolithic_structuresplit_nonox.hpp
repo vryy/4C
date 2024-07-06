@@ -58,7 +58,7 @@ namespace FSI
 
 
     */
-    void SetupSystem() override;
+    void setup_system() override;
 
    protected:
     //! @name Apply current field state to system

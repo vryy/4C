@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Core::UTILS::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
-void Core::UTILS::ResultTest::TestElement(Input::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::test_element(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no element test available");
 }
@@ -38,15 +38,15 @@ void Core::UTILS::ResultTest::test_node_on_geometry(Input::LineDefinition& res, 
   FOUR_C_THROW("no geometry test available");
 }
 
-void Core::UTILS::ResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void Core::UTILS::ResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no special case test available");
 }
 
-void Core::UTILS::ResultTest::TestSpecial(
+void Core::UTILS::ResultTest::test_special(
     Input::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count)
 {
-  TestSpecial(res, nerr, test_count);
+  test_special(res, nerr, test_count);
 }
 
 
@@ -136,12 +136,12 @@ int Core::UTILS::ResultTest::compare_values(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::UTILS::ResultTest::Match(Input::LineDefinition& res) { return res.has_named(myname_); }
+bool Core::UTILS::ResultTest::match(Input::LineDefinition& res) { return res.has_named(myname_); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
+void Core::UTILS::ResultTestManager::add_field_test(Teuchos::RCP<ResultTest> test)
 {
   fieldtest_.push_back(test);
 }
@@ -149,7 +149,7 @@ void Core::UTILS::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
+void Core::UTILS::ResultTestManager::test_all(const Epetra_Comm& comm)
 {
   int nerr = 0;                      // number of tests with errors
   int test_count = 0;                // number of tests performed
@@ -162,17 +162,17 @@ void Core::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
   {
     for (const auto& fieldtest : fieldtest_)
     {
-      if (fieldtest->Match(result))
+      if (fieldtest->match(result))
       {
         if (result.has_named("ELEMENT"))
-          fieldtest->TestElement(result, nerr, test_count);
+          fieldtest->test_element(result, nerr, test_count);
         else if (result.has_named("NODE"))
           fieldtest->test_node(result, nerr, test_count);
         else if (result.has_named("LINE") || result.has_named("SURFACE") ||
                  result.has_named("VOLUME"))
           fieldtest->test_node_on_geometry(result, nerr, test_count, get_node_set());
         else
-          fieldtest->TestSpecial(result, nerr, test_count, uneval_test_count);
+          fieldtest->test_special(result, nerr, test_count, uneval_test_count);
       }
     }
   }
@@ -215,7 +215,7 @@ void Core::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::ResultTestManager::SetParsedLines(std::vector<Input::LineDefinition> results)
+void Core::UTILS::ResultTestManager::set_parsed_lines(std::vector<Input::LineDefinition> results)
 {
   results_ = std::move(results);
 }

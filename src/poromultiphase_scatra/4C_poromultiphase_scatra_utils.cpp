@@ -151,35 +151,36 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::SetupDiscretizationsAn
       POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
           comm, struct_disname, fluid_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure);
 
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
   // fill scatra discretization by cloning structure discretization
   Core::FE::CloneDiscretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
-      structdis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
+      structdis, scatradis, Global::Problem::instance()->cloning_material_map());
   scatradis->fill_complete();
 
   // the problem is two way coupled, thus each discretization must know the other discretization
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
   // build a proxy of the fluid discretization for the scatra field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
   // build a proxy of the fluid discretization for the structure/fluid field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
 
   // check if ScatraField has 2 discretizations, so that coupling is possible
-  if (scatradis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
-  if (scatradis->AddDofSet(fluiddofset) != 2) FOUR_C_THROW("unexpected dof sets in scatra field");
-  if (scatradis->AddDofSet(fluiddis->GetDofSetProxy(ndsporo_solidpressure)) != 3)
+  if (scatradis->add_dof_set(structdofset) != 1)
     FOUR_C_THROW("unexpected dof sets in scatra field");
-  if (structdis->AddDofSet(scatradofset) != 3)
+  if (scatradis->add_dof_set(fluiddofset) != 2) FOUR_C_THROW("unexpected dof sets in scatra field");
+  if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy(ndsporo_solidpressure)) != 3)
+    FOUR_C_THROW("unexpected dof sets in scatra field");
+  if (structdis->add_dof_set(scatradofset) != 3)
     FOUR_C_THROW("unexpected dof sets in structure field");
 
-  ndsporofluid_scatra = fluiddis->AddDofSet(scatradofset);
+  ndsporofluid_scatra = fluiddis->add_dof_set(scatradofset);
   if (ndsporofluid_scatra != 3) FOUR_C_THROW("unexpected dof sets in fluid field");
 
   structdis->fill_complete(true, false, false);
@@ -188,18 +189,19 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::SetupDiscretizationsAn
 
   if (artery_coupl)
   {
-    Teuchos::RCP<Core::FE::Discretization> artdis = problem->GetDis("artery");
-    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->GetDis("artery_scatra");
+    Teuchos::RCP<Core::FE::Discretization> artdis = problem->get_dis("artery");
+    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
 
-    if (!artdis->Filled()) FOUR_C_THROW("artery discretization should be filled at this point");
+    if (!artdis->filled()) FOUR_C_THROW("artery discretization should be filled at this point");
 
     // fill artery scatra discretization by cloning artery discretization
     Core::FE::CloneDiscretization<Arteries::ArteryScatraCloneStrategy>(
-        artdis, artscatradis, Global::Problem::Instance()->CloningMaterialMap());
+        artdis, artscatradis, Global::Problem::instance()->cloning_material_map());
     artscatradis->fill_complete();
 
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> arterydofset = artdis->GetDofSetProxy();
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> artscatradofset = artscatradis->GetDofSetProxy();
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> arterydofset = artdis->get_dof_set_proxy();
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> artscatradofset =
+        artscatradis->get_dof_set_proxy();
 
     // get MAXNUMSEGPERARTELE
     const int maxnumsegperele = problem->poro_fluid_multi_phase_dynamic_params()
@@ -211,14 +213,14 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::SetupDiscretizationsAn
     dofsetaux =
         Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
     // add it to artery-scatra discretization
-    artscatradis->AddDofSet(dofsetaux);
+    artscatradis->add_dof_set(dofsetaux);
 
     // check if ScatraField has 2 discretizations, so that coupling is possible
-    if (artscatradis->AddDofSet(arterydofset) != 2)
+    if (artscatradis->add_dof_set(arterydofset) != 2)
       FOUR_C_THROW("unexpected dof sets in artscatra field");
 
     // check if ArteryField has 2 discretizations, so that coupling is possible
-    if (artdis->AddDofSet(artscatradofset) != 2)
+    if (artdis->add_dof_set(artscatradofset) != 2)
       FOUR_C_THROW("unexpected dof sets in artery field");
 
     artscatradis->fill_complete(true, false, false);
@@ -234,19 +236,19 @@ void PoroMultiPhaseScaTra::UTILS::assign_material_pointers(const std::string& st
 {
   POROMULTIPHASE::UTILS::assign_material_pointers(struct_disname, fluid_disname);
 
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis(fluid_disname);
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
   PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, scatradis);
   PoroElast::UTILS::SetMaterialPointersMatchingGrid(fluiddis, scatradis);
 
   if (artery_coupl)
   {
-    Teuchos::RCP<Core::FE::Discretization> arterydis = problem->GetDis("artery");
-    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->GetDis("artery_scatra");
+    Teuchos::RCP<Core::FE::Discretization> arterydis = problem->get_dis("artery");
+    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
 
     Arteries::UTILS::SetMaterialPointersMatchingGrid(arterydis, artscatradis);
   }

@@ -25,7 +25,7 @@ Core::LinAlg::SerialDenseVector
 Core::Geo::Cut::BoundarycellIntegration::generate_boundary_cell_integration_rule()
 {
   std::vector<std::vector<double>> corners1;
-  bcell_->CornerPointsLocal(elem1_, corners1);
+  bcell_->corner_points_local(elem1_, corners1);
   Core::LinAlg::SerialDenseVector rhs_bcell_temp(num_func_);
   FacetIntegration faee1(bcell_, elem1_, position_, true, false);
   for (int fnc = 1; fnc <= num_func_; fnc++)

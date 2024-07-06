@@ -56,11 +56,11 @@ double LineIntegration::integrate_line()
 
   for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
   {
-    const Core::LinAlg::Matrix<1, 1> eta(iquad.Point());
-    double weight = iquad.Weight();
+    const Core::LinAlg::Matrix<1, 1> eta(iquad.point());
+    double weight = iquad.weight();
     Core::LinAlg::Matrix<2, 1> normaltemp, actCoord;
     double drs = 0.0;
-    Transform(end_pts_, eta(0, 0), actCoord, normaltemp, drs);
+    transform(end_pts_, eta(0, 0), actCoord, normaltemp, drs);
 
     if (bcell_int_ == false)  // integration over volumecell
     {
@@ -90,7 +90,7 @@ double LineIntegration::integrate_line()
  *     Transform the Gaussian point coordinates and weight from (-1,1) interval to actual coordinate
  *of the lines       *
  *----------------------------------------------------------------------------------------------------------------------*/
-void LineIntegration::Transform(const Core::LinAlg::Matrix<2, 2> &xyze, const double &eta,
+void LineIntegration::transform(const Core::LinAlg::Matrix<2, 2> &xyze, const double &eta,
     Core::LinAlg::Matrix<2, 1> &x_gp_lin, Core::LinAlg::Matrix<2, 1> &normal, double &drs)
 {
   const int numnodes = Core::FE::num_nodes<Core::FE::CellType::line2>;

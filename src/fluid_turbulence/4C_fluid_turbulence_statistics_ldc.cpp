@@ -72,64 +72,64 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
   std::set<double, LineSortCriterion> x3avcoords;
 
   // loop nodes, build sets of centerlines accessible on this proc
-  for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+  for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
   {
-    Core::Nodes::Node* node = discret_->lRowNode(i);
-    x1avcoords.insert(node->X()[0]);
-    x2avcoords.insert(node->X()[1]);
-    x3avcoords.insert(node->X()[2]);
+    Core::Nodes::Node* node = discret_->l_row_node(i);
+    x1avcoords.insert(node->x()[0]);
+    x2avcoords.insert(node->x()[1]);
+    x3avcoords.insert(node->x()[2]);
 
-    if (x1min_ > node->X()[0])
+    if (x1min_ > node->x()[0])
     {
-      x1min_ = node->X()[0];
+      x1min_ = node->x()[0];
     }
-    if (x1max_ < node->X()[0])
+    if (x1max_ < node->x()[0])
     {
-      x1max_ = node->X()[0];
+      x1max_ = node->x()[0];
     }
-    if (x2min_ > node->X()[1])
+    if (x2min_ > node->x()[1])
     {
-      x2min_ = node->X()[1];
+      x2min_ = node->x()[1];
     }
-    if (x2max_ < node->X()[1])
+    if (x2max_ < node->x()[1])
     {
-      x2max_ = node->X()[1];
+      x2max_ = node->x()[1];
     }
-    if (x3min_ > node->X()[2])
+    if (x3min_ > node->x()[2])
     {
-      x3min_ = node->X()[2];
+      x3min_ = node->x()[2];
     }
-    if (x3max_ < node->X()[2])
+    if (x3max_ < node->x()[2])
     {
-      x3max_ = node->X()[2];
+      x3max_ = node->x()[2];
     }
   }
 
   // communicate x1mins and x1maxs
   double min1;
-  discret_->Comm().MinAll(&x1min_, &min1, 1);
+  discret_->get_comm().MinAll(&x1min_, &min1, 1);
   x1min_ = min1;
 
   double max1;
-  discret_->Comm().MaxAll(&x1max_, &max1, 1);
+  discret_->get_comm().MaxAll(&x1max_, &max1, 1);
   x1max_ = max1;
 
   // communicate x2mins and x2maxs
   double min2;
-  discret_->Comm().MinAll(&x2min_, &min2, 1);
+  discret_->get_comm().MinAll(&x2min_, &min2, 1);
   x2min_ = min2;
 
   double max2;
-  discret_->Comm().MaxAll(&x2max_, &max2, 1);
+  discret_->get_comm().MaxAll(&x2max_, &max2, 1);
   x2max_ = max2;
 
   // communicate x3mins and x3maxs
   double min3;
-  discret_->Comm().MinAll(&x3min_, &min3, 1);
+  discret_->get_comm().MinAll(&x3min_, &min3, 1);
   x3min_ = min3;
 
   double max3;
-  discret_->Comm().MaxAll(&x3max_, &max3, 1);
+  discret_->get_comm().MaxAll(&x3max_, &max3, 1);
   x3max_ = max3;
 
   //--------------------------------------------------------------------
@@ -137,14 +137,14 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
   // direction to all procs
   //--------------------------------------------------------------------
   {
-    int myrank = discret_->Comm().MyPID();
-    int numprocs = discret_->Comm().NumProc();
+    int myrank = discret_->get_comm().MyPID();
+    int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
     std::vector<char> rblock;
 
     // create an exporter for point to point comunication
-    Core::Communication::Exporter exporter(discret_->Comm());
+    Core::Communication::Exporter exporter(discret_->get_comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
@@ -172,18 +172,18 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -229,18 +229,18 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -286,18 +286,18 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -488,7 +488,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
 
   Teuchos::RCP<std::ofstream> log;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
 
@@ -513,7 +513,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
   }
 
   // clear statistics
-  ClearStatistics();
+  clear_statistics();
 
   return;
 }  // TurbulenceStatisticsLdc::TurbulenceStatisticsLdc
@@ -522,7 +522,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
+void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp)
 {
   //----------------------------------------------------------------------
   // increase sample counter
@@ -546,18 +546,18 @@ void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
     // count the number of nodes contributing to this nodal value on x1-centerline
     int countnodes = 0;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // this node belongs to the centerline in x1-direction
-      if ((node->X()[0] < (*x1line + 2e-9) && node->X()[0] > (*x1line - 2e-9)) &&
-          (node->X()[1] < ((x2max_ + x2min_) / 2.0) + 2e-9 &&
-              node->X()[1] > ((x2max_ + x2min_) / 2.0) - 2e-9) &&
-          (node->X()[2] < ((x3max_ + x3min_) / 2.0) + 2e-9 &&
-              node->X()[2] > ((x3max_ + x3min_) / 2.0) - 2e-9))
+      if ((node->x()[0] < (*x1line + 2e-9) && node->x()[0] > (*x1line - 2e-9)) &&
+          (node->x()[1] < ((x2max_ + x2min_) / 2.0) + 2e-9 &&
+              node->x()[1] > ((x2max_ + x2min_) / 2.0) - 2e-9) &&
+          (node->x()[2] < ((x3max_ + x3min_) / 2.0) + 2e-9 &&
+              node->x()[2] > ((x3max_ + x3min_) / 2.0) - 2e-9))
       {
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
         double one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -571,7 +571,7 @@ void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     int countnodesonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
     if (countnodesonallprocs)
     {
@@ -633,18 +633,18 @@ void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
     // count the number of nodes contributing to this nodal value on x2-centerline
     int countnodes = 0;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // this node belongs to the centerline in x2-direction
-      if ((node->X()[1] < (*x2line + 2e-9) && node->X()[1] > (*x2line - 2e-9)) &&
-          (node->X()[0] < ((x1max_ + x1min_) / 2.0) + 2e-9 &&
-              node->X()[0] > ((x1max_ + x1min_) / 2.0) - 2e-9) &&
-          (node->X()[2] < ((x3max_ + x3min_) / 2.0) + 2e-9 &&
-              node->X()[2] > ((x3max_ + x3min_) / 2.0) - 2e-9))
+      if ((node->x()[1] < (*x2line + 2e-9) && node->x()[1] > (*x2line - 2e-9)) &&
+          (node->x()[0] < ((x1max_ + x1min_) / 2.0) + 2e-9 &&
+              node->x()[0] > ((x1max_ + x1min_) / 2.0) - 2e-9) &&
+          (node->x()[2] < ((x3max_ + x3min_) / 2.0) + 2e-9 &&
+              node->x()[2] > ((x3max_ + x3min_) / 2.0) - 2e-9))
       {
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
         double one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -658,7 +658,7 @@ void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     int countnodesonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
     if (countnodesonallprocs)
     {
@@ -720,18 +720,18 @@ void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
     // count the number of nodes contributing to this nodal value on x3-centerline
     int countnodes = 0;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // this node belongs to the centerline in x3-direction
-      if ((node->X()[2] < (*x3line + 2e-9) && node->X()[2] > (*x3line - 2e-9)) &&
-          (node->X()[0] < ((x1max_ + x1min_) / 2.0) + 2e-9 &&
-              node->X()[0] > ((x1max_ + x1min_) / 2.0) - 2e-9) &&
-          (node->X()[1] < ((x2max_ + x2min_) / 2.0) + 2e-9 &&
-              node->X()[1] > ((x2max_ + x2min_) / 2.0) - 2e-9))
+      if ((node->x()[2] < (*x3line + 2e-9) && node->x()[2] > (*x3line - 2e-9)) &&
+          (node->x()[0] < ((x1max_ + x1min_) / 2.0) + 2e-9 &&
+              node->x()[0] > ((x1max_ + x1min_) / 2.0) - 2e-9) &&
+          (node->x()[1] < ((x2max_ + x2min_) / 2.0) + 2e-9 &&
+              node->x()[1] > ((x2max_ + x2min_) / 2.0) - 2e-9))
       {
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
         double one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -745,7 +745,7 @@ void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 
     int countnodesonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
     if (countnodesonallprocs)
     {
@@ -796,7 +796,7 @@ void FLD::TurbulenceStatisticsLdc::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
+void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Teuchos::RCP<Epetra_Vector> velnp,
     Teuchos::RCP<Epetra_Vector> scanp, Epetra_Vector& force, const double eosfac)
 {
   //----------------------------------------------------------------------
@@ -821,17 +821,17 @@ void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> 
     // count the number of nodes contributing to this nodal value on x1-centerline
     int countnodes = 0;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // this node belongs to the centerline in x1-direction
-      if ((node->X()[0] < (*x1line + 2e-9) && node->X()[0] > (*x1line - 2e-9)) &&
-          (node->X()[1] < (0.5 + 2e-9) && node->X()[1] > (0.5 - 2e-9)) &&
-          (node->X()[2] < ((x3max_ - x3min_) / 2.0) + 2e-9 &&
-              node->X()[2] > ((x3max_ - x3min_) / 2.0) - 2e-9))
+      if ((node->x()[0] < (*x1line + 2e-9) && node->x()[0] > (*x1line - 2e-9)) &&
+          (node->x()[1] < (0.5 + 2e-9) && node->x()[1] > (0.5 - 2e-9)) &&
+          (node->x()[2] < ((x3max_ - x3min_) / 2.0) + 2e-9 &&
+              node->x()[2] > ((x3max_ - x3min_) / 2.0) - 2e-9))
       {
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
         double one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -845,7 +845,7 @@ void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> 
 
     int countnodesonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
     if (countnodesonallprocs)
     {
@@ -922,17 +922,17 @@ void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> 
     // count the number of nodes contributing to this nodal value on x2-centerline
     int countnodes = 0;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // this node belongs to the centerline in x2-direction
-      if ((node->X()[1] < (*x2line + 2e-9) && node->X()[1] > (*x2line - 2e-9)) &&
-          (node->X()[0] < (0.5 + 2e-9) && node->X()[0] > (0.5 - 2e-9)) &&
-          (node->X()[2] < ((x3max_ - x3min_) / 2.0) + 2e-9 &&
-              node->X()[2] > ((x3max_ - x3min_) / 2.0) - 2e-9))
+      if ((node->x()[1] < (*x2line + 2e-9) && node->x()[1] > (*x2line - 2e-9)) &&
+          (node->x()[0] < (0.5 + 2e-9) && node->x()[0] > (0.5 - 2e-9)) &&
+          (node->x()[2] < ((x3max_ - x3min_) / 2.0) + 2e-9 &&
+              node->x()[2] > ((x3max_ - x3min_) / 2.0) - 2e-9))
       {
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
         double one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -946,7 +946,7 @@ void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> 
 
     int countnodesonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
     if (countnodesonallprocs)
     {
@@ -1023,16 +1023,16 @@ void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> 
     // count the number of nodes contributing to this nodal value on x3-centerline
     int countnodes = 0;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // this node belongs to the centerline in x3-direction
-      if ((node->X()[2] < (*x3line + 2e-9) && node->X()[2] > (*x3line - 2e-9)) &&
-          (node->X()[0] < (0.5 + 2e-9) && node->X()[0] > (0.5 - 2e-9)) &&
-          (node->X()[1] < (0.5 + 2e-9) && node->X()[1] > (0.5 - 2e-9)))
+      if ((node->x()[2] < (*x3line + 2e-9) && node->x()[2] > (*x3line - 2e-9)) &&
+          (node->x()[0] < (0.5 + 2e-9) && node->x()[0] > (0.5 - 2e-9)) &&
+          (node->x()[1] < (0.5 + 2e-9) && node->x()[1] > (0.5 - 2e-9)))
       {
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
         double one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -1046,7 +1046,7 @@ void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> 
 
     int countnodesonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
     if (countnodesonallprocs)
     {
@@ -1112,12 +1112,12 @@ void FLD::TurbulenceStatisticsLdc::DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> 
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
+void FLD::TurbulenceStatisticsLdc::dump_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -1279,12 +1279,12 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
+void FLD::TurbulenceStatisticsLdc::dump_loma_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".loma_statistics");
@@ -1504,7 +1504,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::ClearStatistics()
+void FLD::TurbulenceStatisticsLdc::clear_statistics()
 {
   numsamp_ = 0;
 

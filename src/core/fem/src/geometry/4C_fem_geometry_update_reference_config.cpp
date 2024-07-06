@@ -25,12 +25,12 @@ void Core::Geo::update_reference_config_with_disp(
     Teuchos::RCP<const Core::FE::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp)
 {
   // Export row-displacments to col-displacements
-  auto coldisp = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap()));
+  auto coldisp = Teuchos::rcp(new Epetra_Vector(*dis->dof_col_map()));
   Core::LinAlg::Export(*disp, *coldisp);
 
-  for (const auto& mynode : dis->MyColNodeRange())
+  for (const auto& mynode : dis->my_col_node_range())
   {
-    const unsigned int ndim = mynode->Dim();
+    const unsigned int ndim = mynode->n_dim();
 
 #ifdef DEBUG
     FOUR_C_ASSERT(ndim * dis->NodeRowMap()->NumGlobalElements() == disp->Map().NumGlobalElements(),
@@ -44,7 +44,7 @@ void Core::Geo::update_reference_config_with_disp(
     }
 #endif
 
-    const auto globaldofs = dis->Dof(0, mynode);
+    const auto globaldofs = dis->dof(0, mynode);
 
     std::vector<double> nvector(ndim, 0.0);
 
@@ -59,7 +59,7 @@ void Core::Geo::update_reference_config_with_disp(
       nvector[i] = (*coldisp)[lid];
     }
 
-    mynode->ChangePos(nvector);
+    mynode->change_pos(nvector);
   }
 }
 

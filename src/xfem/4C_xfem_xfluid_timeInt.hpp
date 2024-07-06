@@ -100,7 +100,7 @@ namespace XFEM
     );
 
     /// set and print reconstruction status for nodes
-    void SetAndPrintStatus(const bool screenout);
+    void set_and_print_status(const bool screenout);
 
 
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
@@ -128,7 +128,7 @@ namespace XFEM
 
     /// get for each type of reconstruction method the number of nodes for that this method has to
     /// be applied on this proc
-    std::map<Inpar::XFEM::XFluidTimeInt, int>& Get_Reconstr_Counts() { return reconstr_counts_; };
+    std::map<Inpar::XFEM::XFluidTimeInt, int>& get_reconstr_counts() { return reconstr_counts_; };
 
     /// get for each type of reconstruction method the node ids with corresponding dof its for that
     /// this method has to be applied on this proc
@@ -136,7 +136,7 @@ namespace XFEM
         Inpar::XFEM::XFluidTimeInt reconstr);
 
     /// get permutation map for ghost dofs
-    Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return permutation_map_; };
+    Teuchos::RCP<std::map<int, int>> get_permutation_map() { return permutation_map_; };
 
     /// timint output for reconstruction methods
     void output();

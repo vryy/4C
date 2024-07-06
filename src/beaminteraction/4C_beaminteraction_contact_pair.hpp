@@ -97,7 +97,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::SerialDenseMatrix* stiffmat22) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<BeamContactPair> Create(
+    static Teuchos::RCP<BeamContactPair> create(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
         const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>&
             beam_interaction_conditions_ptr);
@@ -106,25 +106,25 @@ namespace BEAMINTERACTION
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
     elements
     */
-    virtual void ResetState(const std::vector<double>& centerline_dofvec_ele1,
+    virtual void reset_state(const std::vector<double>& centerline_dofvec_ele1,
         const std::vector<double>& centerline_dofvec_ele2) = 0;
 
     /**
      * \brief Update state of rotational DoFs of both elements
      */
-    virtual void ResetRotationState(const Core::FE::Discretization& discret,
+    virtual void reset_rotation_state(const Core::FE::Discretization& discret,
         const Teuchos::RCP<const Epetra_Vector>& ia_discolnp){};
 
     //@}
 
     //! @name Access methods
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> Params() const { return params_; }
+    inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params() const { return params_; }
 
     /*!
     \brief Get an element pointer by the elements index.
     */
-    inline const Core::Elements::Element* GetElement(const unsigned int index) const
+    inline const Core::Elements::Element* get_element(const unsigned int index) const
     {
       if (index == 0)
         return element1_;
@@ -138,17 +138,17 @@ namespace BEAMINTERACTION
     /*!
     \brief Get first element
     */
-    inline const Core::Elements::Element* Element1() const { return element1_; };
+    inline const Core::Elements::Element* element1() const { return element1_; };
 
     /*!
     \brief Get second element
     */
-    inline const Core::Elements::Element* Element2() const { return element2_; };
+    inline const Core::Elements::Element* element2() const { return element2_; };
 
     /*!
     \brief Get the geometry pair object. Throw error if it does not exist.
     */
-    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GeometryPair() const
+    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPair> geometry_pair() const
     {
       if (geometry_pair_ == Teuchos::null)
         FOUR_C_THROW("The geometry pair is requested, but it is a null pointer!");
@@ -158,7 +158,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    virtual bool GetContactFlag() const = 0;
+    virtual bool get_contact_flag() const = 0;
 
     /*!
     \brief Get number of active contact point pairs on this element pair
@@ -232,7 +232,7 @@ namespace BEAMINTERACTION
      * \brief Per default it is assumed, that the contributions of a pair can be directly assembled
      * into the global force and stiffness matrices.
      */
-    inline virtual bool IsAssemblyDirect() const { return true; };
+    inline virtual bool is_assembly_direct() const { return true; };
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -251,7 +251,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
+    virtual void evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
@@ -275,7 +275,7 @@ namespace BEAMINTERACTION
      * @param lambda (in) Global Lagrange multiplier vector.
      * @param displacement_vector (in) Global displacement vector.
      */
-    virtual void EvaluateAndAssemble(const Core::FE::Discretization& discret,
+    virtual void evaluate_and_assemble(const Core::FE::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -289,7 +289,7 @@ namespace BEAMINTERACTION
      * @param local_constraint (out) Local constraint vector.
      * @return True if pair is in contact.
      */
-    virtual bool EvaluateDM(Core::LinAlg::SerialDenseMatrix& local_D,
+    virtual bool evaluate_dm(Core::LinAlg::SerialDenseMatrix& local_D,
         Core::LinAlg::SerialDenseMatrix& local_M, Core::LinAlg::SerialDenseVector& local_kappa,
         Core::LinAlg::SerialDenseVector& local_constraint)
     {
@@ -353,7 +353,7 @@ namespace BEAMINTERACTION
      *
      * @param geometry_evaluation_data_ptr (in) Geometry evaluation data for the geometry pair.
      */
-    virtual void CreateGeometryPair(const Core::Elements::Element* element1,
+    virtual void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
     {
@@ -381,7 +381,7 @@ namespace BEAMINTERACTION
      *
      * @param face_element (in) RCP to the face element.
      */
-    virtual void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
+    virtual void set_face_element(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
     {
       FOUR_C_THROW("This method has to be implemented in the derived class.");
     }

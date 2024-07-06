@@ -62,10 +62,10 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Wall1_Poro_Scatra and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -73,38 +73,39 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
         int parobjectid(-1);
         switch (distype)
         {
           case Core::FE::CellType::tri3:
           {
-            parobjectid = Discret::ELEMENTS::WallTri3PoroScatraType::Instance().UniqueParObjectId();
+            parobjectid =
+                Discret::ELEMENTS::WallTri3PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::quad4:
           {
             parobjectid =
-                Discret::ELEMENTS::WallQuad4PoroScatraType::Instance().UniqueParObjectId();
+                Discret::ELEMENTS::WallQuad4PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::quad9:
           {
             parobjectid =
-                Discret::ELEMENTS::WallQuad9PoroScatraType::Instance().UniqueParObjectId();
+                Discret::ELEMENTS::WallQuad9PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::nurbs4:
           {
             parobjectid =
-                Discret::ELEMENTS::WallNurbs4PoroScatraType::Instance().UniqueParObjectId();
+                Discret::ELEMENTS::WallNurbs4PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::nurbs9:
           {
             parobjectid =
-                Discret::ELEMENTS::WallNurbs9PoroScatraType::Instance().UniqueParObjectId();
+                Discret::ELEMENTS::WallNurbs9PoroScatraType::instance().unique_par_object_id();
             break;
           }
           default:
@@ -140,30 +141,30 @@ namespace Discret
       /*!
       \brief Return elementtype instance
       */
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
         switch (distype)
         {
           case Core::FE::CellType::tri3:
-            return Discret::ELEMENTS::WallTri3PoroScatraType::Instance();
+            return Discret::ELEMENTS::WallTri3PoroScatraType::instance();
             break;
           case Core::FE::CellType::quad4:
-            return Discret::ELEMENTS::WallQuad4PoroScatraType::Instance();
+            return Discret::ELEMENTS::WallQuad4PoroScatraType::instance();
             break;
           case Core::FE::CellType::quad9:
-            return Discret::ELEMENTS::WallQuad9PoroScatraType::Instance();
+            return Discret::ELEMENTS::WallQuad9PoroScatraType::instance();
             break;
           case Core::FE::CellType::nurbs4:
-            return Discret::ELEMENTS::WallNurbs4PoroScatraType::Instance();
+            return Discret::ELEMENTS::WallNurbs4PoroScatraType::instance();
             break;
           case Core::FE::CellType::nurbs9:
-            return Discret::ELEMENTS::WallNurbs9PoroScatraType::Instance();
+            return Discret::ELEMENTS::WallNurbs9PoroScatraType::instance();
             break;
           default:
             FOUR_C_THROW("unknown element type");
             break;
         }
-        return Discret::ELEMENTS::WallQuad4PoroScatraType::Instance();
+        return Discret::ELEMENTS::WallQuad4PoroScatraType::instance();
       };
 
       //@}
@@ -173,7 +174,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -182,7 +183,7 @@ namespace Discret
       /*!
       \brief Return the SCATRA ImplType
       */
-      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
 
      private:
       //! implementation type (physics)

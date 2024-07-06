@@ -87,7 +87,7 @@ Teuchos::ParameterList& Solid::IMPLICIT::Generic::get_nox_params()
  *----------------------------------------------------------------------------*/
 double Solid::IMPLICIT::Generic::get_default_step_length() const
 {
-  const Teuchos::ParameterList& p_nox = tim_int().get_data_sdyn().GetNoxParams();
+  const Teuchos::ParameterList& p_nox = tim_int().get_data_sdyn().get_nox_params();
   const std::string& nln_solver = p_nox.get<std::string>("Nonlinear Solver");
   // The pseudo transient implementation holds also a line search object!
   if (nln_solver == "Line Search Based" or nln_solver == "Pseudo Transient")
@@ -109,7 +109,7 @@ void Solid::IMPLICIT::Generic::reset_eval_params()
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
   eval_data().set_is_tolerate_error(true);
-  eval_data().set_function_manager(Global::Problem::Instance()->FunctionManager());
+  eval_data().set_function_manager(Global::Problem::instance()->function_manager());
 }
 
 /*----------------------------------------------------------------------------*
@@ -149,7 +149,7 @@ bool Solid::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Corr
     case NOX::Nln::CorrectionType::soc_cheap:
     {
       ok = model_eval().apply_cheap_soc_rhs(type, constraint_models, x, f, 1.0);
-      if (not jac.Filled()) FOUR_C_THROW("The jacobian is supposed to be filled at this point!");
+      if (not jac.filled()) FOUR_C_THROW("The jacobian is supposed to be filled at this point!");
 
       break;
     }
@@ -165,7 +165,7 @@ bool Solid::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Corr
 
   if (not ok) return false;
 
-  if (not jac.Filled()) jac.Complete();
+  if (not jac.filled()) jac.complete();
 
   return ok;
 }

@@ -63,7 +63,7 @@ namespace Discret
         static constexpr unsigned nsd_ = Core::FE::dim<distype>;
 
         //! set names of displacement and velocity states (differ dependent on the slave element)
-        static void DefineStateNames(
+        static void define_state_names(
             Core::FE::CellType slave_distype,  ///< coupling slave discretization type
             std::string& disp_statename,       ///< name of displacement state at current step
             std::string& vel_statename,        ///< name of velocity state at current step
@@ -81,7 +81,7 @@ namespace Discret
         virtual ~SlaveElementInterface() = default;
 
         //! add slave element's displacements and set current element's nodal coordinates
-        virtual void AddSlaveEleDisp(
+        virtual void add_slave_ele_disp(
             const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm,                ///< local map
             std::vector<double>& mymatrix              ///< slave element displacement vector
@@ -90,7 +90,7 @@ namespace Discret
           FOUR_C_THROW("There is no concrete slave element available.");
         };
 
-        virtual void AddSlaveEleDisp(
+        virtual void add_slave_ele_disp(
             const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm                 ///< local map
         )
@@ -102,7 +102,7 @@ namespace Discret
         //@{
 
         //! set slave element's nodal velocities
-        virtual void SetSlaveState(
+        virtual void set_slave_state(
             const Core::FE::Discretization& slavedis,  ///< embedded discretization
             const std::vector<int>& lm                 ///< local map
         )
@@ -111,7 +111,7 @@ namespace Discret
         };
 
         //! set slave element's nodal velocities
-        virtual void SetSlaveStaten(
+        virtual void set_slave_staten(
             const Core::FE::Discretization& slavedis,  ///< embedded discretization
             const std::vector<int>& lm                 ///< local map
         )
@@ -124,7 +124,7 @@ namespace Discret
          * element (level-set applications), this is correct - otherwise this method is
          * overloaded!!)
          */
-        virtual void GetInterfaceVelnp(
+        virtual void get_interface_velnp(
             Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
         ) const
         {
@@ -136,7 +136,7 @@ namespace Discret
          * element (level-set applications), this is correct - otherwise this method is
          * overloaded!!)
          */
-        virtual void GetInterfaceVeln(
+        virtual void get_interface_veln(
             Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
         ) const
         {
@@ -144,14 +144,14 @@ namespace Discret
         };
 
         //! get interface pressure
-        virtual void GetInterfacePresnp(double& ipres  ///< interface pressure
+        virtual void get_interface_presnp(double& ipres  ///< interface pressure
         ) const
         {
           FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! get interface pressure
-        virtual void GetInterfacePresn(double& ipres  ///< interface pressure
+        virtual void get_interface_presn(double& ipres  ///< interface pressure
         ) const
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -252,7 +252,7 @@ namespace Discret
         }
 
         //! evaluate element volume
-        virtual double EvalElementVolume()
+        virtual double eval_element_volume()
         {
           FOUR_C_THROW("There is no concrete slave element available.");
           return 0.0;
@@ -324,7 +324,7 @@ namespace Discret
         //! this method can also be applied in a non-Nitsche context (e.g. MHVS) by
         //! employing shape functions and velocities from another coupling object (HybridLMCoupling)
         //! slave_ele
-        virtual void ApplyConvStabTerms(
+        virtual void apply_conv_stab_terms(
             const Teuchos::RCP<SlaveElementInterface<distype>>&
                 slave_ele,  ///< associated slave element coupling object
             const Core::LinAlg::Matrix<nen_, 1>& funct_m,   ///< master shape functions

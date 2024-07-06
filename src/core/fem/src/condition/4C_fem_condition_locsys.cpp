@@ -30,35 +30,35 @@ FOUR_C_NAMESPACE_OPEN
 Core::Conditions::LocsysManager::LocsysManager(Core::FE::Discretization& discret, const int dim)
     : discret_(discret), dim_(dim), numlocsys_(-1), locsysfunct_(false)
 {
-  if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Locsys problem must be 2D or 3D");
+  if (dim != 2 && dim != 3) FOUR_C_THROW("Locsys problem must be 2D or 3D");
 
   // get node row layout of discretization
-  const Epetra_Map* noderowmap = discret_.NodeRowMap();
+  const Epetra_Map* noderowmap = discret_.node_row_map();
 
   // create locsys vector and initialize to -1
   locsystoggle_ = Core::LinAlg::CreateVector(*noderowmap, false);
   locsystoggle_->PutScalar(-1.0);
 
   // check for locsys boundary conditions
-  Discret().GetCondition("Locsys", locsysconds_);
+  LocsysManager::discret().get_condition("Locsys", locsysconds_);
   numlocsys_ = (int)locsysconds_.size();
   id_.resize(numlocsys_);
   typelocsys_.resize(numlocsys_);
 
-  for (int i = 0; i < NumLocsys(); ++i)
+  for (int i = 0; i < num_locsys(); ++i)
   {
     // Assign internal locsys id (is this still being used?)
-    id_[i] = locsysconds_[i]->Id();
+    id_[i] = locsysconds_[i]->id();
 
     // Check for already existing ConditionID and add it, if not already existing
-    const int* locsysId = locsysconds_[i]->parameters().GetIf<int>("ConditionID");
+    const int* locsysId = locsysconds_[i]->parameters().get_if<int>("ConditionID");
     if (locsysId)
     {
       if ((*locsysId) != i) FOUR_C_THROW("Locsys condition has non-matching ID");
     }
     else
     {
-      locsysconds_[i]->parameters().Add("ConditionID", i);
+      locsysconds_[i]->parameters().add("ConditionID", i);
     }
   }
 
@@ -68,7 +68,7 @@ Core::Conditions::LocsysManager::LocsysManager(Core::FE::Discretization& discret
 
 /*-------------------------------------------------------------------*
  *-------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::Update(const double time,
+void Core::Conditions::LocsysManager::update(const double time,
     std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals,
     const Core::UTILS::FunctionManager& function_manager)
 {
@@ -94,7 +94,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
   const Epetra_Map* dofrowmap = discret_.dof_row_map();
 
   // get node row layout of discretization
-  const Epetra_Map* noderowmap = discret_.NodeRowMap();
+  const Epetra_Map* noderowmap = discret_.node_row_map();
 
   // Since also time dependent conditions are possible we clear all local systems in the beginning
   nodalrotvectors_.clear();
@@ -117,58 +117,58 @@ void Core::Conditions::LocsysManager::Update(const double time,
   //**************************+*******************************************
   for (auto geo_level : geo_hierarchy)
   {
-    for (int i = 0; i < NumLocsys(); ++i)
+    for (int i = 0; i < num_locsys(); ++i)
     {
       Core::Conditions::Condition* currlocsys = locsysconds_[i];
 
       // safety check
-      if (currlocsys->Type() != Core::Conditions::VolumeLocsys and
-          currlocsys->Type() != Core::Conditions::SurfaceLocsys and
-          currlocsys->Type() != Core::Conditions::LineLocsys and
-          currlocsys->Type() != Core::Conditions::PointLocsys)
+      if (currlocsys->type() != Core::Conditions::VolumeLocsys and
+          currlocsys->type() != Core::Conditions::SurfaceLocsys and
+          currlocsys->type() != Core::Conditions::LineLocsys and
+          currlocsys->type() != Core::Conditions::PointLocsys)
         FOUR_C_THROW("Unknown type of locsys condition!");
 
-      if (currlocsys->Type() == geo_level)
+      if (currlocsys->type() == geo_level)
       {
-        typelocsys_[i] = currlocsys->Type();
+        typelocsys_[i] = currlocsys->type();
 
         const auto* rotangle = &currlocsys->parameters().get<std::vector<double>>("rotangle");
         const auto* funct = &currlocsys->parameters().get<std::vector<int>>("funct");
         const auto* useUpdatedNodePos = &currlocsys->parameters().get<int>("useupdatednodepos");
 
         const auto* useConsistentNodeNormal =
-            (currlocsys->Type() == Core::Conditions::SurfaceLocsys or
-                currlocsys->Type() == Core::Conditions::LineLocsys)
-                ? currlocsys->parameters().GetIf<int>("useconsistentnodenormal")
+            (currlocsys->type() == Core::Conditions::SurfaceLocsys or
+                currlocsys->type() == Core::Conditions::LineLocsys)
+                ? currlocsys->parameters().get_if<int>("useconsistentnodenormal")
                 : nullptr;
 
-        const std::vector<int>* nodes = currlocsys->GetNodes();
+        const std::vector<int>* nodes = currlocsys->get_nodes();
 
-        if (currlocsys->Type() == Core::Conditions::SurfaceLocsys or
-            currlocsys->Type() == Core::Conditions::LineLocsys)
+        if (currlocsys->type() == Core::Conditions::SurfaceLocsys or
+            currlocsys->type() == Core::Conditions::LineLocsys)
         {
           // Check, if we have time dependent locsys conditions (through functions)
           if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0) or
               (((*useConsistentNodeNormal) == 1) and ((*useUpdatedNodePos) == 1)))
             locsysfunct_ = true;
         }
-        else if (currlocsys->Type() == Core::Conditions::VolumeLocsys or
-                 currlocsys->Type() == Core::Conditions::PointLocsys)
+        else if (currlocsys->type() == Core::Conditions::VolumeLocsys or
+                 currlocsys->type() == Core::Conditions::PointLocsys)
         {
           // Check, if we have time dependent locsys conditions (through functions)
           if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0)) locsysfunct_ = true;
         }
 
         // Here we have the convention that 2D problems "live" in the global xy-plane.
-        if (Dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
+        if (n_dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
         {
           FOUR_C_THROW(
               "For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global "
               "z-axis!");
         }
 
-        if ((currlocsys->Type() == Core::Conditions::SurfaceLocsys or
-                currlocsys->Type() == Core::Conditions::LineLocsys) and
+        if ((currlocsys->type() == Core::Conditions::SurfaceLocsys or
+                currlocsys->type() == Core::Conditions::LineLocsys) and
             (*useConsistentNodeNormal) == 1)
           calc_rotation_vector_for_normal_system(i, time);
         else
@@ -178,7 +178,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
           Teuchos::RCP<const Epetra_Vector> dispnp;
           if (((*useUpdatedNodePos) == 1) && (time >= 0.0))
           {
-            dispnp = Discret().GetState("dispnp");
+            dispnp = discret().get_state("dispnp");
             if (dispnp == Teuchos::null)
             {
               FOUR_C_THROW(
@@ -194,7 +194,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
 
           for (int nodeGID : *nodes)
           {
-            bool havenode = Discret().HaveGlobalNode(nodeGID);
+            bool havenode = discret().have_global_node(nodeGID);
             if (!havenode) continue;
 
             // Weights of rotations vector due to temporal and spatial function
@@ -204,7 +204,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
               double functfac = 1.0;
               if ((*funct)[j] > 0)
               {
-                Core::Nodes::Node* node = Discret().gNode(nodeGID);
+                Core::Nodes::Node* node = discret().g_node(nodeGID);
 
                 // Determine node position, which shall be used for evaluating the function, and
                 // evaluate it
@@ -212,7 +212,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
                 {
                   // Obtain current displacement for node
                   std::vector<int> lm;
-                  Discret().Dof(node, lm);
+                  discret().dof(node, lm);
 
                   std::vector<double> currDisp;
                   currDisp.resize(lm.size());
@@ -220,22 +220,23 @@ void Core::Conditions::LocsysManager::Update(const double time,
                   Core::FE::ExtractMyValues(*dispnp, currDisp, lm);
 
                   // Calculate current position for node
-                  std::vector<double> currPos(Dim());
-                  const auto& xp = node->X();
+                  std::vector<double> currPos(n_dim());
+                  const auto& xp = node->x();
 
-                  for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
+                  for (int dim = 0; dim < LocsysManager::n_dim(); ++dim)
+                    currPos[dim] = xp[dim] + currDisp[dim];
 
                   // Evaluate function with current node position
-                  functfac = (function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+                  functfac = (function_manager.function_by_id<Core::UTILS::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
                                  .evaluate(currPos.data(), time, j);
                 }
                 else
                 {
                   // Evaluate function with reference node position
-                  functfac = (function_manager.FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+                  functfac = (function_manager.function_by_id<Core::UTILS::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
-                                 .evaluate(node->X().data(), time, j);
+                                 .evaluate(node->x().data(), time, j);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;
@@ -281,9 +282,9 @@ void Core::Conditions::LocsysManager::Update(const double time,
   for (int i = 0; i < noderowmap->NumMyElements(); ++i)
   {
     int nodeGID = noderowmap->GID(i);
-    Core::Nodes::Node* node = Discret().gNode(nodeGID);
+    Core::Nodes::Node* node = discret().g_node(nodeGID);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", nodeGID);
-    std::vector<int> dofs = Discret().Dof(0, node);
+    std::vector<int> dofs = discret().dof(0, node);
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
 
@@ -294,7 +295,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
     // unity matrix for non-locsys node
     if (locsysindex < 0)
     {
-      for (int r = 0; r < numdof; ++r) trafo_->SetValue(1.0, dofs[r], dofs[r]);
+      for (int r = 0; r < numdof; ++r) trafo_->set_value(1.0, dofs[r], dofs[r]);
     }
     // trafo matrix for locsys node
     else
@@ -331,7 +332,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
             "exceeding 3");
       }
       // trafo for 2D case
-      if (Dim() == 2)
+      if (n_dim() == 2)
       {
         for (int dim = 0; dim < 2; dim++)
         {
@@ -340,7 +341,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
         }
       }
       // trafo for 3D case
-      if (Dim() == 3)
+      if (n_dim() == 3)
       {
         for (int dim = 0; dim < 3; dim++)
         {
@@ -352,7 +353,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
 
       // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
       for (int r = 0; r < numdof; ++r)
-        for (int c = 0; c < numdof; ++c) trafo_->SetValue(nodetrafo(r, c), dofs[r], dofs[c]);
+        for (int c = 0; c < numdof; ++c) trafo_->set_value(nodetrafo(r, c), dofs[r], dofs[c]);
 
       // store the DOF with locsys
       for (int r = 0; r < numdof; ++r) locsysdofset.insert(dofs[r]);
@@ -363,14 +364,14 @@ void Core::Conditions::LocsysManager::Update(const double time,
   }
 
   // complete transformation matrix
-  trafo_->Complete();
+  trafo_->complete();
 
   // Throw warning if transformation matrix has zero diagonal elements since
   // they end up on the diagonal of the system matrix. Show this warning only
   // once.
   if ((not warning_thrown_) && sanity_check)
   {
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       warning_thrown_ = true;
 
@@ -400,7 +401,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
     myglobalentries = locsysdofs.data();
   }
   locsysdofmap_ = Teuchos::rcp(new Epetra_Map(
-      -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.Comm()));
+      -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.get_comm()));
   if (locsysdofmap_ == Teuchos::null) FOUR_C_THROW("Creation failed.");
 
   // The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient
@@ -439,21 +440,21 @@ void Core::Conditions::LocsysManager::Update(const double time,
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::print() const
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     Core::IO::cout << "\n-------------------------------------Core::Conditions::LocsysManager"
                    << Core::IO::endl;
-    for (int i = 0; i < NumLocsys(); ++i)
+    for (int i = 0; i < num_locsys(); ++i)
     {
       Core::IO::cout << "*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: "
-                     << locsysconds_[i]->Id();
-      if (TypeLocsys(i) == Core::Conditions::PointLocsys)
+                     << locsysconds_[i]->id();
+      if (type_locsys(i) == Core::Conditions::PointLocsys)
         Core::IO::cout << " Point   " << Core::IO::endl;
-      else if (TypeLocsys(i) == Core::Conditions::LineLocsys)
+      else if (type_locsys(i) == Core::Conditions::LineLocsys)
         Core::IO::cout << " Line    " << Core::IO::endl;
-      else if (TypeLocsys(i) == Core::Conditions::SurfaceLocsys)
+      else if (type_locsys(i) == Core::Conditions::SurfaceLocsys)
         Core::IO::cout << " Surface " << Core::IO::endl;
-      else if (TypeLocsys(i) == Core::Conditions::VolumeLocsys)
+      else if (type_locsys(i) == Core::Conditions::VolumeLocsys)
         Core::IO::cout << " Volume  " << Core::IO::endl;
       else
         FOUR_C_THROW("Unknown type of locsys condition!");
@@ -466,62 +467,65 @@ void Core::Conditions::LocsysManager::print() const
 /*----------------------------------------------------------------------*
  |  Get the communicator                                                |
  *----------------------------------------------------------------------*/
-inline const Epetra_Comm& Core::Conditions::LocsysManager::Comm() const { return discret_.Comm(); }
+inline const Epetra_Comm& Core::Conditions::LocsysManager::get_comm() const
+{
+  return discret_.get_comm();
+}
 
 
 /*----------------------------------------------------------------------*
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::RotateGlobalToLocal(
+void Core::Conditions::LocsysManager::rotate_global_to_local(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
 {
   // transform rhs vector
-  RotateGlobalToLocal(rhs);
+  rotate_global_to_local(rhs);
 
   // selective multiplication from left
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
       Core::LinAlg::Multiply(*subtrafo_, false, *sysmat, false, true);
   // put transformed rows back into global matrix
-  sysmat->Put(*temp, 1.0, locsysdofmap_);
+  sysmat->put(*temp, 1.0, locsysdofmap_);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Transform system matrix global -> local (public)       mueller 05/10|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::RotateGlobalToLocal(
+void Core::Conditions::LocsysManager::rotate_global_to_local(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
 {
   // selective multiplication from left
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::MLMultiply(
-      *subtrafo_, *sysmat, sysmat->ExplicitDirichlet(), sysmat->SaveGraph(), true);
+      *subtrafo_, *sysmat, sysmat->explicit_dirichlet(), sysmat->save_graph(), true);
 
   // put transformed rows back into global matrix
-  sysmat->Put(*temp, 1.0, locsysdofmap_);
+  sysmat->put(*temp, 1.0, locsysdofmap_);
 }
 
 /*----------------------------------------------------------------------*
  |  Transform vector global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::RotateGlobalToLocal(
+void Core::Conditions::LocsysManager::rotate_global_to_local(
     Teuchos::RCP<Epetra_Vector> vec, bool offset) const
 {
   // y = trafo_ . x  with x = vec
   Epetra_Vector tmp(*vec);
-  trafo_->Multiply(false, tmp, *vec);
+  trafo_->multiply(false, tmp, *vec);
 }
 
 /*----------------------------------------------------------------------*
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result,
+void Core::Conditions::LocsysManager::rotate_local_to_global(Teuchos::RCP<Epetra_Vector> result,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
 {
   // transform result
-  RotateLocalToGlobal(result);
+  rotate_local_to_global(result);
 
   // transform rhs vector
-  RotateLocalToGlobal(rhs);
+  rotate_local_to_global(rhs);
 
   // transform system matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp;
@@ -530,8 +534,8 @@ void Core::Conditions::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Ve
   // We want to keep the SaveGraph() value of sysmat also after transformation.
   // It is not possible to keep ExplicitDirichlet()==true after transformation,
   // so we explicitly set this to false.
-  temp = Core::LinAlg::Multiply(*sysmat, false, *trafo_, false, false, sysmat->SaveGraph(), true);
-  temp2 = Core::LinAlg::Multiply(*trafo_, true, *temp, false, false, sysmat->SaveGraph(), true);
+  temp = Core::LinAlg::Multiply(*sysmat, false, *trafo_, false, false, sysmat->save_graph(), true);
+  temp2 = Core::LinAlg::Multiply(*trafo_, true, *temp, false, false, sysmat->save_graph(), true);
 
   // this is a deep copy (expensive!)
   *sysmat = *temp2;
@@ -540,20 +544,20 @@ void Core::Conditions::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Ve
 /*----------------------------------------------------------------------*
  |  Transform vector local -> global (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::RotateLocalToGlobal(
+void Core::Conditions::LocsysManager::rotate_local_to_global(
     Teuchos::RCP<Epetra_Vector> vec, bool offset) const
 {
   Epetra_Vector tmp(*vec);
-  trafo_->Multiply(true, tmp, *vec);
+  trafo_->multiply(true, tmp, *vec);
 }
 /*----------------------------------------------------------------------*
  |  Transform matrix local -> global (public)              mueller 05/10|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::RotateLocalToGlobal(
+void Core::Conditions::LocsysManager::rotate_local_to_global(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-      Core::LinAlg::Multiply(*trafo_, true, *sysmat, false, false, sysmat->SaveGraph(), true);
+      Core::LinAlg::Multiply(*trafo_, true, *sysmat, false, false, sysmat->save_graph(), true);
   *sysmat = *temp2;
 }
 
@@ -569,7 +573,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   if (time < 0.0)
   {
     Teuchos::RCP<Epetra_Vector> zeroVector =
-        Core::LinAlg::CreateVector(*Discret().dof_row_map(), true);
+        Core::LinAlg::CreateVector(*discret().dof_row_map(), true);
     discret_.set_state("dispnp", zeroVector);
   }
 
@@ -591,27 +595,27 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   // *******************************************************************
   // Obtain desired locsys condition and its corresponding nodes
   Core::Conditions::Condition* currLocsysCond = locsysconds_[numLocsysCond];
-  const std::vector<int>* nodes = currLocsysCond->GetNodes();
+  const std::vector<int>* nodes = currLocsysCond->get_nodes();
 
   // Obtain rank of calling processor
-  int myrank = discret_.Comm().MyPID();
+  int myrank = discret_.get_comm().MyPID();
 
   // Loop through all nodes in the condition
   for (int nodeGID : *nodes)
   {
     // Don't care about nodes that don't exist
-    bool haveNode = discret_.HaveGlobalNode(nodeGID);
+    bool haveNode = discret_.have_global_node(nodeGID);
     if (!haveNode) continue;
 
-    Core::Nodes::Node* node = discret_.gNode(nodeGID);
+    Core::Nodes::Node* node = discret_.g_node(nodeGID);
 
     // Don't care about nodes that the processor doesn't own
-    bool isOwner = (node->Owner() == myrank);
+    bool isOwner = (node->owner() == myrank);
     if (!isOwner) continue;
 
     // Obtain all gids of all dofs of the node
     std::vector<int> nodeGIDs;
-    discret_.Dof(node, nodeGIDs);
+    discret_.dof(node, nodeGIDs);
 
     // Obtain node normal for current node and calculate its vector length
     // *******************************************************************

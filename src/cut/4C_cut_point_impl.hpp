@@ -28,7 +28,7 @@ namespace Core::Geo
        public:
         LineBetweenFilter(Point* me, Point* other) : me_(me), other_(other) {}
 
-        bool operator()(Line* line) { return line->Between(me_, other_); }
+        bool operator()(Line* line) { return line->between(me_, other_); }
 
        private:
         Point* me_;
@@ -41,7 +41,7 @@ namespace Core::Geo
         explicit LineHasSideFilter(Side* side) : side_(side) {}
 
         /// true if the line is cut by the side but not on any side's edges
-        bool operator()(Line* line) { return line->IsInternalCut(side_); }
+        bool operator()(Line* line) { return line->is_internal_cut(side_); }
 
        private:
         Side* side_;
@@ -57,8 +57,8 @@ namespace Core::Geo
 
         bool operator()(Line* line)
         {
-          return line != line_ and line->IsCut(side_) and
-                 (element_ == nullptr or line->IsCut(element_));
+          return line != line_ and line->is_cut(side_) and
+                 (element_ == nullptr or line->is_cut(element_));
         }
 
        private:
@@ -95,19 +95,19 @@ namespace Core::Geo
       return line_found;
     }
 
-    inline Line* Point::CommonLine(Point* other)
+    inline Line* Point::common_line(Point* other)
     {
       Impl::LineBetweenFilter filter(this, other);
       return find(filter, true);
     }
 
-    inline Line* Point::CutLine(Side* side, bool unique)
+    inline Line* Point::cut_line(Side* side, bool unique)
     {
       Impl::LineHasSideFilter filter(side);
       return find(filter, unique);
     }
 
-    inline Line* Point::CutLine(Line* line, Side* side, Element* element)
+    inline Line* Point::cut_line(Line* line, Side* side, Element* element)
     {
       Impl::NextLineOnElementCutFilter filter(line, side, element);
       return find(filter, true);

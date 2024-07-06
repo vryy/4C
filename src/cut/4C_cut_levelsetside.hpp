@@ -40,10 +40,10 @@ namespace Core::Geo
       }
 
       /// Returns the geometric shape of this side
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::dis_none; }
 
       /// element dimension
-      unsigned Dim() const override
+      unsigned n_dim() const override
       {
         FOUR_C_THROW(
             "No dimension information for level set sides. It's "
@@ -52,10 +52,10 @@ namespace Core::Geo
       }
 
       /// problem dimension
-      unsigned ProbDim() const override { return probdim; }
+      unsigned n_prob_dim() const override { return probdim; }
 
       /// number of nodes
-      unsigned NumNodes() const override
+      unsigned num_nodes() const override
       {
         FOUR_C_THROW(
             "No number of nodes information for level set sides. It's "
@@ -64,19 +64,19 @@ namespace Core::Geo
       }
 
       /// \brief Returns the topology data for the side from Shards library
-      const CellTopologyData* Topology() const override
+      const CellTopologyData* topology() const override
       {
         FOUR_C_THROW("No topology data for level-set sides!");
         exit(EXIT_FAILURE);
       }
 
       /** Get the cut points between the levelset side and the specified edge */
-      bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points) override;
+      bool cut(Mesh& mesh, Edge& edge, PointSet& cut_points) override;
 
       /** In the level-set case, the level-set side is the cut side and will
        *  be divided into facets. Among other places, this becomes important for
        *  the boundary integration cell creation. */
-      void MakeInternalFacets(Mesh& mesh, Element* element, plain_facet_set& facets) override;
+      void make_internal_facets(Mesh& mesh, Element* element, plain_facet_set& facets) override;
 
       //   virtual bool DoTriangulation() { return true; }
 
@@ -84,7 +84,7 @@ namespace Core::Geo
           Mesh& mesh, Element* element, Side& side, const PointSet& cut) override;
 
       // a levelset-side returns true
-      bool IsLevelSetSide() override { return true; };
+      bool is_level_set_side() override { return true; };
 
 
       bool find_cut_points_dispatch(Mesh& mesh, Element* element, Side& side, Edge& e) override;
@@ -99,7 +99,7 @@ namespace Core::Geo
       }
 
       /*! \brief Returns the global coordinates of the nodes of this side */
-      void Coordinates(double* xyze) const override
+      void coordinates(double* xyze) const override
       {
         FOUR_C_THROW("no coordinates on level set cut side");
       }

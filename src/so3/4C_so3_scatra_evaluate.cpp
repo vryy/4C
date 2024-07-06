@@ -23,16 +23,16 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
-  if (la.Size() > 1)
+  if (la.size() > 1)
   {
     // ask for the number of dofs of second dofset (scatra)
-    const int numscal = discretization.NumDof(1, Nodes()[0]);
+    const int numscal = discretization.num_dof(1, nodes()[0]);
 
-    if (la[1].Size() != numnod_ * numscal)
+    if (la[1].size() != numnod_ * numscal)
       FOUR_C_THROW(
           "So3_Scatra: pre_evaluate: Location vector length for concentrations does not match!");
 
-    if (discretization.HasState(1, "scalarfield"))  // if concentrations were set
+    if (discretization.has_state(1, "scalarfield"))  // if concentrations were set
     {
       if (not(distype == Core::FE::CellType::hex8 or distype == Core::FE::CellType::hex27 or
               distype == Core::FE::CellType::tet4 or distype == Core::FE::CellType::tet10))
@@ -50,7 +50,7 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::pre_evaluate(Teuchos::Parame
           new std::vector<std::vector<double>>(numgpt_, std::vector<double>(numscal, 0.0)));
 
       // check if you can get the scalar state
-      Teuchos::RCP<const Epetra_Vector> concnp = discretization.GetState(1, "scalarfield");
+      Teuchos::RCP<const Epetra_Vector> concnp = discretization.get_state(1, "scalarfield");
 
       if (concnp == Teuchos::null)
         FOUR_C_THROW("calc_struct_nlnstiff: Cannot get state vector 'scalarfield' ");
@@ -110,9 +110,9 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::pre_evaluate(Teuchos::Parame
     }  // if (discretization.HasState(1,"scalarfield"))
 
     // if temperatures were set
-    if (discretization.NumDofSets() == 3)
+    if (discretization.num_dof_sets() == 3)
     {
-      if (discretization.HasState(2, "tempfield"))
+      if (discretization.has_state(2, "tempfield"))
       {
         if (not(distype == Core::FE::CellType::hex8 or distype == Core::FE::CellType::hex27 or
                 distype == Core::FE::CellType::tet4 or distype == Core::FE::CellType::tet10))
@@ -128,7 +128,7 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::pre_evaluate(Teuchos::Parame
         /* =========================================================================*/
         auto gptemp = Teuchos::rcp(new std::vector<double>(std::vector<double>(numgpt_, 0.0)));
 
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(2, "tempfield");
+        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(2, "tempfield");
 
         if (tempnp == Teuchos::null)
           FOUR_C_THROW("calc_struct_nlnstiff: Cannot get state vector 'tempfield' ");
@@ -208,7 +208,7 @@ int Discret::ELEMENTS::So3Scatra<So3Ele, distype>::evaluate(Teuchos::ParameterLi
     // coupling terms K_dS of stiffness matrix K^{SSI} for monolithic SSI
     case So3Scatra::calc_struct_stiffscalar:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       // get my displacement vector
@@ -279,10 +279,9 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::nln_kd_s_ssi(
   // calculate current and material coordinates of element
   Core::LinAlg::Matrix<numnod_, numdim_> xrefe(true);  // X, material coord. of element
   Core::LinAlg::Matrix<numnod_, numdim_> xcurr(true);  // x, current  coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -470,7 +469,7 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::calculate_bop(
  | initialize element (private)                            schmidt 10/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::InitElement()
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::init_element()
 {
   // resize gauss point coordinates, inverse of the jacobian and determinant of the jacobian
   xsi_.resize(numgpt_);
@@ -481,18 +480,16 @@ void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::InitElement()
   Core::LinAlg::Matrix<numnod_, numdim_> xrefe;
   for (int i = 0; i < numnod_; ++i)
   {
-    Core::Nodes::Node** nodes = Nodes();
-    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
+    xrefe(i, 0) = nodes()[i]->x()[0];
+    xrefe(i, 1) = nodes()[i]->x()[1];
+    xrefe(i, 2) = nodes()[i]->x()[2];
   }
 
   // calculate gauss point coordinates, the inverse jacobian and the determinant of the jacobian
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // gauss point coordinates
-    const double* gpcoord = intpoints_.Point(gp);
+    const double* gpcoord = intpoints_.point(gp);
     for (int idim = 0; idim < numdim_; idim++) xsi_[gp](idim) = gpcoord[idim];
 
     // get derivative of shape functions w.r.t. parameter coordinates, needed for calculation of the

@@ -87,7 +87,7 @@ void ScaTra::TimIntOneStepTheta::setup()
     {
       homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
-      homisoturb_forcing_->SetInitialSpectrum(
+      homisoturb_forcing_->set_initial_spectrum(
           Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
@@ -153,7 +153,7 @@ void ScaTra::TimIntOneStepTheta::print_time_step_info()
               << "TIME: " << std::setw(11) << std::setprecision(4) << std::scientific << time_
               << "/" << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_
               << "  DT = " << std::setw(11) << std::setprecision(4) << std::scientific << dta_
-              << "  " << MethodTitle() << " (theta = " << std::setw(3) << std::setprecision(2)
+              << "  " << method_title() << " (theta = " << std::setw(3) << std::setprecision(2)
               << theta_ << ") STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_
               << '\n';
   }
@@ -196,7 +196,7 @@ void ScaTra::TimIntOneStepTheta::av_m3_separation()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
   // AVM3 separation
-  Sep_->Multiply(false, *phinp_, *fsphinp_);
+  Sep_->multiply(false, *phinp_, *fsphinp_);
 
   // set fine-scale vector
   discret_->set_state("fsphinp", fsphinp_);
@@ -212,7 +212,7 @@ void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cs()
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
-        phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+        phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
 }
 
@@ -224,7 +224,7 @@ void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cv()
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
-        phinp_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+        phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
 }
 
@@ -274,7 +274,7 @@ void ScaTra::TimIntOneStepTheta::update()
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {
-    if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
+    if (is_result_step() or do_boundary_flux_statistics()) calc_flux(true);
   }
 
   // after the next command (time shift of solutions) do NOT call
@@ -288,7 +288,7 @@ void ScaTra::TimIntOneStepTheta::update()
   phidtn_->Update(1.0, *phidtnp_, 0.0);
 
   // call time update of forcing routine
-  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->TimeUpdateForcing();
+  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->time_update_forcing();
 
   // update micro scale in multi-scale simulations if necessary
   if (macro_scale_)
@@ -318,7 +318,7 @@ void ScaTra::TimIntOneStepTheta::write_restart() const
   output_->write_vector("phin", phin_);
 
   // write nodal micro concentration
-  if (macro_scale_ and NdsMicro() != -1) output_->write_vector("phinp_micro", phinp_micro_);
+  if (macro_scale_ and nds_micro() != -1) output_->write_vector("phinp_micro", phinp_micro_);
 }
 
 /*----------------------------------------------------------------------*
@@ -333,7 +333,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
   if (input == Teuchos::null)
   {
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step));
+        discret_, Global::Problem::instance()->input_control_file(), step));
   }
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
@@ -359,7 +359,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
   // read restart on micro scale in multi-scale simulations if necessary
   if (macro_scale_)
   {
-    if (NdsMicro() != -1) reader->read_vector(phinp_micro_, "phinp_micro");
+    if (nds_micro() != -1) reader->read_vector(phinp_micro_, "phinp_micro");
 
     // create parameter list for macro-scale elements
     Teuchos::ParameterList eleparams;
@@ -433,7 +433,7 @@ void ScaTra::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::ClearState()
+void ScaTra::TimIntOneStepTheta::clear_state()
 {
   phin_ = Teuchos::null;
   phinp_ = Teuchos::null;

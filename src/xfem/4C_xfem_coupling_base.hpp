@@ -76,7 +76,7 @@ namespace XFEM
       dofset_coupling_map_ = dofset_coupling_map;
     }
 
-    virtual void SetCouplingDofsets(){};
+    virtual void set_coupling_dofsets(){};
 
     int get_coupling_dofset_nds(const std::string& name)
     {
@@ -112,9 +112,9 @@ namespace XFEM
     }
 
     //! cutter dis should be loaded into the cut?
-    virtual bool CutGeometry() { return true; }
+    virtual bool cut_geometry() { return true; }
 
-    void SetTimeAndStep(const double time, const int step)
+    void set_time_and_step(const double time, const int step)
     {
       time_ = time;
       step_ = step;
@@ -130,14 +130,14 @@ namespace XFEM
     void get_condition_by_coupling_id(const std::vector<Core::Conditions::Condition*>& mycond,
         const int coupling_id, std::vector<Core::Conditions::Condition*>& mynewcond);
 
-    void Status(const int coupling_idx, const int side_start_gid);
+    void status(const int coupling_idx, const int side_start_gid);
 
 
-    std::string DisNameToString(Teuchos::RCP<Core::FE::Discretization> dis)
+    std::string dis_name_to_string(Teuchos::RCP<Core::FE::Discretization> dis)
     {
       if (dis == Teuchos::null) return "---";
 
-      return dis->Name();
+      return dis->name();
     }
 
     std::string type_to_string_for_print(const Inpar::XFEM::EleCouplingCondType& type)
@@ -198,30 +198,30 @@ namespace XFEM
                        ///< LevelsetCoupling cut and side-Id for MeshCoupling)
     )
     {
-      int lid = cutter_dis_->ElementColMap()->LID(gid);
+      int lid = cutter_dis_->element_col_map()->LID(gid);
       return cutterele_conds_[lid];
     }
 
     //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
-    virtual Core::Elements::Element* GetCouplingElement(
+    virtual Core::Elements::Element* get_coupling_element(
         const int eid  ///< global side element id w.r.t coupling discretization (background element
                        ///< eid for levelset couplings)
     )
     {
-      return (coupl_dis_ != Teuchos::null) ? coupl_dis_->gElement(eid) : nullptr;
+      return (coupl_dis_ != Teuchos::null) ? coupl_dis_->g_element(eid) : nullptr;
     }
 
-    virtual const std::string& GetName() { return coupl_name_; }
+    virtual const std::string& get_name() { return coupl_name_; }
 
-    Teuchos::RCP<Core::FE::Discretization> GetCutterDis() { return cutter_dis_; }
-    Teuchos::RCP<Core::FE::Discretization> GetCouplingDis() { return coupl_dis_; }
-    Teuchos::RCP<Core::FE::Discretization> GetCondDis() { return cond_dis_; }
+    Teuchos::RCP<Core::FE::Discretization> get_cutter_dis() { return cutter_dis_; }
+    Teuchos::RCP<Core::FE::Discretization> get_coupling_dis() { return coupl_dis_; }
+    Teuchos::RCP<Core::FE::Discretization> get_cond_dis() { return cond_dis_; }
 
     Inpar::XFEM::AveragingStrategy get_averaging_strategy() { return averaging_strategy_; }
 
-    virtual void PrepareSolve(){};
+    virtual void prepare_solve(){};
 
-    virtual bool HasMovingInterface() = 0;
+    virtual bool has_moving_interface() = 0;
 
     virtual void evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
         Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
@@ -252,13 +252,13 @@ namespace XFEM
     }
 
     /// get the sliplength for the specific coupling condition
-    virtual void GetSlipCoefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
+    virtual void get_slip_coefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
         const Core::Conditions::Condition* cond)
     {
       slipcoeff = 0.0;
     }
 
-    std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>& GetConfigurationmap(
+    std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>& get_configurationmap(
         double& kappa_m,                          //< fluid sided weighting
         double& visc_m,                           //< master sided dynamic viscosity
         double& visc_s,                           //< slave sided dynamic viscosity
@@ -390,12 +390,12 @@ namespace XFEM
       return configuration_map_;
     }
 
-    virtual void GmshOutput(const std::string& filename_base, const int step,
+    virtual void gmsh_output(const std::string& filename_base, const int step,
         const int gmsh_step_diff, const bool gmsh_debug_out_screen){};
 
     /// get viscosity of the master fluid
-    void GetViscosityMaster(Core::Elements::Element* xfele,  ///< xfluid ele
-        double& visc_m);                                     ///< viscosity mastersided
+    void get_viscosity_master(Core::Elements::Element* xfele,  ///< xfluid ele
+        double& visc_m);                                       ///< viscosity mastersided
 
     /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
     virtual void get_penalty_scaling_slave(Core::Elements::Element* coup_ele,  ///< xfluid ele
@@ -405,8 +405,8 @@ namespace XFEM
     }
 
     /// get weighting paramters
-    void GetAverageWeights(Core::Elements::Element* xfele,  ///< xfluid ele
-        Core::Elements::Element* coup_ele,                  ///< coup_ele ele
+    void get_average_weights(Core::Elements::Element* xfele,  ///< xfluid ele
+        Core::Elements::Element* coup_ele,                    ///< coup_ele ele
         double& kappa_m,  ///< Weight parameter (parameter +/master side)
         double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         bool& non_xfluid_coupling);

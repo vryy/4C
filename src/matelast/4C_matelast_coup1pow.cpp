@@ -22,7 +22,7 @@ Mat::Elastic::PAR::Coup1Pow::Coup1Pow(const Core::Mat::PAR::Parameter::Data& mat
 
 Mat::Elastic::Coup1Pow::Coup1Pow(Mat::Elastic::PAR::Coup1Pow* params) : params_(params) {}
 
-void Mat::Elastic::Coup1Pow::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+void Mat::Elastic::Coup1Pow::add_strain_energy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
     const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {

@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               dano 06/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::VerifyCoeff()
+void THR::TimIntOneStepTheta::verify_coeff()
 {
   // theta
   if ((theta_ <= 0.0) or (theta_ > 1.0)) FOUR_C_THROW("theta out of range (0.0,1.0]");
@@ -50,7 +50,7 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& iopara
   if (myrank_ == 0)
   {
     // check if coefficient has admissible value
-    VerifyCoeff();
+    verify_coeff();
 
     // print values of time integration parameters to screen
     std::cout << "with one-step-theta" << std::endl
@@ -123,13 +123,13 @@ void THR::TimIntOneStepTheta::predict_const_temp_consist_rate()
 void THR::TimIntOneStepTheta::evaluate_rhs_tang_residual()
 {
   // theta-interpolate state vectors
-  EvaluateMidState();
+  evaluate_mid_state();
 
   // build new external forces
   fextn_->PutScalar(0.0);
 
   // initialise tangent matrix to zero
-  tang_->Zero();
+  tang_->zero();
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
@@ -169,7 +169,7 @@ void THR::TimIntOneStepTheta::evaluate_rhs_tang_residual()
 
   // no further modification on tang_ required
   // tang_ is already effective dynamic tangent matrix
-  tang_->Complete();  // close tangent matrix
+  tang_->complete();  // close tangent matrix
 
   // hallelujah
   return;
@@ -181,7 +181,7 @@ void THR::TimIntOneStepTheta::evaluate_rhs_tang_residual()
  | evaluate theta-state vectors by averaging                 dano 08/09 |
  | end-point vector                                                     |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::EvaluateMidState()
+void THR::TimIntOneStepTheta::evaluate_mid_state()
 {
   // mid-temperatures T_{n+1-alpha_f} (tempm)
   //    T_{n+theta} := theta * T_{n+1} + (1-theta) * T_{n}
@@ -218,7 +218,7 @@ double THR::TimIntOneStepTheta::calc_ref_norm_temperature()
  | calculate characteristic/reference norms for forces       dano 08/09 |
  | originally by lw                                                     |
  *----------------------------------------------------------------------*/
-double THR::TimIntOneStepTheta::CalcRefNormForce()
+double THR::TimIntOneStepTheta::calc_ref_norm_force()
 {
   // The reference norms are used to scale the calculated iterative
   // temperature norm and/or the residual force norm. For this
@@ -299,15 +299,15 @@ void THR::TimIntOneStepTheta::update_iter_iteratively()
 /*----------------------------------------------------------------------*
  | update after time step                                    dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::UpdateStepState()
+void THR::TimIntOneStepTheta::update_step_state()
 {
   // update state
   // new temperatures at t_{n+1} -> t_n
   //    T_{n} := T_{n+1}
-  temp_->UpdateSteps(*tempn_);
+  temp_->update_steps(*tempn_);
   // new temperature rates at t_{n+1} -> t_n
   //    R_{n} := R_{n+1}
-  rate_->UpdateSteps(*raten_);
+  rate_->update_steps(*raten_);
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
@@ -332,7 +332,7 @@ void THR::TimIntOneStepTheta::UpdateStepState()
  | update after time step after output on element level      dano 05/13 |
  | update anything that needs to be updated at the element level        |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::UpdateStepElement()
+void THR::TimIntOneStepTheta::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -351,10 +351,10 @@ void THR::TimIntOneStepTheta::UpdateStepElement()
 /*----------------------------------------------------------------------*
  | read restart forces                                       dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::ReadRestartForce()
+void THR::TimIntOneStepTheta::read_restart_force()
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step_);
+      discret_, Global::Problem::instance()->input_control_file(), step_);
   reader.read_vector(fext_, "fexternal");
   reader.read_vector(fint_, "fint");
   reader.read_vector(fcap_, "fcap");
@@ -367,7 +367,8 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
 /*----------------------------------------------------------------------*
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
-void THR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void THR::TimIntOneStepTheta::write_restart_force(
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);

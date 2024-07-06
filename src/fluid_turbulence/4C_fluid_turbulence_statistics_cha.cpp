@@ -64,7 +64,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   // inflow channel check
   if (inflowchannel_)
   {
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::cout << "\n---------------------------------------------------------------------------"
                 << std::endl;
@@ -130,7 +130,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
         params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL", "no_model") ==
             "Smagorinsky")
     {
-      if (discret_->Comm().MyPID() == 0)
+      if (discret_->get_comm().MyPID() == 0)
       {
         std::cout
             << "                             Initialising output for Smagorinsky type models\n\n\n";
@@ -147,7 +147,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
       if (modelparams->get<std::string>("PHYSICAL_MODEL", "no_model") ==
           "Multifractal_Subgrid_Scales")
       {
-        if (discret_->Comm().MyPID() == 0)
+        if (discret_->get_comm().MyPID() == 0)
         {
           std::cout << "                             Initializing output for multifractal subgrid "
                        "scales type models\n\n\n";
@@ -166,13 +166,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   {
     // get fluid viscosity from material definition --- for computation
     // of ltau
-    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
+    int id = Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_fluid);
     if (id == -1)
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
       const Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance()->Materials()->ParameterById(id);
+          Global::Problem::instance()->materials()->parameter_by_id(id);
       const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
       dens_ = actmat->density_;
@@ -183,13 +183,14 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   {
     // get specific heat capacity --- for computation
     // of Temp_tau
-    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_sutherland);
+    int id =
+        Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_sutherland);
     if (id == -1)
       FOUR_C_THROW("Could not find sutherland material");
     else
     {
       const Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance()->Materials()->ParameterById(id);
+          Global::Problem::instance()->materials()->parameter_by_id(id);
       const Mat::PAR::Sutherland* actmat = static_cast<const Mat::PAR::Sutherland*>(mat);
       // we need the kinematic viscosity here
       shc_ = actmat->shc_;
@@ -261,23 +262,23 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
 
     // loop nodes, build set of planes accessible on this proc and
     // calculate bounding box
-    for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+    for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(i);
+      Core::Nodes::Node* node = discret_->l_row_node(i);
 
-      if (inflowchannel_ and node->X()[0] > inflowmax_ + NODETOL) continue;
+      if (inflowchannel_ and node->x()[0] > inflowmax_ + NODETOL) continue;
 
-      availablecoords.insert(node->X()[dim_]);
+      availablecoords.insert(node->x()[dim_]);
 
       for (int row = 0; row < 3; ++row)
       {
-        if ((*boundingbox_)(0, row) > node->X()[row])
+        if ((*boundingbox_)(0, row) > node->x()[row])
         {
-          (*boundingbox_)(0, row) = node->X()[row];
+          (*boundingbox_)(0, row) = node->x()[row];
         }
-        if ((*boundingbox_)(1, row) < node->X()[row])
+        if ((*boundingbox_)(1, row) < node->x()[row])
         {
-          (*boundingbox_)(1, row) = node->X()[row];
+          (*boundingbox_)(1, row) = node->x()[row];
         }
       }
     }
@@ -287,7 +288,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     {
       double min;
 
-      discret_->Comm().MinAll(&((*boundingbox_)(0, row)), &min, 1);
+      discret_->get_comm().MinAll(&((*boundingbox_)(0, row)), &min, 1);
       (*boundingbox_)(0, row) = min;
     }
 
@@ -296,7 +297,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     {
       double max;
 
-      discret_->Comm().MaxAll(&((*boundingbox_)(1, row)), &max, 1);
+      discret_->get_comm().MaxAll(&((*boundingbox_)(1, row)), &max, 1);
       (*boundingbox_)(1, row) = max;
     }
 
@@ -304,14 +305,14 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     // round robin loop to communicate coordinates to all procs
 
     {
-      int myrank = discret_->Comm().MyPID();
-      int numprocs = discret_->Comm().NumProc();
+      int myrank = discret_->get_comm().MyPID();
+      int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
       std::vector<char> rblock;
 
       // create an exporter for point to point comunication
-      Core::Communication::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->get_comm());
 
       for (int np = 0; np < numprocs; ++np)
       {
@@ -338,18 +339,18 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
 
         // receive from predecessor
         frompid = (myrank + numprocs - 1) % numprocs;
-        exporter.ReceiveAny(frompid, tag, rblock, length);
+        exporter.receive_any(frompid, tag, rblock, length);
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
           FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
-        exporter.Wait(request);
+        exporter.wait(request);
 
         {
           // for safety
-          exporter.Comm().Barrier();
+          exporter.get_comm().Barrier();
         }
 
         // Unpack received block into set of all planes.
@@ -416,13 +417,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     }
 
     // get nurbs dis' knotvector sizes
-    std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
+    std::vector<int> n_x_m_x_l(nurbsdis->return_n_x_m_x_l(0));
 
     // get nurbs dis' element numbers
     std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
     // resize and initialise to 0
     {
@@ -442,16 +443,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     }
 
     // get element map
-    const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
+    const Epetra_Map* elementmap = nurbsdis->element_row_map();
 
     // loop all available elements
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
-      Core::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
-      Core::Nodes::Node** nodes = actele->Nodes();
+      Core::Elements::Element* const actele = nurbsdis->g_element(elementmap->GID(iele));
+      Core::Nodes::Node** nodes = actele->nodes();
 
       // get gid, location in the patch
-      int gid = actele->Id();
+      int gid = actele->id();
 
       int patchid = 0;
 
@@ -464,7 +465,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
 
       // access elements knot span
       std::vector<Core::LinAlg::SerialDenseVector> knots(3);
-      (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
+      (*((*nurbsdis).get_knot_vector())).get_ele_knots(knots, actele->id());
 
       // aquire weights from nodes
       Core::LinAlg::SerialDenseVector weights(numnp);
@@ -474,13 +475,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
         Core::FE::Nurbs::ControlPoint* cp =
             dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
-        weights(inode) = cp->W();
+        weights(inode) = cp->w();
       }
 
       // get shapefunctions, compute all visualisation point positions
       Core::LinAlg::SerialDenseVector nurbs_shape_funct(numnp);
 
-      switch (actele->Shape())
+      switch (actele->shape())
       {
         case Core::FE::CellType::nurbs8:
         case Core::FE::CellType::nurbs27:
@@ -515,13 +516,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
             uv(1) = -1.0;
             uv(2) = -1.0;
             Core::FE::Nurbs::nurbs_get_3D_funct(
-                nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
               double val = 0;
               for (int inode = 0; inode < numnp; ++inode)
               {
-                val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
               }
               x[isd] = val;
             }
@@ -546,13 +547,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
               uv(1) += 2.0 / (numsubdivisions_ - 1);
 
               Core::FE::Nurbs::nurbs_get_3D_funct(
-                  nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                  nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
                 double val = 0;
                 for (int inode = 0; inode < numnp; ++inode)
                 {
-                  val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                  val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
                 }
                 x[isd] = val;
               }
@@ -568,13 +569,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
               uv(1) = 1.0;
               uv(2) = 1.0;
               Core::FE::Nurbs::nurbs_get_3D_funct(
-                  nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                  nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
                 double val = 0;
                 for (int inode = 0; inode < numnp; ++inode)
                 {
-                  val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                  val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
                 }
                 x[isd] = val;
               }
@@ -611,8 +612,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     std::vector<double> lnodeplanes(*nodeplanes_);
     std::vector<double> lplanecoordinates(*planecoordinates_);
 
-    discret_->Comm().SumAll(lnodeplanes.data(), nodeplanes_->data(), nodeplanes_->size());
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(lnodeplanes.data(), nodeplanes_->data(), nodeplanes_->size());
+    discret_->get_comm().SumAll(
         lplanecoordinates.data(), planecoordinates_->data(), planecoordinates_->size());
 
     {
@@ -638,7 +639,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     {
       double min;
 
-      discret_->Comm().MinAll(&((*boundingbox_)(0, row)), &min, 1);
+      discret_->get_comm().MinAll(&((*boundingbox_)(0, row)), &min, 1);
       (*boundingbox_)(0, row) = min;
     }
 
@@ -647,7 +648,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
     {
       double max;
 
-      discret_->Comm().MaxAll(&((*boundingbox_)(1, row)), &max, 1);
+      discret_->get_comm().MaxAll(&((*boundingbox_)(1, row)), &max, 1);
       (*boundingbox_)(1, row) = max;
     }
   }
@@ -1247,7 +1248,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   Teuchos::RCP<std::ofstream> log_res;
   Teuchos::RCP<std::ofstream> log_res_scatra;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
 
@@ -1340,7 +1341,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   }
 
   // clear statistics
-  this->ClearStatistics();
+  this->clear_statistics();
 
   return;
 }  // TurbulenceStatisticsCha::TurbulenceStatisticsCha
@@ -1354,7 +1355,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
                             'sum' vectors.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DoTimeSample(
+void FLD::TurbulenceStatisticsCha::do_time_sample(
     const Teuchos::RCP<const Epetra_Vector> velnp, const Teuchos::RCP<const Epetra_Vector> force)
 {
   // we have an additional sample
@@ -1402,23 +1403,23 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       togglew_->PutScalar(0.0);
 
       // activate toggles for in plane dofs
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
-        if (node->X()[0] < (*boundingbox_)(1, 0) + NODETOL and
-            node->X()[1] < (*boundingbox_)(1, 1) + NODETOL and
-            node->X()[2] < (*boundingbox_)(1, 2) + NODETOL and
-            node->X()[0] > (*boundingbox_)(0, 0) - NODETOL and
-            node->X()[1] > (*boundingbox_)(0, 1) - NODETOL and
-            node->X()[2] > (*boundingbox_)(0, 2) - NODETOL)
+        if (node->x()[0] < (*boundingbox_)(1, 0) + NODETOL and
+            node->x()[1] < (*boundingbox_)(1, 1) + NODETOL and
+            node->x()[2] < (*boundingbox_)(1, 2) + NODETOL and
+            node->x()[0] > (*boundingbox_)(0, 0) - NODETOL and
+            node->x()[1] > (*boundingbox_)(0, 1) - NODETOL and
+            node->x()[2] > (*boundingbox_)(0, 2) - NODETOL)
         {
           // this node belongs to the plane under consideration
-          if (node->X()[dim_] < *plane + 2e-9 && node->X()[dim_] > *plane - 2e-9)
+          if (node->x()[dim_] < *plane + 2e-9 && node->x()[dim_] > *plane - 2e-9)
           {
-            std::vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->dof(node);
             double one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -1436,7 +1437,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
         {
           local_inc += (*toggleu_)[rr] * (*toggleu_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
 
         if (abs(inc) < 1e-9)
         {
@@ -1448,7 +1449,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
         {
           local_inc += (*force)[rr] * (*toggleu_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         sumforceu_ += inc;
 
         local_inc = 0.0;
@@ -1456,7 +1457,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
         {
           local_inc += (*force)[rr] * (*togglev_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         sumforcev_ += inc;
 
 
@@ -1465,7 +1466,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
         {
           local_inc += (*force)[rr] * (*togglew_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         sumforcew_ += inc;
       }
     }
@@ -1500,9 +1501,9 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
                  moments for low-Mach-number flow.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
-    const Teuchos::RCP<const Epetra_Vector> scanp, const Teuchos::RCP<const Epetra_Vector> force,
-    const double eosfac)
+void FLD::TurbulenceStatisticsCha::do_loma_time_sample(
+    const Teuchos::RCP<const Epetra_Vector> velnp, const Teuchos::RCP<const Epetra_Vector> scanp,
+    const Teuchos::RCP<const Epetra_Vector> force, const double eosfac)
 {
   // we have an additional sample
 
@@ -1534,23 +1535,23 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
       togglep_->PutScalar(0.0);
 
       // activate toggles for in plane dofs
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
-        if (node->X()[0] < (*boundingbox_)(1, 0) + NODETOL and
-            node->X()[1] < (*boundingbox_)(1, 1) + NODETOL and
-            node->X()[2] < (*boundingbox_)(1, 2) + NODETOL and
-            node->X()[0] > (*boundingbox_)(0, 0) - NODETOL and
-            node->X()[1] > (*boundingbox_)(0, 1) - NODETOL and
-            node->X()[2] > (*boundingbox_)(0, 2) - NODETOL)
+        if (node->x()[0] < (*boundingbox_)(1, 0) + NODETOL and
+            node->x()[1] < (*boundingbox_)(1, 1) + NODETOL and
+            node->x()[2] < (*boundingbox_)(1, 2) + NODETOL and
+            node->x()[0] > (*boundingbox_)(0, 0) - NODETOL and
+            node->x()[1] > (*boundingbox_)(0, 1) - NODETOL and
+            node->x()[2] > (*boundingbox_)(0, 2) - NODETOL)
         {
           // this node belongs to the plane under consideration
-          if (node->X()[dim_] < *plane + 2e-9 && node->X()[dim_] > *plane - 2e-9)
+          if (node->x()[dim_] < *plane + 2e-9 && node->x()[dim_] > *plane - 2e-9)
           {
-            std::vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->dof(node);
             double one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -1587,23 +1588,23 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
       togglep_->PutScalar(0.0);
 
       // activate toggles for in plane dofs
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
-        if (node->X()[0] < (*boundingbox_)(1, 0) + NODETOL and
-            node->X()[1] < (*boundingbox_)(1, 1) + NODETOL and
-            node->X()[2] < (*boundingbox_)(1, 2) + NODETOL and
-            node->X()[0] > (*boundingbox_)(0, 0) - NODETOL and
-            node->X()[1] > (*boundingbox_)(0, 1) - NODETOL and
-            node->X()[2] > (*boundingbox_)(0, 2) - NODETOL)
+        if (node->x()[0] < (*boundingbox_)(1, 0) + NODETOL and
+            node->x()[1] < (*boundingbox_)(1, 1) + NODETOL and
+            node->x()[2] < (*boundingbox_)(1, 2) + NODETOL and
+            node->x()[0] > (*boundingbox_)(0, 0) - NODETOL and
+            node->x()[1] > (*boundingbox_)(0, 1) - NODETOL and
+            node->x()[2] > (*boundingbox_)(0, 2) - NODETOL)
         {
           // this node belongs to the plane under consideration
-          if (node->X()[dim_] < *plane + 2e-9 && node->X()[dim_] > *plane - 2e-9)
+          if (node->x()[dim_] < *plane + 2e-9 && node->x()[dim_] > *plane - 2e-9)
           {
-            std::vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->dof(node);
             double one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -1659,8 +1660,9 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
                             transport.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const Epetra_Vector> velnp,
-    const Teuchos::RCP<const Epetra_Vector> scanp, const Teuchos::RCP<const Epetra_Vector> force)
+void FLD::TurbulenceStatisticsCha::do_scatra_time_sample(
+    const Teuchos::RCP<const Epetra_Vector> velnp, const Teuchos::RCP<const Epetra_Vector> scanp,
+    const Teuchos::RCP<const Epetra_Vector> force)
 {
   // we have an additional sample
 
@@ -1692,23 +1694,23 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
       togglep_->PutScalar(0.0);
 
       // activate toggles for in plane dofs
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
-        if (node->X()[0] < (*boundingbox_)(1, 0) + NODETOL and
-            node->X()[1] < (*boundingbox_)(1, 1) + NODETOL and
-            node->X()[2] < (*boundingbox_)(1, 2) + NODETOL and
-            node->X()[0] > (*boundingbox_)(0, 0) - NODETOL and
-            node->X()[1] > (*boundingbox_)(0, 1) - NODETOL and
-            node->X()[2] > (*boundingbox_)(0, 2) - NODETOL)
+        if (node->x()[0] < (*boundingbox_)(1, 0) + NODETOL and
+            node->x()[1] < (*boundingbox_)(1, 1) + NODETOL and
+            node->x()[2] < (*boundingbox_)(1, 2) + NODETOL and
+            node->x()[0] > (*boundingbox_)(0, 0) - NODETOL and
+            node->x()[1] > (*boundingbox_)(0, 1) - NODETOL and
+            node->x()[2] > (*boundingbox_)(0, 2) - NODETOL)
         {
           // this node belongs to the plane under consideration
-          if (node->X()[dim_] < *plane + 2e-9 && node->X()[dim_] > *plane - 2e-9)
+          if (node->x()[dim_] < *plane + 2e-9 && node->x()[dim_] > *plane - 2e-9)
           {
-            std::vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->dof(node);
             double one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -1745,23 +1747,23 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
       togglep_->PutScalar(0.0);
 
       // activate toggles for in plane dofs
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // if we have an inflow channel problem, the nodes outside the inflow discretization are
         // not in the bounding box -> we don't consider them for averaging
-        if (node->X()[0] < (*boundingbox_)(1, 0) + NODETOL and
-            node->X()[1] < (*boundingbox_)(1, 1) + NODETOL and
-            node->X()[2] < (*boundingbox_)(1, 2) + NODETOL and
-            node->X()[0] > (*boundingbox_)(0, 0) - NODETOL and
-            node->X()[1] > (*boundingbox_)(0, 1) - NODETOL and
-            node->X()[2] > (*boundingbox_)(0, 2) - NODETOL)
+        if (node->x()[0] < (*boundingbox_)(1, 0) + NODETOL and
+            node->x()[1] < (*boundingbox_)(1, 1) + NODETOL and
+            node->x()[2] < (*boundingbox_)(1, 2) + NODETOL and
+            node->x()[0] > (*boundingbox_)(0, 0) - NODETOL and
+            node->x()[1] > (*boundingbox_)(0, 1) - NODETOL and
+            node->x()[2] > (*boundingbox_)(0, 2) - NODETOL)
         {
           // this node belongs to the plane under consideration
-          if (node->X()[dim_] < *plane + 2e-9 && node->X()[dim_] > *plane - 2e-9)
+          if (node->x()[dim_] < *plane + 2e-9 && node->x()[dim_] > *plane - 2e-9)
           {
-            std::vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->dof(node);
             double one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -1944,11 +1946,11 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 
   // also set the xwall params if necessary
 
-  if (myxwall_ != Teuchos::null) myxwall_->SetXWallParams(eleparams);
+  if (myxwall_ != Teuchos::null) myxwall_->set_x_wall_params(eleparams);
 
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("u and p (n+1,converged)", meanvelnp_);
   if (alefluid_)
   {
@@ -1958,25 +1960,25 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
   // call loop over elements
   discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
+  discret_->clear_state();
 
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->Comm().SumAll(locarea->data(), globarea->data(), size);
+  discret_->get_comm().SumAll(locarea->data(), globarea->data(), size);
 
-  discret_->Comm().SumAll(locsumu->data(), globsumu->data(), size);
-  discret_->Comm().SumAll(locsumv->data(), globsumv->data(), size);
-  discret_->Comm().SumAll(locsumw->data(), globsumw->data(), size);
-  discret_->Comm().SumAll(locsump->data(), globsump->data(), size);
+  discret_->get_comm().SumAll(locsumu->data(), globsumu->data(), size);
+  discret_->get_comm().SumAll(locsumv->data(), globsumv->data(), size);
+  discret_->get_comm().SumAll(locsumw->data(), globsumw->data(), size);
+  discret_->get_comm().SumAll(locsump->data(), globsump->data(), size);
 
-  discret_->Comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
-  discret_->Comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
-  discret_->Comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
-  discret_->Comm().SumAll(locsumuv->data(), globsumuv->data(), size);
-  discret_->Comm().SumAll(locsumuw->data(), globsumuw->data(), size);
-  discret_->Comm().SumAll(locsumvw->data(), globsumvw->data(), size);
-  discret_->Comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
+  discret_->get_comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
+  discret_->get_comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
+  discret_->get_comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
+  discret_->get_comm().SumAll(locsumuv->data(), globsumuv->data(), size);
+  discret_->get_comm().SumAll(locsumuw->data(), globsumuw->data(), size);
+  discret_->get_comm().SumAll(locsumvw->data(), globsumvw->data(), size);
+  discret_->get_comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
 
 
   //----------------------------------------------------------------------
@@ -1987,7 +1989,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
 
   if (nurbsdis == nullptr)
   {
-    discret_->Comm().SumAll(&locprocessedeles, &numele_, 1);
+    discret_->get_comm().SumAll(&locprocessedeles, &numele_, 1);
   }
   else
   {
@@ -2182,47 +2184,47 @@ void FLD::TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes(
   eleparams.set("eos factor", eosfac);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("u and p (n+1,converged)", meanvelnp_);
   discret_->set_state("scalar (n+1,converged)", meanscanp_);
 
   // call loop over elements
   discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
+  discret_->clear_state();
 
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->Comm().SumAll(locarea->data(), globarea->data(), size);
+  discret_->get_comm().SumAll(locarea->data(), globarea->data(), size);
 
-  discret_->Comm().SumAll(locsumu->data(), globsumu->data(), size);
-  discret_->Comm().SumAll(locsumv->data(), globsumv->data(), size);
-  discret_->Comm().SumAll(locsumw->data(), globsumw->data(), size);
-  discret_->Comm().SumAll(locsump->data(), globsump->data(), size);
-  discret_->Comm().SumAll(locsumrho->data(), globsumrho->data(), size);
-  discret_->Comm().SumAll(locsumT->data(), globsumT->data(), size);
-  discret_->Comm().SumAll(locsumrhou->data(), globsumrhou->data(), size);
-  discret_->Comm().SumAll(locsumrhouT->data(), globsumrhouT->data(), size);
+  discret_->get_comm().SumAll(locsumu->data(), globsumu->data(), size);
+  discret_->get_comm().SumAll(locsumv->data(), globsumv->data(), size);
+  discret_->get_comm().SumAll(locsumw->data(), globsumw->data(), size);
+  discret_->get_comm().SumAll(locsump->data(), globsump->data(), size);
+  discret_->get_comm().SumAll(locsumrho->data(), globsumrho->data(), size);
+  discret_->get_comm().SumAll(locsumT->data(), globsumT->data(), size);
+  discret_->get_comm().SumAll(locsumrhou->data(), globsumrhou->data(), size);
+  discret_->get_comm().SumAll(locsumrhouT->data(), globsumrhouT->data(), size);
 
-  discret_->Comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
-  discret_->Comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
-  discret_->Comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
-  discret_->Comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
-  discret_->Comm().SumAll(locsumsqrho->data(), globsumsqrho->data(), size);
-  discret_->Comm().SumAll(locsumsqT->data(), globsumsqT->data(), size);
+  discret_->get_comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
+  discret_->get_comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
+  discret_->get_comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
+  discret_->get_comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
+  discret_->get_comm().SumAll(locsumsqrho->data(), globsumsqrho->data(), size);
+  discret_->get_comm().SumAll(locsumsqT->data(), globsumsqT->data(), size);
 
-  discret_->Comm().SumAll(locsumuv->data(), globsumuv->data(), size);
-  discret_->Comm().SumAll(locsumuw->data(), globsumuw->data(), size);
-  discret_->Comm().SumAll(locsumvw->data(), globsumvw->data(), size);
-  discret_->Comm().SumAll(locsumuT->data(), globsumuT->data(), size);
-  discret_->Comm().SumAll(locsumvT->data(), globsumvT->data(), size);
-  discret_->Comm().SumAll(locsumwT->data(), globsumwT->data(), size);
+  discret_->get_comm().SumAll(locsumuv->data(), globsumuv->data(), size);
+  discret_->get_comm().SumAll(locsumuw->data(), globsumuw->data(), size);
+  discret_->get_comm().SumAll(locsumvw->data(), globsumvw->data(), size);
+  discret_->get_comm().SumAll(locsumuT->data(), globsumuT->data(), size);
+  discret_->get_comm().SumAll(locsumvT->data(), globsumvT->data(), size);
+  discret_->get_comm().SumAll(locsumwT->data(), globsumwT->data(), size);
 
 
   //----------------------------------------------------------------------
   // the sums are divided by the layers area to get the area average
-  discret_->Comm().SumAll(&locprocessedeles, &numele_, 1);
+  discret_->get_comm().SumAll(&locprocessedeles, &numele_, 1);
 
 
   for (unsigned i = 0; i < planecoordinates_->size(); ++i)
@@ -2397,43 +2399,43 @@ void FLD::TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_plane
   eleparams.set("count processed elements", &locprocessedeles);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("u and p (n+1,converged)", meanvelnp_);
   discret_->set_state("scalar (n+1,converged)", meanscanp_);
 
   // call loop over elements
   discret_->evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
+  discret_->clear_state();
 
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  discret_->Comm().SumAll(locarea->data(), globarea->data(), size);
+  discret_->get_comm().SumAll(locarea->data(), globarea->data(), size);
 
-  discret_->Comm().SumAll(locsumu->data(), globsumu->data(), size);
-  discret_->Comm().SumAll(locsumv->data(), globsumv->data(), size);
-  discret_->Comm().SumAll(locsumw->data(), globsumw->data(), size);
-  discret_->Comm().SumAll(locsump->data(), globsump->data(), size);
-  discret_->Comm().SumAll(locsumphi->data(), globsumphi->data(), size);
+  discret_->get_comm().SumAll(locsumu->data(), globsumu->data(), size);
+  discret_->get_comm().SumAll(locsumv->data(), globsumv->data(), size);
+  discret_->get_comm().SumAll(locsumw->data(), globsumw->data(), size);
+  discret_->get_comm().SumAll(locsump->data(), globsump->data(), size);
+  discret_->get_comm().SumAll(locsumphi->data(), globsumphi->data(), size);
 
-  discret_->Comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
-  discret_->Comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
-  discret_->Comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
-  discret_->Comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
-  discret_->Comm().SumAll(locsumsqphi->data(), globsumsqphi->data(), size);
+  discret_->get_comm().SumAll(locsumsqu->data(), globsumsqu->data(), size);
+  discret_->get_comm().SumAll(locsumsqv->data(), globsumsqv->data(), size);
+  discret_->get_comm().SumAll(locsumsqw->data(), globsumsqw->data(), size);
+  discret_->get_comm().SumAll(locsumsqp->data(), globsumsqp->data(), size);
+  discret_->get_comm().SumAll(locsumsqphi->data(), globsumsqphi->data(), size);
 
-  discret_->Comm().SumAll(locsumuv->data(), globsumuv->data(), size);
-  discret_->Comm().SumAll(locsumuw->data(), globsumuw->data(), size);
-  discret_->Comm().SumAll(locsumvw->data(), globsumvw->data(), size);
-  discret_->Comm().SumAll(locsumuphi->data(), globsumuphi->data(), size);
-  discret_->Comm().SumAll(locsumvphi->data(), globsumvphi->data(), size);
-  discret_->Comm().SumAll(locsumwphi->data(), globsumwphi->data(), size);
+  discret_->get_comm().SumAll(locsumuv->data(), globsumuv->data(), size);
+  discret_->get_comm().SumAll(locsumuw->data(), globsumuw->data(), size);
+  discret_->get_comm().SumAll(locsumvw->data(), globsumvw->data(), size);
+  discret_->get_comm().SumAll(locsumuphi->data(), globsumuphi->data(), size);
+  discret_->get_comm().SumAll(locsumvphi->data(), globsumvphi->data(), size);
+  discret_->get_comm().SumAll(locsumwphi->data(), globsumwphi->data(), size);
 
 
   //----------------------------------------------------------------------
   // the sums are divided by the layers area to get the area average
-  discret_->Comm().SumAll(&locprocessedeles, &numele_, 1);
+  discret_->get_comm().SumAll(&locprocessedeles, &numele_, 1);
 
 
   for (unsigned i = 0; i < planecoordinates_->size(); ++i)
@@ -2503,23 +2505,23 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
     //----------------------------------------------------------------------
     // activate toggles for in plane dofs
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
 
       // if we have an inflow channel problem, the nodes outside the inflow discretization are
       // not in the bounding box -> we don't consider them for averaging
-      if (node->X()[0] < (*boundingbox_)(1, 0) + NODETOL and
-          node->X()[1] < (*boundingbox_)(1, 1) + NODETOL and
-          node->X()[2] < (*boundingbox_)(1, 2) + NODETOL and
-          node->X()[0] > (*boundingbox_)(0, 0) - NODETOL and
-          node->X()[1] > (*boundingbox_)(0, 1) - NODETOL and
-          node->X()[2] > (*boundingbox_)(0, 2) - NODETOL)
+      if (node->x()[0] < (*boundingbox_)(1, 0) + NODETOL and
+          node->x()[1] < (*boundingbox_)(1, 1) + NODETOL and
+          node->x()[2] < (*boundingbox_)(1, 2) + NODETOL and
+          node->x()[0] > (*boundingbox_)(0, 0) - NODETOL and
+          node->x()[1] > (*boundingbox_)(0, 1) - NODETOL and
+          node->x()[2] > (*boundingbox_)(0, 2) - NODETOL)
       {
         // this node belongs to the plane under consideration
-        if (node->X()[dim_] < *plane + 2e-9 && node->X()[dim_] > *plane - 2e-9)
+        if (node->x()[dim_] < *plane + 2e-9 && node->x()[dim_] > *plane - 2e-9)
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -2530,7 +2532,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
           // now check whether we have a pbc condition on this node
           std::vector<Core::Conditions::Condition*> mypbc;
 
-          node->GetCondition("SurfacePeriodic", mypbc);
+          node->get_condition("SurfacePeriodic", mypbc);
 
           // yes, we have a pbc
           if (mypbc.size() > 0)
@@ -2563,7 +2565,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
 
     int countnodesinplaneonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodesinplane, &countnodesinplaneonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodesinplane, &countnodesinplaneonallprocs, 1);
 
     if (countnodesinplaneonallprocs)
     {
@@ -2577,7 +2579,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*toggleu_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsumu_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2585,7 +2587,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*togglev_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsumv_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2593,7 +2595,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*togglew_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsumw_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2601,7 +2603,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*meanvelnp_)[rr] * (*togglep_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsump_)[planenum] += inc / countnodesinplaneonallprocs;
 
         //----------------------------------------------------------------------
@@ -2612,7 +2614,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*toggleu_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsumsqu_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2620,7 +2622,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*togglev_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsumsqv_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2628,7 +2630,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*togglew_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsumsqw_)[planenum] += inc / countnodesinplaneonallprocs;
 
         local_inc = 0.0;
@@ -2636,7 +2638,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_pointwise_mean_values_in_planes()
         {
           local_inc += (*pointsquaredvelnp_)[rr] * (*togglep_)[rr];
         }
-        discret_->Comm().SumAll(&local_inc, &inc, 1);
+        discret_->get_comm().SumAll(&local_inc, &inc, 1);
         (*pointsumsqp_)[planenum] += inc / countnodesinplaneonallprocs;
       }
     }
@@ -2725,19 +2727,21 @@ void FLD::TurbulenceStatisticsCha::add_dynamic_smagorinsky_quantities()
     FOUR_C_THROW("local_Ci_delta_sq_sum==null from parameterlist");
 
   // now add all the stuff from the different processors
-  discret_->Comm().SumAll(local_Cs_sum->data(), global_incr_Cs_sum->data(), local_Cs_sum->size());
-  discret_->Comm().SumAll(local_Cs_delta_sq_sum->data(), global_incr_Cs_delta_sq_sum->data(),
+  discret_->get_comm().SumAll(
+      local_Cs_sum->data(), global_incr_Cs_sum->data(), local_Cs_sum->size());
+  discret_->get_comm().SumAll(local_Cs_delta_sq_sum->data(), global_incr_Cs_delta_sq_sum->data(),
       local_Cs_delta_sq_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_visceff_sum->data(), global_incr_visceff_sum->data(), local_visceff_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_Prt_sum->data(), global_incr_Prt_sum->data(), local_Prt_sum->size());
-  discret_->Comm().SumAll(local_Cs_delta_sq_Prt_sum->data(),
+  discret_->get_comm().SumAll(local_Cs_delta_sq_Prt_sum->data(),
       global_incr_Cs_delta_sq_Prt_sum->data(), local_Cs_delta_sq_Prt_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_diffeff_sum->data(), global_incr_diffeff_sum->data(), local_diffeff_sum->size());
-  discret_->Comm().SumAll(local_Ci_sum->data(), global_incr_Ci_sum->data(), local_Ci_sum->size());
-  discret_->Comm().SumAll(local_Ci_delta_sq_sum->data(), global_incr_Ci_delta_sq_sum->data(),
+  discret_->get_comm().SumAll(
+      local_Ci_sum->data(), global_incr_Ci_sum->data(), local_Ci_sum->size());
+  discret_->get_comm().SumAll(local_Ci_delta_sq_sum->data(), global_incr_Ci_delta_sq_sum->data(),
       local_Ci_delta_sq_sum->size());
 
   // Replace increment to compute average of Smagorinsky Constant, effective
@@ -2846,7 +2850,7 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
   }
 
   // set state vectors for element call
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("velnp", velnp);
   if (fsvelnp == Teuchos::null) FOUR_C_THROW("Haven't got fine-scale velocity!");
   discret_->set_state("fsvelnp", fsvelnp);
@@ -2855,7 +2859,7 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
   discret_->evaluate(
       paramsele, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  discret_->ClearState();
+  discret_->clear_state();
 
   // extract values for N, B, Csgs and sgvisc from parameter list
   // the values are stored in vectors --- each component corresponds to
@@ -2934,29 +2938,29 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
   }
 
   // now add all the stuff from the different processors
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_N_stream_sum->data(), global_incr_N_stream_sum->data(), local_N_stream_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_N_normal_sum->data(), global_incr_N_normal_sum->data(), local_N_normal_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_N_span_sum->data(), global_incr_N_span_sum->data(), local_N_span_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_B_stream_sum->data(), global_incr_B_stream_sum->data(), local_B_stream_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_B_normal_sum->data(), global_incr_B_normal_sum->data(), local_B_normal_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_B_span_sum->data(), global_incr_B_span_sum->data(), local_B_span_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_Csgs_sum->data(), global_incr_Csgs_sum->data(), local_Csgs_sum->size());
-  discret_->Comm().SumAll(
+  discret_->get_comm().SumAll(
       local_sgvisc_sum->data(), global_incr_sgvisc_sum->data(), local_sgvisc_sum->size());
   if (withscatra)
   {
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(
         local_Nphi_sum->data(), global_incr_Nphi_sum->data(), local_Nphi_sum->size());
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(
         local_Dphi_sum->data(), global_incr_Dphi_sum->data(), local_Dphi_sum->size());
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(
         local_Csgs_phi_sum->data(), global_incr_Csgs_phi_sum->data(), local_Csgs_phi_sum->size());
   }
 
@@ -3035,7 +3039,7 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
 }  // FLD::TurbulenceStatisticsCha::add_model_params_multifractal();
 
 
-void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
+void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs,
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
@@ -3078,13 +3082,13 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       discret_->set_state(state->first, state->second);
     }
 
-    if (myxwall_ != Teuchos::null) myxwall_->SetXWallParams(eleparams_);
+    if (myxwall_ != Teuchos::null) myxwall_->set_x_wall_params(eleparams_);
 
     // call loop over elements to compute means
     discret_->evaluate(
         eleparams_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-    discret_->ClearState();
+    discret_->clear_state();
 
     // do we also have a scalar field
     if (scatradiscret_ != Teuchos::null)
@@ -3128,7 +3132,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       scatradiscret_->evaluate(scatraeleparams_, Teuchos::null, Teuchos::null, Teuchos::null,
           Teuchos::null, Teuchos::null);
 
-      scatradiscret_->ClearState();
+      scatradiscret_->clear_state();
     }
 
     // ------------------------------------------------
@@ -3351,66 +3355,71 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     // global sums
 
     // compute global sum, volume
-    discret_->Comm().SumAll(local_vol->data(), global_vol->data(), presize);
+    discret_->get_comm().SumAll(local_vol->data(), global_vol->data(), presize);
 
     // compute global sum, element sizes
-    discret_->Comm().SumAll(local_incrhk->data(), global_incrhk->data(), presize);
+    discret_->get_comm().SumAll(local_incrhk->data(), global_incrhk->data(), presize);
 
     // compute global sum, element sizes in viscous regime, Bazilevs parameter
-    discret_->Comm().SumAll(local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize);
+    discret_->get_comm().SumAll(local_incrhbazilevs->data(), global_incrhbazilevs->data(), presize);
 
     // compute global sum, element sizes
-    discret_->Comm().SumAll(local_incrstrle->data(), global_incrstrle->data(), presize);
+    discret_->get_comm().SumAll(local_incrstrle->data(), global_incrstrle->data(), presize);
 
     // compute global sum, gradient based element sizes
-    discret_->Comm().SumAll(local_incrgradle->data(), global_incrgradle->data(), presize);
+    discret_->get_comm().SumAll(local_incrgradle->data(), global_incrgradle->data(), presize);
 
     // compute global sums, stabilisation parameters
-    discret_->Comm().SumAll(local_incrtauM->data(), global_incrtauM->data(), presize);
-    discret_->Comm().SumAll(local_incrtauC->data(), global_incrtauC->data(), presize);
+    discret_->get_comm().SumAll(local_incrtauM->data(), global_incrtauM->data(), presize);
+    discret_->get_comm().SumAll(local_incrtauC->data(), global_incrtauC->data(), presize);
 
     // compute global sum, mk
-    discret_->Comm().SumAll(local_incrmk->data(), global_incrmk->data(), presize);
+    discret_->get_comm().SumAll(local_incrmk->data(), global_incrmk->data(), presize);
 
     // compute global sums, momentum equation residuals
-    discret_->Comm().SumAll(local_incrres->data(), global_incrres->data(), velsize);
-    discret_->Comm().SumAll(local_incrres_sq->data(), global_incrres_sq->data(), velsize);
-    discret_->Comm().SumAll(local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
-    discret_->Comm().SumAll(local_incrabsres->data(), global_incrabsres->data(), presize);
+    discret_->get_comm().SumAll(local_incrres->data(), global_incrres->data(), velsize);
+    discret_->get_comm().SumAll(local_incrres_sq->data(), global_incrres_sq->data(), velsize);
+    discret_->get_comm().SumAll(
+        local_incrtauinvsvel->data(), global_incrtauinvsvel->data(), velsize);
+    discret_->get_comm().SumAll(local_incrabsres->data(), global_incrabsres->data(), presize);
 
-    discret_->Comm().SumAll(local_incrsvelaf->data(), global_incrsvelaf->data(), velsize);
-    discret_->Comm().SumAll(local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize);
-    discret_->Comm().SumAll(local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize);
+    discret_->get_comm().SumAll(local_incrsvelaf->data(), global_incrsvelaf->data(), velsize);
+    discret_->get_comm().SumAll(local_incrsvelaf_sq->data(), global_incrsvelaf_sq->data(), velsize);
+    discret_->get_comm().SumAll(local_incrabssvelaf->data(), global_incrabssvelaf->data(), presize);
 
     // compute global sums, incompressibility residuals
-    discret_->Comm().SumAll(local_incrresC->data(), global_incrresC->data(), presize);
-    discret_->Comm().SumAll(local_incrresC_sq->data(), global_incrresC_sq->data(), presize);
+    discret_->get_comm().SumAll(local_incrresC->data(), global_incrresC->data(), presize);
+    discret_->get_comm().SumAll(local_incrresC_sq->data(), global_incrresC_sq->data(), presize);
 
-    discret_->Comm().SumAll(local_incrspressnp->data(), global_incrspressnp->data(), presize);
-    discret_->Comm().SumAll(local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
+    discret_->get_comm().SumAll(local_incrspressnp->data(), global_incrspressnp->data(), presize);
+    discret_->get_comm().SumAll(
+        local_incrspressnp_sq->data(), global_incrspressnp_sq->data(), presize);
 
     // compute global sums, disspiation rates
 
-    discret_->Comm().SumAll(local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize);
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(local_incr_eps_pspg->data(), global_incr_eps_pspg->data(), presize);
+    discret_->get_comm().SumAll(local_incr_eps_supg->data(), global_incr_eps_supg->data(), presize);
+    discret_->get_comm().SumAll(
+        local_incr_eps_cross->data(), global_incr_eps_cross->data(), presize);
+    discret_->get_comm().SumAll(local_incr_eps_rey->data(), global_incr_eps_rey->data(), presize);
+    discret_->get_comm().SumAll(
         local_incr_eps_graddiv->data(), global_incr_eps_graddiv->data(), presize);
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(
         local_incr_eps_eddyvisc->data(), global_incr_eps_eddyvisc->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize);
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(local_incr_eps_visc->data(), global_incr_eps_visc->data(), presize);
+    discret_->get_comm().SumAll(local_incr_eps_conv->data(), global_incr_eps_conv->data(), presize);
+    discret_->get_comm().SumAll(local_incr_eps_avm3->data(), global_incr_eps_avm3->data(), presize);
+    discret_->get_comm().SumAll(local_incr_eps_mfs->data(), global_incr_eps_mfs->data(), presize);
+    discret_->get_comm().SumAll(
         local_incr_eps_mfscross->data(), global_incr_eps_mfscross->data(), presize);
-    discret_->Comm().SumAll(local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize);
+    discret_->get_comm().SumAll(
+        local_incr_eps_mfsrey->data(), global_incr_eps_mfsrey->data(), presize);
 
     // compute global sums, subgrid stresses
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(
         local_incrcrossstress->data(), global_incrcrossstress->data(), stresssize);
-    discret_->Comm().SumAll(local_incrreystress->data(), global_incrreystress->data(), stresssize);
+    discret_->get_comm().SumAll(
+        local_incrreystress->data(), global_incrreystress->data(), stresssize);
 
 
     for (int rr = 0; rr < velsize; ++rr)
@@ -3632,37 +3641,37 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       // global sums
 
       // compute global sum, volume
-      discret_->Comm().SumAll(local_scatra_vol->data(), global_scatra_vol->data(), phisize);
+      discret_->get_comm().SumAll(local_scatra_vol->data(), global_scatra_vol->data(), phisize);
 
       // compute global sums, stabilisation parameters
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incrtauS->data(), global_scatra_incrtauS->data(), phisize);
 
       // compute global sums, incompressibility residuals
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incrresS->data(), global_scatra_incrresS->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incrresS_sq->data(), global_scatra_incrresS_sq->data(), phisize);
 
       // compute global sums, disspiation rates
 
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_supg->data(), global_scatra_incr_eps_supg->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_cross->data(), global_scatra_incr_eps_cross->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_rey->data(), global_scatra_incr_eps_rey->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_eddyvisc->data(), global_scatra_incr_eps_eddyvisc->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_visc->data(), global_scatra_incr_eps_visc->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_conv->data(), global_scatra_incr_eps_conv->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_avm3->data(), global_scatra_incr_eps_avm3->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_mfs->data(), global_scatra_incr_eps_mfs->data(), phisize);
-      discret_->Comm().SumAll(
+      discret_->get_comm().SumAll(
           local_scatra_incr_eps_mfsrey->data(), global_scatra_incr_eps_mfsrey->data(), phisize);
 
       for (int rr = 0; rr < presize; ++rr)
@@ -3844,7 +3853,7 @@ void FLD::TurbulenceStatisticsCha::time_average_means_and_output_of_statistics(c
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -4248,7 +4257,7 @@ void FLD::TurbulenceStatisticsCha::time_average_means_and_output_of_statistics(c
        of the sampling period so far. Dump the result to file.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
+void FLD::TurbulenceStatisticsCha::dump_statistics(const int step)
 {
   if (numsamp_ == 0)
   {
@@ -4297,7 +4306,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -4347,7 +4356,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
     log->flush();
   }
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     // ------------------------------------------------------------------
     // additional output for dynamic Smagorinsky model
@@ -4629,7 +4638,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
                       Dump the result to file.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
+void FLD::TurbulenceStatisticsCha::dump_loma_statistics(const int step)
 {
   if (numsamp_ == 0) FOUR_C_THROW("No samples to do time average");
 
@@ -4689,7 +4698,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -5181,7 +5190,7 @@ void FLD::TurbulenceStatisticsCha::dump_scatra_statistics(const int step)
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     if (inflowchannel_)
@@ -5663,7 +5672,7 @@ void FLD::TurbulenceStatisticsCha::dump_scatra_statistics(const int step)
                   Reset sums and number of samples to 0
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::ClearStatistics()
+void FLD::TurbulenceStatisticsCha::clear_statistics()
 {
   // reset the number of samples
   numsamp_ = 0;
@@ -5854,7 +5863,7 @@ void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
   scatraextraparams_ = scatraextraparams;
   scatratimeparams_ = scatratimeparams;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "Additional information:" << std::endl;
     std::cout << "-> added ScaTra discretization to channel-flow-statistics manager\n" << std::endl;
@@ -5864,17 +5873,17 @@ void FLD::TurbulenceStatisticsCha::store_scatra_discret_and_params(
   {
     // get diffusivity from material definition --- for computation
     // of additional mfs-statistics
-    int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_scatra);
+    int id = Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_scatra);
     if (id == -1)
       FOUR_C_THROW("Could not find scatra material");
     else
     {
       const Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance()->Materials()->ParameterById(id);
+          Global::Problem::instance()->materials()->parameter_by_id(id);
       const Mat::PAR::ScatraMat* actmat = static_cast<const Mat::PAR::ScatraMat*>(mat);
 
       double diffus =
-          Mat::PAR::ScatraMat(*actmat).GetParameter(actmat->diff, -1);  // actmat->diffusivity_;
+          Mat::PAR::ScatraMat(*actmat).get_parameter(actmat->diff, -1);  // actmat->diffusivity_;
       // calculate Schmidt number
       // visc is the kinematic viscosity here
       scnum_ = visc_ / diffus;

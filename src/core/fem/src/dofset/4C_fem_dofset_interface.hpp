@@ -64,59 +64,59 @@ namespace Core::DOFSets
     //! @name Public Access Methods
 
     /// Get number of dofs for given node
-    virtual int NumDof(
+    virtual int num_dof(
         const Core::Nodes::Node* node  ///< node, for which you want to know the number of dofs
     ) const = 0;
 
     /// Get number of dofs for given element
-    virtual int NumDof(const Core::Elements::Element*
+    virtual int num_dof(const Core::Elements::Element*
             element  ///< element, for which you want to know the number of dofs
     ) const = 0;
 
     /// get number of nodal dofs
-    virtual int NumDofPerNode(
+    virtual int num_dof_per_node(
         const Core::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const = 0;
 
     /// Get the gid of a dof for given node
-    virtual int Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
+    virtual int dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         int dof  ///< number of dof for which you want the dof position
     ) const = 0;
 
     /// Get the gid of a dof for given element
-    virtual int Dof(
+    virtual int dof(
         const Core::Elements::Element* element,  ///< element, for which you want the dof positions
         int dof                                  ///< number dof for which you want the dof position
     ) const = 0;
 
     /// Get the gid of all dofs of a node
-    virtual std::vector<int> Dof(
+    virtual std::vector<int> dof(
         const Core::Nodes::Node* node  ///< node, for which you want the dof positions
     ) const = 0;
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
+    virtual void dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
         const Core::Nodes::Node* node,       ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const = 0;
 
     /// Get the gid of all dofs of a element
-    virtual std::vector<int> Dof(const Core::Elements::Element* element) const = 0;
+    virtual std::vector<int> dof(const Core::Elements::Element* element) const = 0;
 
     /// Get the gid of all dofs of a node and the location matrix
-    virtual void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const = 0;
+    virtual void dof(const Core::Nodes::Node* node, std::vector<int>& lm) const = 0;
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
+    virtual void dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const = 0;
 
     /// Get the gid of all dofs of a element and the location matrix
-    virtual void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const = 0;
+    virtual void dof(const Core::Elements::Element* element, std::vector<int>& lm) const = 0;
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    virtual void Dof(const Core::Elements::Element*
+    virtual void dof(const Core::Elements::Element*
                          element,  ///< element which provides its expected number of DOFs per node
         const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
@@ -131,38 +131,38 @@ namespace Core::DOFSets
     virtual void print(std::ostream& os) const = 0;
 
     /// Print the dofsets in the static_dofsets_ list
-    virtual void PrintAllDofsets(const Epetra_Comm& comm) const = 0;
+    virtual void print_all_dofsets(const Epetra_Comm& comm) const = 0;
 
     /// Returns true if filled
-    virtual bool Filled() const = 0;
+    virtual bool filled() const = 0;
 
     /// Add Dof Set to list #static_dofsets_
-    virtual void AddDofSettoList() = 0;
+    virtual void add_dof_setto_list() = 0;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
     virtual void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) = 0;
 
     /// Get Number of Global Elements of degree of freedom row map
-    virtual int NumGlobalElements() const = 0;
+    virtual int num_global_elements() const = 0;
 
     /// Get degree of freedom row map
     virtual const Epetra_Map* dof_row_map() const = 0;
 
     /// Get degree of freedom column map
-    virtual const Epetra_Map* DofColMap() const = 0;
+    virtual const Epetra_Map* dof_col_map() const = 0;
 
     /// Get maximum GID of degree of freedom row map
-    virtual int MaxAllGID() const = 0;
+    virtual int max_all_gid() const = 0;
 
     /// Get minimum GID of degree of freedom row map
-    virtual int MinAllGID() const = 0;
+    virtual int min_all_gid() const = 0;
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    virtual int MaxGIDinList(const Epetra_Comm& comm) const = 0;
+    virtual int max_gi_din_list(const Epetra_Comm& comm) const = 0;
 
     /// are the dof maps already initialized?
-    virtual bool Initialized() const = 0;
+    virtual bool initialized() const = 0;
 
     //@}
 
@@ -184,19 +184,19 @@ namespace Core::DOFSets
     /// Proxies need to know about changes to the DofSet.
 
     /// Notify proxies of new dofs
-    virtual void NotifyAssigned() = 0;
+    virtual void notify_assigned() = 0;
 
     /// Notify proxies of reset
-    virtual void NotifyReset() = 0;
+    virtual void notify_reset() = 0;
 
     /// Register new proxy to notify
     virtual void Register(DofSetInterface* dofset) = 0;
 
     /// Remove proxy from list
-    virtual void Unregister(DofSetInterface* dofset) = 0;
+    virtual void unregister(DofSetInterface* dofset) = 0;
 
     /// our original DofSet dies
-    virtual void Disconnect(DofSetInterface* dofset) = 0;
+    virtual void disconnect(DofSetInterface* dofset) = 0;
 
     //@}
 

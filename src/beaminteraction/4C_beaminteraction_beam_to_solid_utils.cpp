@@ -39,8 +39,8 @@ ScalarType BEAMINTERACTION::PenaltyForce(const ScalarType& gap,
     const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params)
 {
   const Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
-      contact_params->GetPenaltyLaw();
-  const double penalty_parameter = contact_params->GetPenaltyParameter();
+      contact_params->get_penalty_law();
+  const double penalty_parameter = contact_params->get_penalty_parameter();
 
   ScalarType penalty_force = 0.0;
 
@@ -85,8 +85,8 @@ ScalarType BEAMINTERACTION::PenaltyPotential(const ScalarType& gap,
     const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params)
 {
   const Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
-      contact_params->GetPenaltyLaw();
-  const double penalty_parameter = contact_params->GetPenaltyParameter();
+      contact_params->get_penalty_law();
+  const double penalty_parameter = contact_params->get_penalty_parameter();
 
   ScalarType penalty_potential = 0.0;
 
@@ -755,11 +755,11 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
     const unsigned int n_mortar_rot)
 {
   // Get the GIDs of the Lagrange multipliers.
-  const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*pair);
+  const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*pair);
 
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  UTILS::GetElementCenterlineGIDIndices(discret, pair->Element1(), beam_centerline_gid);
+  UTILS::GetElementCenterlineGIDIndices(discret, pair->element1(), beam_centerline_gid);
 
   // Get the other GIDs.
   // We call this function on the element pointer of the geometry pair, since for face elements,
@@ -768,23 +768,23 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
   std::vector<int> other_row;
   std::vector<int> dummy_1;
   std::vector<int> dummy_2;
-  pair->GeometryPair()->Element2()->LocationVector(discret, other_row, dummy_1, dummy_2);
+  pair->geometry_pair()->element2()->location_vector(discret, other_row, dummy_1, dummy_2);
 
   // Assemble into the global matrices. All contributions here are assumed to be symmetric.
   for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; ++i_lambda)
   {
     for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; ++i_beam)
     {
-      global_constraint_lin_beam.FEAssemble(
+      global_constraint_lin_beam.fe_assemble(
           local_D(i_lambda, i_beam), lambda_gid_pos[i_lambda], beam_centerline_gid(i_beam));
-      global_force_beam_lin_lambda.FEAssemble(
+      global_force_beam_lin_lambda.fe_assemble(
           local_D(i_lambda, i_beam), beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
     }
     for (unsigned int i_other = 0; i_other < Other::n_dof_; ++i_other)
     {
-      global_constraint_lin_solid.FEAssemble(
+      global_constraint_lin_solid.fe_assemble(
           -local_M(i_lambda, i_other), lambda_gid_pos[i_lambda], other_row[i_other]);
-      global_force_solid_lin_lambda.FEAssemble(
+      global_force_solid_lin_lambda.fe_assemble(
           -local_M(i_lambda, i_other), other_row[i_other], lambda_gid_pos[i_lambda]);
     }
   }

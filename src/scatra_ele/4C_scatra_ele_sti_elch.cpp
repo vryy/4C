@@ -76,7 +76,7 @@ void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::extract_element_and_node_valu
 )
 {
   // extract electrochemistry state vector from discretization
-  const Teuchos::RCP<const Epetra_Vector> elchnp = discretization.GetState(2, "scatra");
+  const Teuchos::RCP<const Epetra_Vector> elchnp = discretization.get_state(2, "scatra");
   if (elchnp == Teuchos::null)
     FOUR_C_THROW("Cannot extract electrochemistry state vector from discretization!");
 

@@ -55,40 +55,40 @@ namespace Core::LinAlg
     );
 
     //! give out Teuchos::RCP to c_ for change
-    Teuchos::RCP<Epetra_MultiVector> GetNonConstKernel();
+    Teuchos::RCP<Epetra_MultiVector> get_non_const_kernel();
 
     //! give out Teuchos::RCP to w_ for change
-    Teuchos::RCP<Epetra_MultiVector> GetNonConstWeights();
+    Teuchos::RCP<Epetra_MultiVector> get_non_const_weights();
     // set c_ and w_ from outside
-    void SetCW(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0,
+    void set_cw(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0,
         const Epetra_BlockMap* newmap);
-    void SetCW(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0);
+    void set_cw(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0);
     //! compute (w^T c)^(-1) and completes projector for use
     void fill_complete();
 
     //! give out projector matrix - build it if not yet built (thus not const)
-    Core::LinAlg::SparseMatrix GetP();
+    Core::LinAlg::SparseMatrix get_p();
 
     //! give out transposed projector matrix - build it if not yet built (thus not const)
-    Core::LinAlg::SparseMatrix GetPT();
+    Core::LinAlg::SparseMatrix get_pt();
 
     //! wrapper for applying projector to vector for iterative solver
-    int ApplyP(Epetra_MultiVector& Y) const;
+    int apply_p(Epetra_MultiVector& Y) const;
 
     //! wrapper for applying transpose of projector to vector for iterative solver
-    int ApplyPT(Epetra_MultiVector& Y) const;
+    int apply_pt(Epetra_MultiVector& Y) const;
 
     //! give out projection P^T A P
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Project(const Core::LinAlg::SparseMatrix& A) const;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> project(const Core::LinAlg::SparseMatrix& A) const;
 
     //! return dimension of nullspace
-    int Nsdim() const { return nsdim_; }
+    int nsdim() const { return nsdim_; }
 
     //! return mode-ids corresponding to element nullspace
-    std::vector<int> Modes() const { return modeids_; }
+    std::vector<int> modes() const { return modeids_; }
 
     //! return type of projection weights: integration or pointvalues
-    const std::string* WeightType() const { return weighttype_; }
+    const std::string* weight_type() const { return weighttype_; }
 
    private:
     //! creates actual projector matrix P (or its transpose) for use in direct solver

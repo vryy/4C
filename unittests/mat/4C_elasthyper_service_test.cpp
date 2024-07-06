@@ -115,7 +115,7 @@ namespace
 
     // Create parameter of IsoNeoHooke material
     Core::IO::InputParameterContainer iso_neo_hooke_data;
-    iso_neo_hooke_data.Add("MUE", 1.3);
+    iso_neo_hooke_data.add("MUE", 1.3);
 
     auto iso_neo_hooke_params =
         Mat::make_parameter(1, Core::Materials::MaterialType::mes_isoneohooke, iso_neo_hooke_data);

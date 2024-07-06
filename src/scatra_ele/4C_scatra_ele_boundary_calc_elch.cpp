@@ -28,10 +28,10 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::ScaTraEleBoundar
       my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname),
 
       // instance of parameter class for electrochemistry problems
-      elchparams_(Discret::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),
+      elchparams_(Discret::ELEMENTS::ScaTraEleParameterElch::instance(disname)),
 
       // instance of utility class supporting element evaluation
-      utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
+      utils_(ScaTraEleUtilsElch<distype>::instance(numdofpernode, numscal, disname))
 {
 }
 
@@ -146,11 +146,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
   }
 
   // access input parameter
-  const double frt = elchparams_->FRT();
+  const double frt = elchparams_->frt();
 
   // get control parameter from parameter list
-  const bool is_stationary = my::scatraparamstimint_->IsStationary();
-  const double time = my::scatraparamstimint_->Time();
+  const bool is_stationary = my::scatraparamstimint_->is_stationary();
+  const double time = my::scatraparamstimint_->time();
   double timefac = 1.0;
   double rhsfac = 1.0;
   // find out whether we shell use a time curve and get the factor
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
   if (curvenum >= 0)
   {
     const double curvefac =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
+        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
             time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
@@ -172,16 +172,16 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
       // One-step-Theta:    timefac = theta*dt
       // BDF2:              timefac = 2/3 * dt
       // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-      timefac = my::scatraparamstimint_->TimeFac();
+      timefac = my::scatraparamstimint_->time_fac();
       if (timefac < 0.0) FOUR_C_THROW("time factor is negative.");
       // for correct scaling of rhs contribution (see below)
-      rhsfac = 1 / my::scatraparamstimint_->AlphaF();
+      rhsfac = 1 / my::scatraparamstimint_->alpha_f();
     }
 
     if (zerocur == 0)
     {
       evaluate_elch_boundary_kinetics(ele, elemat1_epetra, elevec1_epetra, my::ephinp_, ehist,
-          timefac, ele->parent_element()->Material(), cond, nume, *stoich, kinetics, pot0, frt,
+          timefac, ele->parent_element()->material(), cond, nume, *stoich, kinetics, pot0, frt,
           scalar);
     }
 
@@ -203,7 +203,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
       // One-step-Theta:    timefacrhs = theta*dt
       // BDF2:              timefacrhs = 2/3 * dt
       // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
-      timefac = my::scatraparamstimint_->TimeFacRhs();
+      timefac = my::scatraparamstimint_->time_fac_rhs();
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
@@ -257,15 +257,15 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
           (*stoich).size(), my::numscal_);
 
     // access input parameter
-    const double frt = elchparams_->FRT();
+    const double frt = elchparams_->frt();
 
-    const double time = my::scatraparamstimint_->Time();
+    const double time = my::scatraparamstimint_->time();
 
     if (curvenum >= 0)
     {
-      const double curvefac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
-              time);
+      const double curvefac = Global::Problem::instance()
+                                  ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                                  .evaluate(time);
       // adjust potential at metal side accordingly
       pot0 *= curvefac;
     }
@@ -284,7 +284,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
        *----------------------------------------------------------------------*/
       const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
-      for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+      for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
       {
         const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
@@ -343,7 +343,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_cell_v
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_int_fac(intpoints, iquad);
@@ -393,7 +393,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype,
 )
 {
   // for pre-multiplication of i0 with 1/(F z_k)
-  const double faraday = elchparams_->Faraday();
+  const double faraday = elchparams_->faraday();
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -419,7 +419,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype,
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
      *----------------------------------------------------------------------*/
-    for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+    for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
     {
       const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
@@ -500,7 +500,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_el
     statistics = true;
 
     // loop over integration points
-    for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+    for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
     {
       const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 

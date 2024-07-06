@@ -43,7 +43,7 @@ namespace FLD
     \brief Do time integration (time loop)
 
     */
-    void TimeLoop() override;
+    void time_loop() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -81,7 +81,7 @@ namespace FLD
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    void SetStateTimInt() override;
+    void set_state_tim_int() override;
 
     /*!
     \brief Calculate time derivatives for
@@ -99,19 +99,19 @@ namespace FLD
     \brief Set gamma to a value
 
     */
-    void SetGamma(Teuchos::ParameterList& eleparams) override;
+    void set_gamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    void Sep_Multiply() override;
+    void sep_multiply() override;
 
     /*!
     \brief Output of filtered velocity
 
     */
-    void OutputofFilteredVel(
+    void outputof_filtered_vel(
         Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
 
     /*!
@@ -127,7 +127,7 @@ namespace FLD
     \brief return scheme-specific time integration parameter
 
     */
-    double TimIntParam() const override;
+    double tim_int_param() const override;
 
     /*!
     \brief return scaling factor for the residual

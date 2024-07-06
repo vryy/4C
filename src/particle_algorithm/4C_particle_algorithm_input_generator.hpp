@@ -83,7 +83,7 @@ namespace PARTICLEALGORITHM
      *
      * \param[out] particlesgenerated particle objects generated
      */
-    void GenerateParticles(
+    void generate_particles(
         std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particlesgenerated) const;
 
    protected:

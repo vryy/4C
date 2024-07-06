@@ -69,13 +69,13 @@ void Solid::MODELEVALUATOR::BeamInteractionDataState::setup(
   // safety check
   check_init();
 
-  myrank_ = ia_discret->Comm().MyPID();
+  myrank_ = ia_discret->get_comm().MyPID();
 
   // displacements
   dis_ = Teuchos::rcp(
       new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->dof_row_map(), true));
-  disnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
-  discolnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->DofColMap()));
+  disnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->dof_col_map()));
+  discolnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->dof_col_map()));
 
   // force
   forcen_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->dof_row_map()));

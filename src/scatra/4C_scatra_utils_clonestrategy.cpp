@@ -51,7 +51,7 @@ void ScaTra::ScatraFluidCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if ((mtype != Core::Materials::m_scatra) && (mtype != Core::Materials::m_sutherland) &&
       (mtype != Core::Materials::m_ion) && (mtype != Core::Materials::m_th_fourier_iso) &&
       (mtype != Core::Materials::m_thermostvenant) && (mtype != Core::Materials::m_matlist) &&
@@ -78,8 +78,8 @@ void ScaTra::ScatraFluidCloneStrategy::set_element_data(
   Discret::ELEMENTS::Transport* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
-    trans->SetMaterial(matid, oldele);
-    trans->SetDisType(oldele->Shape());  // set distype as well!
+    trans->set_material(matid, oldele);
+    trans->set_dis_type(oldele->shape());  // set distype as well!
   }
   else
   {
@@ -127,7 +127,7 @@ void ScaTra::ScatraReactionCloneStrategy::check_material_type(const int matid)
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if ((mtype != Core::Materials::m_scatra) && (mtype != Core::Materials::m_matlist) &&
       (mtype != Core::Materials::m_matlist_reactions))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
@@ -148,8 +148,8 @@ void ScaTra::ScatraReactionCloneStrategy::set_element_data(
   Discret::ELEMENTS::Transport* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
-    trans->SetMaterial(matid, oldele);
-    trans->SetDisType(oldele->Shape());  // set distype as well!
+    trans->set_material(matid, oldele);
+    trans->set_dis_type(oldele->shape());  // set distype as well!
   }
   else
   {

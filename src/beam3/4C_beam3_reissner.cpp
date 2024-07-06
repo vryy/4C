@@ -32,11 +32,11 @@ Discret::ELEMENTS::Beam3rType Discret::ELEMENTS::Beam3rType::instance_;
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Discret::ELEMENTS::Beam3rType& Discret::ELEMENTS::Beam3rType::Instance() { return instance_; }
+Discret::ELEMENTS::Beam3rType& Discret::ELEMENTS::Beam3rType::instance() { return instance_; }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Beam3rType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Beam3rType::create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Beam3r* object = new Discret::ELEMENTS::Beam3r(-1, -1);
   object->unpack(data);
@@ -45,7 +45,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Beam3rType::Create(const std:
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3R")
@@ -59,7 +59,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::Create(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::Beam3rType::nodal_block_information(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3rType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3rType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -181,15 +181,15 @@ void Discret::ELEMENTS::Beam3rType::setup_element_definition(
 int Discret::ELEMENTS::Beam3rType::initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for beam3r elements
-  for (int num = 0; num < dis.NumMyColElements(); ++num)
+  for (int num = 0; num < dis.num_my_col_elements(); ++num)
   {
     /* in case that current element is not a beam3r element there is nothing to do and we go back
      * to the head of the loop*/
-    if (dis.lColElement(num)->ElementType() != *this) continue;
+    if (dis.l_col_element(num)->element_type() != *this) continue;
 
     // if we get so far current element is a beam3r element and we get a pointer at it
     Discret::ELEMENTS::Beam3r* currele =
-        dynamic_cast<Discret::ELEMENTS::Beam3r*>(dis.lColElement(num));
+        dynamic_cast<Discret::ELEMENTS::Beam3r*>(dis.l_col_element(num));
     if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
     // reference node position
@@ -218,29 +218,29 @@ int Discret::ELEMENTS::Beam3rType::initialize(Core::FE::Discretization& dis)
      *       is computed from the reference triads, i.e. rotrefe*/
     for (int node = 0; node < nnodetriad; node++)
       for (int dim = 0; dim < 3; dim++)
-        rotrefe[node * 3 + dim] = currele->InitialNodalRotVecs()[node](dim);
+        rotrefe[node * 3 + dim] = currele->initial_nodal_rot_vecs()[node](dim);
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
         Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
     periodic_boundingbox->init(
-        Global::Problem::Instance()->binning_strategy_params());  // no setup() call needed here
+        Global::Problem::instance()->binning_strategy_params());  // no setup() call needed here
 
     std::vector<double> disp_shift;
-    int numdof = currele->NumDofPerNode(*(currele->Nodes()[0]));
+    int numdof = currele->num_dof_per_node(*(currele->nodes()[0]));
     disp_shift.resize(numdof * nnodecl);
     for (unsigned int i = 0; i < disp_shift.size(); ++i) disp_shift[i] = 0.0;
-    if (periodic_boundingbox->HavePBC())
-      currele->UnShiftNodePosition(disp_shift, *periodic_boundingbox);
+    if (periodic_boundingbox->have_pbc())
+      currele->un_shift_node_position(disp_shift, *periodic_boundingbox);
 
     for (int node = 0; node < nnodecl; ++node)
     {
-      if (currele->Nodes()[node] == nullptr)
+      if (currele->nodes()[node] == nullptr)
         FOUR_C_THROW("beam3r: Cannot get nodes in order to compute reference configuration");
 
       for (unsigned int dim = 0; dim < 3; ++dim)
-        xrefe[node * 3 + dim] = currele->Nodes()[node]->X()[dim] + disp_shift[node * numdof + dim];
+        xrefe[node * 3 + dim] = currele->nodes()[node]->x()[dim] + disp_shift[node * numdof + dim];
     }
 
     // set_up_reference_geometry is a templated function
@@ -375,7 +375,7 @@ Discret::ELEMENTS::Beam3r::Beam3r(const Discret::ELEMENTS::Beam3r& old)
  |  Deep copy this instance of Beam3r and return pointer to it (public) |
  |                                                            cyron 01/08 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Beam3r::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Beam3r::clone() const
 {
   Discret::ELEMENTS::Beam3r* newelement = new Discret::ELEMENTS::Beam3r(*this);
   return newelement;
@@ -397,7 +397,7 @@ void Discret::ELEMENTS::Beam3r::print(std::ostream& os) const
  |                                                             (public) |
  |                                                          cyron 01/08 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Beam3r::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Beam3r::shape() const
 {
   int numnodes = num_node();
   switch (numnodes)
@@ -429,7 +429,7 @@ void Discret::ELEMENTS::Beam3r::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Beam3Base::pack(data);
@@ -480,7 +480,7 @@ void Discret::ELEMENTS::Beam3r::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -559,7 +559,7 @@ void Discret::ELEMENTS::Beam3r::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Beam3r::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Beam3r::lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -567,10 +567,10 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Beam3r::Li
 /*----------------------------------------------------------------------*
  | determine Gauss rule from purpose and interpolation scheme grill 03/16|
  *----------------------------------------------------------------------*/
-Core::FE::GaussRule1D Discret::ELEMENTS::Beam3r::MyGaussRule(
+Core::FE::GaussRule1D Discret::ELEMENTS::Beam3r::my_gauss_rule(
     const IntegrationPurpose intpurpose) const
 {
-  const Core::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->shape();
 
   switch (intpurpose)
   {
@@ -797,7 +797,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
             new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
     // Get DiscretizationType
-    Core::FE::CellType distype = Shape();
+    Core::FE::CellType distype = shape();
 
     /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
      * the vectors store individual shape functions, NOT an assembled matrix of shape functions) */
@@ -895,7 +895,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     //***************************
 
     // Get the applied integration scheme
-    Core::FE::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+    Core::FE::IntegrationPoints1D gausspoints_elast_force(my_gauss_rule(res_elastic_force));
 
     jacobi_gp_elastf_.resize(gausspoints_elast_force.nquad);
     gammaref_gp_.resize(gausspoints_elast_force.nquad);
@@ -906,7 +906,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
     Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
-        gausspoints_elast_force, H_i_xi, distype, this->RefLength());
+        gausspoints_elast_force, H_i_xi, distype, this->ref_length());
 
 
     // assure correct size of strain and stress resultant class variables and fill them
@@ -959,7 +959,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     //***************************
 
     // Get the applied integration scheme
-    Core::FE::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+    Core::FE::IntegrationPoints1D gausspoints_elast_moment(my_gauss_rule(res_elastic_moment));
 
     jacobi_gp_elastm_.resize(gausspoints_elast_moment.nquad);
     kref_gp_.resize(gausspoints_elast_moment.nquad);
@@ -974,7 +974,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad, 1>(
         gausspoints_elast_moment, I_i, I_i_xi, distype);
     Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
-        gausspoints_elast_moment, H_i_xi, distype, this->RefLength());
+        gausspoints_elast_moment, H_i_xi, distype, this->ref_length());
 
     // assure correct size of strain and stress resultant class variables and fill them
     // with zeros (by definition, the reference configuration is undeformed and stress-free)
@@ -1031,7 +1031,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    Core::FE::GaussRule1D gaussrule_inertia = MyGaussRule(res_inertia);
+    Core::FE::GaussRule1D gaussrule_inertia = my_gauss_rule(res_inertia);
     Core::FE::IntegrationPoints1D gausspoints_inertia(gaussrule_inertia);
 
     // these quantities will later be used mainly for calculation of inertia terms -> named 'mass'
@@ -1060,7 +1060,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
     Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
-        gausspoints_inertia, H_i, H_i_xi, distype, this->RefLength());
+        gausspoints_inertia, H_i, H_i_xi, distype, this->ref_length());
 
     // Loop through all GPs for exact integration and compute initial jacobi determinant
     for (int numgp = 0; numgp < gausspoints_inertia.nquad; numgp++)
@@ -1102,8 +1102,8 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // Get the applied integration scheme
     Core::FE::GaussRule1D gaussrule_damp_stoch =
-        MyGaussRule(res_damp_stoch);  // TODO reuse/copy quantities if same integration scheme has
-                                      // been applied above
+        my_gauss_rule(res_damp_stoch);  // TODO reuse/copy quantities if same integration scheme has
+                                        // been applied above
     Core::FE::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
 
     // these quantities will later be used mainly for calculation of damping/stochastic terms ->
@@ -1118,7 +1118,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
     Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
-        gausspoints_damp_stoch, H_i_xi, distype, this->RefLength());
+        gausspoints_damp_stoch, H_i_xi, distype, this->ref_length());
 
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_damp_stoch.nquad; numgp++)
@@ -1141,7 +1141,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
      *****************************************************************************************************/
 
     // Get the applied integration scheme
-    Core::FE::GaussRule1D gaussrule_neumann = MyGaussRule(neumann_lineload);
+    Core::FE::GaussRule1D gaussrule_neumann = my_gauss_rule(neumann_lineload);
     Core::FE::IntegrationPoints1D gausspoints_neumann(gaussrule_neumann);
 
     // these quantities will later be used for calculation of Neumann lineloads
@@ -1153,7 +1153,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
     Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
-        gausspoints_neumann, H_i_xi, distype, this->RefLength());
+        gausspoints_neumann, H_i_xi, distype, this->ref_length());
 
     // Loop through all GPs
     for (int numgp = 0; numgp < gausspoints_neumann.nquad; numgp++)
@@ -1170,11 +1170,11 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3r::GetPosAtXi(
+void Discret::ELEMENTS::Beam3r::get_pos_at_xi(
     Core::LinAlg::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
-  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodecl = this->num_centerline_nodes();
   const unsigned int nnodetriad = this->num_node();
 
   std::vector<double> disp_centerline(3 * numnodalvalues * nnodecl, 0.0);
@@ -1237,33 +1237,33 @@ void Discret::ELEMENTS::Beam3r::GetPosAtXi(
   return;
 }
 
-double Discret::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
+double Discret::ELEMENTS::Beam3r::get_jacobi_fac_at_xi(const double& xi) const
 {
   double jacfac = 0.0;
 
-  switch (this->NumCenterlineNodes())
+  switch (this->num_centerline_nodes())
   {
     case 2:
     {
       if (this->hermite_centerline_interpolation())
-        jacfac = this->GetJacobiFacAtXi<2, 2>(xi);
+        jacfac = this->get_jacobi_fac_at_xi<2, 2>(xi);
       else
-        jacfac = this->GetJacobiFacAtXi<2, 1>(xi);
+        jacfac = this->get_jacobi_fac_at_xi<2, 1>(xi);
       break;
     }
     case 3:
     {
-      jacfac = this->GetJacobiFacAtXi<3, 1>(xi);
+      jacfac = this->get_jacobi_fac_at_xi<3, 1>(xi);
       break;
     }
     case 4:
     {
-      jacfac = this->GetJacobiFacAtXi<4, 1>(xi);
+      jacfac = this->get_jacobi_fac_at_xi<4, 1>(xi);
       break;
     }
     case 5:
     {
-      jacfac = this->GetJacobiFacAtXi<5, 1>(xi);
+      jacfac = this->get_jacobi_fac_at_xi<5, 1>(xi);
       break;
     }
     default:
@@ -1273,11 +1273,11 @@ double Discret::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
   return jacfac;
 }
 
-void Discret::ELEMENTS::Beam3r::GetTriadAtXi(
+void Discret::ELEMENTS::Beam3r::get_triad_at_xi(
     Core::LinAlg::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
-  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodecl = this->num_centerline_nodes();
   const unsigned int nnodetriad = this->num_node();
 
   std::vector<Core::LinAlg::Matrix<3, 1, double>> nodal_rotvecs(nnodetriad);
@@ -1309,25 +1309,25 @@ void Discret::ELEMENTS::Beam3r::GetTriadAtXi(
     case 2:
     {
       get_nodal_triads_from_disp_theta<2, double>(nodal_rotvecs, Qnode);
-      this->GetTriadAtXi<2, double>(triad, xi, Qnode);
+      this->get_triad_at_xi<2, double>(triad, xi, Qnode);
       break;
     }
     case 3:
     {
       get_nodal_triads_from_disp_theta<3, double>(nodal_rotvecs, Qnode);
-      this->GetTriadAtXi<3, double>(triad, xi, Qnode);
+      this->get_triad_at_xi<3, double>(triad, xi, Qnode);
       break;
     }
     case 4:
     {
       get_nodal_triads_from_disp_theta<4, double>(nodal_rotvecs, Qnode);
-      this->GetTriadAtXi<4, double>(triad, xi, Qnode);
+      this->get_triad_at_xi<4, double>(triad, xi, Qnode);
       break;
     }
     case 5:
     {
       get_nodal_triads_from_disp_theta<5, double>(nodal_rotvecs, Qnode);
-      this->GetTriadAtXi<5, double>(triad, xi, Qnode);
+      this->get_triad_at_xi<5, double>(triad, xi, Qnode);
       break;
     }
     default:
@@ -1342,7 +1342,7 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_
     Core::LinAlg::SerialDenseMatrix& Ivar, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
-  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodecl = this->num_centerline_nodes();
   const unsigned int nnodetriad = this->num_node();
 
   // safety check
@@ -1432,9 +1432,9 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_
   // (either cubic Hermite or Lagrange polynomials of order 1...5)
   Core::LinAlg::Matrix<1, vpernode * nnodecl, double> H_i;
 
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodetriad, 1>(xi, I_i, this->Shape());
+  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodetriad, 1>(xi, I_i, this->shape());
   Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
-      xi, H_i, this->Shape(), this->RefLength());
+      xi, H_i, this->shape(), this->ref_length());
 
   Ivar.clear();
 
@@ -1460,7 +1460,7 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_
     Core::LinAlg::SerialDenseMatrix& Iinc, const double& xi, const std::vector<double>& disp) const
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
-  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodecl = this->num_centerline_nodes();
   const unsigned int nnodetriad = this->num_node();
 
   // safety check
@@ -1548,7 +1548,7 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_
   Core::LinAlg::Matrix<1, vpernode * nnodecl, double> H_i;
 
   Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
-      xi, H_i, this->Shape(), this->RefLength());
+      xi, H_i, this->shape(), this->ref_length());
 
   // nodal triads in form of quaternions
   std::vector<Core::LinAlg::Matrix<4, 1, double>> Qnode(nnodetriad);
@@ -1727,7 +1727,7 @@ void Discret::ELEMENTS::Beam3r::extract_centerline_dof_values_from_element_state
     bool add_reference_values) const
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
-  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodecl = this->num_centerline_nodes();
 
   dofvec_centerline.resize(3 * vpernode * nnodecl, 0.0);
 
@@ -1906,7 +1906,7 @@ void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_full_disp_vec_or_from_disp
     const std::vector<T>& dispvec, std::vector<Core::LinAlg::Matrix<4, 1, T>>& Qnode) const
 {
   const unsigned int vpernode = this->hermite_centerline_interpolation() ? 2 : 1;
-  const unsigned int nnodecl = this->NumCenterlineNodes();
+  const unsigned int nnodecl = this->num_centerline_nodes();
 
   std::vector<Core::LinAlg::Matrix<3, 1, double>> nodal_rotvecs(nnodetriad);
 

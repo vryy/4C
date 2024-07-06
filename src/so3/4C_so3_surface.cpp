@@ -18,12 +18,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::StructuralSurfaceType Discret::ELEMENTS::StructuralSurfaceType::instance_;
 
-Discret::ELEMENTS::StructuralSurfaceType& Discret::ELEMENTS::StructuralSurfaceType::Instance()
+Discret::ELEMENTS::StructuralSurfaceType& Discret::ELEMENTS::StructuralSurfaceType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::StructuralSurfaceType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::StructuralSurfaceType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::StructuralSurface(-1, -1);
@@ -31,7 +31,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::StructuralSurfaceType::Create
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralSurfaceType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralSurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralSurface( id, owner ) );
@@ -49,18 +49,20 @@ Discret::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int n
       numdofpernode_(-1),
       gaussrule_(Core::FE::GaussRule2D::undefined)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lsurface);
 
-  numdofpernode_ = ParentMasterElement()->NumDofPerNode(*Nodes()[0]);
+  numdofpernode_ = parent_master_element()->num_dof_per_node(*StructuralSurface::nodes()[0]);
   // Safety check if all nodes have the same number of dofs!
   for (int nlid = 1; nlid < num_node(); ++nlid)
   {
-    if (numdofpernode_ != ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
+    if (numdofpernode_ !=
+        parent_master_element()->num_dof_per_node(*StructuralSurface::nodes()[nlid]))
       FOUR_C_THROW(
           "You need different NumDofPerNode for each node on this structural surface? (%d != %d)",
-          numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
+          numdofpernode_,
+          parent_master_element()->num_dof_per_node(*StructuralSurface::nodes()[nlid]));
   }
 
   set_distype();
@@ -97,7 +99,7 @@ Discret::ELEMENTS::StructuralSurface::StructuralSurface(
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 04/08|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::StructuralSurface::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::StructuralSurface::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::StructuralSurface(*this);
   return newelement;
@@ -107,7 +109,7 @@ Core::Elements::Element* Discret::ELEMENTS::StructuralSurface::Clone() const
  |                                                             (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::StructuralSurface::Shape() const { return distype_; }
+Core::FE::CellType Discret::ELEMENTS::StructuralSurface::shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -118,7 +120,7 @@ void Discret::ELEMENTS::StructuralSurface::pack(Core::Communication::PackBuffer&
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Core::Elements::FaceElement
   Core::Elements::FaceElement::pack(data);
@@ -139,7 +141,7 @@ void Discret::ELEMENTS::StructuralSurface::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
@@ -170,7 +172,7 @@ void Discret::ELEMENTS::StructuralSurface::print(std::ostream& os) const
   return;
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::StructuralSurface::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::StructuralSurface::lines()
 {
   return Core::Communication::ElementBoundaryFactory<Discret::ELEMENTS::StructuralLine,
       Discret::ELEMENTS::StructuralSurface>(Core::Communication::buildLines, *this);
@@ -178,9 +180,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Structural
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralSurface::NumLine() const
+int Discret::ELEMENTS::StructuralSurface::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(Shape());
+  return Core::FE::getNumberOfElementLines(shape());
 }
 
 /*------------------------------------------------------------------------*
@@ -189,9 +191,9 @@ int Discret::ELEMENTS::StructuralSurface::NumLine() const
 void Discret::ELEMENTS::StructuralSurface::set_distype()
 {
   // if NURBS elements:
-  if (ParentMasterElement()->Shape() == Core::FE::CellType::nurbs8)
+  if (parent_master_element()->shape() == Core::FE::CellType::nurbs8)
     distype_ = Core::FE::CellType::nurbs4;
-  else if (ParentMasterElement()->Shape() == Core::FE::CellType::nurbs27)
+  else if (parent_master_element()->shape() == Core::FE::CellType::nurbs27)
     distype_ = Core::FE::CellType::nurbs9;
   // Lagrange elements:
   else
@@ -203,9 +205,9 @@ void Discret::ELEMENTS::StructuralSurface::set_distype()
         break;
       case 6:
       {
-        if (ParentMasterElement()->Shape() == Core::FE::CellType::tet10)
+        if (parent_master_element()->shape() == Core::FE::CellType::tet10)
           distype_ = Core::FE::CellType::tri6;
-        else if (ParentMasterElement()->Shape() == Core::FE::CellType::hex18)
+        else if (parent_master_element()->shape() == Core::FE::CellType::hex18)
           distype_ = Core::FE::CellType::quad6;
         else
         {
@@ -236,7 +238,7 @@ void Discret::ELEMENTS::StructuralSurface::set_distype()
 void Discret::ELEMENTS::StructuralSurface::set_gaussrule()
 {
   // type of gaussian integration
-  switch (Shape())
+  switch (shape())
   {
     case Core::FE::CellType::tri3:
       gaussrule_ = Core::FE::GaussRule2D::tri_3point;

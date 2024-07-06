@@ -55,7 +55,7 @@ void FLD::TimIntOneStepTheta::init()
 
   set_element_time_parameter();
 
-  CompleteGeneralInit();
+  complete_general_init();
 }
 
 
@@ -92,7 +92,7 @@ void FLD::TimIntOneStepTheta::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::SetStateTimInt()
+void FLD::TimIntOneStepTheta::set_state_tim_int()
 {
   discret_->set_state("velaf", velnp_);
   if (params_->get<bool>("ost new"))
@@ -130,7 +130,7 @@ void FLD::TimIntOneStepTheta::calculate_acceleration(const Teuchos::RCP<const Ep
 /*----------------------------------------------------------------------*
 | set gamma                                                    bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::SetGamma(Teuchos::ParameterList& eleparams)
+void FLD::TimIntOneStepTheta::set_gamma(Teuchos::ParameterList& eleparams)
 {
   eleparams.set("gamma", theta_);
 }
@@ -138,12 +138,12 @@ void FLD::TimIntOneStepTheta::SetGamma(Teuchos::ParameterList& eleparams)
 /*----------------------------------------------------------------------*
 | scale separation                                             bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::Sep_Multiply() { Sep_->Multiply(false, *velnp_, *fsvelaf_); }
+void FLD::TimIntOneStepTheta::sep_multiply() { Sep_->multiply(false, *velnp_, *fsvelaf_); }
 
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::OutputofFilteredVel(
+void FLD::TimIntOneStepTheta::outputof_filtered_vel(
     Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -152,7 +152,7 @@ void FLD::TimIntOneStepTheta::OutputofFilteredVel(
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
-    Sep_->Multiply(false, *velnp_, *row_finescaleveltmp);
+    Sep_->multiply(false, *velnp_, *row_finescaleveltmp);
   else
     FOUR_C_THROW("Unknown separation type!");
 
@@ -192,7 +192,7 @@ void FLD::TimIntOneStepTheta::set_element_time_parameter()
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
-void FLD::TimIntOneStepTheta::SetTheta()
+void FLD::TimIntOneStepTheta::set_theta()
 {
   // starting algorithm, sets theta = 1.0 for starting steps.
   if (startalgo_)
@@ -221,7 +221,7 @@ void FLD::TimIntOneStepTheta::SetTheta()
 /*----------------------------------------------------------------------*
 | apply external forces to the fluid                      ghamm 12/2014 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext)
+void FLD::TimIntOneStepTheta::apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext)
 {
   // initialize external force for t_n
   if (step_ <= numstasteps_)
@@ -270,7 +270,7 @@ void FLD::TimIntOneStepTheta::read_restart(int step)
   FLD::FluidImplicitTimeInt::read_restart(step);
 
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
   // check whether external forces were written
   const int have_fexternal = reader.read_int("have_fexternal");
   if (have_fexternal != -1)

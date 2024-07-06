@@ -43,17 +43,17 @@ void Core::Nodes::ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nod
       coordinateSystemDirections[pair.first][inode] = pair.second;
     }
 
-    for (std::size_t fiberid = 0; fiberid < fiberNodes[inode]->Fibers().size(); ++fiberid)
+    for (std::size_t fiberid = 0; fiberid < fiberNodes[inode]->fibers().size(); ++fiberid)
     {
       if (inode == 0)
       {
         // The first node has to create the array of fibers for each node
         fibers.emplace_back(std::array<std::array<double, 3>, nen>());
       }
-      fibers[fiberid][inode] = fiberNodes[inode]->Fibers()[fiberid];
+      fibers[fiberid][inode] = fiberNodes[inode]->fibers()[fiberid];
     }
 
-    for (const auto& pair : fiberNodes[inode]->Angles())
+    for (const auto& pair : fiberNodes[inode]->angles())
     {
       angles[pair.first][inode] = pair.second;
     }

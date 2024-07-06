@@ -61,7 +61,7 @@ namespace Discret
 
      public:
       //! Singleton access method
-      static PoroFluidMultiPhaseEleCalc<distype>* Instance(
+      static PoroFluidMultiPhaseEleCalc<distype>* instance(
           const int numdofpernode, const std::string& disname);
 
       /*========================================================================*/

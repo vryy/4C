@@ -31,11 +31,11 @@ GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::GeometryPairLi
   // need this vector for segmentation e.t.c.
   int myrank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  if (element1->Owner() != myrank)
+  if (element1->owner() != myrank)
     FOUR_C_THROW(
         "The GeometryPairLineToVolume pair has to be on the same processor as the line element! "
         "Currently the pair is on rank %d, the line element on %d!",
-        myrank, element1->Owner());
+        myrank, element1->owner());
 }
 
 
@@ -43,7 +43,7 @@ GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::GeometryPairLi
  *
  */
 template <typename ScalarType, typename Line, typename Volume>
-void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::ProjectPointToOther(
+void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::project_point_to_other(
     const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
     const ElementData<Volume, ScalarType>& element_data_volume,
     Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result) const

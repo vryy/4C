@@ -56,12 +56,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams::setup()
 
   // Teuchos parameter lists from input file.
   const Teuchos::ParameterList& beam_to_solid_volume_meshtying_visualization_output_paramslist =
-      Global::Problem::Instance()
+      Global::Problem::instance()
           ->beam_interaction_params()
           .sublist("BEAM TO SOLID SURFACE")
           .sublist("RUNTIME VTK OUTPUT");
   const Teuchos::ParameterList& global_visualization_output_paramslist =
-      Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT");
+      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT");
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");

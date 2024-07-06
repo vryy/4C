@@ -186,10 +186,10 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 10/16 */
-    Core::Nodes::Node* gINode(const int& gid) const;
+    Core::Nodes::Node* g_i_node(const int& gid) const;
 
     /// access the interface node row map
-    const Epetra_Map* INodeRowMap() const;
+    const Epetra_Map* i_node_row_map() const;
 
     /** \brief get the number of DoF's of the given interface node
      *
@@ -200,27 +200,27 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 10/16 */
-    int INumDof(const Core::Nodes::Node* inode) const;
+    int i_num_dof(const Core::Nodes::Node* inode) const;
 
     /// get the number of standard DoF's of the discretization
-    int INumStandardDof() const;
+    int i_num_standard_dof() const;
 
 
-    int IDof(const Core::Nodes::Node* inode, int dof) const;
+    int i_dof(const Core::Nodes::Node* inode, int dof) const;
 
-    void IDof(const Core::Nodes::Node* inode, std::vector<int>& dofs) const;
+    void i_dof(const Core::Nodes::Node* inode, std::vector<int>& dofs) const;
 
-    void IDof(std::vector<int>& dof, Core::Nodes::Node* inode, unsigned nodaldofset_id,
+    void i_dof(std::vector<int>& dof, Core::Nodes::Node* inode, unsigned nodaldofset_id,
         const Core::Elements::Element* element) const;
 
     /// @}
 
-    const Core::LinAlg::MultiMapExtractor& SlDofMapExtractor(enum FieldName field) const
+    const Core::LinAlg::MultiMapExtractor& sl_dof_map_extractor(enum FieldName field) const
     {
       return sl_map_extractor(slave_id(field), map_dofs);
     }
 
-    Teuchos::RCP<const Epetra_Map> NodeRowMap(
+    Teuchos::RCP<const Epetra_Map> node_row_map(
         enum FieldName field, enum MultiField::BlockType block) const;
 
     /** \brief return TRUE if the given global node id corresponds to an
@@ -228,10 +228,10 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    bool IsInterfaceNode(const int& ngid) const;
+    bool is_interface_node(const int& ngid) const;
 
     /// Access the full maps
-    const Teuchos::RCP<const Epetra_Map>& FullMap(enum MapType map_type = map_dofs) const;
+    const Teuchos::RCP<const Epetra_Map>& full_map(enum MapType map_type = map_dofs) const;
 
     /// @name Extract vector routines
     /// @{
@@ -319,13 +319,13 @@ namespace XFEM
     void insert_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
         enum MapType map_type = map_dofs) const;
 
-    inline void InsertElementVector(
+    inline void insert_element_vector(
         const Epetra_MultiVector& partial, enum FieldName field, Epetra_MultiVector& full) const
     {
-      InsertElementVector(partial, slave_id(field), full);
+      insert_element_vector(partial, slave_id(field), full);
     }
 
-    void InsertElementVector(
+    void insert_element_vector(
         const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const;
     /// @}
 
@@ -365,28 +365,28 @@ namespace XFEM
     void add_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
         double scale, enum MapType map_type = map_dofs) const;
 
-    inline void AddElementVector(const Epetra_MultiVector& partial, enum FieldName field,
+    inline void add_element_vector(const Epetra_MultiVector& partial, enum FieldName field,
         Epetra_MultiVector& full, double scale) const
     {
-      AddElementVector(partial, slave_id(field), full, scale);
+      add_element_vector(partial, slave_id(field), full, scale);
     }
 
-    void AddElementVector(
+    void add_element_vector(
         const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const;
     /// @}
 
     /// @name Add a partial system-matrix to the full matrix
     /// @{
-    inline void AddMatrix(const Core::LinAlg::SparseOperator& partial_mat, enum FieldName field,
+    inline void add_matrix(const Core::LinAlg::SparseOperator& partial_mat, enum FieldName field,
         Core::LinAlg::SparseOperator& full_mat, double scale)
     {
-      AddMatrix(partial_mat, slave_id(field), full_mat, scale);
+      add_matrix(partial_mat, slave_id(field), full_mat, scale);
     }
 
-    void AddMatrix(const Core::LinAlg::SparseOperator& partial_mat, int block,
+    void add_matrix(const Core::LinAlg::SparseOperator& partial_mat, int block,
         Core::LinAlg::SparseOperator& full_mat, double scale);
 
-    void AddMatrix(const Core::LinAlg::BlockSparseMatrixBase& partial_mat, int block,
+    void add_matrix(const Core::LinAlg::BlockSparseMatrixBase& partial_mat, int block,
         Core::LinAlg::SparseMatrix& full_mat, double scale);
 
     /// @}
@@ -625,7 +625,7 @@ namespace XFEM
       return *(interface_couplings_[dis_id]);
     }
 
-    inline const Epetra_Comm& comm() const
+    inline const Epetra_Comm& get_comm() const
     {
       if (comm_.is_null()) FOUR_C_THROW("The Epetra_Comm object has not been initialized!");
 

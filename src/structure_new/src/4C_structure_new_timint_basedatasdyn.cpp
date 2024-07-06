@@ -186,9 +186,9 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     itermax_ = sdynparams.get<int>("MAXITER");
     loadlin_ = (Core::UTILS::IntegralValue<int>(sdynparams, "LOADLIN") == 1);
     prestresstime_ =
-        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+        Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     prestresstype_ = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
-        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+        Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
     prestress_displacement_tolerance_ = sdynparams.get<double>("PRESTRESSTOLDISP");
     prestress_min_number_of_load_steps_ = sdynparams.get<int>("PRESTRESSMINLOADSTEPS");
     predtype_ = Core::UTILS::IntegralValue<Inpar::Solid::PredEnum>(sdynparams, "PREDICT");
@@ -231,18 +231,18 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     toltype_inco_ = Inpar::Solid::convnorm_abs;
 
     tol_plast_res_ =
-        Global::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLPLASTCONSTR");
+        Global::Problem::instance()->semi_smooth_plast_params().get<double>("TOLPLASTCONSTR");
     toltype_plast_res_ = Inpar::Solid::convnorm_abs;
 
     tol_plast_incr_ =
-        Global::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLDELTALP");
+        Global::Problem::instance()->semi_smooth_plast_params().get<double>("TOLDELTALP");
     toltype_plast_incr_ = Inpar::Solid::convnorm_abs;
 
-    tol_eas_res_ = Global::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLEASRES");
+    tol_eas_res_ = Global::Problem::instance()->semi_smooth_plast_params().get<double>("TOLEASRES");
     toltype_eas_res_ = Inpar::Solid::convnorm_abs;
 
     tol_eas_incr_ =
-        Global::Problem::Instance()->semi_smooth_plast_params().get<double>("TOLEASINCR");
+        Global::Problem::instance()->semi_smooth_plast_params().get<double>("TOLEASINCR");
     toltype_eas_incr_ = Inpar::Solid::convnorm_abs;
 
     normcombo_disp_pres_ =
@@ -250,13 +250,13 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     normcombo_fres_inco_ =
         Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO");
     normcombo_fres_plast_res_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_RESFPLASTCONSTR");
+        Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_RESFPLASTCONSTR");
     normcombo_disp_plast_incr_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_DISPPLASTINCR");
+        Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_DISPPLASTINCR");
     normcombo_fres_eas_res_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_EASRES");
+        Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_EASRES");
     normcombo_disp_eas_incr_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::Instance()->semi_smooth_plast_params(), "NORMCOMBI_EASINCR");
+        Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_EASINCR");
     normcombo_fres_disp_ =
         Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP");
 
@@ -270,27 +270,27 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     toltype_constr_incr_ = Inpar::Solid::convnorm_abs;
 
     tol_cardvasc0d_res_ =
-        Global::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
+        Global::Problem::instance()->cardiovascular0_d_structural_params().get<double>(
             "TOL_CARDVASC0D_RES");
     toltype_cardvasc0d_res_ = Inpar::Solid::convnorm_abs;
 
     tol_cardvasc0d_incr_ =
-        Global::Problem::Instance()->cardiovascular0_d_structural_params().get<double>(
+        Global::Problem::instance()->cardiovascular0_d_structural_params().get<double>(
             "TOL_CARDVASC0D_DOFINCR");
     toltype_cardvasc0d_incr_ = Inpar::Solid::convnorm_abs;
 
     tol_contact_res_ =
-        Global::Problem::Instance()->contact_dynamic_params().get<double>("TOLCONTCONSTR");
+        Global::Problem::instance()->contact_dynamic_params().get<double>("TOLCONTCONSTR");
     toltype_contact_res_ = Inpar::Solid::convnorm_abs;
 
     tol_contact_lm_incr_ =
-        Global::Problem::Instance()->contact_dynamic_params().get<double>("TOLLAGR");
+        Global::Problem::instance()->contact_dynamic_params().get<double>("TOLLAGR");
     toltype_contact_lm_incr_ = Inpar::Solid::convnorm_abs;
 
     normcombo_fres_contact_res_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::Instance()->contact_dynamic_params(), "NORMCOMBI_RESFCONTCONSTR");
+        Global::Problem::instance()->contact_dynamic_params(), "NORMCOMBI_RESFCONTCONSTR");
     normcombo_disp_contact_lm_incr_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
-        Global::Problem::Instance()->contact_dynamic_params(), "NORMCOMBI_DISPLAGR");
+        Global::Problem::instance()->contact_dynamic_params(), "NORMCOMBI_DISPLAGR");
   }
 
   {
@@ -328,14 +328,15 @@ void Solid::TimeInt::BaseDataSDyn::setup()
       case Inpar::Solid::model_browniandyn:
       {
         periodic_boundingbox_ = Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
-        periodic_boundingbox_->init(Global::Problem::Instance()->binning_strategy_params());
+        periodic_boundingbox_->init(Global::Problem::instance()->binning_strategy_params());
         Teuchos::RCP<Core::FE::Discretization> boundingbox_dis =
-            Global::Problem::Instance()->DoesExistDis("boundingbox")
-                ? Global::Problem::Instance()->GetDis("boundingbox")
+            Global::Problem::instance()->does_exist_dis("boundingbox")
+                ? Global::Problem::instance()->get_dis("boundingbox")
                 : Teuchos::null;
-        periodic_boundingbox_->setup(Global::Problem::Instance()->IOParams(), boundingbox_dis,
-            *Global::Problem::Instance()->GetCommunicators()->GlobalComm(),
-            Global::Problem::Instance()->NDim(), *Global::Problem::Instance()->OutputControlFile());
+        periodic_boundingbox_->setup(Global::Problem::instance()->io_params(), boundingbox_dis,
+            *Global::Problem::instance()->get_communicators()->global_comm(),
+            Global::Problem::instance()->n_dim(),
+            *Global::Problem::instance()->output_control_file());
         break;
       }
       default:
@@ -352,7 +353,7 @@ void Solid::TimeInt::BaseDataSDyn::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::TimeInt::BaseDataSDyn::GetResTolerance(
+double Solid::TimeInt::BaseDataSDyn::get_res_tolerance(
     const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
   check_init_setup();
@@ -395,7 +396,7 @@ double Solid::TimeInt::BaseDataSDyn::GetResTolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::TimeInt::BaseDataSDyn::GetIncrTolerance(
+double Solid::TimeInt::BaseDataSDyn::get_incr_tolerance(
     const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
   check_init_setup();
@@ -438,7 +439,7 @@ double Solid::TimeInt::BaseDataSDyn::GetIncrTolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::ConvNorm Solid::TimeInt::BaseDataSDyn::GetResToleranceType(
+enum Inpar::Solid::ConvNorm Solid::TimeInt::BaseDataSDyn::get_res_tolerance_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
   check_init_setup();
@@ -524,16 +525,16 @@ enum Inpar::Solid::ConvNorm Solid::TimeInt::BaseDataSDyn::get_incr_tolerance_typ
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetResComboType(
+enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::get_res_combo_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
-  return GetResComboType(NOX::Nln::StatusTest::quantity_structure, qtype);
+  return get_res_combo_type(NOX::Nln::StatusTest::quantity_structure, qtype);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetResComboType(
+enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::get_res_combo_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype_1,
     const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const
 {
@@ -600,16 +601,16 @@ enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetResComboType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetIncrComboType(
+enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::get_incr_combo_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
-  return GetIncrComboType(NOX::Nln::StatusTest::quantity_structure, qtype);
+  return get_incr_combo_type(NOX::Nln::StatusTest::quantity_structure, qtype);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetIncrComboType(
+enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::get_incr_combo_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype_1,
     const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const
 {
@@ -676,7 +677,7 @@ enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetIncrComboType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetResIncrComboType(
+enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::get_res_incr_combo_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype_res,
     const enum NOX::Nln::StatusTest::QuantityType& qtype_incr) const
 {
@@ -698,15 +699,15 @@ enum Inpar::Solid::BinaryOp Solid::TimeInt::BaseDataSDyn::GetResIncrComboType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::TimeInt::BaseDataSDyn::HaveModelType(const Inpar::Solid::ModelType& modeltype) const
+bool Solid::TimeInt::BaseDataSDyn::have_model_type(const Inpar::Solid::ModelType& modeltype) const
 {
   check_init_setup();
-  return (GetModelTypes().find(modeltype) != GetModelTypes().end());
+  return (get_model_types().find(modeltype) != get_model_types().end());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::TimeInt::BaseDataSDyn::HaveEleTech(const Inpar::Solid::EleTech& eletech) const
+bool Solid::TimeInt::BaseDataSDyn::have_ele_tech(const Inpar::Solid::EleTech& eletech) const
 {
   check_init_setup();
   return (get_element_technologies().find(eletech) != get_element_technologies().end());
@@ -785,7 +786,7 @@ void Solid::TimeInt::ExplEulerDataSDyn::setup()
 
   modexpleuler_ =
       (Core::UTILS::IntegralValue<int>(
-           Global::Problem::Instance()->structural_dynamic_params(), "MODIFIEDEXPLEULER") == 1);
+           Global::Problem::instance()->structural_dynamic_params(), "MODIFIEDEXPLEULER") == 1);
 
   issetup_ = true;
 }

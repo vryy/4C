@@ -50,8 +50,8 @@ namespace Core::LinearSolver
      * \param newmap (in): row map of nullspace upon exit
      * \param solveparams (in): parameterlist including nullspace vector
      */
-    static void FixNullSpace(std::string field, const Epetra_Map& oldmap, const Epetra_Map& newmap,
-        Teuchos::ParameterList& solveparams);
+    static void fix_null_space(std::string field, const Epetra_Map& oldmap,
+        const Epetra_Map& newmap, Teuchos::ParameterList& solveparams);
 
     /*!
      * \brief Extract nullspace from 4C-provided ML list and convert to Xpetra::MultiVector

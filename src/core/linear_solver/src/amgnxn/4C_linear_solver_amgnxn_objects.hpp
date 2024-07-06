@@ -27,31 +27,31 @@ namespace Core::LinearSolver::AMGNxN
    public:
     BlockedVector(int size) : vectors_(size, Teuchos::null) {}
 
-    bool HasOnlyOneBlock() const { return vectors_.size() == 1; }
+    bool has_only_one_block() const { return vectors_.size() == 1; }
 
-    int GetNumBlocks() const { return vectors_.size(); }
+    int get_num_blocks() const { return vectors_.size(); }
 
-    Teuchos::RCP<Epetra_MultiVector> GetVector(int i) const { return vectors_[i]; }
+    Teuchos::RCP<Epetra_MultiVector> get_vector(int i) const { return vectors_[i]; }
 
-    void SetVector(Teuchos::RCP<Epetra_MultiVector> V, int i)
+    void set_vector(Teuchos::RCP<Epetra_MultiVector> V, int i)
     {
       vectors_[i] = V;
       return;
     }
 
-    BlockedVector GetBlockedVector(const std::vector<int>& blocks) const;
+    BlockedVector get_blocked_vector(const std::vector<int>& blocks) const;
 
-    Teuchos::RCP<BlockedVector> GetBlockedVectorRCP(const std::vector<int>& blocks) const;
+    Teuchos::RCP<BlockedVector> get_blocked_vector_rcp(const std::vector<int>& blocks) const;
 
-    void Update(double a_V, const BlockedVector& V, double a_this);
+    void update(double a_V, const BlockedVector& V, double a_this);
 
-    void PutScalar(double a);
+    void put_scalar(double a);
 
-    BlockedVector DeepCopy() const;
+    BlockedVector deep_copy() const;
 
-    Teuchos::RCP<BlockedVector> DeepCopyRCP() const;
+    Teuchos::RCP<BlockedVector> deep_copy_rcp() const;
 
-    Teuchos::RCP<BlockedVector> NewRCP(bool ZeroIt = false) const;
+    Teuchos::RCP<BlockedVector> new_rcp(bool ZeroIt = false) const;
 
    private:
     std::vector<Teuchos::RCP<Epetra_MultiVector>> vectors_;
@@ -71,39 +71,39 @@ namespace Core::LinearSolver::AMGNxN
     {
     }
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrix(int i, int j) const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix(int i, int j) const
     {
-      return matrices_[i * GetNumCols() + j];
+      return matrices_[i * get_num_cols() + j];
     }  // Row major order
 
-    virtual void SetMatrix(Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int i, int j)
+    virtual void set_matrix(Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int i, int j)
     {
-      matrices_[i * GetNumCols() + j] = A;
+      matrices_[i * get_num_cols() + j] = A;
       return;
     }
 
-    Teuchos::RCP<BlockedMatrix> GetBlockedMatrixRCP(
+    Teuchos::RCP<BlockedMatrix> get_blocked_matrix_rcp(
         const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const
     {
-      return Teuchos::rcp(new BlockedMatrix(GetBlockedMatrix(row_blocks, col_blocks)));
+      return Teuchos::rcp(new BlockedMatrix(get_blocked_matrix(row_blocks, col_blocks)));
     }
 
-    virtual BlockedMatrix GetBlockedMatrix(
+    virtual BlockedMatrix get_blocked_matrix(
         const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const;
 
 
-    virtual void Apply(const BlockedVector& in, BlockedVector& out) const;
+    virtual void apply(const BlockedVector& in, BlockedVector& out) const;
 
-    bool HasOnlyOneBlock() const { return GetNumRows() * GetNumCols() == 1; }
+    bool has_only_one_block() const { return get_num_rows() * get_num_cols() == 1; }
 
-    int GetNumRows() const { return rows_; }
+    int get_num_rows() const { return rows_; }
 
-    int GetNumCols() const { return cols_; }
+    int get_num_cols() const { return cols_; }
 
     virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> get_block_sparse_matrix(
         Core::LinAlg::DataAccess access);
 
-    void ParseBlocks(const std::string& block_string, const std::vector<int>& blocks,
+    void parse_blocks(const std::string& block_string, const std::vector<int>& blocks,
         std::vector<std::vector<int>>& superblocks_to_blocks,
         std::vector<std::vector<int>>& superblocks_to_blocks_local);
 
@@ -128,19 +128,19 @@ namespace Core::LinearSolver::AMGNxN
       cols_ = rows;
     }
 
-    void SetMatrix(Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int i, int j) override
+    void set_matrix(Teuchos::RCP<Core::LinAlg::SparseMatrix> A, int i, int j) override
     {
       if (i != j) FOUR_C_THROW("You can only set diagonal blocks");
       matrices_[i] = A;
     }
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrix(int i, int j) const override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix(int i, int j) const override
     {
       if (i != j) FOUR_C_THROW("You can only get diagonal blocks");
       return matrices_[i];
     }
 
-    BlockedMatrix GetBlockedMatrix(
+    BlockedMatrix get_blocked_matrix(
         const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const override
     {
       FOUR_C_THROW("Function not implemented yet.");
@@ -153,7 +153,7 @@ namespace Core::LinearSolver::AMGNxN
       return Teuchos::null;
     }
 
-    void Apply(const BlockedVector& in, BlockedVector& out) const override;
+    void apply(const BlockedVector& in, BlockedVector& out) const override;
 
     Teuchos::RCP<BlockedVector> new_domain_blocked_vector(
         int NV, bool ZeroIt = false) const override;

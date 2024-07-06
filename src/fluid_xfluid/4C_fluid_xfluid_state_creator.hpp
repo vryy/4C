@@ -91,7 +91,7 @@ namespace FLD
     }
 
     /// create a state-object after a cut (pure XFEM fluid)
-    Teuchos::RCP<XFluidState> Create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
+    Teuchos::RCP<XFluidState> create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                          xdiscret,  //!< xfluid background discretization
         Teuchos::RCP<const Epetra_Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
@@ -101,7 +101,7 @@ namespace FLD
     );
 
     /// create a state-object after a cut (XFEM fluid with embedded fluid mesh)
-    Teuchos::RCP<XFluidFluidState> Create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
+    Teuchos::RCP<XFluidFluidState> create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                               xdiscret,  //!< xfluid background discretization
         const Teuchos::RCP<Core::FE::Discretization>&
             embfluiddiscret,  //!< embedded fluid discretization

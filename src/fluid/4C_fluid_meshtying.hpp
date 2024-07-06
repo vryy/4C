@@ -78,7 +78,7 @@ namespace FLD
         int nsd,                                                ///> number space dimensions
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
-    const Epetra_Map* GetMergedMap();
+    const Epetra_Map* get_merged_map();
     virtual ~Meshtying() = default;
 
     //! Set up mesh-tying framework
@@ -88,7 +88,7 @@ namespace FLD
 
     //! Applied Dirichlet values are adapted on the slave side of the internal interface
     //! in order to avoid an over-constraint problem setup
-    void CheckOverlappingBC(Teuchos::RCP<Epetra_Map> map  ///> map of boundary condition
+    void check_overlapping_bc(Teuchos::RCP<Epetra_Map> map  ///> map of boundary condition
     );
 
     //! Old routine handling Dirichlet conditions on the master side of the internal interface
@@ -99,7 +99,7 @@ namespace FLD
     );
 
     //! Check whether Dirichlet BC are defined on the master
-    void DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
+    void dirichlet_on_master(Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
     );
 
     //! Preparation for including Dirichlet conditions in the condensation process
@@ -113,8 +113,8 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector>& dispnp);  ///> current ALE displacement vector
 
     //! Prepare matrix, shapederivatives and residual for meshtying
-    void PrepareMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>&
-                              sysmat,  ///> sysmat established by the element routine
+    void prepare_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>&
+                               sysmat,  ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&
             residual,                              ///> residual established by the element routine
         const Teuchos::RCP<Epetra_Vector>& velnp,  ///> current ALE displacement vector
@@ -130,12 +130,12 @@ namespace FLD
 
     //! The residual has another length in case of bmat_merged --> residual has to be calculated in
     //! split form
-    void ApplyPTToResidual(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
+    void apply_pt_to_residual(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
         Teuchos::RCP<Epetra_Vector> residual,
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
     //! Solve mesh-tying problem (including ALE case)
-    void SolveMeshtying(Core::LinAlg::Solver& solver,
+    void solve_meshtying(Core::LinAlg::Solver& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
         const Teuchos::RCP<Epetra_Vector>& incvel, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& velnp, const int itnum,
@@ -145,20 +145,20 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> adapt_krylov_projector(Teuchos::RCP<Epetra_Vector> vec);
 
     //! Output: maps & projection matrix
-    void OutputSetUp();
+    void output_set_up();
 
     //! Output: split sparse matrix
     void output_sparse_matrix_split(Teuchos::RCP<Core::LinAlg::SparseOperator> conmat);
 
     //! Output: single blocks of the block matrix
-    void OutputBlockMatrix(Teuchos::RCP<Core::LinAlg::SparseOperator> blockmatrix,
+    void output_block_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> blockmatrix,
         Teuchos::RCP<Epetra_Vector> residual);
 
     //! Output: split vector
-    void OutputVectorSplit(Teuchos::RCP<Epetra_Vector> vector);
+    void output_vector_split(Teuchos::RCP<Epetra_Vector> vector);
 
     //! Analyze system matrix
-    void AnalyzeMatrix(
+    void analyze_matrix(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
 
     //! Replace matrix entries
@@ -167,11 +167,11 @@ namespace FLD
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
 
     //! Compute and update the increments of the slave node (including ALE case)
-    void UpdateSlaveDOF(
+    void update_slave_dof(
         const Teuchos::RCP<Epetra_Vector>& inc, const Teuchos::RCP<Epetra_Vector>& velnp);
 
     //! Set the flag for multifield problems
-    void IsMultifield(Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
+    void is_multifield(Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
         const Core::LinAlg::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
         const Core::LinAlg::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
@@ -185,14 +185,14 @@ namespace FLD
     );
 
     //! Use the split of the fluid mesh tying for the sysmat
-    void MshtSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
+    void msht_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
         Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
 
     //! Use the split of the fluid mesh tying for the shape derivatives
-    void MshtSplitShape(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
+    void msht_split_shape(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
 
     //! Use the split of the multifield problem for the sysmat
-    void MultifieldSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
+    void multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
     //! Use the split of the multifield problem for the shape derivatives
     void multifield_split_shape(

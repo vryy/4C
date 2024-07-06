@@ -23,16 +23,16 @@ Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
     const int numdofpernode, const int numscal, const std::string& disname)
     : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname),
-      elchparams_(Discret::ELEMENTS::ScaTraEleParameterElch::Instance(
+      elchparams_(Discret::ELEMENTS::ScaTraEleParameterElch::instance(
           disname)),  // parameter class for electrochemistry problems
       utils_(
-          Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
+          Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::instance(numdofpernode, numscal, disname))
 {
   // replace standard scatra diffusion manager by elch diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElch(my::numscal_));
 
   // safety check
-  if (not my::scatraparatimint_->IsIncremental())
+  if (not my::scatraparatimint_->is_incremental())
     FOUR_C_THROW(
         "Since the ion-transport equations are non-linear, it can be solved only incrementally!!");
 }
@@ -97,7 +97,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
   std::vector<Core::LinAlg::Matrix<nen_, 1>> tauderpot(
       my::numscal_, Core::LinAlg::Matrix<nen_, 1>(true));
 
-  if (not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
+  if (not my::scatrapara_->mat_gp() or not my::scatrapara_->tau_gp())
   {
     // set internal variables at element center
     set_internal_variables_for_mat_and_rhs();
@@ -105,7 +105,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
     // material parameters at element center
     get_material_params(ele, densn, densnp, densam, visc);
 
-    if (not my::scatrapara_->TauGP()) prepare_stabilization(tau, tauderpot, densnp, vol);
+    if (not my::scatrapara_->tau_gp()) prepare_stabilization(tau, tauderpot, densnp, vol);
   }
 
   //----------------------------------------------------------------------
@@ -115,7 +115,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -124,26 +124,26 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::sysmat(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (my::scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
+    if (my::scatrapara_->mat_gp()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     //-------------------------------------------------------------------------------------
     // calculate stabilization parameters (one per transported scalar) at integration point
     //-------------------------------------------------------------------------------------
-    if (my::scatrapara_->TauGP()) prepare_stabilization(tau, tauderpot, densnp, vol);
+    if (my::scatrapara_->tau_gp()) prepare_stabilization(tau, tauderpot, densnp, vol);
 
     //-----------------------------------------------------------------------------------
     // calculate contributions to element matrix and right-hand side at integration point
     //-----------------------------------------------------------------------------------
-    const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
-    const double rhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
+    const double timefacfac = my::scatraparatimint_->time_fac() * fac;
+    const double rhsfac = my::scatraparatimint_->time_fac_rhs() * fac;
 
     // loop all scalars
     // deal with a system of transported scalars
     for (int k = 0; k < my::numscal_; ++k)
     {
       const double taufac = tau[k] * fac;
-      const double timetaufac = my::scatraparatimint_->TimeFac() * taufac;
-      const double rhstaufac = my::scatraparatimint_->TimeFacRhsTau() * taufac;
+      const double timetaufac = my::scatraparatimint_->time_fac() * taufac;
+      const double rhstaufac = my::scatraparatimint_->time_fac_rhs_tau() * taufac;
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -184,7 +184,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_mat_pot_equ_en
       //
       // electroneutrality condition (only derivative w.r.t. concentration c_k)
       emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
-          alphaf * diff_manager()->GetValence(k) * fac * my::funct_(vi) * my::funct_(ui);
+          alphaf * diff_manager()->get_valence(k) * fac * my::funct_(vi) * my::funct_(ui);
     }
   }
 }
@@ -206,7 +206,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_rhs_pot_equ_en
     // electroneutrality condition
     // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
-        diff_manager()->GetValence(k) * fac * my::funct_(vi) * conint;
+        diff_manager()->get_valence(k) * fac * my::funct_(vi) * conint;
   }
 }
 

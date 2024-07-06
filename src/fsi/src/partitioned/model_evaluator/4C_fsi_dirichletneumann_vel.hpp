@@ -63,7 +63,7 @@ namespace FSI
      *
      *  \param[in] interface Our interface to NOX
      */
-    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override;
+    void timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface) override;
 
     /** \brief Here we decide which type of coupling we are going to use
      *
@@ -79,7 +79,7 @@ namespace FSI
     void output() override;
 
     /// Set the binning object for the presort strategy in the FBI constraint enforcer
-    void SetBinning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
+    void set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
 
    protected:
     /** \brief interface fluid operator

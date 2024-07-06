@@ -129,14 +129,14 @@ namespace Core::IO
      *
      * @param resultname (in) Name of the owner field in the visualization file
      */
-    void AppendElementOwner(const std::string resultname);
+    void append_element_owner(const std::string resultname);
 
     /**
      * \brief Write the 4C internal element GIDs for each element
      *
      * @param resultname (in) Name of the field in the visualization file
      */
-    void AppendElementGID(const std::string& resultname);
+    void append_element_gid(const std::string& resultname);
 
     /**
      * \brief Write ghosting information to the elements
@@ -150,12 +150,12 @@ namespace Core::IO
      *
      * @param resultname (in) Name of the field in the visualization file
      */
-    void AppendNodeGID(const std::string& resultname);
+    void append_node_gid(const std::string& resultname);
 
     /**
      * \brief Write the visualization files to disk
      */
-    void WriteToDisk(const double visualization_time, const int visualization_step);
+    void write_to_disk(const double visualization_time, const int visualization_step);
 
    private:
     /** \brief Determine and set geometry data from elements based on reference configuration

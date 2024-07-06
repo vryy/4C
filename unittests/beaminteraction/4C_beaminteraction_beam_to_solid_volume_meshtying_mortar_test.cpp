@@ -61,7 +61,7 @@ namespace
       const int dummy_node_ids[2] = {0, 1};
       Teuchos::RCP<Core::Elements::Element> beam_element =
           Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0));
-      beam_element->SetNodeIds(2, dummy_node_ids);
+      beam_element->set_node_ids(2, dummy_node_ids);
       Teuchos::RCP<Core::Elements::Element> solid_element =
           Teuchos::rcp(new Discret::ELEMENTS::SoHex8(1, 0));
 
@@ -84,7 +84,7 @@ namespace
       std::vector<const Core::Elements::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
-      contact_pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
+      contact_pair.create_geometry_pair(pair_elements[0], pair_elements[1], evaluation_data_);
       contact_pair.init(Teuchos::null, pair_elements);
 
       // Evaluate the local matrices.

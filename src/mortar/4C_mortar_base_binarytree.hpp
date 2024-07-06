@@ -70,19 +70,19 @@ namespace Mortar
     \brief Calculate slabs of dop
 
     */
-    void CalculateSlabsDop() override;
+    void calculate_slabs_dop() override;
 
     /*!
     \brief Update slabs of current tree node in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps) override = 0;
+    void update_slabs_bottom_up(double& eps) override = 0;
 
     /*!
     \brief Enlarge geometry of a tree node by an offset, dependent on size
 
     */
-    void EnlargeGeometry(double& enlarge) override;
+    void enlarge_geometry(double& enlarge) override;
     //@}
 
     //! @name Print methods
@@ -92,13 +92,13 @@ namespace Mortar
     \brief Print type of tree node to std::cout
 
     */
-    virtual void PrintType() = 0;
+    virtual void print_type() = 0;
 
     /*!
     \brief Print slabs to std::cout
 
     */
-    void PrintSlabs();
+    void print_slabs();
     //@}
 
     //! @name Visualization methods (GMSH)
@@ -111,26 +111,26 @@ namespace Mortar
     \param filename     filename to which tree nodes are plotted
 
     */
-    void PrintDopsForGmsh(std::string filename);
+    void print_dops_for_gmsh(std::string filename);
 
     /*!
     \brief Plot a point in GMSH to given file
 
     */
-    void PlotGmshPoint(std::string filename, double* position0, int nr);
+    void plot_gmsh_point(std::string filename, double* position0, int nr);
 
     /*!
     \brief Plot a quadrangle in GMSH to given file
 
     */
-    void PlotGmshQuadrangle(std::string filename, double* position0, double* position1,
+    void plot_gmsh_quadrangle(std::string filename, double* position0, double* position1,
         double* position2, double* position3);
 
     /*!
     \brief Plot a triangle in GMSH to given file
 
     */
-    void PlotGmshTriangle(
+    void plot_gmsh_triangle(
         std::string filename, double* position0, double* position1, double* position2);
     //@}
 
@@ -140,7 +140,7 @@ namespace Mortar
     \brief Return dim of Problem
 
     */
-    const int& dim() const { return dim_; }
+    const int& n_dim() const { return dim_; }
 
     /*!
     \brief Get discretization of the interface
@@ -254,7 +254,7 @@ namespace Mortar
     \brief Return dim of the problem
 
     */
-    const int& dim() const { return dim_; }
+    const int& n_dim() const { return dim_; }
 
     /*!
     \brief Get discretization of the interface

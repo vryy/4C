@@ -26,14 +26,14 @@ FOUR_C_NAMESPACE_OPEN
 
 void Discret::ELEMENTS::SoHex8::soh8_homog(Teuchos::ParameterList& params)
 {
-  if (Global::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (Global::Problem::instance(0)->get_communicators()->sub_comm()->MyPID() == owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh8_weights();
 
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
     {
-      const double density = Material()->Density(gp);
+      const double density = material()->density(gp);
       homogdens += detJ_[gp] * weights[gp] * density;
     }
 
@@ -73,10 +73,10 @@ void Discret::ELEMENTS::SoHex8::soh8_set_eas_multi(Teuchos::ParameterList& param
         oldKda == Teuchos::null)
       FOUR_C_THROW("Cannot get EAS internal data from parameter list for multi-scale problems");
 
-    easdata_.alpha = *(*oldalpha)[Id()];
-    easdata_.feas = *(*oldfeas)[Id()];
-    easdata_.invKaa = *(*oldKaainv)[Id()];
-    easdata_.Kda = *(*oldKda)[Id()];
+    easdata_.alpha = *(*oldalpha)[id()];
+    easdata_.feas = *(*oldfeas)[id()];
+    easdata_.invKaa = *(*oldKaainv)[id()];
+    easdata_.Kda = *(*oldKda)[id()];
   }
 }
 
@@ -104,11 +104,11 @@ void Discret::ELEMENTS::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& para
         params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
             "oldKda", Teuchos::null);
 
-    (*lastalpha)[Id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
-    (*oldalpha)[Id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
-    (*oldfeas)[Id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
-    (*oldKaainv)[Id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_));
-    (*oldKda)[Id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, NUMDOF_SOH8));
+    (*lastalpha)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
+    (*oldalpha)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
+    (*oldfeas)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
+    (*oldKaainv)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_));
+    (*oldKda)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, NUMDOF_SOH8));
   }
   return;
 }
@@ -119,14 +119,14 @@ void Discret::ELEMENTS::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& para
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoHex8::soh8_read_restart_multi()
 {
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
+  if (mat->material_type() == Core::Materials::m_struct_multiscale)
   {
     auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
-    int eleID = Id();
+    int eleID = id();
     bool eleowner = false;
-    if (Global::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+    if (Global::Problem::instance()->get_dis("structure")->get_comm().MyPID() == owner())
       eleowner = true;
 
     for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp) micro->read_restart(gp, eleID, eleowner);

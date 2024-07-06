@@ -44,13 +44,13 @@ Core::FE::Discretization::Discretization(
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::add_element(Teuchos::RCP<Core::Elements::Element> ele)
 {
-  element_[ele->Id()] = ele;
+  element_[ele->id()] = ele;
   reset();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::CheckFilledGlobally()
+void Core::FE::Discretization::check_filled_globally()
 {
   // global filled flag (is true / one if and only if filled_ == true on each processor
   int globalfilled = 0;
@@ -61,7 +61,7 @@ void Core::FE::Discretization::CheckFilledGlobally()
   /*the global filled flag is set to the minimal value of any local filled flag
    * i.e. if on any processor filled_ == false, the flag globalfilled is set to
    * zero*/
-  Comm().MinAll(&localfilled, &globalfilled, 1);
+  get_comm().MinAll(&localfilled, &globalfilled, 1);
 
   // if not Filled() == true on all the processors call reset()
   if (!globalfilled) reset();
@@ -69,17 +69,17 @@ void Core::FE::Discretization::CheckFilledGlobally()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::AddNode(Teuchos::RCP<Core::Nodes::Node> node)
+void Core::FE::Discretization::add_node(Teuchos::RCP<Core::Nodes::Node> node)
 {
-  node_[node->Id()] = node;
+  node_[node->id()] = node;
   reset();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::DeleteNode(Teuchos::RCP<Core::Nodes::Node> node)
+bool Core::FE::Discretization::delete_node(Teuchos::RCP<Core::Nodes::Node> node)
 {
-  auto it_node = node_.find(node->Id());
+  auto it_node = node_.find(node->id());
   if (it_node == node_.end()) return false;
   node_.erase(it_node);
   reset();
@@ -88,7 +88,7 @@ bool Core::FE::Discretization::DeleteNode(Teuchos::RCP<Core::Nodes::Node> node)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::DeleteNode(const int gid)
+bool Core::FE::Discretization::delete_node(const int gid)
 {
   auto it_node = node_.find(gid);
   if (it_node == node_.end()) return false;
@@ -99,29 +99,29 @@ bool Core::FE::Discretization::DeleteNode(const int gid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::DeleteNodes()
+bool Core::FE::Discretization::delete_nodes()
 {
   node_.clear();
   reset();
-  CheckFilledGlobally();
+  check_filled_globally();
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::DeleteElements()
+bool Core::FE::Discretization::delete_elements()
 {
   element_.clear();
   reset();
-  CheckFilledGlobally();
+  check_filled_globally();
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::DeleteElement(Teuchos::RCP<Core::Elements::Element> ele)
+bool Core::FE::Discretization::delete_element(Teuchos::RCP<Core::Elements::Element> ele)
 {
-  auto it_ele = element_.find(ele->Id());
+  auto it_ele = element_.find(ele->id());
   if (it_ele == element_.end()) return false;
   element_.erase(it_ele);
   reset();
@@ -130,7 +130,7 @@ bool Core::FE::Discretization::DeleteElement(Teuchos::RCP<Core::Elements::Elemen
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::DeleteElement(const int gid)
+bool Core::FE::Discretization::delete_element(const int gid)
 {
   auto it_ele = element_.find(gid);
   if (it_ele == element_.end()) return false;
@@ -141,118 +141,118 @@ bool Core::FE::Discretization::DeleteElement(const int gid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::ClearDiscret()
+bool Core::FE::Discretization::clear_discret()
 {
   element_.clear();
   node_.clear();
   condition_.clear();
   reset();
-  CheckFilledGlobally();
+  check_filled_globally();
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* Core::FE::Discretization::NodeRowMap() const
+const Epetra_Map* Core::FE::Discretization::node_row_map() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return noderowmap_.get();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* Core::FE::Discretization::NodeColMap() const
+const Epetra_Map* Core::FE::Discretization::node_col_map() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return nodecolmap_.get();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* Core::FE::Discretization::ElementRowMap() const
+const Epetra_Map* Core::FE::Discretization::element_row_map() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return elerowmap_.get();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* Core::FE::Discretization::ElementColMap() const
+const Epetra_Map* Core::FE::Discretization::element_col_map() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
   return elecolmap_.get();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::NumGlobalElements() const
+int Core::FE::Discretization::num_global_elements() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
-  return ElementRowMap()->NumGlobalElements();
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+  return element_row_map()->NumGlobalElements();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::NumMyRowElements() const
+int Core::FE::Discretization::num_my_row_elements() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
-  return ElementRowMap()->NumMyElements();
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+  return element_row_map()->NumMyElements();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::NumMyColElements() const
+int Core::FE::Discretization::num_my_col_elements() const
 {
-  if (Filled())
-    return ElementColMap()->NumMyElements();
+  if (filled())
+    return element_col_map()->NumMyElements();
   else
     return (int)element_.size();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::NumGlobalNodes() const
+int Core::FE::Discretization::num_global_nodes() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
-  return NodeRowMap()->NumGlobalElements();
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+  return node_row_map()->NumGlobalElements();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::NumMyRowNodes() const
+int Core::FE::Discretization::num_my_row_nodes() const
 {
   FOUR_C_ASSERT(
-      Filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
-  return NodeRowMap()->NumMyElements();
+      filled(), "fill_complete() must be called before for discretization %s!", name_.c_str());
+  return node_row_map()->NumMyElements();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::NumMyColNodes() const
+int Core::FE::Discretization::num_my_col_nodes() const
 {
-  if (Filled())
-    return NodeColMap()->NumMyElements();
+  if (filled())
+    return node_col_map()->NumMyElements();
   else
     return (int)node_.size();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::HaveGlobalElement(const int gid) const
+bool Core::FE::Discretization::have_global_element(const int gid) const
 {
   return element_.find(gid) != element_.end();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Core::FE::Discretization::gElement(const int gid) const
+Core::Elements::Element* Core::FE::Discretization::g_element(const int gid) const
 {
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator curr = element_.find(gid);
   FOUR_C_ASSERT(
@@ -262,14 +262,14 @@ Core::Elements::Element* Core::FE::Discretization::gElement(const int gid) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Core::FE::Discretization::HaveGlobalNode(const int gid) const
+bool Core::FE::Discretization::have_global_node(const int gid) const
 {
   return node_.find(gid) != node_.end();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Nodes::Node* Core::FE::Discretization::gNode(int gid) const
+Core::Nodes::Node* Core::FE::Discretization::g_node(int gid) const
 {
   std::map<int, Teuchos::RCP<Core::Nodes::Node>>::const_iterator curr = node_.find(gid);
   FOUR_C_ASSERT(curr != node_.end(), "Node with global id gid=%d not stored on this proc!", gid);
@@ -290,48 +290,48 @@ void Core::FE::Discretization::print(std::ostream& os) const
 {
   int numglobalelements = 0;
   int numglobalnodes = 0;
-  if (Filled())
+  if (filled())
   {
-    numglobalelements = NumGlobalElements();
-    numglobalnodes = NumGlobalNodes();
+    numglobalelements = num_global_elements();
+    numglobalnodes = num_global_nodes();
   }
   else
   {
     int nummynodes = 0;
     std::map<int, Teuchos::RCP<Core::Nodes::Node>>::const_iterator ncurr;
     for (ncurr = node_.begin(); ncurr != node_.end(); ++ncurr)
-      if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
+      if (ncurr->second->owner() == get_comm().MyPID()) nummynodes++;
 
     int nummyele = 0;
     std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator ecurr;
     for (ecurr = element_.begin(); ecurr != element_.end(); ++ecurr)
-      if (ecurr->second->Owner() == Comm().MyPID()) nummyele++;
+      if (ecurr->second->owner() == get_comm().MyPID()) nummyele++;
 
-    Comm().SumAll(&nummynodes, &numglobalnodes, 1);
-    Comm().SumAll(&nummyele, &numglobalelements, 1);
+    get_comm().SumAll(&nummynodes, &numglobalnodes, 1);
+    get_comm().SumAll(&nummyele, &numglobalelements, 1);
   }
 
   // print head
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     os << "--------------------------------------------------\n";
-    os << "discretization: " << Name() << std::endl;
+    os << "discretization: " << name() << std::endl;
     os << "--------------------------------------------------\n";
     os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";
     os << "--------------------------------------------------\n";
-    if (Filled())
+    if (filled())
       os << "Filled() = true\n";
     else
       os << "Filled() = false\n";
     os << "--------------------------------------------------\n";
   }
-  Comm().Barrier();
-  for (int proc = 0; proc < Comm().NumProc(); ++proc)
+  get_comm().Barrier();
+  for (int proc = 0; proc < get_comm().NumProc(); ++proc)
   {
-    if (proc == Comm().MyPID())
+    if (proc == get_comm().MyPID())
     {
       // loop over dofsets
-      for (int nds = 0; nds < NumDofSets(); ++nds)
+      for (int nds = 0; nds < num_dof_sets(); ++nds)
       {
         os << "\n------------------------ Dofset " << nds << " :\n\n";
         // print elements
@@ -341,13 +341,13 @@ void Core::FE::Discretization::print(std::ostream& os) const
           for (curr = element_.begin(); curr != element_.end(); ++curr)
           {
             os << *(curr->second);
-            if (Filled() && HaveDofs())
+            if (filled() && have_dofs())
             {
-              std::vector<int> dof = Dof(nds, &*(curr->second));
-              if (dof.size())
+              std::vector<int> dofs = dof(nds, &*(curr->second));
+              if (dofs.size())
               {
                 os << " Dofs ";
-                for (int i : dof) os << std::setw(6) << i << " ";
+                for (int i : dofs) os << std::setw(6) << i << " ";
               }
             }
             os << std::endl;
@@ -361,13 +361,13 @@ void Core::FE::Discretization::print(std::ostream& os) const
           for (curr = node_.begin(); curr != node_.end(); ++curr)
           {
             os << *(curr->second);
-            if (Filled() && HaveDofs())
+            if (filled() && have_dofs())
             {
-              std::vector<int> dof = Dof(nds, &*(curr->second));
-              if (dof.size())
+              std::vector<int> dofs = dof(nds, &*(curr->second));
+              if (dofs.size())
               {
                 os << " Dofs ";
-                for (int i : dof) os << std::setw(6) << i << " ";
+                for (int i : dofs) os << std::setw(6) << i << " ";
               }
             }
             os << std::endl;
@@ -392,7 +392,7 @@ void Core::FE::Discretization::print(std::ostream& os) const
         os << std::endl;
       }
     }
-    Comm().Barrier();
+    get_comm().Barrier();
   }
 }
 
@@ -403,9 +403,9 @@ const Epetra_Map* Core::FE::Discretization::dof_row_map(const unsigned nds) cons
   FOUR_C_ASSERT(
       nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
   FOUR_C_THROW_UNLESS(
-      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
+      filled(), "fill_complete was not called on discretization %s!", name_.c_str());
   FOUR_C_THROW_UNLESS(
-      HaveDofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
+      have_dofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
 
   return dofsets_[nds]->dof_row_map();
 }
@@ -413,29 +413,29 @@ const Epetra_Map* Core::FE::Discretization::dof_row_map(const unsigned nds) cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* Core::FE::Discretization::DofColMap(const unsigned nds) const
+const Epetra_Map* Core::FE::Discretization::dof_col_map(const unsigned nds) const
 {
   FOUR_C_ASSERT(
       nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
   FOUR_C_THROW_UNLESS(
-      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
+      filled(), "fill_complete was not called on discretization %s!", name_.c_str());
   FOUR_C_THROW_UNLESS(
-      HaveDofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
+      have_dofs(), "assign_degrees_of_freedom() not called on discretization %s!", name_.c_str());
 
-  return dofsets_[nds]->DofColMap();
+  return dofsets_[nds]->dof_col_map();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::ReplaceDofSet(const unsigned nds,
+void Core::FE::Discretization::replace_dof_set(const unsigned nds,
     Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   FOUR_C_ASSERT(
       nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
-  havedof_ = havedof_ and newdofset->Filled() and nds != 0;
+  havedof_ = havedof_ and newdofset->filled() and nds != 0;
   if (replaceinstatdofsets) newdofset->replace_in_static_dofsets(dofsets_[nds]);
   dofsets_[nds] = newdofset;
 }
@@ -443,11 +443,11 @@ void Core::FE::Discretization::ReplaceDofSet(const unsigned nds,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::FE::Discretization::AddDofSet(Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset)
+int Core::FE::Discretization::add_dof_set(Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset)
 {
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
-  havedof_ = havedof_ and newdofset->Filled();
+  havedof_ = havedof_ and newdofset->filled();
   dofsets_.push_back(newdofset);
   return static_cast<int>(dofsets_.size() - 1);
 }
@@ -455,7 +455,8 @@ int Core::FE::Discretization::AddDofSet(Teuchos::RCP<Core::DOFSets::DofSetInterf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::DOFSets::DofSetInterface> Core::FE::Discretization::GetDofSetProxy(const int nds)
+Teuchos::RCP<Core::DOFSets::DofSetInterface> Core::FE::Discretization::get_dof_set_proxy(
+    const int nds)
 {
   FOUR_C_ASSERT(
       nds < (int)dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -464,7 +465,7 @@ Teuchos::RCP<Core::DOFSets::DofSetInterface> Core::FE::Discretization::GetDofSet
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::ReplaceDofSet(
+void Core::FE::Discretization::replace_dof_set(
     Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   FOUR_C_ASSERT(dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -478,7 +479,7 @@ void Core::FE::Discretization::ReplaceDofSet(
 std::map<int, std::vector<int>>* Core::FE::Discretization::get_all_pbc_coupled_col_nodes()
 {
   // check for pbcs
-  for (int nds = 0; nds < NumDofSets(); nds++)
+  for (int nds = 0; nds < num_dof_sets(); nds++)
   {
     Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset =
         Teuchos::rcp_dynamic_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
@@ -487,7 +488,7 @@ std::map<int, std::vector<int>>* Core::FE::Discretization::get_all_pbc_coupled_c
     {
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
       // layout
-      return pbcdofset->GetCoupledNodes();
+      return pbcdofset->get_coupled_nodes();
     }
   }
 
@@ -500,7 +501,7 @@ Teuchos::RCP<std::map<int, int>>
 Core::FE::Discretization::get_pbc_slave_to_master_node_connectivity()
 {
   // check for pbcs
-  for (int nds = 0; nds < NumDofSets(); nds++)
+  for (int nds = 0; nds < num_dof_sets(); nds++)
   {
     Teuchos::RCP<Core::DOFSets::PBCDofSet> pbcdofset =
         Teuchos::rcp_dynamic_cast<Core::DOFSets::PBCDofSet>(dofsets_[nds]);
@@ -525,8 +526,8 @@ void Core::FE::Discretization::set_state(
   TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Discretization::set_state");
 
   FOUR_C_THROW_UNLESS(
-      HaveDofs(), "fill_complete() was not called for discretization %s!", name_.c_str());
-  const Epetra_Map* colmap = DofColMap(nds);
+      have_dofs(), "fill_complete() was not called for discretization %s!", name_.c_str());
+  const Epetra_Map* colmap = dof_col_map(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 
   if (state_.size() <= nds) state_.resize(nds + 1);
@@ -578,7 +579,7 @@ void Core::FE::Discretization::set_state(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::SetCondition(
+void Core::FE::Discretization::set_condition(
     const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
 {
   condition_.insert(std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
@@ -587,7 +588,7 @@ void Core::FE::Discretization::SetCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::ReplaceConditions(
+void Core::FE::Discretization::replace_conditions(
     const std::string& name, const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds)
 {
   if (condition_.count(name) > 0) condition_.erase(name);
@@ -606,7 +607,7 @@ void Core::FE::Discretization::ReplaceConditions(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::GetCondition(
+void Core::FE::Discretization::get_condition(
     const std::string& name, std::vector<Core::Conditions::Condition*>& out) const
 {
   const unsigned num = condition_.count(name);
@@ -623,7 +624,7 @@ void Core::FE::Discretization::GetCondition(
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::GetCondition(
+void Core::FE::Discretization::get_condition(
     const std::string& name, std::vector<Teuchos::RCP<Core::Conditions::Condition>>& out) const
 {
   const unsigned num = condition_.count(name);
@@ -641,7 +642,7 @@ void Core::FE::Discretization::GetCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Conditions::Condition* Core::FE::Discretization::GetCondition(const std::string& name) const
+Core::Conditions::Condition* Core::FE::Discretization::get_condition(const std::string& name) const
 {
   auto it_cond = condition_.find(name);
   if (it_cond == condition_.end()) return nullptr;
@@ -652,7 +653,7 @@ Core::Conditions::Condition* Core::FE::Discretization::GetCondition(const std::s
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::GetConditionNames(std::vector<std::string>& names) const
+void Core::FE::Discretization::get_condition_names(std::vector<std::string>& names) const
 {
   std::set<std::string> n;
   for (const auto& [name, cond] : condition_) n.insert(name);
@@ -664,10 +665,10 @@ void Core::FE::Discretization::GetConditionNames(std::vector<std::string>& names
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyElements() const
+Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_elements() const
 {
   FOUR_C_THROW_UNLESS(
-      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
+      filled(), "fill_complete was not called on discretization %s!", name_.c_str());
 
   Core::Communication::PackBuffer buffer;
 
@@ -681,10 +682,10 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyElements() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyNodes() const
+Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
 {
   FOUR_C_THROW_UNLESS(
-      Filled(), "fill_complete was not called on discretization %s!", name_.c_str());
+      filled(), "fill_complete was not called on discretization %s!", name_.c_str());
 
   Core::Communication::PackBuffer buffer;
 
@@ -698,7 +699,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::PackMyNodes() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
+void Core::FE::Discretization::un_pack_my_elements(Teuchos::RCP<std::vector<char>> e)
 {
   std::vector<char>::size_type index = 0;
   while (index < e->size())
@@ -709,7 +710,7 @@ void Core::FE::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> 
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_THROW_UNLESS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
-    ele->SetOwner(comm_->MyPID());
+    ele->set_owner(comm_->MyPID());
     add_element(Teuchos::rcp(ele));
   }
   // in case add_element forgets...
@@ -718,7 +719,7 @@ void Core::FE::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
+void Core::FE::Discretization::un_pack_my_nodes(Teuchos::RCP<std::vector<char>> e)
 {
   std::vector<char>::size_type index = 0;
   while (index < e->size())
@@ -729,8 +730,8 @@ void Core::FE::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_THROW_UNLESS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());
-    node->SetOwner(comm_->MyPID());
-    AddNode(Teuchos::rcp(node));
+    node->set_owner(comm_->MyPID());
+    add_node(Teuchos::rcp(node));
   }
   // in case AddNode forgets...
   reset();
@@ -739,13 +740,13 @@ void Core::FE::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::RedistributeState(const unsigned nds, const std::string& name)
+void Core::FE::Discretization::redistribute_state(const unsigned nds, const std::string& name)
 {
   // only redistribute if state has been set
-  if (HasState(nds, name))
+  if (has_state(nds, name))
   {
     // get the state and export it to the rowmap to be able to reset the state
-    auto statevec = GetState(nds, name);
+    auto statevec = get_state(nds, name);
     auto statevecrowmap = Core::LinAlg::CreateVector(*dof_row_map(nds), true);
     Core::LinAlg::Export(*statevec, *statevecrowmap);
 
@@ -769,17 +770,17 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
   int np = 0;     // default value for no. of pressure dofs
 
   // downwinding needs nodal block information, compute it
-  if (NumMyRowElements())
+  if (num_my_row_elements())
   {
     // We assume that all elements are of equal type
-    Core::Elements::Element* dwele = lRowElement(0);
-    dwele->ElementType().nodal_block_information(dwele, numdf, dimns, nv, np);
+    Core::Elements::Element* dwele = l_row_element(0);
+    dwele->element_type().nodal_block_information(dwele, numdf, dimns, nv, np);
   }
 
   // communicate data to procs without row element
   std::array<int, 4> ldata = {numdf, dimns, nv, np};
   std::array<int, 4> gdata = {0, 0, 0, 0};
-  Comm().MaxAll(ldata.data(), gdata.data(), 4);
+  get_comm().MaxAll(ldata.data(), gdata.data(), 4);
   numdf = gdata[0];
   dimns = gdata[1];
   nv = gdata[2];
@@ -831,8 +832,8 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
   // or want to recompute it anyway
   // -> compute nullspace
   // do the usual tests
-  if (!Filled()) FOUR_C_THROW("fill_complete was not called on discretization");
-  if (!HaveDofs()) FOUR_C_THROW("discretization has no dofs assigned");
+  if (!filled()) FOUR_C_THROW("fill_complete was not called on discretization");
+  if (!have_dofs()) FOUR_C_THROW("discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
   Core::LinearSolver::Parameters::compute_solver_parameters(*this, mllist);
@@ -850,7 +851,7 @@ void Core::FE::Discretization::add_multi_vector_to_parameter_list(
   // set_state cannot be used since this multi-vector is nodebased and not dofbased!
   if (vec != Teuchos::null)
   {
-    const Epetra_Map* nodecolmap = NodeColMap();
+    const Epetra_Map* nodecolmap = node_col_map();
     const int numcol = vec->NumVectors();
 
     // if it's already in column map just copy it

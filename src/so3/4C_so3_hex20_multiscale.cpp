@@ -25,14 +25,14 @@ FOUR_C_NAMESPACE_OPEN
 
 void Discret::ELEMENTS::SoHex20::soh20_homog(Teuchos::ParameterList& params)
 {
-  if (Global::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (Global::Problem::instance(0)->get_communicators()->sub_comm()->MyPID() == owner())
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh20_weights();
 
     for (int gp = 0; gp < NUMGPT_SOH20; ++gp)
     {
-      const double density = Material()->Density(gp);
+      const double density = material()->density(gp);
       homogdens += detJ_[gp] * weights[gp] * density;
     }
 
@@ -49,14 +49,14 @@ void Discret::ELEMENTS::SoHex20::soh20_homog(Teuchos::ParameterList& params)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoHex20::soh20_read_restart_multi()
 {
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
+  if (mat->material_type() == Core::Materials::m_struct_multiscale)
   {
     auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
-    int eleID = Id();
+    int eleID = id();
     bool eleowner = false;
-    if (Global::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+    if (Global::Problem::instance()->get_dis("structure")->get_comm().MyPID() == owner())
       eleowner = true;
 
     for (int gp = 0; gp < NUMGPT_SOH20; ++gp) micro->read_restart(gp, eleID, eleowner);

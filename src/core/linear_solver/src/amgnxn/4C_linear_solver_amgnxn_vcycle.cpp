@@ -49,7 +49,8 @@ Core::LinearSolver::AMGNxN::Vcycle::Vcycle(int NumLevels, int NumSweeps, int Fir
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::Vcycle::SetOperators(std::vector<Teuchos::RCP<BlockedMatrix>> Avec)
+void Core::LinearSolver::AMGNxN::Vcycle::set_operators(
+    std::vector<Teuchos::RCP<BlockedMatrix>> Avec)
 {
   if ((int)Avec.size() != num_levels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
   for (int i = 0; i < num_levels_; i++)
@@ -65,7 +66,7 @@ void Core::LinearSolver::AMGNxN::Vcycle::SetOperators(std::vector<Teuchos::RCP<B
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::Vcycle::SetProjectors(
+void Core::LinearSolver::AMGNxN::Vcycle::set_projectors(
     std::vector<Teuchos::RCP<BlockedMatrix>> Pvec)
 {
   if ((int)Pvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
@@ -82,7 +83,7 @@ void Core::LinearSolver::AMGNxN::Vcycle::SetProjectors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::Vcycle::SetRestrictors(
+void Core::LinearSolver::AMGNxN::Vcycle::set_restrictors(
     std::vector<Teuchos::RCP<BlockedMatrix>> Rvec)
 {
   if ((int)Rvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
@@ -99,7 +100,7 @@ void Core::LinearSolver::AMGNxN::Vcycle::SetRestrictors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::Vcycle::SetPreSmoothers(
+void Core::LinearSolver::AMGNxN::Vcycle::set_pre_smoothers(
     std::vector<Teuchos::RCP<GenericSmoother>> SvecPre)
 {
   if ((int)SvecPre.size() != num_levels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
@@ -115,7 +116,7 @@ void Core::LinearSolver::AMGNxN::Vcycle::SetPreSmoothers(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::Vcycle::SetPosSmoothers(
+void Core::LinearSolver::AMGNxN::Vcycle::set_pos_smoothers(
     std::vector<Teuchos::RCP<GenericSmoother>> SvecPos)
 {
   if ((int)SvecPos.size() != num_levels_ - 1)
@@ -137,33 +138,33 @@ void Core::LinearSolver::AMGNxN::Vcycle::do_vcycle(
   if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
   {
     // Apply presmoother
-    svec_pre_[level]->Solve(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->solve(X, Y, InitialGuessIsZero);
 
     // Compute residual
-    BlockedVector DX = X.DeepCopy();
-    avec_[level]->Apply(Y, DX);
-    DX.Update(1.0, X, -1.0);
+    BlockedVector DX = X.deep_copy();
+    avec_[level]->apply(Y, DX);
+    DX.update(1.0, X, -1.0);
 
     //  Create coarser representation of the residual
-    int NV = X.GetVector(0)->NumVectors();
+    int NV = X.get_vector(0)->NumVectors();
     Teuchos::RCP<BlockedVector> DXcoarse = rvec_[level]->new_range_blocked_vector(NV, false);
-    rvec_[level]->Apply(DX, *DXcoarse);
+    rvec_[level]->apply(DX, *DXcoarse);
 
     // Damp error with coarser levels
     Teuchos::RCP<BlockedVector> DYcoarse = pvec_[level]->new_domain_blocked_vector(NV, false);
     do_vcycle(*DXcoarse, *DYcoarse, level + 1, true);
 
     // Compute correction
-    BlockedVector DY = Y.DeepCopy();
-    pvec_[level]->Apply(*DYcoarse, DY);
-    Y.Update(1.0, DY, 1.0);
+    BlockedVector DY = Y.deep_copy();
+    pvec_[level]->apply(*DYcoarse, DY);
+    Y.update(1.0, DY, 1.0);
 
     // Apply post smoother
-    svec_pos_[level]->Solve(X, Y, false);
+    svec_pos_[level]->solve(X, Y, false);
   }
   else  // Apply presmoother
   {
-    svec_pre_[level]->Solve(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->solve(X, Y, InitialGuessIsZero);
   }
 
 
@@ -173,7 +174,7 @@ void Core::LinearSolver::AMGNxN::Vcycle::do_vcycle(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::Vcycle::Solve(
+void Core::LinearSolver::AMGNxN::Vcycle::solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up
@@ -213,7 +214,7 @@ Core::LinearSolver::AMGNxN::VcycleSingle::VcycleSingle(int NumLevels, int NumSwe
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::VcycleSingle::SetOperators(
+void Core::LinearSolver::AMGNxN::VcycleSingle::set_operators(
     std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Avec)
 {
   if ((int)Avec.size() != num_levels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
@@ -230,7 +231,7 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::SetOperators(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::VcycleSingle::SetProjectors(
+void Core::LinearSolver::AMGNxN::VcycleSingle::set_projectors(
     std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Pvec)
 {
   if ((int)Pvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
@@ -247,7 +248,7 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::SetProjectors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::VcycleSingle::SetRestrictors(
+void Core::LinearSolver::AMGNxN::VcycleSingle::set_restrictors(
     std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Rvec)
 {
   if ((int)Rvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
@@ -264,7 +265,7 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::SetRestrictors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::VcycleSingle::SetPreSmoothers(
+void Core::LinearSolver::AMGNxN::VcycleSingle::set_pre_smoothers(
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre)
 {
   if ((int)SvecPre.size() != num_levels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
@@ -280,7 +281,7 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::SetPreSmoothers(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AMGNxN::VcycleSingle::SetPosSmoothers(
+void Core::LinearSolver::AMGNxN::VcycleSingle::set_pos_smoothers(
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos)
 {
   if ((int)SvecPos.size() != num_levels_ - 1)
@@ -302,7 +303,7 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
   if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
   {
     // Apply presmoother
-    svec_pre_[level]->Apply(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->apply(X, Y, InitialGuessIsZero);
 
     // Compute residual
     int NV = X.NumVectors();
@@ -311,12 +312,12 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
     DX.Update(1.0, X, -1.0);
 
     //  Create coarser representation of the residual
-    const Epetra_Map& Map = rvec_[level]->RangeMap();
+    const Epetra_Map& Map = rvec_[level]->range_map();
     Epetra_MultiVector DXcoarse(Map, NV, false);
     rvec_[level]->Apply(DX, DXcoarse);
 
     // Damp error with coarser levels
-    const Epetra_Map& Map2 = pvec_[level]->DomainMap();
+    const Epetra_Map& Map2 = pvec_[level]->domain_map();
     Epetra_MultiVector DYcoarse(Map2, NV, false);
     do_vcycle(DXcoarse, DYcoarse, level + 1, true);
 
@@ -326,11 +327,11 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
     Y.Update(1.0, DY, 1.0);
 
     // Apply post smoother
-    svec_pos_[level]->Apply(X, Y, false);
+    svec_pos_[level]->apply(X, Y, false);
   }
   else  // Apply presmoother
   {
-    svec_pre_[level]->Apply(X, Y, InitialGuessIsZero);
+    svec_pre_[level]->apply(X, Y, InitialGuessIsZero);
   }
 
   return;
@@ -339,7 +340,7 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::VcycleSingle::Apply(
+void Core::LinearSolver::AMGNxN::VcycleSingle::apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up

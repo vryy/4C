@@ -49,17 +49,18 @@ namespace
     const double density = 0.75;
     const double density0 = 0.4;
 
-    EXPECT_NEAR(equationofstate_->DensityToPressure(density, density0), 0.5640046918e2, 1.0e-08);
-    EXPECT_NEAR(equationofstate_special_->DensityToPressure(density, density0), 0.47775e1, 1.0e-08);
+    EXPECT_NEAR(equationofstate_->density_to_pressure(density, density0), 0.5640046918e2, 1.0e-08);
+    EXPECT_NEAR(
+        equationofstate_special_->density_to_pressure(density, density0), 0.47775e1, 1.0e-08);
   }
   TEST_F(SPHEquationOfStateGenTaitTest, PressureToDensity)
   {
     const double pressure = 1.8;
     const double density0 = 0.4;
 
-    EXPECT_NEAR(equationofstate_->PressureToDensity(pressure, density0), 0.477832244, 1.0e-08);
+    EXPECT_NEAR(equationofstate_->pressure_to_density(pressure, density0), 0.477832244, 1.0e-08);
     EXPECT_NEAR(
-        equationofstate_special_->PressureToDensity(pressure, density0), 0.506938775, 1.0e-08);
+        equationofstate_special_->pressure_to_density(pressure, density0), 0.506938775, 1.0e-08);
   }
 
   TEST_F(SPHEquationOfStateGenTaitTest, DensityToEnergy)
@@ -69,9 +70,9 @@ namespace
     const double density0 = 0.4;
 
     EXPECT_NEAR(
-        equationofstate_->DensityToEnergy(density, mass, density0), 0.1999413554e2, 1.0e-08);
-    EXPECT_NEAR(equationofstate_special_->DensityToEnergy(density, mass, density0), -0.5553068732e1,
-        1.0e-08);
+        equationofstate_->density_to_energy(density, mass, density0), 0.1999413554e2, 1.0e-08);
+    EXPECT_NEAR(equationofstate_special_->density_to_energy(density, mass, density0),
+        -0.5553068732e1, 1.0e-08);
   }
 
 
@@ -103,7 +104,7 @@ namespace
     const double density = 0.75;
     const double density0 = 0.4;
 
-    EXPECT_NEAR(equationofstate_->DensityToPressure(density, density0), 9.1875, 1.0e-08);
+    EXPECT_NEAR(equationofstate_->density_to_pressure(density, density0), 9.1875, 1.0e-08);
   }
 
   TEST_F(SPHEquationOfStateIdealGasTest, PressureToDensity)
@@ -111,7 +112,7 @@ namespace
     const double pressure = 1.8;
     const double density0 = 0.4;
 
-    EXPECT_NEAR(equationofstate_->PressureToDensity(pressure, density0), 0.146938775, 1.0e-08);
+    EXPECT_NEAR(equationofstate_->pressure_to_density(pressure, density0), 0.146938775, 1.0e-08);
   }
 
   TEST_F(SPHEquationOfStateIdealGasTest, DensityToEnergy)
@@ -121,6 +122,6 @@ namespace
     const double density0 = 0.4;
 
     EXPECT_NEAR(
-        equationofstate_->DensityToEnergy(density, mass, density0), -0.2752956873e2, 1.0e-08);
+        equationofstate_->density_to_energy(density, mass, density0), -0.2752956873e2, 1.0e-08);
   }
 }  // namespace

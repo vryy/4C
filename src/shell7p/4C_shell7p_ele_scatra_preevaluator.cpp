@@ -20,7 +20,7 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatraByElement(Core::Elements::Elemen
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& dof_index_array)
 {
-  switch (ele.Shape())
+  switch (ele.shape())
   {
     case Core::FE::CellType::quad4:
       return PreEvaluateScatra<Core::FE::CellType::quad4>(
@@ -52,21 +52,21 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
   Core::FE::IntegrationPoints2D intpoints_midsurface_ =
       create_gauss_integration_points<distype>(get_gauss_rule<distype>());
 
-  if (dof_index_array.Size() > 1)
+  if (dof_index_array.size() > 1)
   {
     // ask for the number of dofs of second dofset (scatra)
-    const int numscal = discretization.NumDof(1, ele.Nodes()[0]);
+    const int numscal = discretization.num_dof(1, ele.nodes()[0]);
 
-    if (dof_index_array[1].Size() != Shell::DETAIL::num_node<distype> * numscal)
+    if (dof_index_array[1].size() != Shell::DETAIL::num_node<distype> * numscal)
       FOUR_C_THROW("location vector length does not match!");
 
     // name of scalarfield
     std::string scalarfield = "scalarfield";
 
-    if (discretization.HasState(1, scalarfield))
+    if (discretization.has_state(1, scalarfield))
     {
       // get the scalar state
-      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(1, scalarfield);
+      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(1, scalarfield);
 
       if (scalarnp == Teuchos::null)
         FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
@@ -90,13 +90,13 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
       // create vector of gauss point values to be set in params list
       Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =
           Teuchos::rcp(new std::vector<std::vector<double>>(
-              intpoints_midsurface_.NumPoints(), std::vector<double>(numscal, 0.0)));
+              intpoints_midsurface_.num_points(), std::vector<double>(numscal, 0.0)));
 
       // allocate vector for shape functions and matrix for derivatives at gp
       Core::LinAlg::Matrix<Shell::DETAIL::num_node<distype>, 1> shapefunctions(true);
 
       // loop over gauss points
-      for (int gp = 0; gp < intpoints_midsurface_.NumPoints(); ++gp)
+      for (int gp = 0; gp < intpoints_midsurface_.num_points(); ++gp)
       {
         // get gauss points from integration rule
         double xi_gp = intpoints_midsurface_.qxg[gp][0];

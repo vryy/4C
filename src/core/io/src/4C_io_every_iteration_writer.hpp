@@ -57,7 +57,7 @@ namespace Core::IO
      *                          is written.
      *
      *  @author hiermeier @date 08/17 */
-    virtual void OutputDebugState(
+    virtual void output_debug_state(
         Core::IO::DiscretizationWriter& iowriter, bool write_owner) const = 0;
 
     /** @brief Get the current time/load step number
@@ -67,7 +67,7 @@ namespace Core::IO
      *  identification number.
      *
      *  @author hiermeier @date 08/17 */
-    virtual int GetStepNp() const = 0;
+    virtual int get_step_np() const = 0;
   };
 
   /*--------------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ namespace Core::IO
      *  It will generate all necessary control, result and mesh files.
      *
      *  @author hiermeier @date 08/17 */
-    void InitNewtonIteration();
+    void init_newton_iteration();
 
     /** @brief Add a Newton iteration to the current output
      *
@@ -165,7 +165,7 @@ namespace Core::IO
      *  @param[in] newton_iteration  Number of the current Newton iteration.
      *
      *  @author hiermeier @date 08/17 */
-    void AddNewtonIteration(const int newton_iteration);
+    void add_newton_iteration(const int newton_iteration);
 
     /** @brief Add a line search iteration to the current output
      *

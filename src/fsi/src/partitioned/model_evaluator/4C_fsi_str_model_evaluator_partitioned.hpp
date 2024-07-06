@@ -49,7 +49,7 @@ namespace Solid
       //! @{
 
       //! [derived]
-      Inpar::Solid::ModelType Type() const override
+      Inpar::Solid::ModelType type() const override
       {
         return Inpar::Solid::model_partitioned_coupling;
       }
@@ -93,7 +93,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
+      void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -162,7 +162,7 @@ namespace Solid
       void set_is_relaxation_solve(bool trueorfalse) { is_relaxationsolve_ = trueorfalse; };
 
       //! Returns the global input/output data container
-      const Solid::TimeInt::BaseDataIO& GetInOutput() const;
+      const Solid::TimeInt::BaseDataIO& get_in_output() const;
 
      private:
       //! fsi interface force at \f$t_{n+1}\f$

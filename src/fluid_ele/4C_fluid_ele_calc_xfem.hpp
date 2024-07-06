@@ -116,11 +116,11 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static FluidEleCalcXFEM<distype>* Instance(
+      static FluidEleCalcXFEM<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// evaluate the XFEM cut element
-      int EvaluateXFEM(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

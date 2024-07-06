@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | print thermal time logo                                   dano 08/09 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::Logo()
+void THR::TimInt::logo()
 {
   std::cout << "Welcome to Thermal Time Integration " << std::endl;
   std::cout << "      _______________________________" << std::endl;
@@ -46,7 +46,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
-      myrank_(actdis->Comm().MyPID()),
+      myrank_(actdis->get_comm().MyPID()),
       solver_(solver),
       solveradapttol_(Core::UTILS::IntegralValue<int>(tdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
@@ -86,11 +86,11 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   // welcome user
   if ((printlogo_) and (myrank_ == 0))
   {
-    Logo();
+    logo();
   }
 
   // check wether discretisation has been completed
-  if (not discret_->Filled())
+  if (not discret_->filled())
   {
     FOUR_C_THROW("Discretisation is not complete!");
   }
@@ -105,7 +105,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   stepn_ = step_ + 1;
 
   // output file for energy
-  if ((writeenergyevery_ != 0) and (myrank_ == 0)) AttachEnergyFile();
+  if ((writeenergyevery_ != 0) and (myrank_ == 0)) attach_energy_file();
 
   // a zero vector of full length
   zeros_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
@@ -115,7 +115,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     Teuchos::ParameterList p;
     p.set("total time", timen_);
     p.set<const Core::UTILS::FunctionManager*>(
-        "function_manager", &Global::Problem::Instance()->FunctionManager());
+        "function_manager", &Global::Problem::instance()->function_manager());
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
@@ -143,7 +143,8 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   // set initial field
   // -------------------------------------------------------------------
   const int startfuncno = tdynparams.get<int>("INITFUNCNO");
-  SetInitialField(Core::UTILS::IntegralValue<Inpar::THR::InitialField>(tdynparams, "INITIALFIELD"),
+  set_initial_field(
+      Core::UTILS::IntegralValue<Inpar::THR::InitialField>(tdynparams, "INITIALFIELD"),
       startfuncno);
 
   // stay with us
@@ -172,7 +173,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
   // apply_force_external_conv is applied in the derived classes!
 
   // initialise matrices
-  tang_->Zero();
+  tang_->zero();
   //  capa_->Zero();
 
   // get initial internal force, tangent and capacity
@@ -182,27 +183,27 @@ void THR::TimInt::determine_capa_consist_temp_rate()
     // action for elements
     p.set<int>("action", THR::calc_thermo_fintcapa);
     // type of calling time integrator
-    p.set<int>("time integrator", MethodName());
+    p.set<int>("time integrator", method_name());
     p.set<bool>("lump capa matrix", lumpcapa_);
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     // set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "residual temperature", zeros_);
     discret_->set_state(0, "temperature", (*temp_)(0));
 
     // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
     discret_->evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // finish capacity matrix
   //  capa_->Complete();
 
   // close tangent matrix
-  tang_->Complete();
+  tang_->complete();
 
   // calculate consistent initial temperature rates
   {
@@ -215,7 +216,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver_->Solve(tang_->EpetraMatrix(), (*rate_)(0), rhs, solver_params);
+    solver_->solve(tang_->epetra_matrix(), (*rate_)(0), rhs, solver_params);
   }
 
   // We need to reset the tangent matrix because its graph (topology)
@@ -223,7 +224,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
   // effects (basically managers).
   // BUT: in case of explicit time integration, the conductivity matrix
   // is stored in tang_ which is needed throughout the simulation
-  if (MethodName() != Inpar::THR::dyna_expleuler) tang_->reset();
+  if (method_name() != Inpar::THR::dyna_expleuler) tang_->reset();
 
   // leave this hell
   return;
@@ -242,11 +243,11 @@ void THR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vect
   Teuchos::ParameterList p;
   p.set("total time", time);  // target time
   p.set<const Core::UTILS::FunctionManager*>(
-      "function_manager", &Global::Problem::Instance()->FunctionManager());
+      "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted Dirichlet values
   // \c temp then also holds prescribed new Dirichlet temperatures
-  discret_->ClearState();
+  discret_->clear_state();
   if (recreatemap)
   {
     discret_->evaluate_dirichlet(p, temp, rate, Teuchos::null, Teuchos::null, dbcmaps_);
@@ -255,7 +256,7 @@ void THR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vect
   {
     discret_->evaluate_dirichlet(p, temp, rate, Teuchos::null, Teuchos::null, Teuchos::null);
   }
-  discret_->ClearState();
+  discret_->clear_state();
 
   // ciao
   return;
@@ -266,11 +267,11 @@ void THR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*
  | update time and step counter                            bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::UpdateStepTime()
+void THR::TimInt::update_step_time()
 {
   // update time and step
-  time_->UpdateSteps(timen_);  // t_{n} := t_{n+1}, etc
-  step_ = stepn_;              // n := n+1
+  time_->update_steps(timen_);  // t_{n} := t_{n+1}, etc
+  step_ = stepn_;               // n := n+1
 
   timen_ += (*dt_)[0];
   stepn_ += 1;
@@ -295,12 +296,12 @@ void THR::TimInt::reset_step()
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     p.set<int>("action", THR::calc_thermo_reset_istep);
-    p.set("total time", Time());
-    p.set("delta time", Dt());
+    p.set("total time", time());
+    p.set("delta time", dt());
     // go to elements
     discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // I am gone
@@ -315,7 +316,7 @@ void THR::TimInt::reset_step()
 void THR::TimInt::read_restart(const int step)
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
   if (step != reader.read_int("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
@@ -323,8 +324,8 @@ void THR::TimInt::read_restart(const int step)
   time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.read_double("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
-  ReadRestartState();
-  ReadRestartForce();
+  read_restart_state();
+  read_restart_force();
 
 }  // read_restart()
 
@@ -332,14 +333,14 @@ void THR::TimInt::read_restart(const int step)
 /*----------------------------------------------------------------------*
  | read and set restart state                               bborn 06/08 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::ReadRestartState()
+void THR::TimInt::read_restart_state()
 {
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step_);
+      discret_, Global::Problem::instance()->input_control_file(), step_);
   reader.read_vector(tempn_, "temperature");
-  temp_->UpdateSteps(*tempn_);
+  temp_->update_steps(*tempn_);
   reader.read_vector(raten_, "rate");
-  rate_->UpdateSteps(*raten_);
+  rate_->update_steps(*raten_);
   reader.read_history_data(step_);
   return;
 
@@ -349,14 +350,14 @@ void THR::TimInt::ReadRestartState()
 /*----------------------------------------------------------------------*
  | output to file                                           mwgee 03/07 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputStep(bool forced_writerestart)
+void THR::TimInt::output_step(bool forced_writerestart)
 {
   // special treatment is necessary when restart is forced
   if (forced_writerestart)
   {
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == Global::Problem::Instance()->restart())
+        step_ == Global::Problem::instance()->restart())
       return;
     // if state already exists, add restart information
     if (writeglobevery_ and (step_ % writeglobevery_ == 0))
@@ -418,13 +419,13 @@ void THR::TimInt::output_restart(bool& datawritten)
   output_->write_vector("temperature", (*temp_)(0));
   output_->write_vector("rate", (*rate_)(0));
   // write all force vectors which are later read in restart
-  WriteRestartForce(output_);
+  write_restart_force(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
   output_->write_element_data(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // info dedicated to user's eyes staring at standard out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     printf("====== Restart written in step %d\n", step_);
     // print a beautiful line made exactly of 80 dashes
@@ -466,13 +467,13 @@ void THR::TimInt::output_state(bool& datawritten)
 void THR::TimInt::add_restart_to_output_state()
 {
   // write all force vectors which are later read in restart
-  WriteRestartForce(output_);
+  write_restart_force(output_);
 
   // finally add the missing mesh information, order is important here
   output_->write_mesh(step_, (*time_)[0]);
 
   // info dedicated to user's eyes staring at standard out
-  if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
+  if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     printf("====== Restart written in step %d\n", step_);
     // print a beautiful line made exactly of 80 dashes
@@ -507,13 +508,13 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
   p.set<int>("iotempgrad", writetempgrad_);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   // set_state(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->set_state(0, "residual temperature", zeros_);
   discret_->set_state(0, "temperature", (*temp_)(0));
 
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
+  discret_->clear_state();
 
   // Make new step
   if (not datawritten)
@@ -538,7 +539,7 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
     {
       FOUR_C_THROW("requested heatflux type not supported");
     }
-    output_->write_vector(heatfluxtext, *heatfluxdata, *(discret_->ElementColMap()));
+    output_->write_vector(heatfluxtext, *heatfluxdata, *(discret_->element_col_map()));
   }
 
   // write temperature gradient
@@ -557,7 +558,7 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
     {
       FOUR_C_THROW("requested tempgrad type not supported");
     }
-    output_->write_vector(tempgradtext, *tempgraddata, *(discret_->ElementColMap()));
+    output_->write_vector(tempgradtext, *tempgraddata, *(discret_->element_col_map()));
   }
 
   // leave me alone
@@ -579,14 +580,14 @@ void THR::TimInt::output_energy()
     p.set<int>("action", THR::calc_thermo_energy);
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     // set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "temperature", (*temp_)(0));
     // get energies
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> energies =
         Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
-    discret_->EvaluateScalars(p, energies);
-    discret_->ClearState();
+    discret_->evaluate_scalars(p, energies);
+    discret_->clear_state();
     intergy = (*energies)(0);
   }
 
@@ -627,7 +628,7 @@ void THR::TimInt::output_energy()
 /*----------------------------------------------------------------------*
  | thermal result test                                       dano 01/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> THR::TimInt::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> THR::TimInt::create_field_test()
 {
   return Teuchos::rcp(new THR::ResultTest(*this));
 
@@ -647,17 +648,17 @@ void THR::TimInt::apply_force_external(const double time,  //!< evaluation time
   const THR::Action action = THR::calc_thermo_fext;
   p.set<int>("action", action);
   // type of calling time integrator
-  p.set<int>("time integrator", MethodName());
+  p.set<int>("time integrator", method_name());
   // other parameters needed by the elements
   p.set("total time", time);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   // set_state(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->set_state(0, "temperature", temp);
   // get load vector
   discret_->evaluate_neumann(p, *fext);
-  discret_->ClearState();
+  discret_->clear_state();
 
   // go away
   return;
@@ -689,12 +690,12 @@ void THR::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
   const THR::BoundaryAction action = THR::calc_thermo_fextconvection;
   p.set<int>("action", action);
   // type of calling time integrator
-  p.set<int>("time integrator", MethodName());
+  p.set<int>("time integrator", method_name());
   // other parameters needed by the elements
   p.set("total time", time);
 
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state(0, "old temperature", tempn);  // T_n (*temp_)(0)
   discret_->set_state(0, "temperature", temp);       // T_{n+1} tempn_
 
@@ -703,7 +704,7 @@ void THR::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
   std::string condstring("ThermoConvections");
   discret_->evaluate_condition(
       p, tang, Teuchos::null, fext, Teuchos::null, Teuchos::null, condstring);
-  discret_->ClearState();
+  discret_->clear_state();
 
   // go away
   return;
@@ -723,7 +724,7 @@ void THR::TimInt::apply_force_tang_internal(
 )
 {
   // type of calling time integrator
-  p.set<int>("time integrator", MethodName());
+  p.set<int>("time integrator", method_name());
   // action for elements
   const THR::Action action = THR::calc_thermo_fintcond;
   p.set<int>("action", action);
@@ -731,7 +732,7 @@ void THR::TimInt::apply_force_tang_internal(
   p.set("total time", time);
   p.set("delta time", dt);
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   // set_state(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->set_state(0, "residual temperature", tempi);
   discret_->set_state(0, "temperature", temp);
@@ -747,14 +748,14 @@ void THR::TimInt::apply_force_tang_internal(
     if (contact_params_interface_->get_coupling_scheme() ==
         Inpar::CONTACT::CouplingScheme::monolithic)
     {
-      tang->UnComplete();
-      tang->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
+      tang->un_complete();
+      tang->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
           false, p.get<double>("timefac"), 1.);
-      tang->Complete();
+      tang->complete();
     }
   }
 
-  discret_->ClearState();
+  discret_->clear_state();
 
   // that's it
   return;
@@ -776,7 +777,7 @@ void THR::TimInt::apply_force_tang_internal(
 )
 {
   // type of calling time integrator
-  p.set<int>("time integrator", MethodName());
+  p.set<int>("time integrator", method_name());
   // action for elements
   const THR::Action action = THR::calc_thermo_finttang;
   p.set<int>("action", action);
@@ -784,7 +785,7 @@ void THR::TimInt::apply_force_tang_internal(
   p.set("total time", time);
   p.set("delta time", dt);
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   // set_state(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->set_state(0, "residual temperature", tempi);
   discret_->set_state(0, "temperature", temp);
@@ -793,7 +794,7 @@ void THR::TimInt::apply_force_tang_internal(
 
   // in case of genalpha extract midpoint temperature rate R_{n+alpha_m}
   // extract it after ClearState() is called.
-  if (MethodName() == Inpar::THR::dyna_genalpha)
+  if (method_name() == Inpar::THR::dyna_genalpha)
   {
     Teuchos::RCP<const Epetra_Vector> ratem =
         p.get<Teuchos::RCP<const Epetra_Vector>>("mid-temprate");
@@ -811,14 +812,14 @@ void THR::TimInt::apply_force_tang_internal(
     if (contact_params_interface_->get_coupling_scheme() ==
         Inpar::CONTACT::CouplingScheme::monolithic)
     {
-      tang->UnComplete();
-      tang->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
+      tang->un_complete();
+      tang->add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
           false, p.get<double>("timefac"), 1.);
-      tang->Complete();
+      tang->complete();
     }
   }
 
-  discret_->ClearState();
+  discret_->clear_state();
 
   // that's it
   return;
@@ -837,7 +838,7 @@ void THR::TimInt::apply_force_internal(
 )
 {
   // type of calling time integrator
-  p.set<int>("time integrator", MethodName());
+  p.set<int>("time integrator", method_name());
   // action for elements
   THR::Action action = THR::calc_thermo_fint;
   p.set<int>("action", action);
@@ -845,14 +846,14 @@ void THR::TimInt::apply_force_internal(
   p.set("total time", time);
   p.set("delta time", dt);
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   // set_state(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->set_state(0, "residual temperature", tempi);
   discret_->set_state(0, "temperature", temp);
 
   // call the element evaluate()
   discret_->evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
+  discret_->clear_state();
 
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
@@ -868,7 +869,7 @@ void THR::TimInt::apply_force_internal(
 /*----------------------------------------------------------------------*
  | set initial field for temperature (according to ScaTra)   dano 06/10 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::SetInitialField(const Inpar::THR::InitialField init, const int startfuncno)
+void THR::TimInt::set_initial_field(const Inpar::THR::InitialField init, const int startfuncno)
 {
   switch (init)
   {
@@ -886,12 +887,12 @@ void THR::TimInt::SetInitialField(const Inpar::THR::InitialField init, const int
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
       // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
       {
         // get the processor local node
-        Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->Dof(0, lnode);
+        std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         int numdofs = nodedofset.size();
         for (int k = 0; k < numdofs; ++k)
@@ -899,9 +900,10 @@ void THR::TimInt::SetInitialField(const Inpar::THR::InitialField init, const int
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = Global::Problem::Instance()
-                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .evaluate(lnode->X().data(), 0.0, k);
+          double initialval =
+              Global::Problem::instance()
+                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  .evaluate(lnode->x().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
           int err1 = (*temp_)(0)->ReplaceMyValues(1, &initialval, &doflid);
@@ -921,9 +923,9 @@ void THR::TimInt::SetInitialField(const Inpar::THR::InitialField init, const int
       std::vector<int> localdofs;
       localdofs.push_back(0);
       discret_->evaluate_initial_field(
-          Global::Problem::Instance()->FunctionManager(), "Temperature", (*temp_)(0), localdofs);
+          Global::Problem::instance()->function_manager(), "Temperature", (*temp_)(0), localdofs);
       discret_->evaluate_initial_field(
-          Global::Problem::Instance()->FunctionManager(), "Temperature", tempn_, localdofs);
+          Global::Problem::instance()->function_manager(), "Temperature", tempn_, localdofs);
 
       break;
     }  // initfield_field_by_condition
@@ -942,7 +944,7 @@ void THR::TimInt::SetInitialField(const Inpar::THR::InitialField init, const int
 /*----------------------------------------------------------------------*
  | apply interface loads to the thermo field                ghamm 12/10 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload)
+void THR::TimInt::set_force_interface(Teuchos::RCP<Epetra_Vector> ithermoload)
 {
   fifc_->Update(1.0, *ithermoload, 0.0);
 }  // SetForceInterface()
@@ -988,12 +990,12 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
 
       // vector for output
       Teuchos::RCP<Epetra_MultiVector> normvec =
-          Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(), 7));
+          Teuchos::rcp(new Epetra_MultiVector(*discret_->element_row_map(), 7));
 
       // call loop over elements (assemble nothing)
-      discret_->EvaluateScalars(eleparams, errors);
-      discret_->EvaluateScalars(eleparams, normvec);
-      discret_->ClearState();
+      discret_->evaluate_scalars(eleparams, errors);
+      discret_->evaluate_scalars(eleparams, normvec);
+      discret_->clear_state();
 
       (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
       (*relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
@@ -1020,7 +1022,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
         {
           std::ostringstream temp;
           const std::string simulation =
-              Global::Problem::Instance()->OutputControlFile()->file_name();
+              Global::Problem::instance()->output_control_file()->file_name();
           const std::string fname = simulation + "_thermo.relerror";
 
           std::ofstream f;
@@ -1034,7 +1036,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
         }
 
         const std::string simulation =
-            Global::Problem::Instance()->OutputControlFile()->file_name();
+            Global::Problem::instance()->output_control_file()->file_name();
         const std::string fname = simulation + "_thermo_time.relerror";
 
         if (step_ == 1)

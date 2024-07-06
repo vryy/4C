@@ -41,7 +41,7 @@ namespace Core::Geo
           const std::set<plain_volumecell_set, Cmp>& set2) const;
 
       /// compare routine for sets of plain_volumecell_set
-      bool Compare(const std::set<plain_volumecell_set, Cmp>& set1,
+      bool compare(const std::set<plain_volumecell_set, Cmp>& set1,
           const std::set<plain_volumecell_set, Cmp>& set2) const;
 
      private:
@@ -67,22 +67,22 @@ namespace Core::Geo
 
       /// return the composite of all connected volumecells between elements and the element's
       /// sub-elements
-      const std::set<plain_volumecell_set, Cmp>& VolumeCellComposite() const
+      const std::set<plain_volumecell_set, Cmp>& volume_cell_composite() const
       {
         return volumecell_composite_;
       }
 
       /// collect cut sides of the entire volumecell composite
-      void CollectCutSides(plain_int_set& cutside_ids) const;
+      void collect_cut_sides(plain_int_set& cutside_ids) const;
 
       /// is the nodal dofset a standard dofset?
-      bool Is_Standard_DofSet() const { return is_std_dofset_; }
+      bool is_standard_dof_set() const { return is_std_dofset_; }
 
       /// get the position of the nodal dofset which is the same for all its contained volumecells
-      Core::Geo::Cut::Point::PointPosition Position() const { return position_; };
+      Core::Geo::Cut::Point::PointPosition position() const { return position_; };
 
       /// does the nodal dofset's composite of volumecells contain the point?
-      virtual bool Contains(Core::Geo::Cut::Point* p);
+      virtual bool contains(Core::Geo::Cut::Point* p);
 
       virtual void print();
 
@@ -115,14 +115,14 @@ namespace Core::Geo
       {
         if (allow_connect_std_and_ghost_sets)
         {
-          if (position_ != nds->Position())
+          if (position_ != nds->position())
             FOUR_C_THROW(
                 "NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same "
                 "position! Invalid!");
         }
         else  // require same type of dofsets: std/ghost
         {
-          if (is_std_dofset_ != nds->Is_Standard_DofSet() or position_ != nds->Position())
+          if (is_std_dofset_ != nds->is_standard_dof_set() or position_ != nds->position())
             FOUR_C_THROW(
                 "NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same "
                 "properties! Invalid!");
@@ -130,15 +130,15 @@ namespace Core::Geo
 
         nodal_dofsets_.push_back(nds);
 
-        std::copy(nds->VolumeCellComposite().begin(), nds->VolumeCellComposite().end(),
+        std::copy(nds->volume_cell_composite().begin(), nds->volume_cell_composite().end(),
             std::inserter(volumecell_composite_, volumecell_composite_.end()));
       }
 
       /// does one of the nodal dofset's contain the point?
-      bool Contains(Core::Geo::Cut::Point* p) override
+      bool contains(Core::Geo::Cut::Point* p) override
       {
         for (unsigned int i = 0; i < nodal_dofsets_.size(); i++)
-          if (nodal_dofsets_[i]->Contains(p)) return true;
+          if (nodal_dofsets_[i]->contains(p)) return true;
 
         return false;
       }
@@ -170,13 +170,13 @@ namespace Core::Geo
       }
 
       /// get node's node Id
-      int Id() const { return nid_; }
+      int id() const { return nid_; }
 
       /// register an edge adjacent to this node
       void Register(Edge* edge)
       {
         edges_.insert(edge);
-        point_->AddEdge(edge);
+        point_->add_edge(edge);
       }
 
       /// register a side adjacent to this node
@@ -186,7 +186,7 @@ namespace Core::Geo
       void Register(Element* element) { point_->add_element(element); }
 
       /// register cuts
-      void RegisterCuts();
+      void register_cuts();
 
 
       /*========================================================================*/
@@ -194,25 +194,25 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// get edges adjacent to this node
-      const plain_edge_set& Edges() { return edges_; }
+      const plain_edge_set& edges() { return edges_; }
 
       /// Get the coordinates of the node from its point's information
-      void Coordinates(double* x) const { point_->Coordinates(x); }
+      void coordinates(double* x) const { point_->coordinates(x); }
 
       /// Get the position of the node whether it is in fluid, structure or on the cut face
-      Point::PointPosition Position() const { return point_->Position(); }
+      Point::PointPosition position() const { return point_->position(); }
 
       /// Returns the point that defines the node
       Point* point() const { return point_; }
 
       /// Returns the levelset value at this node (if it is a levelset node)
-      double LSV() const { return lsv_; }
+      double lsv() const { return lsv_; }
 
       /// Returns sides that are connected at this node
-      const plain_side_set& Sides() const { return point_->CutSides(); }
+      const plain_side_set& sides() const { return point_->cut_sides(); }
 
       /// get all cut elements adjacent to this node's point
-      const plain_element_set& Elements() const { return point_->Elements(); }
+      const plain_element_set& elements() const { return point_->elements(); }
 
 
       /*========================================================================*/
@@ -223,7 +223,7 @@ namespace Core::Geo
       void print(std::ostream& f = std::cout) { point_->print(); }
 
       /// plot node's or its point's information to the stream
-      void Plot(std::ostream& f) { point_->Plot(f, this->Id()); };
+      void plot(std::ostream& f) { point_->plot(f, this->id()); };
 
 
       /*========================================================================*/
@@ -231,24 +231,24 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// Assign the vc_sets to the node if possible
-      void AssignNodalCellSet(const std::vector<plain_volumecell_set>& ele_vc_sets,
+      void assign_nodal_cell_set(const std::vector<plain_volumecell_set>& ele_vc_sets,
           std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets);
 
       /// Find the dofsets required at this node. (old unused version)
-      void FindDOFSets(bool include_inner);
+      void find_dof_sets(bool include_inner);
 
       /// Find the dofsets required at this node.
-      void FindDOFSetsNEW(std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
+      void find_dof_sets_new(std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
           std::vector<plain_volumecell_set>& cell_sets);
 
       /// get the dofset number of the Volumecell w.r.t this node (old unused version)
-      int DofSetNumber(VolumeCell* cell);
+      int dof_set_number(VolumeCell* cell);
 
       /// get the dofset number of the Volumecell w.r.t this node
-      int DofSetNumberNEW(const plain_volumecell_set& cells);
+      int dof_set_number_new(const plain_volumecell_set& cells);
 
       /// return the sets of volumecells (old unsed version)
-      const std::vector<plain_volumecell_set>& DofSets() const { return dofsets_; }
+      const std::vector<plain_volumecell_set>& dof_sets() const { return dofsets_; }
 
 
       /*========================================================================*/
@@ -256,19 +256,19 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// Returns the selfcutposition of this node
-      Point::PointPosition SelfCutPosition() { return selfcutposition_; }
+      Point::PointPosition self_cut_position() { return selfcutposition_; }
 
       /// Gives this node a selfcutposition and spreads the positional information
-      void SelfCutPosition(Point::PointPosition p);
+      void self_cut_position(Point::PointPosition p);
 
       /// Changes the selfcutposition of this node and spreads the positional information
       void change_self_cut_position(Point::PointPosition p);
 
       /// Erase the cutsideedge from this node because it is deleted in the selfcut
-      void EraseCutSideEdge(Edge* cutsideedge) { edges_.erase(cutsideedge); }
+      void erase_cut_side_edge(Edge* cutsideedge) { edges_.erase(cutsideedge); }
 
       /// Return true is the given node has same position coordinates as this node
-      bool isAtSameLocation(const Node* nod1) const;
+      bool is_at_same_location(const Node* nod1) const;
 
 
       /*========================================================================*/
@@ -276,13 +276,13 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// get the number of dofsets at this node
-      int NumDofSets() const;
+      int num_dof_sets() const;
 
       /// return a vector of all nodal dofsets
-      const std::vector<Teuchos::RCP<NodalDofSet>>& NodalDofSets() const { return nodaldofsets_; }
+      const std::vector<Teuchos::RCP<NodalDofSet>>& nodal_dof_sets() const { return nodaldofsets_; }
 
       /// return a vector of all nodal dofsets
-      NodalDofSet* GetNodalDofSet(const int nds) const { return &*nodaldofsets_[nds]; }
+      NodalDofSet* get_nodal_dof_set(const int nds) const { return &*nodaldofsets_[nds]; }
 
       /// remove non-standard nodal dofsets
       void remove_non_standard_nodal_dof_sets();
@@ -296,11 +296,11 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// sort all nodal dofsets via xyz point coordinates (use compare functions in cut_node.H)
-      void SortNodalDofSets();
+      void sort_nodal_dof_sets();
 
       /// collect the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal
       /// dofsets for a certain phase
-      void CollectNodalDofSets(bool connect_ghost_with_standard_nds);
+      void collect_nodal_dof_sets(bool connect_ghost_with_standard_nds);
 
       /// compare operator for sorting NodalDofSets
       bool operator()(NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2) const;

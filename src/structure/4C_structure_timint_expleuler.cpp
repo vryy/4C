@@ -79,7 +79,7 @@ void Solid::TimIntExplEuler::setup()
   determine_mass_damp_consist_accel();
 
   // resize of multi-step quantities
-  ResizeMStep();
+  resize_m_step();
 
   // allocate force vectors
   fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
@@ -93,7 +93,7 @@ void Solid::TimIntExplEuler::setup()
 
 /*----------------------------------------------------------------------*/
 /* Resizing of multi-step quantities */
-void Solid::TimIntExplEuler::ResizeMStep()
+void Solid::TimIntExplEuler::resize_m_step()
 {
   // nothing to do, because ExplEuler is a 1-step method
   return;
@@ -101,10 +101,10 @@ void Solid::TimIntExplEuler::ResizeMStep()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-int Solid::TimIntExplEuler::IntegrateStep()
+int Solid::TimIntExplEuler::integrate_step()
 {
   // things to be done before integrating
-  PreSolve();
+  pre_solve();
 
   // time this step
   timer_->reset();
@@ -131,7 +131,7 @@ int Solid::TimIntExplEuler::IntegrateStep()
   apply_dirichlet_bc(timen_, disn_, veln_, Teuchos::null, false);
 
   // initialise stiffness matrix to zero
-  stiff_->Zero();
+  stiff_->zero();
 
   // build new external forces
   fextn_->PutScalar(0.0);
@@ -162,7 +162,7 @@ int Solid::TimIntExplEuler::IntegrateStep()
   // viscous forces due Rayleigh damping
   if (damping_ == Inpar::Solid::damp_rayleigh)
   {
-    damp_->Multiply(false, *veln_, *fviscn_);
+    damp_->multiply(false, *veln_, *fviscn_);
   }
 
   // *********** time measurement ***********
@@ -174,11 +174,11 @@ int Solid::TimIntExplEuler::IntegrateStep()
   {
     fcmtn_->PutScalar(0.0);
 
-    if (cmtbridge_->HaveMeshtying())
-      cmtbridge_->MtManager()->GetStrategy().apply_force_stiff_cmt(
+    if (cmtbridge_->have_meshtying())
+      cmtbridge_->mt_manager()->get_strategy().apply_force_stiff_cmt(
           disn_, stiff_, fcmtn_, stepn_, 0, false);
-    if (cmtbridge_->HaveContact())
-      cmtbridge_->ContactManager()->GetStrategy().apply_force_stiff_cmt(
+    if (cmtbridge_->have_contact())
+      cmtbridge_->contact_manager()->get_strategy().apply_force_stiff_cmt(
           disn_, stiff_, fcmtn_, stepn_, 0, false);
   }
 
@@ -206,7 +206,7 @@ int Solid::TimIntExplEuler::IntegrateStep()
 
   // obtain new accelerations \f$A_{n+1}\f$
   {
-    FOUR_C_ASSERT(mass_->Filled(), "Mass matrix has to be completed");
+    FOUR_C_ASSERT(mass_->filled(), "Mass matrix has to be completed");
     // blank linear momentum zero on DOFs subjected to DBCs
     dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), frimpn_);
     // get accelerations
@@ -221,15 +221,15 @@ int Solid::TimIntExplEuler::IntegrateStep()
       // in TimInt::determine_mass_damp_consist_accel
       Core::LinAlg::SolverParams solver_params;
       solver_params.reset = true;
-      solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, solver_params);
+      solver_->solve(mass_->epetra_operator(), accn_, frimpn_, solver_params);
     }
     // direct inversion based on lumped mass matrix
     else
     {
       // extract the diagonal values of the mass matrix
       Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(
-          (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->RowMap(), false);
-      (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->ExtractDiagonalCopy(*diag);
+          (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->row_map(), false);
+      (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->extract_diagonal_copy(*diag);
       // A_{n+1} = M^{-1} . ( -fint + fext )
       accn_->ReciprocalMultiply(1.0, *diag, *frimpn_, 0.0);
     }
@@ -248,17 +248,17 @@ int Solid::TimIntExplEuler::IntegrateStep()
 
 /*----------------------------------------------------------------------*/
 /* Update step */
-void Solid::TimIntExplEuler::UpdateStepState()
+void Solid::TimIntExplEuler::update_step_state()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
-  dis_->UpdateSteps(*disn_);
+  dis_->update_steps(*disn_);
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}
-  vel_->UpdateSteps(*veln_);
+  vel_->update_steps(*veln_);
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
-  acc_->UpdateSteps(*accn_);
+  acc_->update_steps(*accn_);
 
   // update contact and meshtying
   update_step_contact_meshtying();
@@ -270,7 +270,7 @@ void Solid::TimIntExplEuler::UpdateStepState()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void Solid::TimIntExplEuler::UpdateStepElement()
+void Solid::TimIntExplEuler::update_step_element()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -285,11 +285,12 @@ void Solid::TimIntExplEuler::UpdateStepElement()
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void Solid::TimIntExplEuler::ReadRestartForce() { return; }
+void Solid::TimIntExplEuler::read_restart_force() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void Solid::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntExplEuler::write_restart_force(
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   return;
 }

@@ -73,13 +73,14 @@ namespace CONTACT
      * @note: this approximation is done here since update_trace_ineq_etimates() can not be called
      * at the moment
      */
-    void InitTraceHE();
+    void init_trace_he();
 
-    void Integrate(const CONTACT::ParamsInterface& cparams) override;
+    void integrate(const CONTACT::ParamsInterface& cparams) override;
 
     void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
+    void set_parent_state(
+        const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
@@ -90,7 +91,7 @@ namespace CONTACT
      * @param[in] bt   block type of requested matrix block
      * @return pointer to matrix block
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bp) const;
 
     //! don't want = operator

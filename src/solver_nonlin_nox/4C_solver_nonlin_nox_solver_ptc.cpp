@@ -83,16 +83,16 @@ void NOX::Nln::Solver::PseudoTransient::init()
 
   // get the time step control type
   const std::string& control_str = p_ptc.get<std::string>("Time Step Control");
-  tscType_ = String2TSCType(control_str);
+  tscType_ = string2_tsc_type(control_str);
   const std::string& norm_str = p_ptc.get<std::string>("Norm Type for TSC");
   normType_ = NOX::Nln::Aux::string_to_norm_type(norm_str);
 
   // get the scaling operator type
   const std::string& scaleop_str = p_ptc.get<std::string>("Scaling Type");
-  scaleOpType_ = String2ScaleOpType(scaleop_str);
+  scaleOpType_ = string2_scale_op_type(scaleop_str);
 
   const std::string& build_scaling_op = p_ptc.get<std::string>("Build scaling operator");
-  build_scaling_op_ = String2BuildOpType(build_scaling_op);
+  build_scaling_op_ = string2_build_op_type(build_scaling_op);
 
   // create the scaling operator
   create_scaling_operator();
@@ -652,7 +652,7 @@ const double& NOX::Nln::Solver::PseudoTransient::get_inverse_pseudo_time_step() 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const double& NOX::Nln::Solver::PseudoTransient::getScalingFactor() const { return scaleFactor_; }
+const double& NOX::Nln::Solver::PseudoTransient::get_scaling_factor() const { return scaleFactor_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -681,7 +681,7 @@ bool NOX::Nln::Solver::PseudoTransient::use_pseudo_transient_residual() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::Nln::Solver::PseudoTransient::isPtcSolve() const { return isPtcSolve_; }
+bool NOX::Nln::Solver::PseudoTransient::is_ptc_solve() const { return isPtcSolve_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -793,7 +793,7 @@ NOX::Nln::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
 void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
     Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys)
 {
-  if (not ptcsolver_.isPtcSolve()) return;
+  if (not ptcsolver_.is_ptc_solve()) return;
 
   // get the type of the jacobian
   const enum NOX::Nln::LinSystem::OperatorType& jactype = linsys.get_jacobian_operator_type();
@@ -843,7 +843,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
   const double& deltaInv = ptcsolver_.get_inverse_pseudo_time_step();
   const enum NOX::Nln::Solver::PseudoTransient::ScaleOpType& scaleoptype =
       ptcsolver_.get_scaling_operator_type();
-  const double& scaleFactor = ptcsolver_.getScalingFactor();
+  const double& scaleFactor = ptcsolver_.get_scaling_factor();
 
   switch (scaleoptype)
   {
@@ -858,8 +858,8 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
       // Scale v with scaling factor
       v->Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
-      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(jac.RowMap(), false);
-      jac.ExtractDiagonalCopy(*diag);
+      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(jac.row_map(), false);
+      jac.extract_diagonal_copy(*diag);
       diag->Update(1.0, *v, 1.0);
       // Finally modify the jacobian
       jac.replace_diagonal_values(*diag);
@@ -872,9 +872,9 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
        *
        *        (\delta^{-1} \boldsymbol{V} + \boldsymbol{J}) */
 
-      scaling_matrix_op_ptr_->Complete();
-      jac.Add(*scaling_matrix_op_ptr_, false, scaleFactor * deltaInv, 1.0);
-      jac.Complete();
+      scaling_matrix_op_ptr_->complete();
+      jac.add(*scaling_matrix_op_ptr_, false, scaleFactor * deltaInv, 1.0);
+      jac.complete();
 
       break;
     }
@@ -939,7 +939,7 @@ NOX::Nln::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
     }
     case NOX::Nln::Solver::PseudoTransient::scale_op_element_based:
     {
-      scaling_matrix_op_ptr_->Multiply(
+      scaling_matrix_op_ptr_->multiply(
           false, xUpdate->getEpetraVector(), xUpdate->getEpetraVector());
       xUpdate->scale(ptcsolver_.get_inverse_pseudo_time_step());
 
@@ -959,7 +959,7 @@ NOX::Nln::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
 void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_post_compute_f(
     Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
-  if (not ptcsolver_.isPtcSolve()) return;
+  if (not ptcsolver_.is_ptc_solve()) return;
 
   const bool use_pseudo_transient_residual = ptcsolver_.use_pseudo_transient_residual();
 
@@ -983,7 +983,7 @@ void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_post_compute_f(
 void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_pre_compute_f(
     Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
-  if (not ptcsolver_.isPtcSolve()) return;
+  if (not ptcsolver_.is_ptc_solve()) return;
 
   // If the current rhs has not been calculated, yet.
   if (!grp.isF())

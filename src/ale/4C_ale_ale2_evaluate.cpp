@@ -61,13 +61,13 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
 
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   switch (act)
   {
     case calc_ale_solid:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
@@ -77,7 +77,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_solid_linear:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
@@ -87,7 +87,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_laplace_material:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, spatialconfiguration);
@@ -96,7 +96,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_laplace_spatial:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, true);
@@ -106,7 +106,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     case calc_ale_springs_material:
     {
       Teuchos::RCP<const Epetra_Vector> dispnp =
-          discretization.GetState("dispnp");  // get the displacements
+          discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
@@ -117,7 +117,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     case calc_ale_springs_spatial:
     {
       Teuchos::RCP<const Epetra_Vector> dispnp =
-          discretization.GetState("dispnp");  // get the displacements
+          discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
@@ -131,8 +131,8 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<Mat::So3Material> so3mat =
           Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
 
-      if (so3mat->MaterialType() != Core::Materials::m_elasthyper and
-          so3mat->MaterialType() !=
+      if (so3mat->material_type() != Core::Materials::m_elasthyper and
+          so3mat->material_type() !=
               Core::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
         FOUR_C_THROW(
@@ -141,7 +141,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
             "element line definition.");
       }
 
-      if (so3mat->MaterialType() == Core::Materials::m_elasthyper)
+      if (so3mat->material_type() == Core::Materials::m_elasthyper)
       {
         so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
         so3mat->setup(0, nullptr);
@@ -150,7 +150,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_det_jac:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
@@ -387,7 +387,7 @@ void Discret::ELEMENTS::Ale2::static_ke_spring(Core::LinAlg::SerialDenseMatrix* 
     const bool spatialconfiguration)
 {
   const int iel = num_node();  // numnode of this element
-  const Core::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->shape();
   int numcnd;          // number of corner nodes
   int node_i, node_j;  // end nodes of actual spring
   double length;       // length of actual edge
@@ -418,8 +418,8 @@ void Discret::ELEMENTS::Ale2::static_ke_spring(Core::LinAlg::SerialDenseMatrix* 
 
   for (int i = 0; i < iel; i++)
   {
-    xyze(0, i) = Nodes()[i]->X()[0];
-    xyze(1, i) = Nodes()[i]->X()[1];
+    xyze(0, i) = nodes()[i]->x()[0];
+    xyze(1, i) = nodes()[i]->x()[1];
   }
 
   // compute spatial configuration (if necessary)
@@ -603,7 +603,7 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 
   /*------- get integration data ---------------------------------------- */
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
 
   // gaussian points
   const Core::FE::GaussRule2D gaussrule = get_optimal_gaussrule(distype);
@@ -612,8 +612,8 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
   {
-    xrefe(0, k) = Nodes()[k]->X()[0];
-    xrefe(1, k) = Nodes()[k]->X()[1];
+    xrefe(0, k) = nodes()[k]->x()[0];
+    xrefe(1, k) = nodes()[k]->x()[1];
 
     xcure(0, k) = xrefe(0, k);
     xcure(1, k) = xrefe(1, k);
@@ -632,9 +632,9 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     for (int inode = 0; inode < numnode; ++inode)
     {
       Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights(inode) = cp->W();
+      weights(inode) = cp->w();
     }
   }
 
@@ -676,7 +676,7 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     b_op_lin_cure(b_cure, boplin, F, numeps, nd);
 
 
-    call_mat_geo_nonl(strain, stress, C, numeps, Material(), params, ip);
+    call_mat_geo_nonl(strain, stress, C, numeps, material(), params, ip);
 
 
 
@@ -765,15 +765,15 @@ void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
   //      "using it.");
 
   const int iel = num_node();
-  const Core::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->shape();
 
   Core::LinAlg::SerialDenseMatrix xyze(2, iel);
 
   // get node coordinates
   for (int i = 0; i < iel; i++)
   {
-    xyze(0, i) = Nodes()[i]->X()[0];
-    xyze(1, i) = Nodes()[i]->X()[1];
+    xyze(0, i) = nodes()[i]->x()[0];
+    xyze(1, i) = nodes()[i]->x()[1];
   }
 
   // update spatial configuration if necessary
@@ -796,14 +796,14 @@ void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
     Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
         dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
-    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
+    (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
     for (int inode = 0; inode < iel; ++inode)
     {
       Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights(inode) = cp->W();
+      weights(inode) = cp->w();
     }
   }
 
@@ -954,7 +954,7 @@ void Discret::ELEMENTS::Ale2::jacobian_matrix(const Core::LinAlg::SerialDenseMat
   /*------------------------------------------ determinant of jacobian ---*/
   *det = xjm[0][0] * xjm[1][1] - xjm[1][0] * xjm[0][1];
 
-  if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, Id());
+  if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, id());
   /*----------------------------------------------------------------------*/
 
   return;
@@ -1062,14 +1062,14 @@ void Discret::ELEMENTS::Ale2::call_mat_geo_nonl(
     const int gp)
 {
   /*--------------------------- call material law -> get tangent modulus--*/
-  switch (material->MaterialType())
+  switch (material->material_type())
   {
     case Core::Materials::m_stvenant: /*----------------------- linear elastic ---*/
     {
       const Mat::StVenantKirchhoff* actmat =
           static_cast<const Mat::StVenantKirchhoff*>(material.get());
-      double ym = actmat->Youngs();
-      double pv = actmat->PoissonRatio();
+      double ym = actmat->youngs();
+      double pv = actmat->poisson_ratio();
 
       /*----------- material-tangente - plane strain, rotational symmetry ---*/
 
@@ -1134,7 +1134,7 @@ void Discret::ELEMENTS::Ale2::call_mat_geo_nonl(
       FOUR_C_THROW("Invalid type of material law for wall element");
       break;
     }
-  }  // switch(material->MaterialType())
+  }  // switch(material->material_type())
 
   return;
 }
@@ -1193,10 +1193,10 @@ void Discret::ELEMENTS::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* st
     Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
-  Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Material());
+  Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(material());
   if (so3mat == Teuchos::null) FOUR_C_THROW("cast to So3Material failed!");
 
-  so3mat->evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
+  so3mat->evaluate(nullptr, glstrain, params, stress, cmat, gp, id());
 
   return;
 }
@@ -1274,15 +1274,15 @@ void Discret::ELEMENTS::Ale2::compute_det_jac(Core::LinAlg::SerialDenseVector& e
   Core::LinAlg::SerialDenseVector quality(4);
 
   /*------- get integration data ---------------------------------------- */
-  const Core::FE::CellType distype = Shape();
+  const Core::FE::CellType distype = shape();
   if (distype != Core::FE::CellType::quad4)
     FOUR_C_THROW("Quality metric is currently implemented for Quad4 elements, only.");
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)
   {
-    xrefe(0, k) = Nodes()[k]->X()[0];
-    xrefe(1, k) = Nodes()[k]->X()[1];
+    xrefe(0, k) = nodes()[k]->x()[0];
+    xrefe(1, k) = nodes()[k]->x()[1];
 
     // We always evaluate the current configuration
     xcure(0, k) = xrefe(0, k) += disp[k * numdf + 0];

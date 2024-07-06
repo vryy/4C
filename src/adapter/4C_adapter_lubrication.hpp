@@ -66,12 +66,12 @@ namespace Adapter
     virtual ~LubricationBaseAlgorithm() = default;
 
     /// access to the Lubrication field solver
-    Teuchos::RCP<LUBRICATION::TimIntImpl> LubricationField() { return lubrication_; }
+    Teuchos::RCP<LUBRICATION::TimIntImpl> lubrication_field() { return lubrication_; }
 
     /// create result test for Lubrication field
     Teuchos::RCP<Core::UTILS::ResultTest> create_lubrication_field_test();
 
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter();
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer();
 
    private:
     /// Lubrication field solver

@@ -51,7 +51,7 @@ namespace Discret::ELEMENTS
   template <typename T>
   inline std::vector<char>& get_stress_data(const T& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return *ele.params_interface().stress_data_ptr();
     }
@@ -64,7 +64,7 @@ namespace Discret::ELEMENTS
   template <typename T>
   inline std::vector<char>& get_strain_data(const T& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return *ele.params_interface().strain_data_ptr();
     }
@@ -78,7 +78,7 @@ namespace Discret::ELEMENTS
   inline Inpar::Solid::StressType get_io_stress_type(
       const T& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return ele.params_interface().get_stress_output_type();
     }
@@ -92,7 +92,7 @@ namespace Discret::ELEMENTS
   inline Inpar::Solid::StrainType get_io_strain_type(
       const T& ele, const Teuchos::ParameterList& params)
   {
-    if (ele.IsParamsInterface())
+    if (ele.is_params_interface())
     {
       return ele.params_interface().get_strain_output_type();
     }
@@ -260,8 +260,8 @@ namespace Discret::ELEMENTS
 
       // Step 1: Collect the data for each Gauss point for the material
       Core::LinAlg::SerialDenseMatrix gp_data(
-          stiffness_matrix_integration.NumPoints(), quantity_size, true);
-      bool data_available = solid_material.EvaluateOutputData(quantity_name, gp_data);
+          stiffness_matrix_integration.num_points(), quantity_size, true);
+      bool data_available = solid_material.evaluate_output_data(quantity_name, gp_data);
 
       // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
       // point)

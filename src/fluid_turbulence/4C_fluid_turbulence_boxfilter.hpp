@@ -64,7 +64,7 @@ namespace FLD
     */
     virtual ~Boxfilter() = default;
 
-    void AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
+    void add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
     void initialize_vreman_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
 
@@ -85,14 +85,15 @@ namespace FLD
 
     */
 
-    void InitializeVreman();
+    void initialize_vreman();
 
-    void ApplyFilter(const Teuchos::RCP<const Epetra_Vector> velocity,
+    void apply_filter(const Teuchos::RCP<const Epetra_Vector> velocity,
         const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
         const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
 
-    void ApplyFilterScatra(const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
-        const Teuchos::RCP<const Epetra_Vector> dirichtoggle, const int ndsvel);
+    void apply_filter_scatra(const Teuchos::RCP<const Epetra_Vector> scalar,
+        const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+        const int ndsvel);
 
 
     /*!
@@ -209,10 +210,10 @@ namespace FLD
       }
 
   */
-    void GetFilteredVelocity(Teuchos::RCP<Epetra_MultiVector> velocity)
+    void get_filtered_velocity(Teuchos::RCP<Epetra_MultiVector> velocity)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -229,7 +230,7 @@ namespace FLD
     void get_filtered_dens_velocity(Teuchos::RCP<Epetra_MultiVector> densvelocity)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -244,7 +245,7 @@ namespace FLD
     void get_filtered_dens_velocity_temp(Teuchos::RCP<Epetra_MultiVector> densvelocity)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -259,7 +260,7 @@ namespace FLD
     void get_filtered_dens_rateofstrain_temp(Teuchos::RCP<Epetra_MultiVector> densvelocity)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -274,7 +275,7 @@ namespace FLD
     void get_filtered_reynolds_stress(Teuchos::RCP<Epetra_MultiVector> reystr)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -293,7 +294,7 @@ namespace FLD
     void get_filtered_modeled_subgrid_stress(Teuchos::RCP<Epetra_MultiVector> mosubstr)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -314,7 +315,7 @@ namespace FLD
     void get_filtered_vreman_strainrate(Teuchos::RCP<Epetra_MultiVector> strainr)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -333,7 +334,7 @@ namespace FLD
     void get_filtered_vreman_alphaij(Teuchos::RCP<Epetra_MultiVector> alphij)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -351,7 +352,7 @@ namespace FLD
     void get_filtered_vreman_alphaijsc(Teuchos::RCP<Epetra_MultiVector> alphijsc)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -368,10 +369,10 @@ namespace FLD
     }
 
 
-    void GetExpression(Teuchos::RCP<Epetra_Vector> expr)
+    void get_expression(Teuchos::RCP<Epetra_Vector> expr)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {
@@ -384,10 +385,10 @@ namespace FLD
     }
 
 
-    void GetDensity(Teuchos::RCP<Epetra_Vector> dens)
+    void get_density(Teuchos::RCP<Epetra_Vector> dens)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {
@@ -399,10 +400,10 @@ namespace FLD
       return;
     }
 
-    void GetTemp(Teuchos::RCP<Epetra_Vector> dens)
+    void get_temp(Teuchos::RCP<Epetra_Vector> dens)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {
@@ -414,10 +415,10 @@ namespace FLD
       return;
     }
 
-    void GetDensTemp(Teuchos::RCP<Epetra_Vector> dens)
+    void get_dens_temp(Teuchos::RCP<Epetra_Vector> dens)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {
@@ -433,7 +434,7 @@ namespace FLD
     void get_density_strainrate(Teuchos::RCP<Epetra_Vector> densstrainr)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {
@@ -445,10 +446,10 @@ namespace FLD
       return;
     }
 
-    void GetAlpha2(Teuchos::RCP<Epetra_Vector> alph2)
+    void get_alpha2(Teuchos::RCP<Epetra_Vector> alph2)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {
@@ -465,7 +466,7 @@ namespace FLD
     void get_fine_scale_velocity(Teuchos::RCP<Epetra_MultiVector> velocity)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -478,15 +479,15 @@ namespace FLD
     }
 
 
-    void FilteredReyStrComp(Teuchos::RCP<Epetra_Vector> outvec, const int i, const int j)
+    void filtered_rey_str_comp(Teuchos::RCP<Epetra_Vector> outvec, const int i, const int j)
     {
       // loop all elements on this proc (including ghosted ones)
       int ij = 3 * (i - 1) + (j - 1);
-      for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_row_nodes(); ++nid)
       {
         // get the node
-        Core::Nodes::Node* node = discret_->lRowNode(nid);
-        int id = node->Id();
+        Core::Nodes::Node* node = discret_->l_row_node(nid);
+        int id = node->id();
 
         double val = (*((*filtered_reynoldsstress_)(ij)))[nid];
 
@@ -495,14 +496,14 @@ namespace FLD
       return;
     }
 
-    void FilteredVelComp(Teuchos::RCP<Epetra_Vector> outvec, const int i, const int j)
+    void filtered_vel_comp(Teuchos::RCP<Epetra_Vector> outvec, const int i, const int j)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_row_nodes(); ++nid)
       {
         // get the node
-        Core::Nodes::Node* node = discret_->lRowNode(nid);
-        int id = node->Id();
+        Core::Nodes::Node* node = discret_->l_row_node(nid);
+        int id = node->id();
 
         double vali = (*((*filtered_vel_)(i - 1)))[nid];
         double valj = (*((*filtered_vel_)(j - 1)))[nid];
@@ -516,14 +517,14 @@ namespace FLD
     void outputof_fine_scale_vel(Teuchos::RCP<Epetra_Vector> outvec)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
+      for (int n = 0; n < discret_->num_my_row_nodes(); ++n)
       {
         // get the node
-        Core::Nodes::Node* node = discret_->lRowNode(n);
+        Core::Nodes::Node* node = discret_->l_row_node(n);
 
-        std::vector<int> dofs = discret_->Dof(node);
+        std::vector<int> dofs = discret_->dof(node);
 
-        for (int d = 0; d < discret_->NumDof(node) - 1; ++d)
+        for (int d = 0; d < discret_->num_dof(node) - 1; ++d)
         {
           double val = (*((*fs_vel_)(d)))[n];
 
@@ -535,17 +536,17 @@ namespace FLD
       return;
     }
 
-    void OutputofAveragedVel(Teuchos::RCP<Epetra_Vector> outvec)
+    void outputof_averaged_vel(Teuchos::RCP<Epetra_Vector> outvec)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int n = 0; n < discret_->NumMyRowNodes(); ++n)
+      for (int n = 0; n < discret_->num_my_row_nodes(); ++n)
       {
         // get the node
-        Core::Nodes::Node* node = discret_->lRowNode(n);
+        Core::Nodes::Node* node = discret_->l_row_node(n);
 
-        std::vector<int> dofs = discret_->Dof(node);
+        std::vector<int> dofs = discret_->dof(node);
 
-        for (int d = 0; d < discret_->NumDof(node) - 1; ++d)
+        for (int d = 0; d < discret_->num_dof(node) - 1; ++d)
         {
           double val = (*((*filtered_vel_)(d)))[n];
 
@@ -557,10 +558,10 @@ namespace FLD
       return;
     }
 
-    void GetFilteredPhi(Teuchos::RCP<Epetra_MultiVector> phi)
+    void get_filtered_phi(Teuchos::RCP<Epetra_MultiVector> phi)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -572,10 +573,10 @@ namespace FLD
       return;
     }
 
-    void GetFilteredPhi2(Teuchos::RCP<Epetra_Vector> phi2)
+    void get_filtered_phi2(Teuchos::RCP<Epetra_Vector> phi2)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {
@@ -590,7 +591,7 @@ namespace FLD
     void get_filtered_phiexpression(Teuchos::RCP<Epetra_Vector> phiexpression)
     {
       // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->NumMyColNodes(); ++nid)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         for (int i = 0; i < 1; ++i)
         {

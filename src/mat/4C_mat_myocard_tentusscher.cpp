@@ -453,7 +453,7 @@ MyocardTenTusscher::MyocardTenTusscher(const double eps_deriv_myocard, const std
 }
 
 
-double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
+double MyocardTenTusscher::rea_coeff(const double phi, const double dt)
 {
   s0_[0] = phi;
   s_[0] = phi;
@@ -467,7 +467,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
            200.0 / (1.0 + (exp(((13.0 - s0_[0]) / 10.0)))) +
            180.0 / (1.0 + (exp(((s0_[0] + 30.0) / 10.0)))) + 20.0000;
   r_[12] = (a_[7] - s0_[12]) / a_[20];
-  s_[12] = tools_.GatingVarCalc(dt, s0_[12], a_[7], a_[20]);
+  s_[12] = tools_.gating_var_calc(dt, s0_[12], a_[7], a_[20]);
 
   // s_[13] is f2 in component L_type_Ca_current_f2_gate (dimensionless).
   a_[8] = 0.67 / (1.0 + (exp(((s0_[0] + 35.0) / 7.0)))) + 0.33;
@@ -475,26 +475,26 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
            31.0 / (1.0 + (exp(((25.0 - s0_[0]) / 10.0)))) +
            80.0 / (1.0 + (exp(((s0_[0] + 30.0) / 10.0))));
   r_[13] = (a_[8] - s0_[13]) / a_[21];
-  s_[13] = tools_.GatingVarCalc(dt, s0_[13], a_[8], a_[21]);
+  s_[13] = tools_.gating_var_calc(dt, s0_[13], a_[8], a_[21]);
 
   // s_[14] is fCass in component L_type_Ca_current_fCass_gate (dimensionless).
   a_[9] = 0.6 / (1.0 + (pow((s0_[10] / 0.05), 2.0))) + 0.4;
   a_[22] = 80.0 / (1.0 + (pow((s0_[10] / 0.05), 2.0))) + 2.0;
   r_[14] = (a_[9] - s0_[14]) / a_[22];
-  s_[14] = tools_.GatingVarCalc(dt, s0_[14], a_[9], a_[22]);
+  s_[14] = tools_.gating_var_calc(dt, s0_[14], a_[9], a_[22]);
 
   // s_[15] is s in component transient_outward_current_s_gate (dimensionless).
   a_[10] = 1.0 / (1.0 + (exp(((s0_[0] + 20.0) / 5.0))));
   a_[23] = 85.0 * (exp((-(pow((s0_[0] + 45.0), 2.0)) / 320.0))) +
            5.0 / (1.0 + (exp(((s0_[0] - 20.0) / 5.0)))) + 3.0;
   r_[15] = (a_[10] - s0_[15]) / a_[23];
-  s_[15] = tools_.GatingVarCalc(dt, s0_[15], a_[10], a_[23]);
+  s_[15] = tools_.gating_var_calc(dt, s0_[15], a_[10], a_[23]);
 
   // s_[16] is r in component transient_outward_current_r_gate (dimensionless).
   a_[11] = 1.0 / (1.0 + (exp(((20.0 - s0_[0]) / 6.0))));
   a_[24] = 9.5 * (exp((-(pow((s0_[0] + 40.0), 2.0)) / 1800.0))) + 0.8;
   r_[16] = (a_[11] - s0_[16]) / a_[24];
-  s_[16] = tools_.GatingVarCalc(dt, s0_[16], a_[11], a_[24]);
+  s_[16] = tools_.gating_var_calc(dt, s0_[16], a_[11], a_[24]);
 
   // s_[4] is Xr1 in component rapid_time_dependent_potassium_current_Xr1_gate (dimensionless).
   a_[0] = 1.0 / (1.0 + (exp(((-26.0 - s0_[0]) / 7.0))));
@@ -502,7 +502,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   a_[26] = 6.0 / (1.0 + (exp(((s0_[0] + 30.0) / 11.5))));
   a_[34] = 1.0 * a_[13] * a_[26];
   r_[4] = (a_[0] - s0_[4]) / a_[34];
-  s_[4] = tools_.GatingVarCalc(dt, s0_[4], a_[0], a_[34]);
+  s_[4] = tools_.gating_var_calc(dt, s0_[4], a_[0], a_[34]);
 
   // s_[5] is Xr2 in component rapid_time_dependent_potassium_current_Xr2_gate (dimensionless).
   a_[1] = 1.0 / (1.0 + (exp(((s0_[0] + 88.0) / 24.0))));
@@ -510,7 +510,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   a_[27] = 1.12 / (1.0 + (exp(((s0_[0] - 60.0) / 20.0))));
   a_[35] = 1.0 * a_[14] * a_[27];
   r_[5] = (a_[1] - s0_[5]) / a_[35];
-  s_[5] = tools_.GatingVarCalc(dt, s0_[5], a_[1], a_[35]);
+  s_[5] = tools_.gating_var_calc(dt, s0_[5], a_[1], a_[35]);
 
   // s_[6] is Xs in component slow_time_dependent_potassium_current_Xs_gate (dimensionless).
   a_[2] = 1.0 / (1.0 + (exp(((-5.0 - s0_[0]) / 14.0))));
@@ -518,7 +518,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   a_[28] = 1.0 / (1.0 + (exp(((s0_[0] - 35.0) / 15.0))));
   a_[36] = 1.0 * a_[15] * a_[28] + 80.0;
   r_[6] = (a_[2] - s0_[6]) / a_[36];
-  s_[6] = tools_.GatingVarCalc(dt, s0_[6], a_[2], a_[36]);
+  s_[6] = tools_.gating_var_calc(dt, s0_[6], a_[2], a_[36]);
 
   // s_[7] is m in component fast_sodium_current_m_gate (dimensionless).
   a_[3] = 1.0 / (pow((1.0 + (exp(((-56.86 - s0_[0]) / 9.03)))), 2.0));
@@ -527,7 +527,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
       0.1 / (1.0 + (exp(((s0_[0] + 35.0) / 5.0)))) + 0.1 / (1.0 + (exp(((s0_[0] - 50.0) / 200.0))));
   a_[37] = 1.0 * a_[16] * a_[29];
   r_[7] = (a_[3] - s0_[7]) / a_[37];
-  s_[7] = tools_.GatingVarCalc(dt, s0_[7], a_[3], a_[37]);
+  s_[7] = tools_.gating_var_calc(dt, s0_[7], a_[3], a_[37]);
 
   // s_[8] is h in component fast_sodium_current_h_gate (dimensionless).
   a_[4] = 1.0 / (pow((1.0 + (exp(((s0_[0] + 71.55) / 7.43)))), 2.0));
@@ -536,7 +536,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
                            : 0.77 / (0.13 * (1.0 + (exp(((s0_[0] + 10.66) / -11.1))))));
   a_[38] = 1.0 / (a_[17] + a_[30]);
   r_[8] = (a_[4] - s0_[8]) / a_[38];
-  s_[8] = tools_.GatingVarCalc(dt, s0_[8], a_[4], a_[38]);
+  s_[8] = tools_.gating_var_calc(dt, s0_[8], a_[4], a_[38]);
 
   // s_[9] is j in component fast_sodium_current_j_gate (dimensionless).
   a_[5] = 1.0 / (pow((1.0 + (exp(((s0_[0] + 71.55) / 7.43)))), 2.0));
@@ -552,7 +552,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
               : (0.6 * (exp((0.057 * s0_[0])))) / (1.0 + (exp((-0.100000 * (s0_[0] + 32.0))))));
   a_[39] = 1.0 / (a_[18] + a_[31]);
   r_[9] = (a_[5] - s0_[9]) / a_[39];
-  s_[9] = tools_.GatingVarCalc(dt, s0_[9], a_[5], a_[39]);
+  s_[9] = tools_.gating_var_calc(dt, s0_[9], a_[5], a_[39]);
 
   // s_[11] is d in component L_type_Ca_current_d_gate (dimensionless).
   a_[6] = 1.0 / (1.0 + (exp(((-8.0 - s0_[0]) / 7.5))));
@@ -561,7 +561,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   a_[40] = 1.0 / (1.0 + (exp(((50.0 - s0_[0]) / 20.0))));
   a_[42] = 1.0 * a_[19] * a_[32] + a_[40];
   r_[11] = (a_[6] - s0_[11]) / a_[42];
-  s_[11] = tools_.GatingVarCalc(dt, s0_[11], a_[6], a_[42]);
+  s_[11] = tools_.gating_var_calc(dt, s0_[11], a_[6], a_[42]);
 
   // Compute membrane currents
   // -------------------------
@@ -581,7 +581,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   // s_[2] is Na_i in component sodium_dynamics (millimolar).
   r_[2] =
       ((-1.0 * (a_[50] + a_[51] + 3.0 * a_[55] + 3.0 * a_[56])) / (1.0 * c_[4] * c_[2])) * c_[3];
-  s_[2] = tools_.GatingVarCalc(dt, s0_[2], 0, -s0_[2] / r_[2]);
+  s_[2] = tools_.gating_var_calc(dt, s0_[2], 0, -s0_[2] / r_[2]);
 
   a_[33] = ((c_[0] * c_[1]) / c_[2]) * (log((c_[10] / s0_[1])));
   a_[44] = 0.1 / (1.0 + (exp((0.06 * ((s0_[0] - a_[33]) - 200.0)))));
@@ -617,7 +617,7 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   r_[1] = ((-1.0 * ((a_[47] + a_[54] + a_[48] + a_[49] + a_[58] + a_[12]) - 2.0 * a_[55])) /
               (1.0 * c_[4] * c_[2])) *
           c_[3];
-  s_[1] = tools_.GatingVarCalc(dt, s0_[1], 0, -s0_[1] / r_[1]);
+  s_[1] = tools_.gating_var_calc(dt, s0_[1], 0, -s0_[1] / r_[1]);
 
   // s_[3] is Ca_i in component calcium_dynamics (millimolar).
   a_[59] = c_[44] / (1.0 + (pow(c_[42], 2.0)) / (pow(s0_[3], 2.0)));
@@ -627,13 +627,13 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   r_[3] = a_[63] *
           ((((a_[60] - a_[59]) * c_[51]) / c_[4] + a_[61]) -
               (1.0 * ((a_[53] + a_[57]) - 2.0 * a_[56]) * c_[3]) / (2.0 * 1.0 * c_[4] * c_[2]));
-  s_[3] = tools_.GatingVarCalc(dt, s0_[3], 0, -s0_[3] / r_[3]);
+  s_[3] = tools_.gating_var_calc(dt, s0_[3], 0, -s0_[3] / r_[3]);
 
   // s_[18] is R_prime in component calcium_dynamics (dimensionless).
   a_[62] = c_[38] - (c_[38] - c_[39]) / (1.0 + (pow((c_[37] / s0_[17]), 2.0)));
   a_[65] = c_[34] * a_[62];
   r_[18] = -a_[65] * s0_[10] * s0_[18] + c_[36] * (1.0 - s0_[18]);
-  s_[18] = tools_.GatingVarCalc(dt, s0_[18], 0, -s0_[18] / r_[18]);
+  s_[18] = tools_.gating_var_calc(dt, s0_[18], 0, -s0_[18] / r_[18]);
 
   // s0_[17] is Ca_SR in component calcium_dynamics (millimolar).
   a_[64] = c_[33] / a_[62];
@@ -641,14 +641,14 @@ double MyocardTenTusscher::ReaCoeff(const double phi, const double dt)
   a_[67] = c_[40] * a_[66] * (s0_[17] - s0_[10]);
   a_[68] = 1.0 / (1.0 + (c_[47] * c_[48]) / (pow((s0_[17] + c_[48]), 2.0)));
   r_[17] = a_[68] * (a_[59] - (a_[67] + a_[60]));
-  s_[17] = tools_.GatingVarCalc(dt, s0_[17], 0, -s0_[17] / r_[17]);
+  s_[17] = tools_.gating_var_calc(dt, s0_[17], 0, -s0_[17] / r_[17]);
 
   // s_[10] is Ca_ss in component calcium_dynamics (millimolar).
   a_[69] = 1.0 / (1.0 + (c_[49] * c_[50]) / (pow((s0_[10] + c_[50]), 2.0)));
   r_[10] = a_[69] *
            (((-1.0 * a_[52] * c_[3]) / (2.0 * 1.0 * c_[52] * c_[2]) + (a_[67] * c_[51]) / c_[52]) -
                (a_[61] * c_[4]) / c_[52]);
-  s_[10] = tools_.GatingVarCalc(dt, s0_[10], 0, -s0_[10] / r_[10]);
+  s_[10] = tools_.gating_var_calc(dt, s0_[10], 0, -s0_[10] / r_[10]);
 
   // Update rest of state variables
   // ------------------------------
@@ -676,7 +676,7 @@ int MyocardTenTusscher::get_number_of_internal_state_variables() const { return 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardTenTusscher::GetInternalState(const int k) const
+double MyocardTenTusscher::get_internal_state(const int k) const
 {
   double val = 0.0;
   if (k == -1)
@@ -693,7 +693,7 @@ double MyocardTenTusscher::GetInternalState(const int k) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void MyocardTenTusscher::SetInternalState(const int k, const double val)
+void MyocardTenTusscher::set_internal_state(const int k, const double val)
 {
   if (k == -1)
   {
@@ -716,7 +716,7 @@ int MyocardTenTusscher::get_number_of_ionic_currents() const { return 15; }
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardTenTusscher::GetIonicCurrents(const int k) const
+double MyocardTenTusscher::get_ionic_currents(const int k) const
 {
   double val = 0.0;
   val = a_[47 + k];

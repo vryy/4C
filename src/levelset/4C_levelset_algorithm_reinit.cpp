@@ -297,7 +297,7 @@ bool ScaTra::LevelSetAlgorithm::convergence_check_reinit()
     double local_sum = 0.0;
     int local_num_nodes = 0;
 
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
       if (std::abs((*phin_)[inode]) < reinitbandwidth_)
       {
@@ -309,8 +309,8 @@ bool ScaTra::LevelSetAlgorithm::convergence_check_reinit()
     // communicate sums
     double global_sum = 0.0;
     int global_num_nodes = 0;
-    discret_->Comm().SumAll(&local_sum, &global_sum, 1);
-    discret_->Comm().SumAll(&local_num_nodes, &global_num_nodes, 1);
+    discret_->get_comm().SumAll(&local_sum, &global_sum, 1);
+    discret_->get_comm().SumAll(&local_num_nodes, &global_num_nodes, 1);
 
     // compute current error in band
     const double err = global_sum / ((double)global_num_nodes);
@@ -384,7 +384,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
         (lsdim_ == Inpar::ScaTra::ls_2Dz and idim != 2))
     {
       // zero out matrix and rhs entries
-      sysmat_->Zero();
+      sysmat_->zero();
       residual_->PutScalar(0.0);
 
       // create the parameters for the discretization
@@ -400,7 +400,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
       // activate reinitialization calculation routines
       eleparams.set<bool>("solve reinit eq", true);
 
-      discret_->ClearState();  // TODO Caution if called from nonlinear_solve
+      discret_->clear_state();  // TODO Caution if called from nonlinear_solve
       // set initial phi, i.e., solution of level-set equation
       discret_->set_state("phizero", initialphireinit_);
 
@@ -430,18 +430,18 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
       }
       // call loop over elements
       discret_->evaluate(eleparams, sysmat_, residual_);
-      discret_->ClearState();
+      discret_->clear_state();
 
       // finalize the complete matrix
-      sysmat_->Complete();
+      sysmat_->complete();
 
       // solve for velocity component
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
       solver_params.reset = true;
-      solver_->Solve(sysmat_->EpetraOperator(), velcomp, residual_, solver_params);
+      solver_->solve(sysmat_->epetra_operator(), velcomp, residual_, solver_params);
 
-      SystemMatrix()->reset();
+      system_matrix()->reset();
       // reset the solver as well
       solver_->reset();
 
@@ -450,7 +450,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
     }
 
     // loop over all local nodes of scatra discretization
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
     {
       // store velocity in reinitialization velocity
       const double val = (*velcomp)[lnodeid];
@@ -492,7 +492,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
   // which is used here in form of a projection
 
   // zero out matrix and rhs entries !
-  sysmat_->Zero();
+  sysmat_->zero();
   residual_->PutScalar(0.0);
 
   // generate a parameterlist for communication and control
@@ -503,29 +503,29 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
   eleparams.set<bool>("solve reinit eq", true);
 
   // set state vectors
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("phizero", initialphireinit_);
   discret_->set_state("phinp", phinp_);
 
 
   // call loop over elements
   discret_->evaluate(eleparams, sysmat_, residual_);
-  discret_->ClearState();
+  discret_->clear_state();
 
   // residual_->print(std::cout);
 
   // finalize the complete matrix
-  sysmat_->Complete();
+  sysmat_->complete();
 
   // solve for corrected phinp
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Solve(sysmat_->EpetraOperator(), phinp_, residual_, solver_params);
+  solver_->solve(sysmat_->epetra_operator(), phinp_, residual_, solver_params);
 
   // phinp_->print(std::cout);
 
-  SystemMatrix()->reset();
+  system_matrix()->reset();
   // reset the solver as well
   solver_->reset();
 
@@ -553,9 +553,9 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
 
   // determine the number of nodes per element
   int numnodesperele = 0;
-  if (discret_->NumMyRowElements() <= 0)
+  if (discret_->num_my_row_elements() <= 0)
     FOUR_C_THROW("This discretization does not have any row elements.");
-  switch (discret_->lRowElement(0)->Shape())
+  switch (discret_->l_row_element(0)->shape())
   {
     case Core::FE::CellType::hex8:
       numnodesperele = 8;
@@ -590,8 +590,8 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
   // std::vector<Core::Conditions::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
   // get periodic surface boundary conditions
   std::vector<Core::Conditions::Condition*> surfacepbcs;
-  discret_->GetCondition("SurfacePeriodic", surfacepbcs);
-  if (surfacepbcs.empty()) discret_->GetCondition("LinePeriodic", surfacepbcs);
+  discret_->get_condition("SurfacePeriodic", surfacepbcs);
+  if (surfacepbcs.empty()) discret_->get_condition("LinePeriodic", surfacepbcs);
 
   std::vector<int> planenormal(0);
   std::vector<double> globalmins(0);
@@ -605,7 +605,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
     {
       const int masterid =
           surfacepbcs[i]->parameters().get<int>("Id of periodic boundary condition");
-      std::vector<int> nodeids(*(surfacepbcs[i]->GetNodes()));
+      std::vector<int> nodeids(*(surfacepbcs[i]->get_nodes()));
       for (auto& surfacepbc : surfacepbcs)
       {
         const int slaveid = surfacepbc->parameters().get<int>("Id of periodic boundary condition");
@@ -615,7 +615,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
               surfacepbc->parameters().get<std::string>("Is slave periodic boundary condition");
           if (isslave == "Slave")
           {
-            const std::vector<int>* slavenodeids = surfacepbc->GetNodes();
+            const std::vector<int>* slavenodeids = surfacepbc->get_nodes();
             // append slave node Ids to node Ids for the complete condition
             for (int slavenodeid : *slavenodeids) nodeids.push_back(slavenodeid);
           }
@@ -638,17 +638,17 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
       double max = -10e19;
       for (int gid : nodeids)
       {
-        const int lid = discret_->NodeRowMap()->LID(gid);
+        const int lid = discret_->node_row_map()->LID(gid);
         if (lid < 0) continue;
-        const Core::Nodes::Node* lnode = discret_->lRowNode(lid);
-        const auto& coord = lnode->X();
+        const Core::Nodes::Node* lnode = discret_->l_row_node(lid);
+        const auto& coord = lnode->x();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
       }
       globalmins.resize(planenormal.size());
       globalmaxs.resize(planenormal.size());
-      discret_->Comm().MinAll(&min, &(globalmins.back()), 1);
-      discret_->Comm().MaxAll(&max, &(globalmaxs.back()), 1);
+      discret_->get_comm().MinAll(&min, &(globalmins.back()), 1);
+      discret_->get_comm().MaxAll(&max, &(globalmaxs.back()), 1);
     }
   }  // end loop over all surfacepbcs
 
@@ -674,46 +674,46 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
     for (size_t ivec = 0; ivec < allcuteleids.size(); ++ivec)
     {
       int elegid = allcuteleids[ivec];
-      int elelid = discret_->ElementRowMap()->LID(elegid);
+      int elelid = discret_->element_row_map()->LID(elegid);
       if (elelid >= 0)
       {
         const int coordbase = 3 * numnodesperele * ivec;
-        const Core::Elements::Element* ele = discret_->lRowElement(elelid);
-        const Core::Nodes::Node* const* nodes = ele->Nodes();
+        const Core::Elements::Element* ele = discret_->l_row_element(elelid);
+        const Core::Nodes::Node* const* nodes = ele->nodes();
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           const int nodecoordbase = coordbase + 3 * inode;
-          nodecoords[nodecoordbase + 0] = nodes[inode]->X()[0];
-          nodecoords[nodecoordbase + 1] = nodes[inode]->X()[1];
-          nodecoords[nodecoordbase + 2] = nodes[inode]->X()[2];
+          nodecoords[nodecoordbase + 0] = nodes[inode]->x()[0];
+          nodecoords[nodecoordbase + 1] = nodes[inode]->x()[1];
+          nodecoords[nodecoordbase + 2] = nodes[inode]->x()[2];
         }
       }
     }
 
-    discret_->Comm().SumAll(nodecoords.data(), allnodecoords.data(), (int)nodecoords.size());
+    discret_->get_comm().SumAll(nodecoords.data(), allnodecoords.data(), (int)nodecoords.size());
   }
 
   //================================================================
   // loop all row nodes on the processor
   // those nodes will receive new phi values
   //================================================================
-  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); ++lnodeid)
   {
     // get the processor local node
-    const Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    const Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
     // get the dof associated with this node
     const int dofgid =
-        discret_->Dof(0, lnode, 0);  // since this is a scalar field the dof is always 0
+        discret_->dof(0, lnode, 0);  // since this is a scalar field the dof is always 0
     int doflid = dofrowmap->LID(dofgid);
     if (doflid < 0)
       FOUR_C_THROW("Proc %d: Cannot find dof gid=%d in Epetra_Vector", myrank_, dofgid);
 
     // get physical coordinates of this node
     Core::LinAlg::Matrix<3, 1> nodecoord(false);
-    nodecoord(0) = lnode->X()[0];
-    nodecoord(1) = lnode->X()[1];
-    nodecoord(2) = lnode->X()[2];
+    nodecoord(0) = lnode->x()[0];
+    nodecoord(1) = lnode->x()[1];
+    nodecoord(2) = lnode->x()[2];
 
     //=======================================================================================
     // Build a list< pair< int eleGID, double distance > >
@@ -883,14 +883,14 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
             const Core::Geo::BoundaryIntCell patch = patches[ipatch];
 
             // only triangles and quadrangles are allowed as flame front patches (boundary cells)
-            if (!(patch.Shape() == Core::FE::CellType::tri3 or
-                    patch.Shape() == Core::FE::CellType::quad4))
+            if (!(patch.shape() == Core::FE::CellType::tri3 or
+                    patch.shape() == Core::FE::CellType::quad4))
             {
               FOUR_C_THROW("invalid type of boundary integration cell for reinitialization");
             }
 
             // get coordinates of vertices defining flame front patch
-            const Core::LinAlg::SerialDenseMatrix& patchcoord = patch.CellNodalPosXYZ();
+            const Core::LinAlg::SerialDenseMatrix& patchcoord = patch.cell_nodal_pos_xyz();
 
             // compute normal vector to flame front patch
             Core::LinAlg::Matrix<3, 1> normal(true);
@@ -1027,7 +1027,7 @@ void ScaTra::LevelSetAlgorithm::find_facing_patch_proj_cell_space(
   // perform Newton-Raphson method to project node on patch
   //-------------------------------------------------------
   bool converged = false;
-  switch (patch.Shape())
+  switch (patch.shape())
   {
     case Core::FE::CellType::tri3:
     {
@@ -1061,7 +1061,7 @@ void ScaTra::LevelSetAlgorithm::find_facing_patch_proj_cell_space(
   //           patches are ignored
   double TOL = 1e-6;
 
-  switch (patch.Shape())
+  switch (patch.shape())
   {
     case Core::FE::CellType::tri3:
     {
@@ -1329,11 +1329,11 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
     // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the
     // patch
     funct.clear();
-    Core::FE::shape_function_2D(funct, eta(0), eta(1), patch.Shape());
+    Core::FE::shape_function_2D(funct, eta(0), eta(1), patch.shape());
     // evaluate derivatives of shape functions in boundary cell space at current position
     // \eta_1,\eta_2 on the patch
     deriv.clear();
-    Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.Shape());
+    Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.shape());
 
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)
@@ -1374,11 +1374,11 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
     f.scale(-1.0);
     // solve A.X=B
     Core::LinAlg::FixedSizeSerialDenseSolver<nsd, nsd, 1> solver;
-    solver.SetMatrix(gradf);                 // set A=gradF
-    solver.SetVectors(incr, f);              // set X=incr, B=F
+    solver.set_matrix(gradf);                // set A=gradF
+    solver.set_vectors(incr, f);             // set X=incr, B=F
     solver.factor_with_equilibration(true);  // "some easy type of preconditioning" (Michael)
-    int err2 = solver.Factor();              // ?
-    int err = solver.Solve();                // incr = gradF^-1.F
+    int err2 = solver.factor();              // ?
+    int err = solver.solve();                // incr = gradF^-1.F
     if ((err != 0) || (err2 != 0))
       FOUR_C_THROW("solving linear system in Newton-Raphson method for projection failed");
 
@@ -1425,7 +1425,7 @@ void ScaTra::LevelSetAlgorithm::correct_volume()
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
   ScaTra::LevelSet::Intersection intersect;
-  intersect.CaptureZeroLevelSet(phinp_, discret_, volminus, volplus, surface, interface);
+  intersect.capture_zero_level_set(phinp_, discret_, volminus, volplus, surface, interface);
 
   const double voldelta = initvolminus_ - volminus;
   if (myrank_ == 0)

@@ -59,30 +59,30 @@ namespace Discret
         SlaveElementRepresentation(Core::LinAlg::SerialDenseMatrix::Base& slave_xyze)
             : slave_xyze_(slave_xyze.values(), true)
         {
-          SlaveElementInterface<distype>::DefineStateNames(
+          SlaveElementInterface<distype>::define_state_names(
               slave_distype, disp_statename_, vel_statename_, veln_statename_);
         };
 
         //! add coupling slave element's displacements and set current slave element node
         //! coordinates
-        void AddSlaveEleDisp(
+        void add_slave_ele_disp(
             const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm                 ///< local map
             ) override;
-        void AddSlaveEleDisp(
+        void add_slave_ele_disp(
             const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm,                ///< local map
             std::vector<double>& mymatrix              ///< slave element displacement vector
             ) override;
 
         //! set slave element's interface velocity & pressure for current time step
-        void SetSlaveState(
+        void set_slave_state(
             const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm                 ///< local map
             ) override;
 
         //! set slave element's interface velocity & pressure for previous time step
-        void SetSlaveStaten(
+        void set_slave_staten(
             const Core::FE::Discretization& slavedis,  ///< coupling slave discretization
             const std::vector<int>& lm                 ///< local map
             ) override;
@@ -91,12 +91,12 @@ namespace Discret
         //@{
 
         //! extract interface velocity at current time step
-        void GetInterfaceVelnp(
+        void get_interface_velnp(
             Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
         ) const override;
 
         //! get interface pressure at current time step
-        void GetInterfacePresnp(double& ipres  ///< interface pressure at coupling slave side
+        void get_interface_presnp(double& ipres  ///< interface pressure at coupling slave side
         ) const override;
 
         //! get interface velocity gradient at current time step
@@ -105,12 +105,12 @@ namespace Discret
         ) const override;
 
         //! extract interface velocity at previous time step
-        void GetInterfaceVeln(
+        void get_interface_veln(
             Core::LinAlg::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
         ) const override;
 
         //! get interface pressure at previous time step
-        void GetInterfacePresn(double& ipresn  ///< interface pressure at coupling slave side
+        void get_interface_presn(double& ipresn  ///< interface pressure at coupling slave side
         ) const override;
 
         //! get interface velocity gradient at previous time step
@@ -119,7 +119,7 @@ namespace Discret
         ) const override;
 
         //! get slave elements nodal shape functions
-        void GetSlaveFunct(
+        void get_slave_funct(
             Core::LinAlg::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
         ) const;
 
@@ -178,13 +178,13 @@ namespace Discret
             ) override;
 
         //! evaluate element volume
-        double EvalElementVolume() override;
+        double eval_element_volume() override;
 
        protected:
         //! default constructor
         SlaveElementRepresentation()
         {
-          SlaveElementInterface<distype>::DefineStateNames(
+          SlaveElementInterface<distype>::define_state_names(
               slave_distype, disp_statename_, vel_statename_, veln_statename_);
         };
 
@@ -280,7 +280,7 @@ namespace Discret
 
         //! get slave elements nodal shape functions - if the interface is given as a level-set
         //! field, the request is unfulfilled
-        void GetSlaveFunct(
+        void get_slave_funct(
             Core::LinAlg::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
         ) const
         {
@@ -353,8 +353,8 @@ namespace Discret
         //! add contributions from convective stabilization
         //! this method is applied in a non-Nitsche context (e.g. MHVS) by
         //! employing shape functions and velocities from another slave element coupling object
-        void ApplyConvStabTerms(const Teuchos::RCP<SlaveElementInterface<distype>>&
-                                    slave_ele,  ///< associated slave element coupling object
+        void apply_conv_stab_terms(const Teuchos::RCP<SlaveElementInterface<distype>>&
+                                       slave_ele,  ///< associated slave element coupling object
             const Core::LinAlg::Matrix<nen_, 1>& funct_m,   ///< master shape functions
             const Core::LinAlg::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
             const Core::LinAlg::Matrix<nsd_, 1>& normal,    ///< normal vector n^b

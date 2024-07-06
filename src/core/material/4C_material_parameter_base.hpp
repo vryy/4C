@@ -74,12 +74,12 @@ namespace Core::Mat::PAR
     /**
      * The ID of the material.
      */
-    [[nodiscard]] int Id() const { return data_.id; }
+    [[nodiscard]] int id() const { return data_.id; }
 
     /**
      * The type of the material.
      */
-    [[nodiscard]] Core::Materials::MaterialType Type() const { return data_.type; }
+    [[nodiscard]] Core::Materials::MaterialType type() const { return data_.type; }
 
 
     /**

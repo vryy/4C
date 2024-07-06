@@ -17,12 +17,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::FluidTypeImmersed Discret::ELEMENTS::FluidTypeImmersed::instance_;
 
-Discret::ELEMENTS::FluidTypeImmersed& Discret::ELEMENTS::FluidTypeImmersed::Instance()
+Discret::ELEMENTS::FluidTypeImmersed& Discret::ELEMENTS::FluidTypeImmersed::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidTypeImmersed::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::FluidTypeImmersed::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::FluidImmersed* object = new Discret::ELEMENTS::FluidImmersed(-1, -1);
@@ -31,7 +31,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidTypeImmersed::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersed::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersed::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::FluidImmersed(id, owner));
@@ -83,7 +83,7 @@ Discret::ELEMENTS::FluidImmersed::FluidImmersed(const Discret::ELEMENTS::FluidIm
  |  Deep copy this instance of Fluid and return pointer to it (public)  |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidImmersed::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::FluidImmersed::clone() const
 {
   Discret::ELEMENTS::FluidImmersed* newelement = new Discret::ELEMENTS::FluidImmersed(*this);
   return newelement;
@@ -98,7 +98,7 @@ void Discret::ELEMENTS::FluidImmersed::pack(Core::Communication::PackBuffer& dat
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Discret::ELEMENTS::Fluid::pack(data);
@@ -121,7 +121,7 @@ void Discret::ELEMENTS::FluidImmersed::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

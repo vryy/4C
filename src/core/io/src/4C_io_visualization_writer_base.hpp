@@ -87,7 +87,7 @@ namespace Core::IO
      * @param visualization_step (in) Time step counter of current time step (does not have to be
      * continuous) this is not necessarily the same as the simulation time step counter
      */
-    virtual void InitializeTimeStep(
+    virtual void initialize_time_step(
         const double visualziation_time, const int visualization_step) = 0;
 
     /**
@@ -109,7 +109,7 @@ namespace Core::IO
      * @param face_connectivity (in) Vector containing the face connectivity array
      * @param face_offset (in) Vector containing the offsets in the face connectivity array
      */
-    virtual void WriteGeometryToDisk(const std::vector<double>& point_coordinates,
+    virtual void write_geometry_to_disk(const std::vector<double>& point_coordinates,
         const std::vector<Core::IO::index_type>& point_cell_connectivity,
         const std::vector<Core::IO::index_type>& cell_offset,
         const std::vector<uint8_t>& cell_types,
@@ -139,7 +139,7 @@ namespace Core::IO
     /**
      * @brief Finalize the write operations for the current time step
      */
-    virtual void FinalizeTimeStep() = 0;
+    virtual void finalize_time_step() = 0;
 
    protected:
     //! Visualization parameters

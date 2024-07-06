@@ -55,7 +55,7 @@ namespace FLD
 
 
     /// is any rotation needed on the element level?
-    bool HasRotSymmPBC()
+    bool has_rot_symm_pbc()
     {
       if (slavenodelids_.empty())
       {
@@ -75,7 +75,7 @@ namespace FLD
       slavenodelids_.clear();
       rotmat_.clear();
 
-      Core::Nodes::Node** nodes = ele->Nodes();
+      Core::Nodes::Node** nodes = ele->nodes();
       slavenodelids_.reserve(elenumnodereal);
 
       for (int inode = 0; inode < elenumnodereal; inode++)
@@ -112,7 +112,7 @@ namespace FLD
     /// rotate velocity vector used in element routine if necessary
     void rotate_my_values_if_necessary(std::vector<double>& myvalues)
     {
-      if (HasRotSymmPBC())
+      if (has_rot_symm_pbc())
       {
         // rotate velocity vectors to right position (use transposed rotation matrix!!)
         const double c = cos(rotangle_);
@@ -133,7 +133,7 @@ namespace FLD
     void rotate_my_values_if_necessary(
         Core::LinAlg::Matrix<numdofpernode - 1, elenumnode>& myvalues)
     {
-      if (HasRotSymmPBC())
+      if (has_rot_symm_pbc())
       {
         // rotate velocity vectors to right position (use transposed rotation matrix!!)
         const double c = cos(rotangle_);
@@ -154,7 +154,7 @@ namespace FLD
     template <int rows, int cols>
     void rotate_my_values_if_necessary(Core::LinAlg::Matrix<rows, cols>& myvalues)
     {
-      if (HasRotSymmPBC())
+      if (has_rot_symm_pbc())
       {
         // rotate velocity vectors to right position (use transposed rotation matrix!!)
         const double c = cos(rotangle_);
@@ -177,7 +177,7 @@ namespace FLD
         Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat2,
         Core::LinAlg::Matrix<numdofpernode * elenumnode, 1>& elevec1)
     {
-      if (HasRotSymmPBC())
+      if (has_rot_symm_pbc())
       {
         // execute the rotation
         /*
@@ -217,7 +217,7 @@ namespace FLD
         Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode>& elemat1,
         Core::LinAlg::Matrix<numdofpernode * elenumnode, 1>& elevec1)
     {
-      if (HasRotSymmPBC())
+      if (has_rot_symm_pbc())
       {
         // execute the rotation
         /*

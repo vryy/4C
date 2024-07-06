@@ -104,10 +104,10 @@ namespace CONTACT
     statically condensated during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.*/
-    virtual void RecoverCoupled(
+    virtual void recover_coupled(
         Teuchos::RCP<Epetra_Vector> disi, std::map<int, Teuchos::RCP<Epetra_Vector>> inc);
 
-    virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc);
+    virtual void recover_coupled(Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc);
 
     void evaluate_off_diag_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         int Column_Block_Id);  // condensation for all off diagonal matrixes k_s? in monolithically

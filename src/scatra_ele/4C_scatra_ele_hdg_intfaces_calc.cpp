@@ -22,41 +22,41 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface*
-Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(const Core::Elements::Element* ele)
+Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::impl(const Core::Elements::Element* ele)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
-      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad4>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad4>::instance();
     }
     case Core::FE::CellType::quad8:
     {
-      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad8>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad8>::instance();
     }
     case Core::FE::CellType::quad9:
     {
-      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad9>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad9>::instance();
     }
     case Core::FE::CellType::tri3:
     {
-      return ScaTraHDGIntFaceImpl<Core::FE::CellType::tri3>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::tri3>::instance();
     }
     case Core::FE::CellType::tri6:
     {
-      return ScaTraHDGIntFaceImpl<Core::FE::CellType::tri6>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::tri6>::instance();
     }
     case Core::FE::CellType::line2:
     {
-      return ScaTraHDGIntFaceImpl<Core::FE::CellType::line2>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::line2>::instance();
     }
     case Core::FE::CellType::line3:
     {
-      return ScaTraHDGIntFaceImpl<Core::FE::CellType::line3>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::line3>::instance();
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -64,7 +64,7 @@ Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(const Core::Elements::Ele
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
-Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -73,7 +73,7 @@ Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(Core::UTILS::Singleto
             new Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 /*----------------------------------------------------------------------*

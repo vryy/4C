@@ -71,37 +71,37 @@ namespace Mortar
      \brief Get interface discretization
 
      */
-    virtual Core::FE::Discretization& Discret() const { return idiscret_; }
+    virtual Core::FE::Discretization& discret() const { return idiscret_; }
 
     /*!
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& get_comm() const;
 
     /*!
      \brief Get problem dimension (here: 3D)
 
      */
-    virtual const int& Dim() { return dim_; };
+    virtual const int& n_dim() { return dim_; };
 
     /*!
      \brief Get coupling / FE ansatz type (true = quadratic)
 
      */
-    virtual const bool& Quad() { return quad_; };
+    virtual const bool& quad() { return quad_; };
 
     /*!
      \brief Get coupling slave element
 
      */
-    virtual Mortar::Element& SlaveElement() const { return sele_; }
+    virtual Mortar::Element& slave_element() const { return sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual Mortar::Element& MasterElement() const { return mele_; }
+    virtual Mortar::Element& master_element() const { return mele_; }
 
     /*!
      \brief Get coupling slave integration element
@@ -112,7 +112,7 @@ namespace Mortar
      methd is overloaded by the derived class Mortar::Coupling3dQuad!
 
      */
-    virtual Mortar::Element& SlaveIntElement() const { return sele_; }
+    virtual Mortar::Element& slave_int_element() const { return sele_; }
 
     /*!
      \brief Get coupling master integration element
@@ -123,25 +123,25 @@ namespace Mortar
      methd is overloaded by the derived class Mortar::Coupling3dQuad!
 
      */
-    virtual Mortar::Element& MasterIntElement() const { return mele_; }
+    virtual Mortar::Element& master_int_element() const { return mele_; }
 
     /*!
      \brief Return center of auxiliary plane
 
      */
-    virtual double* Auxc() { return auxc_; }
+    virtual double* auxc() { return auxc_; }
 
     /*!
      \brief Return normal of auxiliary plane
 
      */
-    virtual double* Auxn() { return auxn_; }
+    virtual double* auxn() { return auxn_; }
 
     /*!
      \brief Return length of Auxn() before normalization
 
      */
-    virtual double& Lauxn() { return lauxn_; }
+    virtual double& lauxn() { return lauxn_; }
 
     /*!
      \brief Return vector of (projected) slave node vertex objects
@@ -159,13 +159,13 @@ namespace Mortar
      \brief Return vector of clip polygon vertex objects
 
      */
-    virtual std::vector<Vertex>& Clip() { return clip_; }
+    virtual std::vector<Vertex>& clip() { return clip_; }
 
     /*!
      \brief Return vector of integration cells
 
      */
-    virtual std::vector<Teuchos::RCP<IntCell>>& Cells() { return cells_; }
+    virtual std::vector<Teuchos::RCP<IntCell>>& cells() { return cells_; }
 
     /*!
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
@@ -180,7 +180,7 @@ namespace Mortar
      \brief Return the LM interpolation / testing type for quadratic FE
 
      */
-    virtual Inpar::Mortar::LagMultQuad LagMultQuad() { return lmquadtype_; };
+    virtual Inpar::Mortar::LagMultQuad lag_mult_quad() { return lmquadtype_; };
 
     /*!
      \brief Get interface contact parameter list
@@ -192,7 +192,7 @@ namespace Mortar
      \brief Return the LM shape fcn type
 
      */
-    Inpar::Mortar::ShapeFcn ShapeFcn() { return shapefcn_; };
+    Inpar::Mortar::ShapeFcn shape_fcn() { return shapefcn_; };
 
     //@}
 
@@ -211,7 +211,7 @@ namespace Mortar
      If they are not close, then coupling is stopped for the pair.
 
      */
-    virtual bool RoughCheckCenters();
+    virtual bool rough_check_centers();
 
     /*!
      \brief Checks roughly whether the two elements are near (3D)
@@ -235,7 +235,7 @@ namespace Mortar
      and assembled into the slave element nodes.
 
      */
-    virtual bool IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+    virtual bool integrate_cells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     //@}
 
@@ -245,7 +245,7 @@ namespace Mortar
      \brief Visualize integration cells with gmsh
 
      */
-    virtual void GmshOutputCells(int lid);
+    virtual void gmsh_output_cells(int lid);
 
     //@}
 
@@ -255,7 +255,7 @@ namespace Mortar
      \brief Linearization of clip vertex coordinates (3D)
 
      */
-    virtual bool VertexLinearization(
+    virtual bool vertex_linearization(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
         std::map<int, double>& projpar, bool printderiv = false)
     {
@@ -266,7 +266,7 @@ namespace Mortar
      \brief Linearization of clip vertex coordinates (3D)
 
      */
-    virtual bool CenterLinearization(
+    virtual bool center_linearization(
         const std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
         std::vector<Core::Gen::Pairedvector<int, double>>& lincenter)
     {
@@ -502,13 +502,13 @@ namespace Mortar
      \brief Get coupling slave integration element
 
      */
-    Mortar::IntElement& SlaveIntElement() const override { return sintele_; }
+    Mortar::IntElement& slave_int_element() const override { return sintele_; }
 
     /*!
      \brief Get coupling master integration element
 
      */
-    Mortar::IntElement& MasterIntElement() const override { return mintele_; }
+    Mortar::IntElement& master_int_element() const override { return mintele_; }
 
    protected:
     // don't want = operator and cctor
@@ -550,49 +550,49 @@ namespace Mortar
      \brief Get coupling slave element
 
      */
-    virtual Mortar::Element& SlaveElement() const { return *sele_; }
+    virtual Mortar::Element& slave_element() const { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    virtual Mortar::Element& MasterElement(int k) const { return *(mele_[k]); }
+    virtual Mortar::Element& master_element(int k) const { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    virtual std::vector<Mortar::Element*> MasterElements() const { return mele_; }
+    virtual std::vector<Mortar::Element*> master_elements() const { return mele_; }
 
     /*!
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<Mortar::Coupling3d>>& Coupling() { return coup_; }
+    virtual std::vector<Teuchos::RCP<Mortar::Coupling3d>>& coupling() { return coup_; }
 
     /*!
      \brief Get type of integration scheme
 
      */
-    virtual Inpar::Mortar::IntType IntType() { return integrationtype_; }
+    virtual Inpar::Mortar::IntType int_type() { return integrationtype_; }
 
     /*!
      \brief Get coupling type
 
      */
-    virtual const bool& Quad() { return quad_; };
+    virtual const bool& quad() { return quad_; };
 
     /*!
      \brief Get flag indicating dual consistent lm
 
      */
-    virtual bool LMDualConsistent() { return lmdualconsistent_; }
+    virtual bool lm_dual_consistent() { return lmdualconsistent_; }
 
     /*!
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& get_comm() const;
 
     /*!
      \brief Evaluate coupling pairs
@@ -604,13 +604,13 @@ namespace Mortar
      \brief Return the LM interpolation / testing type for quadratic FE
 
      */
-    virtual Inpar::Mortar::LagMultQuad LagMultQuad() { return lmquadtype_; };
+    virtual Inpar::Mortar::LagMultQuad lag_mult_quad() { return lmquadtype_; };
 
     /*!
      \brief Return the LM shape fcn type
 
      */
-    virtual Inpar::Mortar::ShapeFcn ShapeFcn() { return shapefcn_; }
+    virtual Inpar::Mortar::ShapeFcn shape_fcn() { return shapefcn_; }
     //@}
 
    protected:
@@ -662,7 +662,7 @@ namespace Mortar
         Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
 
-    Inpar::Mortar::LagMultQuad LagMultQuad() override
+    Inpar::Mortar::LagMultQuad lag_mult_quad() override
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -671,31 +671,31 @@ namespace Mortar
      \brief Get coupling slave element
 
      */
-    Mortar::Element& SlaveElement() const override { return *sele_; }
+    Mortar::Element& slave_element() const override { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    Mortar::Element& MasterElement(int k) const override { return *(mele_[k]); }
+    Mortar::Element& master_element(int k) const override { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    std::vector<Mortar::Element*> MasterElements() const override { return mele_; }
+    std::vector<Mortar::Element*> master_elements() const override { return mele_; }
 
     /*!
      \brief Get integration type
 
      */
-    Inpar::Mortar::IntType IntType() override { return integrationtype_; }
+    Inpar::Mortar::IntType int_type() override { return integrationtype_; }
 
     /*!
      \brief Get coupling type
 
      */
-    const bool& Quad() override { return quad_; }
+    const bool& quad() override { return quad_; }
 
     // @
 

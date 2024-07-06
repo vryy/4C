@@ -32,23 +32,23 @@ namespace Discret
     class MembraneTri3Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Membrane_tri3Type"; }
+      std::string name() const override { return "Membrane_tri3Type"; }
 
-      static MembraneTri3Type& Instance();
+      static MembraneTri3Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -65,23 +65,23 @@ namespace Discret
     class MembraneTri6Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Membrane_tri6Type"; }
+      std::string name() const override { return "Membrane_tri6Type"; }
 
-      static MembraneTri6Type& Instance();
+      static MembraneTri6Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -98,23 +98,23 @@ namespace Discret
     class MembraneQuad4Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Membrane_quad4Type"; }
+      std::string name() const override { return "Membrane_quad4Type"; }
 
-      static MembraneQuad4Type& Instance();
+      static MembraneQuad4Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -131,23 +131,23 @@ namespace Discret
     class MembraneQuad9Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Membrane_quad9Type"; }
+      std::string name() const override { return "Membrane_quad9Type"; }
 
-      static MembraneQuad9Type& Instance();
+      static MembraneQuad9Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override { return 0; };
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(

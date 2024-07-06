@@ -13,56 +13,56 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
   implicit operator product Operator*Operator
  *----------------------------------------------------------------------*/
-int Core::LinAlg::Ana::OperatorProduct::Apply(
+int Core::LinAlg::Ana::OperatorProduct::apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   if (!usetransposed_)  // A*B*x
   {
-    Core::LinAlg::Ana::Vector tmp(right_->OperatorRangeMap(), false);
-    int err1 = right_->Apply(X, tmp);
+    Core::LinAlg::Ana::Vector tmp(right_->operator_range_map(), false);
+    int err1 = right_->apply(X, tmp);
     if (err1) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err1);
-    int err2 = left_->Apply(tmp, Y);
+    int err2 = left_->apply(tmp, Y);
     if (err2) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err2);
     return err1 - err2;
   }
   else  // (A*B)^T * x = B^T * A^T * x
   {
-    Core::LinAlg::Ana::Vector tmp(left_->OperatorDomainMap(), false);
-    const_cast<LightWeightOperatorBase&>(*left_).SetUseTranspose(!left_->UseTranspose());
-    int err1 = left_->Apply(X, tmp);
+    Core::LinAlg::Ana::Vector tmp(left_->operator_domain_map(), false);
+    const_cast<LightWeightOperatorBase&>(*left_).set_use_transpose(!left_->use_transpose());
+    int err1 = left_->apply(X, tmp);
     if (err1) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err1);
-    const_cast<LightWeightOperatorBase&>(*left_).SetUseTranspose(!left_->UseTranspose());
-    const_cast<LightWeightOperatorBase&>(*right_).SetUseTranspose(!right_->UseTranspose());
-    int err2 = right_->Apply(tmp, Y);
+    const_cast<LightWeightOperatorBase&>(*left_).set_use_transpose(!left_->use_transpose());
+    const_cast<LightWeightOperatorBase&>(*right_).set_use_transpose(!right_->use_transpose());
+    int err2 = right_->apply(tmp, Y);
     if (err2) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err2);
-    const_cast<LightWeightOperatorBase&>(*right_).SetUseTranspose(!right_->UseTranspose());
+    const_cast<LightWeightOperatorBase&>(*right_).set_use_transpose(!right_->use_transpose());
     return err1 - err2;
   }
   return 0;
 }
-int Core::LinAlg::Ana::OperatorProduct::ApplyInverse(
+int Core::LinAlg::Ana::OperatorProduct::apply_inverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   if (!usetransposed_)  // (A*B)^{-1} * x = B^{-1} * A^{-1} * x
   {
-    Core::LinAlg::Ana::Vector tmp(left_->OperatorDomainMap(), false);
-    int err1 = left_->ApplyInverse(X, tmp);
+    Core::LinAlg::Ana::Vector tmp(left_->operator_domain_map(), false);
+    int err1 = left_->apply_inverse(X, tmp);
     if (err1) FOUR_C_THROW("LightWeightOperatorBase::ApplyInverse returned err=%d", err1);
-    int err2 = right_->ApplyInverse(tmp, Y);
+    int err2 = right_->apply_inverse(tmp, Y);
     if (err2) FOUR_C_THROW("LightWeightOperatorBase::ApplyInverse returned err=%d", err2);
     return err1 - err2;
   }
   else  // [ (A*B)^T ]^{-1} * x = A^{T,-1} * B^{T,-1} * x
   {
-    Core::LinAlg::Ana::Vector tmp(right_->OperatorRangeMap(), false);
-    const_cast<LightWeightOperatorBase&>(*right_).SetUseTranspose(!right_->UseTranspose());
-    int err1 = right_->ApplyInverse(X, tmp);
+    Core::LinAlg::Ana::Vector tmp(right_->operator_range_map(), false);
+    const_cast<LightWeightOperatorBase&>(*right_).set_use_transpose(!right_->use_transpose());
+    int err1 = right_->apply_inverse(X, tmp);
     if (err1) FOUR_C_THROW("LightWeightOperatorBase::ApplyInverse returned err=%d", err1);
-    const_cast<LightWeightOperatorBase&>(*right_).SetUseTranspose(!right_->UseTranspose());
-    const_cast<LightWeightOperatorBase&>(*left_).SetUseTranspose(!left_->UseTranspose());
-    int err2 = left_->ApplyInverse(tmp, Y);
+    const_cast<LightWeightOperatorBase&>(*right_).set_use_transpose(!right_->use_transpose());
+    const_cast<LightWeightOperatorBase&>(*left_).set_use_transpose(!left_->use_transpose());
+    int err2 = left_->apply_inverse(tmp, Y);
     if (err2) FOUR_C_THROW("LightWeightOperatorBase::ApplyInverse returned err=%d", err2);
-    const_cast<LightWeightOperatorBase&>(*left_).SetUseTranspose(!left_->UseTranspose());
+    const_cast<LightWeightOperatorBase&>(*left_).set_use_transpose(!left_->use_transpose());
     return err1 - err2;
   }
   return -1;
@@ -73,29 +73,29 @@ int Core::LinAlg::Ana::OperatorProduct::ApplyInverse(
 /*----------------------------------------------------------------------*
   implicit operator sum (Operator+Operator)*x
  *----------------------------------------------------------------------*/
-int Core::LinAlg::Ana::OperatorSum::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int Core::LinAlg::Ana::OperatorSum::apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   if (!usetransposed_)  // (A+-B)*x = Ax +- Bx
   {
-    Core::LinAlg::Ana::Vector tmp(right_->OperatorRangeMap(), false);
-    int err1 = right_->Apply(X, tmp);
+    Core::LinAlg::Ana::Vector tmp(right_->operator_range_map(), false);
+    int err1 = right_->apply(X, tmp);
     if (err1) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err1);
-    int err2 = left_->Apply(X, Y);
+    int err2 = left_->apply(X, Y);
     if (err2) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err2);
     Y.Update((double)sign_, tmp, 1.0);
     return err1 - err2;
   }
   else  // (A+-B)^T * x = A^T x +- B^T * x
   {
-    Core::LinAlg::Ana::Vector tmp(right_->OperatorDomainMap(), false);
-    const_cast<LightWeightOperatorBase&>(*right_).SetUseTranspose(!right_->UseTranspose());
-    int err1 = right_->Apply(X, tmp);
+    Core::LinAlg::Ana::Vector tmp(right_->operator_domain_map(), false);
+    const_cast<LightWeightOperatorBase&>(*right_).set_use_transpose(!right_->use_transpose());
+    int err1 = right_->apply(X, tmp);
     if (err1) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err1);
-    const_cast<LightWeightOperatorBase&>(*right_).SetUseTranspose(!right_->UseTranspose());
-    const_cast<LightWeightOperatorBase&>(*left_).SetUseTranspose(!left_->UseTranspose());
-    int err2 = left_->Apply(X, Y);
+    const_cast<LightWeightOperatorBase&>(*right_).set_use_transpose(!right_->use_transpose());
+    const_cast<LightWeightOperatorBase&>(*left_).set_use_transpose(!left_->use_transpose());
+    int err2 = left_->apply(X, Y);
     if (err2) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err2);
-    const_cast<LightWeightOperatorBase&>(*left_).SetUseTranspose(!left_->UseTranspose());
+    const_cast<LightWeightOperatorBase&>(*left_).set_use_transpose(!left_->use_transpose());
     Y.Update((double)sign_, tmp, 1.0);
     return err1 - err2;
   }
@@ -106,7 +106,7 @@ int Core::LinAlg::Ana::OperatorSum::Apply(const Epetra_MultiVector& X, Epetra_Mu
 /*----------------------------------------------------------------------*
   apply inverse of an operator
  *----------------------------------------------------------------------*/
-int Core::LinAlg::Ana::OperatorInverse::Apply(
+int Core::LinAlg::Ana::OperatorInverse::apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   // wrap column 0 of in and output vectors to Epetra_Vector
@@ -122,7 +122,7 @@ int Core::LinAlg::Ana::OperatorInverse::Apply(
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = reset_;
-  solver_.Solve(rcpop, out, in, solver_params);
+  solver_.solve(rcpop, out, in, solver_params);
 
   return 0;
 }
@@ -131,7 +131,7 @@ int Core::LinAlg::Ana::OperatorInverse::Apply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Ana::LcVecPointwiseLc::Update(
+void Core::LinAlg::Ana::LcVecPointwiseLc::update(
     Core::LinAlg::Ana::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -141,7 +141,7 @@ void Core::LinAlg::Ana::LcVecPointwiseLc::Update(
   fflush(stdout);
 #endif
   // we can not avoid extra memory in this case
-  Core::LinAlg::Ana::Vector tmp(right_.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp(right_.range_map(), false);
   right_.set(tmp, 1.0);
   v.Multiply(scale, vec_, tmp, 1.0);
 }
@@ -159,11 +159,11 @@ void Core::LinAlg::Ana::LcLcPointwiseLc::set(
   fflush(stdout);
 #endif
   left_.set(v, 1.0);
-  Core::LinAlg::Ana::Vector tmp(right_.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp(right_.range_map(), false);
   right_.set(tmp, 1.0);
   v.Multiply(scale, v, tmp, 0.0);
 }
-void Core::LinAlg::Ana::LcLcPointwiseLc::Update(
+void Core::LinAlg::Ana::LcLcPointwiseLc::update(
     Core::LinAlg::Ana::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -172,9 +172,9 @@ void Core::LinAlg::Ana::LcLcPointwiseLc::Update(
        << endl;
   fflush(stdout);
 #endif
-  Core::LinAlg::Ana::Vector tmp1(left_.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp1(left_.range_map(), false);
   left_.set(tmp1, 1.0);
-  Core::LinAlg::Ana::Vector tmp2(right_.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp2(right_.range_map(), false);
   right_.set(tmp2, 1.0);
   v.Multiply(scale, tmp1, tmp2, 1.0);
 }
@@ -193,15 +193,15 @@ void Core::LinAlg::Ana::LcOperatorTimesLcsv::set(
   fflush(stdout);
 #endif
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) FOUR_C_THROW("Range maps don't match - fatal");
-  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap()))
+  if (!v.Map().SameAs(op_->operator_range_map())) FOUR_C_THROW("Range maps don't match - fatal");
+  if (!right_.vector().Map().SameAs(op_->operator_domain_map()))
     FOUR_C_THROW("Domain maps don't match - fatal");
 #endif
-  int err = op_->Apply(right_.Vector(), v);
+  int err = op_->apply(right_.vector(), v);
   if (err) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err);
-  if (scale * right_.Scalar() != 1.0) v.Scale(scale * right_.Scalar());
+  if (scale * right_.scalar() != 1.0) v.Scale(scale * right_.scalar());
 }
-void Core::LinAlg::Ana::LcOperatorTimesLcsv::Update(
+void Core::LinAlg::Ana::LcOperatorTimesLcsv::update(
     Core::LinAlg::Ana::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -211,14 +211,14 @@ void Core::LinAlg::Ana::LcOperatorTimesLcsv::Update(
   fflush(stdout);
 #endif
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) FOUR_C_THROW("Range maps don't match - fatal");
-  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap()))
+  if (!v.Map().SameAs(op_->operator_range_map())) FOUR_C_THROW("Range maps don't match - fatal");
+  if (!right_.vector().Map().SameAs(op_->operator_domain_map()))
     FOUR_C_THROW("Domain maps don't match - fatal");
 #endif
-  Core::LinAlg::Ana::Vector tmp(op_->OperatorRangeMap(), false);
-  int err = op_->Apply(right_.Vector(), tmp);
+  Core::LinAlg::Ana::Vector tmp(op_->operator_range_map(), false);
+  int err = op_->apply(right_.vector(), tmp);
   if (err) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err);
-  v.Update(scale * right_.Scalar(), tmp, 1.0);
+  v.Update(scale * right_.scalar(), tmp, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -233,16 +233,16 @@ void Core::LinAlg::Ana::LcOperatorTimesLc::set(
   fflush(stdout);
 #endif
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) FOUR_C_THROW("Range maps don't match - fatal");
-  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap()))
+  if (!v.Map().SameAs(op_->operator_range_map())) FOUR_C_THROW("Range maps don't match - fatal");
+  if (!right_.range_map().SameAs(op_->operator_domain_map()))
     FOUR_C_THROW("Domain maps don't match - fatal");
 #endif
-  Core::LinAlg::Ana::Vector tmp(right_.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp(right_.range_map(), false);
   right_.set(tmp, scale);
-  int err = op_->Apply(tmp, v);
+  int err = op_->apply(tmp, v);
   if (err) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err);
 }
-void Core::LinAlg::Ana::LcOperatorTimesLc::Update(
+void Core::LinAlg::Ana::LcOperatorTimesLc::update(
     Core::LinAlg::Ana::Vector& v, const double& scale) const
 {
 #if DEBUGGING_ANA
@@ -252,14 +252,14 @@ void Core::LinAlg::Ana::LcOperatorTimesLc::Update(
   fflush(stdout);
 #endif
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (!v.Map().SameAs(op_->OperatorRangeMap())) FOUR_C_THROW("Range maps don't match - fatal");
-  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap()))
+  if (!v.Map().SameAs(op_->operator_range_map())) FOUR_C_THROW("Range maps don't match - fatal");
+  if (!right_.range_map().SameAs(op_->operator_domain_map()))
     FOUR_C_THROW("Domain maps don't match - fatal");
 #endif
-  Core::LinAlg::Ana::Vector tmp1(right_.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp1(right_.range_map(), false);
   right_.set(tmp1, 1.0);
-  Core::LinAlg::Ana::Vector tmp2(op_->OperatorRangeMap(), false);
-  int err = op_->Apply(tmp1, tmp2);
+  Core::LinAlg::Ana::Vector tmp2(op_->operator_range_map(), false);
+  int err = op_->apply(tmp1, tmp2);
   if (err) FOUR_C_THROW("LightWeightOperatorBase::Apply returned err=%d", err);
   v.Update(scale, tmp2, 1.0);
 }
@@ -295,9 +295,9 @@ double Core::LinAlg::Ana::operator*(
        << endl;
   fflush(stdout);
 #endif
-  Core::LinAlg::Ana::Vector tmpleft(left.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmpleft(left.range_map(), false);
   left.set(tmpleft, 1.0);
-  Core::LinAlg::Ana::Vector tmpright(right.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmpright(right.range_map(), false);
   right.set(tmpright, 1.0);
   double result;
   tmpleft.Dot(tmpright, &result);
@@ -316,7 +316,7 @@ double Core::LinAlg::Ana::operator*(
        << endl;
   fflush(stdout);
 #endif
-  Core::LinAlg::Ana::Vector tmp(right.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp(right.range_map(), false);
   right.set(tmp, 1.0);
   double result;
   vec1.Dot(tmp, &result);
@@ -337,8 +337,8 @@ double Core::LinAlg::Ana::operator*(
   fflush(stdout);
 #endif
   double result;
-  vec1.Dot(right.Vector(), &result);
-  result *= right.Scalar();
+  vec1.Dot(right.vector(), &result);
+  result *= right.scalar();
   return result;
 }
 
@@ -355,8 +355,8 @@ double Core::LinAlg::Ana::operator*(
   fflush(stdout);
 #endif
   double result;
-  left.Vector().Dot(right.Vector(), &result);
-  return (result * left.Scalar() * right.Scalar());
+  left.vector().Dot(right.vector(), &result);
+  return (result * left.scalar() * right.scalar());
 }
 
 /*----------------------------------------------------------------------*
@@ -364,19 +364,19 @@ double Core::LinAlg::Ana::operator*(
  *----------------------------------------------------------------------*/
 double Core::LinAlg::Ana::norm2(const Core::LinAlg::Ana::LCBase& lc)
 {
-  Core::LinAlg::Ana::Vector tmp(lc.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp(lc.range_map(), false);
   lc.set(tmp, 1.0);
   return norm2(tmp);
 }
 double Core::LinAlg::Ana::norm1(const Core::LinAlg::Ana::LCBase& lc)
 {
-  Core::LinAlg::Ana::Vector tmp(lc.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp(lc.range_map(), false);
   lc.set(tmp, 1.0);
   return norm1(tmp);
 }
 double Core::LinAlg::Ana::norminf(const Core::LinAlg::Ana::LCBase& lc)
 {
-  Core::LinAlg::Ana::Vector tmp(lc.RangeMap(), false);
+  Core::LinAlg::Ana::Vector tmp(lc.range_map(), false);
   lc.set(tmp, 1.0);
   return norminf(tmp);
 }

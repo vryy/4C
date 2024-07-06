@@ -35,16 +35,16 @@ namespace Discret
     class SoHex8PoroType : public SoHex8Type
     {
      public:
-      std::string Name() const override { return "So_hex8PoroType"; }
+      std::string name() const override { return "So_hex8PoroType"; }
 
-      static SoHex8PoroType& Instance();
+      static SoHex8PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -64,16 +64,16 @@ namespace Discret
     class SoTet4PoroType : public SoTet4Type
     {
      public:
-      std::string Name() const override { return "So_tet4PoroType"; }
+      std::string name() const override { return "So_tet4PoroType"; }
 
-      static SoTet4PoroType& Instance();
+      static SoTet4PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -94,16 +94,16 @@ namespace Discret
     class SoHex27PoroType : public SoHex27Type
     {
      public:
-      std::string Name() const override { return "So_hex27PoroType"; }
+      std::string name() const override { return "So_hex27PoroType"; }
 
-      static SoHex27PoroType& Instance();
+      static SoHex27PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -123,16 +123,16 @@ namespace Discret
     class SoTet10PoroType : public SoTet10Type
     {
      public:
-      std::string Name() const override { return "So_tet10PoroType"; }
+      std::string name() const override { return "So_tet10PoroType"; }
 
-      static SoTet10PoroType& Instance();
+      static SoTet10PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -152,16 +152,16 @@ namespace Discret
     class SoNurbs27PoroType : public Nurbs::SoNurbs27Type
     {
      public:
-      std::string Name() const override { return "So_nurbs27PoroType"; }
+      std::string name() const override { return "So_nurbs27PoroType"; }
 
-      static SoNurbs27PoroType& Instance();
+      static SoNurbs27PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 

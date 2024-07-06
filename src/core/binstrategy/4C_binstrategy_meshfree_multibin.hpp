@@ -35,27 +35,27 @@ namespace Core::FE::MeshFree
   {
    public:
     //!< name of specific element type
-    std::string Name() const override { return "MeshfreeMultiBinType"; }
+    std::string name() const override { return "MeshfreeMultiBinType"; }
 
     //!< returning instance of specific element type
-    static MeshfreeMultiBinType& Instance();
+    static MeshfreeMultiBinType& instance();
 
     //!< create parallel object of this element type
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
     //!< create element of this element type
-    Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+    Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
         const std::string eledistype, const int id, const int owner) override;
 
     //!< create element of this element type
-    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
     {
     }
 
-    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
     {
       Core::LinAlg::SerialDenseMatrix nullspace;
@@ -112,7 +112,7 @@ namespace Core::FE::MeshFree
      *
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    Core::Elements::Element* Clone() const override;
+    Core::Elements::Element* clone() const override;
 
     /*------------------------------------------------------------------------*/
     /*!
@@ -122,9 +122,9 @@ namespace Core::FE::MeshFree
      * top of parobject.H
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return MeshfreeMultiBinType::Instance().UniqueParObjectId();
+      return MeshfreeMultiBinType::instance().unique_par_object_id();
     };
 
     /*------------------------------------------------------------------------*/
@@ -148,15 +148,15 @@ namespace Core::FE::MeshFree
     void unpack(const std::vector<char>& data) override;
 
     // return meshfree bin type instance
-    Core::Elements::ElementType& ElementType() const override
+    Core::Elements::ElementType& element_type() const override
     {
-      return MeshfreeMultiBinType::Instance();
+      return MeshfreeMultiBinType::instance();
     }
 
     /*!
     \brief Get number of degrees of freedom of a certain node
     */
-    int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+    int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
     /*------------------------------------------------------------------------*/
     /*!
@@ -180,7 +180,7 @@ namespace Core::FE::MeshFree
      *      Returns nullptr if pointers to not exist.
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    inline const std::vector<Core::Elements::Element*>& AssociatedEles(
+    inline const std::vector<Core::Elements::Element*>& associated_eles(
         Core::Binstrategy::Utils::BinContentType bin_content)
     {
       return associated_ele_[bin_content];
@@ -191,9 +191,9 @@ namespace Core::FE::MeshFree
      * \brief Add an associated element to this bin
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    inline virtual void AddAssociatedEle(Core::Binstrategy::Utils::BinContentType
-                                             bin_content,  //!< (in): type of element to be added
-        Core::Elements::Element* eleptr                    //!< (in): pointer to element to be added
+    inline virtual void add_associated_ele(Core::Binstrategy::Utils::BinContentType
+                                               bin_content,  //!< (in): type of element to be added
+        Core::Elements::Element* eleptr  //!< (in): pointer to element to be added
     )
     {
       associated_ele_[bin_content].emplace_back(eleptr);
@@ -237,7 +237,7 @@ namespace Core::FE::MeshFree
     /*!
     \brief Get shape type of element
     */
-    Core::FE::CellType Shape() const override { return Core::FE::CellType::dis_none; };
+    Core::FE::CellType shape() const override { return Core::FE::CellType::dis_none; };
 
    private:
     std::map<Core::Binstrategy::Utils::BinContentType, std::vector<Core::Elements::Element*>>

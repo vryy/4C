@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Vele3LineType Discret::ELEMENTS::Vele3LineType::instance_;
 
-Discret::ELEMENTS::Vele3LineType& Discret::ELEMENTS::Vele3LineType::Instance() { return instance_; }
+Discret::ELEMENTS::Vele3LineType& Discret::ELEMENTS::Vele3LineType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|
@@ -29,8 +29,8 @@ Discret::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int*
     Core::Nodes::Node** nodes, Core::Elements::Element* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
-  SetNodeIds(nnode, nodeids);
-  BuildNodalPointers(nodes);
+  set_node_ids(nnode, nodeids);
+  build_nodal_pointers(nodes);
   set_parent_master_element(parent, lline);
   return;
 }
@@ -50,7 +50,7 @@ Discret::ELEMENTS::Vele3Line::Vele3Line(const Discret::ELEMENTS::Vele3Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Vele3Line::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Vele3Line::clone() const
 {
   Discret::ELEMENTS::Vele3Line* newelement = new Discret::ELEMENTS::Vele3Line(*this);
   return newelement;
@@ -61,7 +61,7 @@ Core::Elements::Element* Discret::ELEMENTS::Vele3Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Vele3Line::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Vele3Line::shape() const
 {
   switch (num_node())
   {

@@ -42,7 +42,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
   issetup_ = false;
 
   const Teuchos::ParameterList& spherebeamlink_params_list =
-      Global::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK");
+      Global::Problem::instance()->beam_interaction_params().sublist("SPHERE BEAM LINK");
 
   // time step for stochastic events concering crosslinking
   deltatime_ = spherebeamlink_params_list.get<double>("TIMESTEP");
@@ -110,7 +110,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
             linkertypes_.end()))
       linkertypes_.push_back(
           Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::Factory(matlinkerpertype_[type_i]))
-              ->LinkerType());
+              ->linker_type());
   }
 
   // store contraction rate, each linker type (not material) can have its own
@@ -271,7 +271,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SphereBeamLinkingParams::ResetTimeStep(double structure_delta_time)
+void BEAMINTERACTION::SphereBeamLinkingParams::reset_time_step(double structure_delta_time)
 {
   check_init_setup();
 

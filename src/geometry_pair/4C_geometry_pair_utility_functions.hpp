@@ -56,15 +56,15 @@ namespace GEOMETRYPAIR
   void CopySegment(const LineSegment<A>& segment_in, LineSegment<B>& segment_out)
   {
     // Add the start and end points.
-    segment_out.GetStartPoint().set_from_other_point_double(segment_in.GetStartPoint());
-    segment_out.GetEndPoint().set_from_other_point_double(segment_in.GetEndPoint());
+    segment_out.get_start_point().set_from_other_point_double(segment_in.get_start_point());
+    segment_out.get_end_point().set_from_other_point_double(segment_in.get_end_point());
 
     // Add the projection points.
     const auto n_points = segment_in.get_number_of_projection_points();
     const std::vector<ProjectionPoint1DTo3D<A>>& projection_points_in =
-        segment_in.GetProjectionPoints();
+        segment_in.get_projection_points();
     std::vector<ProjectionPoint1DTo3D<B>>& projection_points_out =
-        segment_out.GetProjectionPoints();
+        segment_out.get_projection_points();
     projection_points_out.resize(n_points);
     for (unsigned int i_point = 0; i_point < n_points; i_point++)
       projection_points_out[i_point].set_from_other_point_double(projection_points_in[i_point]);
@@ -84,17 +84,17 @@ namespace GEOMETRYPAIR
     constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
     out << std::setprecision(max_precision);
 
-    const auto* face_element = dynamic_cast<const Core::Elements::FaceElement*>(pair->Element2());
+    const auto* face_element = dynamic_cast<const Core::Elements::FaceElement*>(pair->element2());
     if (face_element == nullptr)
     {
-      out << "Pair consisting of the line with GID " << pair->Element1()->Id()
-          << " and the other element GID " << pair->Element2()->Id() << "\n";
+      out << "Pair consisting of the line with GID " << pair->element1()->id()
+          << " and the other element GID " << pair->element2()->id() << "\n";
     }
     else
     {
-      out << "Pair consisting of the line with GID " << pair->Element1()->Id()
-          << " and the other element " << pair->Element2()->Id() << " with the parent element GID "
-          << face_element->ParentElementId() << "\n";
+      out << "Pair consisting of the line with GID " << pair->element1()->id()
+          << " and the other element " << pair->element2()->id() << " with the parent element GID "
+          << face_element->parent_element_id() << "\n";
     }
     out << "Line:";
     PrintElementData<line>::print(element_data_line, out);

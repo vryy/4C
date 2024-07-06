@@ -35,33 +35,33 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     : Mortar::ManagerBase()
 {
   // overwrite base class communicator
-  comm_ = Teuchos::rcp(discret.Comm().Clone());
+  comm_ = Teuchos::rcp(discret.get_comm().Clone());
 
   // create some local variables (later to be stored in strategy)
-  const int spatialDim = Global::Problem::Instance()->NDim();
+  const int spatialDim = Global::Problem::instance()->n_dim();
   if (spatialDim != 2 && spatialDim != 3) FOUR_C_THROW("Meshtying problem must be 2D or 3D.");
 
   std::vector<Teuchos::RCP<Mortar::Interface>> interfaces;
   Teuchos::ParameterList mtparams;
 
   // read and check meshtying input parameters
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "Checking meshtying input parameters..........." << std::endl;
 
   read_and_check_input(mtparams, discret);
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   // check for fill_complete of discretization
-  if (!discret.Filled()) FOUR_C_THROW("discretization of underlying problem is not fillcomplete.");
+  if (!discret.filled()) FOUR_C_THROW("discretization of underlying problem is not fillcomplete.");
 
   // let's check for meshtying boundary conditions in discret
   // and detect groups of matching conditions
   // for each group, create a contact interface and store it
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "Building meshtying interface(s)..............." << std::endl;
 
   std::vector<Core::Conditions::Condition*> contactconditions(0);
-  discret.GetCondition("Mortar", contactconditions);
+  discret.get_condition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
   if (contactconditions.size() < 2) FOUR_C_THROW("Not enough contact conditions in discretization");
@@ -185,7 +185,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     }
 
     // create an empty meshtying interface and store it in this Manager
-    interfaces.push_back(Mortar::Interface::Create(groupid1, Comm(), spatialDim, mtparams));
+    interfaces.push_back(Mortar::Interface::create(groupid1, get_comm(), spatialDim, mtparams));
 
     // get it again
     Teuchos::RCP<Mortar::Interface> interface = interfaces.back();
@@ -200,59 +200,59 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get all nodes and add them
-      const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
+      const std::vector<int>* nodeids = currentgroup[j]->get_nodes();
       if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
       for (unsigned k = 0; k < nodeids->size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!discret.NodeColMap()->MyGID(gid)) continue;
-        Core::Nodes::Node* node = discret.gNode(gid);
+        if (!discret.node_col_map()->MyGID(gid)) continue;
+        Core::Nodes::Node* node = discret.g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object
         Teuchos::RCP<Mortar::Node> mtnode = Teuchos::rcp(new Mortar::Node(
-            node->Id(), node->X(), node->Owner(), discret.Dof(0, node), isslave[j]));
+            node->id(), node->x(), node->owner(), discret.dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
         if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mtnode);
 
         // get edge and corner information:
         std::vector<Core::Conditions::Condition*> contactcornercond(0);
-        discret.GetCondition("mrtrcorner", contactcornercond);
+        discret.get_condition("mrtrcorner", contactcornercond);
         for (unsigned j = 0; j < contactcornercond.size(); j++)
         {
-          if (contactcornercond.at(j)->ContainsNode(node->Id()))
+          if (contactcornercond.at(j)->contains_node(node->id()))
           {
-            mtnode->SetOnCorner() = true;
+            mtnode->set_on_corner() = true;
           }
         }
         std::vector<Core::Conditions::Condition*> contactedgecond(0);
-        discret.GetCondition("mrtredge", contactedgecond);
+        discret.get_condition("mrtredge", contactedgecond);
         for (unsigned j = 0; j < contactedgecond.size(); j++)
         {
-          if (contactedgecond.at(j)->ContainsNode(node->Id()))
+          if (contactedgecond.at(j)->contains_node(node->id()))
           {
-            mtnode->SetOnEdge() = true;
+            mtnode->set_on_edge() = true;
           }
         }
 
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
         std::vector<Core::Conditions::Condition*> contactSymconditions(0);
-        discret.GetCondition("mrtrsym", contactSymconditions);
+        discret.get_condition("mrtrsym", contactSymconditions);
 
         for (unsigned j = 0; j < contactSymconditions.size(); j++)
-          if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+          if (contactSymconditions.at(j)->contains_node(node->id()))
           {
             const std::vector<int>& onoff =
                 contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
             for (unsigned k = 0; k < onoff.size(); k++)
-              if (onoff.at(k) == 1) mtnode->DbcDofs()[k] = true;
+              if (onoff.at(k) == 1) mtnode->dbc_dofs()[k] = true;
           }
 
         // note that we do not have to worry about double entries
         // as the AddNode function can deal with this case!
-        interface->AddMortarNode(mtnode);
+        interface->add_mortar_node(mtnode);
       }
     }
 
@@ -261,7 +261,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -273,19 +273,19 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
       // note that elements in ele1/ele2 already are in column (overlapping) map
       int lsize = static_cast<int>(currele.size());
       int gsize = 0;
-      Comm().SumAll(&lsize, &gsize, 1);
+      get_comm().SumAll(&lsize, &gsize, 1);
 
 
       for (const auto& element : currele)
       {
         Teuchos::RCP<Core::Elements::Element> ele = element.second;
-        Teuchos::RCP<Mortar::Element> mtele = Teuchos::rcp(new Mortar::Element(ele->Id() + ggsize,
-            ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), isslave[j], nurbs));
+        Teuchos::RCP<Mortar::Element> mtele = Teuchos::rcp(new Mortar::Element(ele->id() + ggsize,
+            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs) Mortar::UTILS::prepare_nurbs_element(discret, ele, mtele, spatialDim);
 
-        interface->AddMortarElement(mtele);
+        interface->add_mortar_element(mtele);
       }
 
       ggsize += gsize;  // update global element counter
@@ -309,15 +309,15 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
       interface->fill_complete(isFinalDistribution, maxdof);
     }
   }
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
   // create the solver strategy object
   // and pass all necessary data to it
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout << "Building meshtying strategy object............" << std::endl;
 
-  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
+  const Core::ProblemType problemtype = Global::Problem::instance()->get_problem_type();
 
   Inpar::CONTACT::SolvingStrategy stype =
       Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(mtparams, "STRATEGY");
@@ -327,31 +327,31 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     if (problemtype != Core::ProblemType::poroelast && problemtype != Core::ProblemType::fpsi &&
         problemtype != Core::ProblemType::fpsi_xfem && problemtype != Core::ProblemType::fps3i)
     {
-      strategy_ = Teuchos::rcp(new MtLagrangeStrategy(discret.dof_row_map(), discret.NodeRowMap(),
+      strategy_ = Teuchos::rcp(new MtLagrangeStrategy(discret.dof_row_map(), discret.node_row_map(),
           mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
     else
     {
       strategy_ = Teuchos::rcp(new PoroMtLagrangeStrategy(discret.dof_row_map(),
-          discret.NodeRowMap(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
+          discret.node_row_map(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
     }
   }
   else if (stype == Inpar::CONTACT::solution_penalty or stype == Inpar::CONTACT::solution_uzawa)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.dof_row_map(), discret.NodeRowMap(),
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.dof_row_map(), discret.node_row_map(),
         mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
   else
     FOUR_C_THROW("Unrecognized strategy");
 
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
 
   //**********************************************************************
   // parallel redistribution of all interfaces
-  GetStrategy().redistribute_meshtying();
+  get_strategy().redistribute_meshtying();
   //**********************************************************************
 
   // create binary search tree
-  for (auto& interface : interfaces) interface->CreateSearchTree();
+  for (auto& interface : interfaces) interface->create_search_tree();
 
   return;
 }
@@ -364,21 +364,21 @@ bool CONTACT::MtManager::read_and_check_input(
     Teuchos::ParameterList& mtparams, const Core::FE::Discretization& discret)
 {
   // read parameter lists from Global::Problem
-  const Teuchos::ParameterList& mortar = Global::Problem::Instance()->mortar_coupling_params();
-  const Teuchos::ParameterList& meshtying = Global::Problem::Instance()->contact_dynamic_params();
-  const Teuchos::ParameterList& wearlist = Global::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& mortar = Global::Problem::instance()->mortar_coupling_params();
+  const Teuchos::ParameterList& meshtying = Global::Problem::instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& wearlist = Global::Problem::instance()->wear_params();
 
   // read Problem Type and Problem Dimension from Global::Problem
-  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
-  const int spatialDim = Global::Problem::Instance()->NDim();
-  Core::FE::ShapeFunctionType distype = Global::Problem::Instance()->spatial_approximation_type();
+  const Core::ProblemType problemtype = Global::Problem::instance()->get_problem_type();
+  const int spatialDim = Global::Problem::instance()->n_dim();
+  Core::FE::ShapeFunctionType distype = Global::Problem::instance()->spatial_approximation_type();
 
   // get mortar information
   std::vector<Core::Conditions::Condition*> mtcond(0);
   std::vector<Core::Conditions::Condition*> ccond(0);
 
-  discret.GetCondition("Mortar", mtcond);
-  discret.GetCondition("Contact", ccond);
+  discret.get_condition("Mortar", mtcond);
+  discret.get_condition("Contact", ccond);
 
   bool onlymeshtying = false;
   bool meshtyingandcontact = false;
@@ -524,7 +524,7 @@ bool CONTACT::MtManager::read_and_check_input(
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID() == 0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && get_comm().MyPID() == 0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n")
               << std::endl;
 
@@ -605,7 +605,7 @@ bool CONTACT::MtManager::read_and_check_input(
           problemtype == Core::ProblemType::fpsi_xfem) &&
       (spatialDim != 3) && (spatialDim != 2))
   {
-    const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
+    const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
     if (Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
       FOUR_C_THROW("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
@@ -613,7 +613,7 @@ bool CONTACT::MtManager::read_and_check_input(
   mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case
-  if (Comm().NumProc() == 1)
+  if (get_comm().NumProc() == 1)
     mtparams.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "None");
 
   return true;
@@ -624,7 +624,7 @@ bool CONTACT::MtManager::read_and_check_input(
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart)
 {
-  output.write_vector("mt_lagrmultold", GetStrategy().lagrange_multiplier_old());
+  output.write_vector("mt_lagrmultold", get_strategy().lagrange_multiplier_old());
 
   return;
 }
@@ -637,7 +637,7 @@ void CONTACT::MtManager::read_restart(Core::IO::DiscretizationReader& reader,
 {
   // this is meshtying, thus we need zeros for restart
   // let strategy object do all the work
-  GetStrategy().DoReadRestart(reader, zero);
+  get_strategy().do_read_restart(reader, zero);
 
   return;
 }
@@ -648,21 +648,21 @@ void CONTACT::MtManager::read_restart(Core::IO::DiscretizationReader& reader,
 void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
-  Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();
+  Teuchos::RCP<Epetra_Map> problem = get_strategy().problem_dofs();
   Teuchos::RCP<Epetra_Vector> traction =
-      Teuchos::rcp(new Epetra_Vector(*(GetStrategy().lagrange_multiplier_old())));
+      Teuchos::rcp(new Epetra_Vector(*(get_strategy().lagrange_multiplier_old())));
   Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
   Core::LinAlg::Export(*traction, *tractionexp);
 
   // evaluate slave and master forces
   Teuchos::RCP<Epetra_Vector> fcslave =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().d_matrix()->RowMap()));
+      Teuchos::rcp(new Epetra_Vector(get_strategy().d_matrix()->row_map()));
   Teuchos::RCP<Epetra_Vector> fcmaster =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().m_matrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(get_strategy().m_matrix()->domain_map()));
   Teuchos::RCP<Epetra_Vector> fcslaveexp = Teuchos::rcp(new Epetra_Vector(*problem));
   Teuchos::RCP<Epetra_Vector> fcmasterexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  GetStrategy().d_matrix()->Multiply(true, *traction, *fcslave);
-  GetStrategy().m_matrix()->Multiply(true, *traction, *fcmaster);
+  get_strategy().d_matrix()->multiply(true, *traction, *fcslave);
+  get_strategy().m_matrix()->multiply(true, *traction, *fcmaster);
   Core::LinAlg::Export(*fcslave, *fcslaveexp);
   Core::LinAlg::Export(*fcmaster, *fcmasterexp);
 
@@ -679,7 +679,7 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
 void CONTACT::MtManager::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
-  GetStrategy().postprocess_quantities_per_interface(outputParams);
+  get_strategy().postprocess_quantities_per_interface(outputParams);
 }
 
 FOUR_C_NAMESPACE_CLOSE

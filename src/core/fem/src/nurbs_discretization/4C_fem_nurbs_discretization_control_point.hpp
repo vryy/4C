@@ -30,11 +30,11 @@ namespace Core::FE
     class ControlPointType : public Core::Communication::ParObjectType
     {
      public:
-      std::string Name() const override { return "ControlPointType"; }
+      std::string name() const override { return "ControlPointType"; }
 
-      static ControlPointType& Instance() { return instance_; };
+      static ControlPointType& instance() { return instance_; };
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
      private:
       static ControlPointType instance_;
@@ -92,7 +92,7 @@ namespace Core::FE
              pointer to it
 
       */
-      Core::FE::Nurbs::ControlPoint* Clone() const override;
+      Core::FE::Nurbs::ControlPoint* clone() const override;
 
 
       /*!
@@ -103,9 +103,9 @@ namespace Core::FE
 
       \return the parobject id
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ControlPointType::Instance().UniqueParObjectId();
+        return ControlPointType::instance().unique_par_object_id();
       }
 
       /*!
@@ -138,7 +138,7 @@ namespace Core::FE
       \return weight
 
       */
-      virtual inline double W() const { return w_; }
+      virtual inline double w() const { return w_; }
 
       /*!
       \brief Print this node

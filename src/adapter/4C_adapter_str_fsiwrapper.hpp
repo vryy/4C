@@ -38,7 +38,7 @@ namespace Adapter
     explicit FSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const Solid::MapExtractor> Interface() const { return interface_; }
+    virtual Teuchos::RCP<const Solid::MapExtractor> interface() const { return interface_; }
 
     /// switch structure field to block matrix in fsi simulations
     virtual void use_block_matrix();
@@ -49,7 +49,7 @@ namespace Adapter
     /// calculation (and matrix free Newton Krylov).
     ///
     /// \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// @name Extract interface values
 
@@ -80,7 +80,7 @@ namespace Adapter
     virtual void apply_interface_forces_temporary_deprecated(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// rebuild FSI interface from structure side
-    virtual void RebuildInterface();
+    virtual void rebuild_interface();
 
     /// set pointer to model evaluator
     void set_model_evaluator_ptr(Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedFSI> me)

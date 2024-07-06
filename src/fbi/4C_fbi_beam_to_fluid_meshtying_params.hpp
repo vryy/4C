@@ -111,7 +111,7 @@ namespace FBI
      * \brief Returns the penalty parameter.
      * \returns penalty parameter.
      */
-    inline double GetPenaltyParameter() const { return penalty_parameter_; }
+    inline double get_penalty_parameter() const { return penalty_parameter_; }
 
     /**
      * \brief Returns the Gauss rule.

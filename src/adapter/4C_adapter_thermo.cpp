@@ -45,7 +45,7 @@ Adapter::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
 void Adapter::ThermoBaseAlgorithm::setup_thermo(
     const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
-  const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
+  const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
   // major switch to different time integrators
   Inpar::THR::DynamicType timinttype =
@@ -79,24 +79,24 @@ void Adapter::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
   Teuchos::TimeMonitor monitor(*t);
 
   // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->fill_complete();
+  if (not actdis->filled()) actdis->fill_complete();
 
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   //  // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::Instance()->IOParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::instance()->io_params()));
   const Teuchos::RCP<Teuchos::ParameterList> tdyn = Teuchos::rcp(
-      new Teuchos::ParameterList(Global::Problem::Instance()->thermal_dynamic_params()));
+      new Teuchos::ParameterList(Global::Problem::instance()->thermal_dynamic_params()));
   //  //const Teuchos::ParameterList& size
-  //  //  = Global::Problem::Instance()->ProblemSizeParams();
+  //  //  = Global::Problem::instance()->ProblemSizeParams();
 
   // show default parameters of thermo parameter list
-  if ((actdis->Comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *tdyn);
+  if ((actdis->get_comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *tdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -127,11 +127,11 @@ void Adapter::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
   // create a linear solver
   Teuchos::RCP<Teuchos::ParameterList> solveparams = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
-      new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(linsolvernumber),
-          actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
+          actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
-  actdis->compute_null_space_if_necessary(solver->Params());
+              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  actdis->compute_null_space_if_necessary(solver->params());
 
   // create marching time integrator
   Teuchos::RCP<Thermo> tmpthr;
@@ -177,21 +177,21 @@ void Adapter::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  | integrate                                                bborn 08/09 |
  *----------------------------------------------------------------------*/
-void Adapter::Thermo::Integrate()
+void Adapter::Thermo::integrate()
 {
-  while (NotFinished())
+  while (not_finished())
   {
     // call the predictor
     prepare_time_step();
 
     // integrate time step
-    Inpar::THR::ConvergenceStatus convStatus = Solve();
+    Inpar::THR::ConvergenceStatus convStatus = solve();
 
     switch (convStatus)
     {
       case Inpar::THR::conv_success:
         update();
-        PrintStep();
+        print_step();
         output();
         break;
       case Inpar::THR::conv_fail_repeat:

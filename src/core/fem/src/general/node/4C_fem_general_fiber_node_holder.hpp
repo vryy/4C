@@ -78,7 +78,7 @@ namespace Core::Nodes
      *
      * @return Reference to the list of all fibers at all Gauss points
      */
-    const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& GetFibers() const
+    const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& get_fibers() const
     {
       return fibers_;
     }

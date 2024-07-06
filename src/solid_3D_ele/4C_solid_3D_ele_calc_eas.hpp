@@ -126,7 +126,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
           Core::LinAlg::SerialDenseMatrix* mass_matrix);
 
-      void Recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
+      void recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
       void calculate_stress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
@@ -138,7 +138,7 @@ namespace Discret
           Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void Update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+      void update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params);
 

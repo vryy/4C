@@ -81,7 +81,7 @@ Mat::ThermoPlasticLinElastType Mat::ThermoPlasticLinElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 08/11 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::ThermoPlasticLinElastType::Create(
+Core::Communication::ParObject* Mat::ThermoPlasticLinElastType::create(
     const std::vector<char>& data)
 {
   Mat::ThermoPlasticLinElast* plastic = new Mat::ThermoPlasticLinElast();
@@ -114,19 +114,19 @@ void Mat::ThermoPlasticLinElast::pack(Core::Communication::PackBuffer& data) con
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
-  if (params_ != nullptr) matid = params_->Id();
+  if (params_ != nullptr) matid = params_->id();
   add_to_pack(data, matid);
 
   // pack history data
   int histsize;
   // if material is not initialised, i.e. start simulation, nothing to pack
-  if (!Initialized())
+  if (!initialized())
   {
     histsize = 0;
   }
@@ -166,23 +166,23 @@ void Mat::ThermoPlasticLinElast::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ThermoPlasticLinElast*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // history data
@@ -463,7 +463,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   // ------------------------------------------ relative effective stress
   // eta^{trial}_{n+1} = s^{trial}_{n+1} - beta^{trial}_{n+1}
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> eta(true);
-  RelDevStress(devstress, beta, eta);
+  rel_dev_stress(devstress, beta, eta);
 
   // J2 = 1/2 ( (eta11^{trial})^2 + (eta22^{trial})^2 + (eta33^{trial})^2
   //      + 2 . (eta12^{trial})^2 + 2 . (eta23^{trial})^2 + 2 . (eta13^{trial})^2)
@@ -707,7 +707,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     // total stress
     // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
     // pressure/volumetric stress no influence due to plasticity
-    Stress(p, devstress, *stress);
+    ThermoPlasticLinElast::stress(p, devstress, *stress);
 
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . N
@@ -758,7 +758,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   {
     // trial state vectors = result vectors of time step n+1
     // sigma^e_{n+1} = sigma^{e,trial}_{n+1} = s^{trial}_{n+1} + p . id2
-    Stress(p, devstress, *stress);
+    ThermoPlasticLinElast::stress(p, devstress, *stress);
 
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1}
@@ -859,7 +859,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   // ------------------------------------------------ dissipation for r_T
   // calculate mechanical dissipation required for thermo balance equation
-  Dissipation(gp, sigma_yiso, Dgamma, N, *stress);
+  dissipation(gp, sigma_yiso, Dgamma, N, *stress);
 
   // --------------------------------------- kinematic hardening for k_TT
   // temperature-dependent dissipated mechanical power
@@ -887,7 +887,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 /*----------------------------------------------------------------------*
  | computes linear stress tensor                             dano 05/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Stress(const double p,       // volumetric stress
+void Mat::ThermoPlasticLinElast::stress(const double p,       // volumetric stress
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            // 2nd PK-stress
 )
@@ -903,7 +903,7 @@ void Mat::ThermoPlasticLinElast::Stress(const double p,       // volumetric stre
 /*----------------------------------------------------------------------*
  | compute relative deviatoric stress tensor                 dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::RelDevStress(
+void Mat::ThermoPlasticLinElast::rel_dev_stress(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& beta,       // back stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               // relative stress
@@ -1087,9 +1087,9 @@ void Mat::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
 /*----------------------------------------------------------------------*
  | split given strain rate into elastic and plastic term     dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::StrainRateSplit(int gp,  // current Gauss point
-    const double stepsize,                                // step size
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& strainrate    // total strain rate, i.e. B d'
+void Mat::ThermoPlasticLinElast::strain_rate_split(int gp,  // current Gauss point
+    const double stepsize,                                  // step size
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& strainrate      // total strain rate, i.e. B d'
 )
 {
   // elastic strain rate strain^e'
@@ -1110,7 +1110,7 @@ void Mat::ThermoPlasticLinElast::StrainRateSplit(int gp,  // current Gauss point
 /*----------------------------------------------------------------------*
  | compute internal dissipation term                         dano 04/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::Dissipation(int gp,  // current Gauss point
+void Mat::ThermoPlasticLinElast::dissipation(int gp,  // current Gauss point
     double sigma_yiso,                                // isotropic work hardening von Mises stress
     double Dgamma,                                    // plastic multiplier/increment
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> N,         // flow vector
@@ -1538,28 +1538,28 @@ double Mat::ThermoPlasticLinElast::get_sigma_y_at_strainbarnp(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)              dano 03/13 |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::VisNames(std::map<std::string, int>& names)
+void Mat::ThermoPlasticLinElast::vis_names(std::map<std::string, int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
  | return visualization data (public)                       dano 03/13 |
  *---------------------------------------------------------------------*/
-bool Mat::ThermoPlasticLinElast::VisData(
+bool Mat::ThermoPlasticLinElast::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
-    for (int iter = 0; iter < numgp; iter++) temp += AccumulatedStrain(iter);
+    for (int iter = 0; iter < numgp; iter++) temp += accumulated_strain(iter);
     data[0] = temp / numgp;
   }
   return true;
-}  // VisData()
+}  // vis_data()
 
 
 /*----------------------------------------------------------------------*/

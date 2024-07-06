@@ -21,25 +21,25 @@ FOUR_C_NAMESPACE_OPEN
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void MultiScale::MicroStatic::DetermineToggle()
+void MultiScale::MicroStatic::determine_toggle()
 {
   int np = 0;  // local number of prescribed (=boundary) dofs needed for the
                // creation of vectors and matrices for homogenization
                // procedure
 
   std::vector<Core::Conditions::Condition*> conds;
-  discret_->GetCondition("MicroBoundary", conds);
+  discret_->get_condition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
-    const std::vector<int> nodeids = *cond->GetNodes();
+    const std::vector<int> nodeids = *cond->get_nodes();
 
     for (int i : nodeids)
     {
       // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID(i)) continue;
-      Core::Nodes::Node* actnode = discret_->gNode(i);
+      if (!discret_->node_row_map()->MyGID(i)) continue;
+      Core::Nodes::Node* actnode = discret_->g_node(i);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
-      std::vector<int> dofs = discret_->Dof(actnode);
+      std::vector<int> dofs = discret_->dof(actnode);
       const unsigned numdf = dofs.size();
 
       for (unsigned j = 0; j < numdf; ++j)
@@ -65,7 +65,7 @@ void MultiScale::MicroStatic::DetermineToggle()
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-void MultiScale::MicroStatic::SetUpHomogenization()
+void MultiScale::MicroStatic::set_up_homogenization()
 {
   int indp = 0;
   int indf = 0;
@@ -93,8 +93,8 @@ void MultiScale::MicroStatic::SetUpHomogenization()
   }
 
   // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = Teuchos::rcp(new Epetra_Map(-1, np_, pdof.data(), 0, discret_->Comm()));
-  fdof_ = Teuchos::rcp(new Epetra_Map(-1, ndof_ - np_, fdof.data(), 0, discret_->Comm()));
+  pdof_ = Teuchos::rcp(new Epetra_Map(-1, np_, pdof.data(), 0, discret_->get_comm()));
+  fdof_ = Teuchos::rcp(new Epetra_Map(-1, ndof_ - np_, fdof.data(), 0, discret_->get_comm()));
 
   // create importer
   importp_ = Teuchos::rcp(new Epetra_Import(*pdof_, *(discret_->dof_row_map())));
@@ -104,22 +104,22 @@ void MultiScale::MicroStatic::SetUpHomogenization()
   Epetra_Vector Xp_temp(*pdof_);
 
   std::vector<Core::Conditions::Condition*> conds;
-  discret_->GetCondition("MicroBoundary", conds);
+  discret_->get_condition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
-    const std::vector<int> nodeids = *cond->GetNodes();
+    const std::vector<int> nodeids = *cond->get_nodes();
 
     for (int i : nodeids)
     {
       // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID(i)) continue;
-      Core::Nodes::Node* actnode = discret_->gNode(i);
+      if (!discret_->node_row_map()->MyGID(i)) continue;
+      Core::Nodes::Node* actnode = discret_->g_node(i);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
 
       // nodal coordinates
-      const auto& x = actnode->X();
+      const auto& x = actnode->x();
 
-      std::vector<int> dofs = discret_->Dof(actnode);
+      std::vector<int> dofs = discret_->dof(actnode);
 
       for (int k = 0; k < 3; ++k)
       {
@@ -186,7 +186,7 @@ void MultiScale::MicroStatic::SetUpHomogenization()
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              lw 12/07|
  *----------------------------------------------------------------------*/
-bool MultiScale::MicroStatic::Converged()
+bool MultiScale::MicroStatic::converged()
 {
   // check for single norms
   bool convdis = false;
@@ -242,7 +242,7 @@ bool MultiScale::MicroStatic::Converged()
 /*----------------------------------------------------------------------*
  |  calculate reference norms for relative convergence checks   lw 12/07|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::CalcRefNorms()
+void MultiScale::MicroStatic::calc_ref_norms()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -272,7 +272,7 @@ void MultiScale::MicroStatic::CalcRefNorms()
 /*----------------------------------------------------------------------*
  |  print to screen and/or error file                           lw 12/07|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer)
+void MultiScale::MicroStatic::print_newton(bool print_unconv, Teuchos::Time timer)
 {
   bool relres = (normtypefres_ == Inpar::Solid::convnorm_rel);
 

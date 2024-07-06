@@ -30,7 +30,7 @@
 void test_generated_26182()
 {
   Core::Geo::Cut::MeshIntersection intersection;
-  intersection.GetOptions().Init_for_Cuttests();  // use full cln
+  intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
   Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -49,7 +49,7 @@ void test_generated_26182()
   tri3_xyze(2, 2) = 0.2847992842204971;
   nids.push_back(3681);
   Core::Geo::Cut::SideHandle* sh =
-      intersection.AddCutSide(0, nids, tri3_xyze, Core::FE::CellType::tri3);
+      intersection.add_cut_side(0, nids, tri3_xyze, Core::FE::CellType::tri3);
 
   std::vector<Core::Geo::Cut::Point*> maincylcepoints;
   std::vector<std::vector<Core::Geo::Cut::Point*>> mainholecyclepoints;
@@ -63,56 +63,64 @@ void test_generated_26182()
     coord.push_back(0.0381185725434579);
     coord.push_back(-0.2054918748388551);
     coord.push_back(0.2836358125097307);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 2
     coord.clear();
     coord.push_back(0.03735877861984278);
     coord.push_back(-0.2052182309456932);
     coord.push_back(0.2835416114222981);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 3
     coord.clear();
     coord.push_back(0.03685694307523227);
     coord.push_back(-0.2052748618265615);
     coord.push_back(0.283541994183189);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 4
     coord.clear();
     coord.push_back(0.03188501306376229);
     coord.push_back(-0.2058311483375475);
     coord.push_back(0.2835445248807935);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 5
     coord.clear();
     coord.push_back(0.03270799660887865);
     coord.push_back(-0.2109021370569417);
     coord.push_back(0.2849057629839958);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 6
     coord.clear();
     coord.push_back(0.03694724241223234);
     coord.push_back(-0.2188755644071342);
     coord.push_back(0.2871315284537586);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 7
     coord.clear();
     coord.push_back(0.03858491978605437);
     coord.push_back(-0.207166670292633);
     coord.push_back(0.2840910300152406);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 8
     coord.clear();
     coord.push_back(0.03887836646707293);
     coord.push_back(-0.2057655187320171);
     coord.push_back(0.2837300135971634);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+    maincylcepoints.push_back(
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 1
     coord.clear();
@@ -120,7 +128,7 @@ void test_generated_26182()
     coord.push_back(-0.2052182309456932);
     coord.push_back(0.2835416114222981);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 2
     coord.clear();
@@ -131,7 +139,7 @@ void test_generated_26182()
     coord.push_back(-0.2054918748388551);
     coord.push_back(0.2836358125097307);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 3
     coord.clear();
@@ -139,7 +147,7 @@ void test_generated_26182()
     coord.push_back(-0.2057655187320171);
     coord.push_back(0.2837300135971634);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 4
     coord.clear();
@@ -147,7 +155,7 @@ void test_generated_26182()
     coord.push_back(-0.207166670292633);
     coord.push_back(0.2840910300152406);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 5
     coord.clear();
@@ -155,7 +163,7 @@ void test_generated_26182()
     coord.push_back(-0.2188755644071342);
     coord.push_back(0.2871315284537586);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 6
     coord.clear();
@@ -163,7 +171,7 @@ void test_generated_26182()
     coord.push_back(-0.2109021370569417);
     coord.push_back(0.2849057629839958);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 7
     coord.clear();
@@ -171,7 +179,7 @@ void test_generated_26182()
     coord.push_back(-0.2058311483375475);
     coord.push_back(0.2835445248807935);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 8
     coord.clear();
@@ -179,12 +187,12 @@ void test_generated_26182()
     coord.push_back(-0.2052748618265615);
     coord.push_back(0.283541994183189);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
+        intersection.normal_mesh().new_point(&coord[0], nullptr, nullptr, 0.0));
   }
 
   Core::Geo::Cut::Side* cutside;
   Core::Geo::Cut::plain_side_set sides;
-  sh->CollectSides(sides);
+  sh->collect_sides(sides);
   if (sides.size() != 1) FOUR_C_THROW("More than one side!");
 
   cutside = sides[0];
@@ -195,7 +203,7 @@ void test_generated_26182()
   // triangulatefacet.EarClipping(ptConcavity, true, false);
 
   std::vector<std::vector<Core::Geo::Cut::Point*>> maincycletriangles =
-      triangulatefacet.GetSplitCells();
+      triangulatefacet.get_split_cells();
   for (std::vector<std::vector<Core::Geo::Cut::Point*>>::iterator i = maincycletriangles.begin();
        i != maincycletriangles.end(); ++i)
   {
@@ -211,10 +219,10 @@ void test_generated_26182()
   for (std::vector<std::vector<Core::Geo::Cut::Point*>>::iterator ii = maincycletriangles.begin();
        ii != maincycletriangles.end(); ++ii)
   {
-    std::cout << "ST(" << (*ii)[0]->X()[0] << ", " << (*ii)[0]->X()[1] << ", " << (*ii)[0]->X()[2]
-              << ", " << (*ii)[1]->X()[0] << ", " << (*ii)[1]->X()[1] << ", " << (*ii)[1]->X()[2]
-              << ", " << (*ii)[2]->X()[0] << ", " << (*ii)[2]->X()[1] << ", " << (*ii)[2]->X()[2]
-              << "){" << (*ii)[0]->Id() << ", " << (*ii)[1]->Id() << ", " << (*ii)[2]->Id() << "};"
+    std::cout << "ST(" << (*ii)[0]->x()[0] << ", " << (*ii)[0]->x()[1] << ", " << (*ii)[0]->x()[2]
+              << ", " << (*ii)[1]->x()[0] << ", " << (*ii)[1]->x()[1] << ", " << (*ii)[1]->x()[2]
+              << ", " << (*ii)[2]->x()[0] << ", " << (*ii)[2]->x()[1] << ", " << (*ii)[2]->x()[2]
+              << "){" << (*ii)[0]->id() << ", " << (*ii)[1]->id() << ", " << (*ii)[2]->id() << "};"
               << std::endl;
   }
   std::cout << "==| The cutside: |==" << std::endl;
@@ -223,17 +231,17 @@ void test_generated_26182()
   std::cout << "==| The maincylcepoints: |==" << std::endl;
   for (uint ii = 0; ii < maincylcepoints.size(); ++ii)
   {
-    std::cout << "SP(" << maincylcepoints[ii]->X()[0] << ", " << maincylcepoints[ii]->X()[1] << ", "
-              << maincylcepoints[ii]->X()[2] << "){" << maincylcepoints[ii]->Id() << "};"
+    std::cout << "SP(" << maincylcepoints[ii]->x()[0] << ", " << maincylcepoints[ii]->x()[1] << ", "
+              << maincylcepoints[ii]->x()[2] << "){" << maincylcepoints[ii]->id() << "};"
               << std::endl;
   }
 
   std::cout << "==| The mainholecyclepoints[0]: |==" << std::endl;
   for (uint ii = 0; ii < (mainholecyclepoints[0]).size(); ++ii)
   {
-    std::cout << "SP(" << (mainholecyclepoints[0])[ii]->X()[0] << ", "
-              << (mainholecyclepoints[0])[ii]->X()[1] << ", "
-              << (mainholecyclepoints[0])[ii]->X()[2] << "){" << (mainholecyclepoints[0])[ii]->Id()
+    std::cout << "SP(" << (mainholecyclepoints[0])[ii]->x()[0] << ", "
+              << (mainholecyclepoints[0])[ii]->x()[1] << ", "
+              << (mainholecyclepoints[0])[ii]->x()[2] << "){" << (mainholecyclepoints[0])[ii]->id()
               << "};" << std::endl;
   }
 }

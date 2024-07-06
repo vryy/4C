@@ -58,7 +58,7 @@ Mat::ThermoStVenantKirchhoffType Mat::ThermoStVenantKirchhoffType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::ThermoStVenantKirchhoffType::Create(
+Core::Communication::ParObject* Mat::ThermoStVenantKirchhoffType::create(
     const std::vector<char>& data)
 {
   auto* thrstvenantk = new Mat::ThermoStVenantKirchhoff();
@@ -104,12 +104,12 @@ void Mat::ThermoStVenantKirchhoff::pack(Core::Communication::PackBuffer& data) c
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }  // pack()
 
@@ -121,23 +121,23 @@ void Mat::ThermoStVenantKirchhoff::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ThermoStVenantKirchhoff*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
 
       create_thermo_material_if_set();
     }
@@ -159,7 +159,7 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* de
   // fixme this backwards compatibility modification should be moved outside
   // use initial value as a default value
   double temperature = params.get<double>("scalartemp", params_->thetainit_);
-  Reinit(defgrd, glstrain, temperature, gp);  // fixme call this before
+  reinit(defgrd, glstrain, temperature, gp);  // fixme call this before
 
   setup_cmat(*cmat);
   // purely mechanical part
@@ -177,7 +177,7 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* de
 /*----------------------------------------------------------------------*
  | calculates strain energy                                 seitz 11/15 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::StrainEnergy(
+void Mat::ThermoStVenantKirchhoff::strain_energy(
     const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   if (youngs_is_temp_dependent())
@@ -207,46 +207,49 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<1, 1>& gr
   thermo_->evaluate(gradtemp, cmat, heatflux);
 }
 
-void Mat::ThermoStVenantKirchhoff::ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const
+void Mat::ThermoStVenantKirchhoff::conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const
 {
-  thermo_->ConductivityDerivT(dCondDT);
+  thermo_->conductivity_deriv_t(dCondDT);
 }
 
-void Mat::ThermoStVenantKirchhoff::ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const
+void Mat::ThermoStVenantKirchhoff::conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const
 {
-  thermo_->ConductivityDerivT(dCondDT);
+  thermo_->conductivity_deriv_t(dCondDT);
 }
 
-void Mat::ThermoStVenantKirchhoff::ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const
+void Mat::ThermoStVenantKirchhoff::conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const
 {
-  thermo_->ConductivityDerivT(dCondDT);
+  thermo_->conductivity_deriv_t(dCondDT);
 }
 
-double Mat::ThermoStVenantKirchhoff::CapacityDerivT() const { return thermo_->CapacityDerivT(); }
+double Mat::ThermoStVenantKirchhoff::capacity_deriv_t() const
+{
+  return thermo_->capacity_deriv_t();
+}
 
-void Mat::ThermoStVenantKirchhoff::Reinit(double temperature, unsigned gp)
+void Mat::ThermoStVenantKirchhoff::reinit(double temperature, unsigned gp)
 {
   current_temperature_ = temperature;
-  if (thermo_ != Teuchos::null) thermo_->Reinit(temperature, gp);
+  if (thermo_ != Teuchos::null) thermo_->reinit(temperature, gp);
 }
-void Mat::ThermoStVenantKirchhoff::ResetCurrentState()
+void Mat::ThermoStVenantKirchhoff::reset_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->ResetCurrentState();
+  if (thermo_ != Teuchos::null) thermo_->reset_current_state();
 }
 
-void Mat::ThermoStVenantKirchhoff::CommitCurrentState()
+void Mat::ThermoStVenantKirchhoff::commit_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->CommitCurrentState();
+  if (thermo_ != Teuchos::null) thermo_->commit_current_state();
 }
 
-void Mat::ThermoStVenantKirchhoff::Reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::ThermoStVenantKirchhoff::reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp)
 {
   current_glstrain_ = glstrain;
-  Reinit(temperature, gp);
+  reinit(temperature, gp);
 }
 
-void Mat::ThermoStVenantKirchhoff::GetdSdT(Core::LinAlg::Matrix<6, 1>* dS_dT)
+void Mat::ThermoStVenantKirchhoff::getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT)
 {
   // total derivative of stress (mechanical + thermal part) wrt. temperature
   // calculate derivative of cmat w.r.t. T_{n+1}
@@ -301,7 +304,7 @@ void Mat::ThermoStVenantKirchhoff::setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat)
   // Poisson's ratio (Querdehnzahl)
   const double nu = params_->poissonratio_;
 
-  StVenantKirchhoff::FillCmat(cmat, Emod, nu);
+  StVenantKirchhoff::fill_cmat(cmat, Emod, nu);
 }
 
 /*----------------------------------------------------------------------*
@@ -355,10 +358,10 @@ double Mat::ThermoStVenantKirchhoff::st_modulus() const
 void Mat::ThermoStVenantKirchhoff::setup_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp)
 {
   double m = st_modulus();
-  FillCthermo(ctemp, m);
+  fill_cthermo(ctemp, m);
 }
 
-void Mat::ThermoStVenantKirchhoff::FillCthermo(Core::LinAlg::Matrix<6, 1>& ctemp, double m)
+void Mat::ThermoStVenantKirchhoff::fill_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp, double m)
 {
   // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
   //
@@ -517,7 +520,7 @@ void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 
     // Poisson's ratio (Querdehnzahl)
     const double nu = params_->poissonratio_;
 
-    StVenantKirchhoff::FillCmat(derivcmat, Ederiv, nu);
+    StVenantKirchhoff::fill_cmat(derivcmat, Ederiv, nu);
   }
 }
 
@@ -530,7 +533,7 @@ void Mat::ThermoStVenantKirchhoff::get_cthermo_at_tempnp_t(Core::LinAlg::Matrix<
 {
   double m_T = get_st_modulus_t();
 
-  FillCthermo(derivctemp, m_T);
+  fill_cthermo(derivctemp, m_T);
 }
 
 

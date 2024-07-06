@@ -71,7 +71,7 @@ void GEOMETRYPAIR::LineTo3DEvaluationData::clear()
 /**
  *
  */
-void GEOMETRYPAIR::LineTo3DEvaluationData::ResetTracker()
+void GEOMETRYPAIR::LineTo3DEvaluationData::reset_tracker()
 {
   for (auto& data : gauss_point_projection_tracker_)
     std::fill(data.second.begin(), data.second.end(), false);

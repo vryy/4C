@@ -45,7 +45,7 @@ Core::DOFSets::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInter
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetMergedWrapper::~DofSetMergedWrapper()
 {
-  if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
+  if (sourcedofset_ != Teuchos::null) sourcedofset_->unregister(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -59,11 +59,11 @@ const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::dof_row_map() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::DofColMap() const
+const Epetra_Map* Core::DOFSets::DofSetMergedWrapper::dof_col_map() const
 {
   // the merged dofset does not add new dofs. So we can just return the
   // originial dof map here.
-  return sourcedofset_->DofColMap();
+  return sourcedofset_->dof_col_map();
 }
 
 /*----------------------------------------------------------------------*
@@ -89,7 +89,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   // match master and slave nodes using octtree
   // master id -> slave id, distance
   std::map<int, std::pair<int, double>> coupling;
-  tree.FindMatch(dis, slavenodes, coupling);
+  tree.find_match(dis, slavenodes, coupling);
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
@@ -100,7 +100,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // initialize final mapping
   Teuchos::RCP<Epetra_IntVector> my_master_nodegids_row_layout =
-      Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
+      Teuchos::rcp(new Epetra_IntVector(*dis.node_row_map()));
 
   // loop over all coupled nodes
   for (unsigned i = 0; i < masternodes.size(); ++i)
@@ -115,7 +115,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
     {
       std::pair<int, double>& coupled = coupling[gid];
       int slavegid = coupled.first;
-      int slavelid = dis.NodeRowMap()->LID(slavegid);
+      int slavelid = dis.node_row_map()->LID(slavegid);
       if (slavelid == -1) FOUR_C_THROW("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
@@ -124,7 +124,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   }
 
   // initialize final mapping
-  master_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  master_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
 
   // export to column map
   Core::LinAlg::Export(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
@@ -147,7 +147,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   // match master and slave nodes using octtree
   // master id -> slave id, distance
   coupling.clear();
-  tree.FindMatch(dis, slavenodes, coupling);
+  tree.find_match(dis, slavenodes, coupling);
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
@@ -158,7 +158,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // initialize final mapping
   Teuchos::RCP<Epetra_IntVector> my_slave_nodegids_row_layout =
-      Teuchos::rcp(new Epetra_IntVector(*dis.NodeRowMap()));
+      Teuchos::rcp(new Epetra_IntVector(*dis.node_row_map()));
 
   // loop over all coupled nodes
   for (unsigned i = 0; i < masternodes.size(); ++i)
@@ -173,7 +173,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
     {
       std::pair<int, double>& coupled = coupling[gid];
       int slavegid = coupled.first;
-      int slavelid = dis.NodeRowMap()->LID(slavegid);
+      int slavelid = dis.node_row_map()->LID(slavegid);
       if (slavelid == -1) FOUR_C_THROW("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
@@ -182,7 +182,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   }
 
   // initialize final mapping
-  slave_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  slave_nodegids_col_layout_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
 
   // export to column map
   Core::LinAlg::Export(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
@@ -191,7 +191,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   filled_ = true;
 
   // tell the proxies
-  NotifyAssigned();
+  notify_assigned();
 
   return start;
 }
@@ -206,12 +206,12 @@ void Core::DOFSets::DofSetMergedWrapper::reset()
   // set filled flag
   filled_ = false;
 
-  NotifyReset();
+  notify_reset();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
+void Core::DOFSets::DofSetMergedWrapper::disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {

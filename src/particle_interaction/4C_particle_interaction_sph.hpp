@@ -87,7 +87,7 @@ namespace ParticleInteraction
             particlestatestotypes) override;
 
     //! set initial states
-    void SetInitialStates() override;
+    void set_initial_states() override;
 
     //! pre evaluate time step
     void pre_evaluate_time_step() override;

@@ -38,11 +38,11 @@ namespace Core::Nodes
   class NodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "NodeType"; }
+    std::string name() const override { return "NodeType"; }
 
-    static NodeType& Instance() { return instance_; };
+    static NodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static NodeType instance_;
@@ -89,7 +89,7 @@ namespace Core::Nodes
     \brief Deep copy the derived class and return pointer to it
 
     */
-    virtual Node* Clone() const;
+    virtual Node* clone() const;
 
 
     /*!
@@ -98,7 +98,10 @@ namespace Core::Nodes
     every class imploementing ParObject needs a unique id defined at the
     top of this file.
     */
-    int UniqueParObjectId() const override { return NodeType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return NodeType::instance().unique_par_object_id();
+    }
 
     /*!
     \brief Pack this class so it can be communicated
@@ -123,39 +126,39 @@ namespace Core::Nodes
     /*!
     \brief Return global id
     */
-    inline int Id() const { return id_; }
+    inline int id() const { return id_; }
 
     /*!
     \brief Return processor local col map id
     */
-    inline int LID() const { return lid_; }
+    inline int lid() const { return lid_; }
 
     /*!
     \brief Return owner of this node
     */
-    inline int Owner() const { return owner_; }
+    inline int owner() const { return owner_; }
 
     /*!
     \brief Return coordinates vector
     */
-    inline const std::vector<double>& X() const { return x_; }
+    inline const std::vector<double>& x() const { return x_; }
 
     /*!
     \brief return spatial dimension of node coordinates
     */
-    inline int Dim() const { return x_.size(); }
+    inline int n_dim() const { return x_.size(); }
 
     /*!
     \brief Return processor-local number of elements adjacent to this node
     */
-    inline int NumElement() const { return element_.size(); }
+    inline int num_element() const { return element_.size(); }
 
     /*!
     \brief Return ptr to vector of element ptrs
     */
-    inline Core::Elements::Element** Elements()
+    inline Core::Elements::Element** elements()
     {
-      if (NumElement())
+      if (num_element())
         return element_.data();
       else
         return nullptr;
@@ -164,9 +167,9 @@ namespace Core::Nodes
     /*!
     \brief Return const ptr to vector of const element ptrs
     */
-    inline const Core::Elements::Element* const* Elements() const
+    inline const Core::Elements::Element* const* elements() const
     {
-      if (NumElement())
+      if (num_element())
         return (const Core::Elements::Element* const*)(element_.data());
       else
         return nullptr;
@@ -186,14 +189,14 @@ namespace Core::Nodes
       \brief Set processor local col id
       \param lid: processor local col id
      */
-    inline void SetLID(int lid) { lid_ = lid; }
+    inline void set_lid(int lid) { lid_ = lid; }
 
     /*!
     \brief Set ownership
 
     \param owner: Proc owning this node
     */
-    inline void SetOwner(const int owner) { owner_ = owner; }
+    inline void set_owner(const int owner) { owner_ = owner; }
 
     /*!
     \brief Set a condition with a certain name
@@ -216,7 +219,7 @@ namespace Core::Nodes
              NOT be overwritten but stored twice in the element
 
     */
-    void SetCondition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    void set_condition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
     {
       condition_.insert(
           std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
@@ -233,7 +236,7 @@ namespace Core::Nodes
     \param out  (out): vector of pointers to all conditions with that name
 
     */
-    void GetCondition(
+    void get_condition(
         const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
 
     /*!
@@ -248,22 +251,22 @@ namespace Core::Nodes
 
     \return Returns nullptr if condition with that name does not exist
     */
-    Core::Conditions::Condition* GetCondition(const std::string& name) const;
+    Core::Conditions::Condition* get_condition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this node
     */
-    void ClearConditions() { condition_.clear(); }
+    void clear_conditions() { condition_.clear(); }
 
     /*!
     \brief Change reference position by adding input vector to position
     */
-    void ChangePos(std::vector<double> nvector);
+    void change_pos(std::vector<double> nvector);
 
     /*!
     \brief Change reference position by setting input vector to position
     */
-    void SetPos(std::vector<double> nvector);
+    void set_pos(std::vector<double> nvector);
 
     //@}
 
@@ -276,13 +279,13 @@ namespace Core::Nodes
      *  \return On return, the derived class has filled names with key names of
      *  data it wants to visualize and with int dimensions of that data.
      */
-    virtual void VisNames(std::map<std::string, int>& names) { return; }
+    virtual void vis_names(std::map<std::string, int>& names) { return; }
 
     /*! \brief Visualize the owner of the node using BINIO
      *
      *  \param names (out): Owner is added to the key names
      */
-    void VisOwner(std::map<std::string, int>& names)
+    void vis_owner(std::map<std::string, int>& names)
     {
       names.insert(std::pair<std::string, int>("Nodeowner", 1));
     }
@@ -301,7 +304,7 @@ namespace Core::Nodes
      *  \param name (in): Name of data that is currently processed for visualization
      *  \param data (out): data to be filled by element if it recognizes the name
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data);
+    virtual bool vis_data(const std::string& name, std::vector<double>& data);
 
     /*!
     \brief Clear vector of pointers to my elements

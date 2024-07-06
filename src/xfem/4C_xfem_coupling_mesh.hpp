@@ -48,11 +48,11 @@ namespace XFEM
         bool marked_geometry = false);
 
     //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
-    Core::Elements::Element* GetCouplingElement(
+    Core::Elements::Element* get_coupling_element(
         const int sid  ///< global side element id w.r.t cutter discretization
         ) override
     {
-      return coupl_dis_->gElement(sid);
+      return coupl_dis_->g_element(sid);
     }
 
     /// get the side element of the respective boundary discretization
@@ -60,10 +60,10 @@ namespace XFEM
         const int sid  ///< global side element id w.r.t cutter discretization
     )
     {
-      return cutter_dis_->gElement(sid);
+      return cutter_dis_->g_element(sid);
     }
 
-    Teuchos::RCP<const Epetra_Vector> GetCutterDispCol();
+    Teuchos::RCP<const Epetra_Vector> get_cutter_disp_col();
 
     /// fill lm vector for coupling element
     virtual void get_coupling_ele_location_vector(const int sid, std::vector<int>& patchlm);
@@ -82,7 +82,7 @@ namespace XFEM
     virtual void zero_state_vectors_fsi(){};
 
     /// clear state vectors
-    virtual void ClearState();
+    virtual void clear_state();
 
     /// set state vectors for cutter discretization
     virtual void set_state();
@@ -91,7 +91,7 @@ namespace XFEM
     virtual void set_state_displacement();
 
     /// update interface field state vectors
-    virtual void UpdateStateVectors();
+    virtual void update_state_vectors();
 
     /// update last iteration interface displacements
     virtual void update_displacement_iteration_vectors();
@@ -102,30 +102,30 @@ namespace XFEM
 
     void prepare_cutter_output() override;
 
-    virtual void LiftDrag(const int step, const double time) const {};
+    virtual void lift_drag(const int step, const double time) const {};
 
 
     virtual void read_restart(const int step){};
 
-    bool HasMovingInterface() override { return true; }
+    bool has_moving_interface() override { return true; }
 
-    bool CutGeometry() override { return !mark_geometry_; }
-    virtual bool IsMarkedGeometry() { return mark_geometry_; }
+    bool cut_geometry() override { return !mark_geometry_; }
+    virtual bool is_marked_geometry() { return mark_geometry_; }
 
     //! do not cut, but only mark part of boundary loaded into cut
-    virtual void SetMarkedGeometry(bool markgeometry) { mark_geometry_ = markgeometry; }
+    virtual void set_marked_geometry(bool markgeometry) { mark_geometry_ = markgeometry; }
 
-    Teuchos::RCP<Epetra_Vector> IVelnp() { return ivelnp_; }
-    Teuchos::RCP<Epetra_Vector> IVeln() { return iveln_; }
-    Teuchos::RCP<Epetra_Vector> IVelnm() { return ivelnm_; }
+    Teuchos::RCP<Epetra_Vector> i_velnp() { return ivelnp_; }
+    Teuchos::RCP<Epetra_Vector> i_veln() { return iveln_; }
+    Teuchos::RCP<Epetra_Vector> i_velnm() { return ivelnm_; }
 
-    Teuchos::RCP<Epetra_Vector> IDispnp() { return idispnp_; }
-    Teuchos::RCP<Epetra_Vector> IDispn() { return idispn_; }
+    Teuchos::RCP<Epetra_Vector> i_dispnp() { return idispnp_; }
+    Teuchos::RCP<Epetra_Vector> i_dispn() { return idispn_; }
 
-    Teuchos::RCP<Epetra_Vector> IDispnpi() { return idispnpi_; }
+    Teuchos::RCP<Epetra_Vector> i_dispnpi() { return idispnpi_; }
 
     /// Get background fluid mesh h scaling
-    virtual double Get_h() { return h_scaling_; }
+    virtual double get_h() { return h_scaling_; }
 
    protected:
     /*!
@@ -148,8 +148,8 @@ namespace XFEM
       // const size_t nsd = projection_matrix.Rows();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (projection_matrix.numRows() != projection_matrix.numCols() ||
-          projection_matrix.numRows() != normal.numRows())
+      if (projection_matrix.num_rows() != projection_matrix.num_cols() ||
+          projection_matrix.num_rows() != normal.num_rows())
         FOUR_C_THROW(
             "eval_projection_matrix: Rows and Cols of projection_matrix and normal vector do not "
             "fit!");
@@ -224,35 +224,35 @@ namespace XFEM
     void init() override;
 
     //! Initialize Volume Coupling
-    void Init_VolCoupling();
+    void init_vol_coupling();
 
     void get_coupling_ele_location_vector(const int sid, std::vector<int>& patchlm) override;
 
     //! get the coupling element for a local coupling side element id
-    Core::Elements::Element* GetCouplingElement(
+    Core::Elements::Element* get_coupling_element(
         const int sid  ///< global side element id w.r.t cutter discretization
         ) override
     {
       if (get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided)
       {
-        return MeshCoupling::GetCouplingElement(sid);
+        return MeshCoupling::get_coupling_element(sid);
       }
       // else
       Core::Elements::FaceElement* fele =
-          dynamic_cast<Core::Elements::FaceElement*>(cutter_dis_->gElement(sid));
+          dynamic_cast<Core::Elements::FaceElement*>(cutter_dis_->g_element(sid));
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
       fele->set_parent_master_element(
-          coupl_dis_->gElement(fele->ParentElementId()), fele->FaceParentNumber());
+          coupl_dis_->g_element(fele->parent_element_id()), fele->face_parent_number());
       return fele->parent_element();
     }
 
     //! get the element from the conditioned dis for a local coupling side element id
-    Core::Elements::Element* GetCondElement(
+    Core::Elements::Element* get_cond_element(
         const int sid  ///< global side element id w.r.t cutter discretization
     )
     {
       Core::Elements::FaceElement* fele =
-          dynamic_cast<Core::Elements::FaceElement*>(cutter_dis_->gElement(sid));
+          dynamic_cast<Core::Elements::FaceElement*>(cutter_dis_->g_element(sid));
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
       return fele->parent_element();
     }
@@ -351,7 +351,7 @@ namespace XFEM
     virtual void evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec, const std::string& condname,
         const double time, const double dt = 0.0);
 
-    bool HasMovingInterface() override;
+    bool has_moving_interface() override;
   };
 
   /*!
@@ -382,7 +382,7 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
         const Core::Conditions::Condition* cond) override;
 
-    void PrepareSolve() override;
+    void prepare_solve() override;
 
    protected:
     void do_condition_specific_setup() override;
@@ -448,7 +448,7 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
         const Core::Conditions::Condition* cond) override;
 
-    void PrepareSolve() override;
+    void prepare_solve() override;
 
    protected:
     //! Do condition specific setup
@@ -517,10 +517,10 @@ namespace XFEM
         const Core::Conditions::Condition* cond) override;
 
     /// get the slip coefficient for this coupling
-    void GetSlipCoefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
+    void get_slip_coefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
         const Core::Conditions::Condition* cond) override;
 
-    void PrepareSolve() override;
+    void prepare_solve() override;
 
    protected:
     void set_condition_specific_parameters() override;
@@ -597,23 +597,23 @@ namespace XFEM
 
     void zero_state_vectors_fsi() override;
 
-    void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
+    void gmsh_output(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen) override;
 
     void gmsh_output_discretization(std::ostream& gmshfilecontent) override;
 
-    void LiftDrag(const int step, const double time) const override;
+    void lift_drag(const int step, const double time) const override;
 
     void read_restart(const int step) override;
 
-    void GetSlipCoefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
+    void get_slip_coefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
         const Core::Conditions::Condition* cond) override;
 
     // interface foces
-    Teuchos::RCP<Epetra_Vector> ITrueResidual() { return itrueresidual_; }
+    Teuchos::RCP<Epetra_Vector> i_true_residual() { return itrueresidual_; }
 
     // for assembly of fluid interface forces
-    Teuchos::RCP<Epetra_Vector> IForcecol() { return iforcecol_; }
+    Teuchos::RCP<Epetra_Vector> i_forcecol() { return iforcecol_; }
 
     // evaluate structural cauchy stress and linearization in case we don't have xfluid sided
     // weighting
@@ -622,9 +622,9 @@ namespace XFEM
         const Core::LinAlg::Matrix<3, 1>& normal,
         std::vector<Core::LinAlg::SerialDenseMatrix>& solid_stress);
 
-    void SetTimeFac(double timefac) { timefac_ = timefac; }
+    void set_time_fac(double timefac) { timefac_ = timefac; }
 
-    double GetTimeFac() { return timefac_; }
+    double get_time_fac() { return timefac_; }
 
     void get_stress_tangent_slave(Core::Elements::Element* coup_ele,  ///< solid ele
         double& e_s);                                                 ///< stress tangent slavesided
@@ -639,13 +639,13 @@ namespace XFEM
     void output(const int step, const double time, const bool write_restart_data) override;
 
     /// Assign communicator to contact to mesh coupling object
-    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
+    void assign_contact_comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
     {
       xf_c_comm_ = xf_c_comm;
     }
 
     /// Get communicator to contact
-    Teuchos::RCP<XFEM::XFluidContactComm> Get_Contact_Comm()
+    Teuchos::RCP<XFEM::XFluidContactComm> get_contact_comm()
     {
       if (xf_c_comm_ == Teuchos::null)
         FOUR_C_THROW("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
@@ -653,13 +653,13 @@ namespace XFEM
     }
 
     /// Prepare solve
-    void PrepareSolve() override;
+    void prepare_solve() override;
 
     /// Get the corresponding FSI interface law
-    virtual Inpar::XFEM::InterfaceLaw GetInterfaceLaw() { return interfacelaw_; }
+    virtual Inpar::XFEM::InterfaceLaw get_interface_law() { return interfacelaw_; }
 
     /// Register this side on this proc
-    void RegisterSideProc(int sid);
+    void register_side_proc(int sid);
 
     /// Initialize Fluid State
     bool initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
@@ -674,7 +674,7 @@ namespace XFEM
 
     void init_state_vectors() override;
 
-    bool HasMovingInterface() override { return true; }
+    bool has_moving_interface() override { return true; }
 
     void set_condition_specific_parameters() override;
 
@@ -770,32 +770,32 @@ namespace XFEM
         Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat) override;
 
     /// set the fluid-fluid interface fix to avoid a cut
-    void SetInterfaceFixed()
+    void set_interface_fixed()
     {
       // TODO:XFF-class calls this, when used in an FSI algorithm (fixed ALE)
       moving_interface_ = false;
     }
 
     /// free the fluid-fluid interface
-    void SetInterfaceFree() { moving_interface_ = true; }
+    void set_interface_free() { moving_interface_ = true; }
 
     //! ghost interface-contributing embedded elements (required for error calculation in case
     //! of xfluid-sided coupling)
     void redistribute_for_error_calculation();
 
     //! determine whether interface is fixed
-    bool HasMovingInterface() override { return moving_interface_; }
+    bool has_moving_interface() override { return moving_interface_; }
 
     /// get viscosity of the slave fluid
-    void GetViscositySlave(Core::Elements::Element* coup_ele,  ///< xfluid ele
-        double& visc_s                                         ///< viscosity slavesided
+    void get_viscosity_slave(Core::Elements::Element* coup_ele,  ///< xfluid ele
+        double& visc_s                                           ///< viscosity slavesided
     );
 
     /// get scaling of the master side for penalty (viscosity, E-modulus for solids)
     void get_penalty_scaling_slave(Core::Elements::Element* coup_ele,  ///< xfluid ele
         double& penscaling_s) override  ///< penalty scaling slavesided
     {
-      GetViscositySlave(coup_ele, penscaling_s);
+      get_viscosity_slave(coup_ele, penscaling_s);
     }
 
 

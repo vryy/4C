@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart1WC::DoPoroStep()
+void PoroElastScaTra::PoroScatraPart1WC::do_poro_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
   }
@@ -33,7 +33,7 @@ void PoroElastScaTra::PoroScatraPart1WC::DoPoroStep()
   // sdynparams
   //      CUIDADO, aqui vuelve a avanzar el paso de tiempo. Hay que corregir eso.
   // 2)  Newton-Raphson iteration
-  poro_field()->Solve();
+  poro_field()->solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -41,14 +41,14 @@ void PoroElastScaTra::PoroScatraPart1WC::DoPoroStep()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraPart1WC::do_scatra_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
   }
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  ScaTraField()->Solve();
+  sca_tra_field()->solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -70,12 +70,12 @@ void PoroElastScaTra::PoroScatraPart1WC::update()
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
   poro_field()->update();
-  ScaTraField()->update();
+  sca_tra_field()->update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  ScaTraField()->evaluate_error_compared_to_analytical_sol();
+  sca_tra_field()->evaluate_error_compared_to_analytical_sol();
 }
 
 /*----------------------------------------------------------------------*
@@ -87,7 +87,7 @@ void PoroElastScaTra::PoroScatraPart1WC::output()
   //                         output of solution
   // -------------------------------------------------------------------
   poro_field()->output();
-  ScaTraField()->check_and_write_output_and_restart();
+  sca_tra_field()->check_and_write_output_and_restart();
 }
 
 /*----------------------------------------------------------------------*
@@ -104,15 +104,15 @@ PoroElastScaTra::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 08/13  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::Timeloop()
+void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::timeloop()
 {
   // initial_calculations();
 
-  while (NotFinished())
+  while (not_finished())
   {
     prepare_time_step();
 
-    Solve();
+    solve();
 
     prepare_output();
 
@@ -131,17 +131,17 @@ void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::prepare_time_step(bool prin
   if (printheader) print_header();
 
   poro_field()->prepare_time_step();
-  SetPoroSolution();
-  ScaTraField()->prepare_time_step();
+  set_poro_solution();
+  sca_tra_field()->prepare_time_step();
 }
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::Solve()
+void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::solve()
 {
-  DoPoroStep();  // It has its own time and timestep variables, and it increments them by itself.
-  SetPoroSolution();
+  do_poro_step();  // It has its own time and timestep variables, and it increments them by itself.
+  set_poro_solution();
   do_scatra_step();  // It has its own time and timestep variables, and it increments them by
                      // itself.
 }
@@ -156,17 +156,17 @@ void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
   if (restart)
   {
     poro_field()->read_restart(restart);
-    SetPoroSolution();
-    ScaTraField()->read_restart(restart);
+    set_poro_solution();
+    sca_tra_field()->read_restart(restart);
 
-    SetTimeStep(poro_field()->Time(), restart);
+    set_time_step(poro_field()->time(), restart);
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->structure_field()->discretization(), ScaTraField()->discretization());
+        poro_field()->structure_field()->discretization(), sca_tra_field()->discretization());
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->fluid_field()->discretization(), ScaTraField()->discretization());
+        poro_field()->fluid_field()->discretization(), sca_tra_field()->discretization());
   }
 }
 
@@ -182,25 +182,25 @@ PoroElastScaTra::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
 
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset =
-      ScaTraField()->discretization()->GetDofSetProxy();
+      sca_tra_field()->discretization()->get_dof_set_proxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible
-  if (poro_field()->structure_field()->discretization()->AddDofSet(scatradofset) != 1)
+  if (poro_field()->structure_field()->discretization()->add_dof_set(scatradofset) != 1)
     FOUR_C_THROW("unexpected dof sets in structure field");
 }
 
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::Timeloop()
+void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::timeloop()
 {
   // initial_calculations();
 
-  while (NotFinished())
+  while (not_finished())
   {
     prepare_time_step();
 
-    Solve();
+    solve();
 
     prepare_output();
 
@@ -218,8 +218,8 @@ void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::prepare_time_step(bool prin
   increment_time_and_step();
   if (printheader) print_header();
 
-  ScaTraField()->prepare_time_step();
-  SetScatraSolution();
+  sca_tra_field()->prepare_time_step();
+  set_scatra_solution();
   poro_field()->prepare_time_step();
 }
 
@@ -227,12 +227,12 @@ void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::prepare_time_step(bool prin
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::Solve()
+void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::solve()
 {
   do_scatra_step();  // It has its own time and timestep variables, and it increments them by
                      // itself.
-  SetScatraSolution();
-  DoPoroStep();  // It has its own time and timestep variables, and it increments them by itself.
+  set_scatra_solution();
+  do_poro_step();  // It has its own time and timestep variables, and it increments them by itself.
 }
 
 /*----------------------------------------------------------------------*
@@ -244,18 +244,18 @@ void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::read_restart(int restart)
   // (Note that dofmaps might have changed in a redistribution call!)
   if (restart)
   {
-    ScaTraField()->read_restart(restart);
-    SetScatraSolution();
+    sca_tra_field()->read_restart(restart);
+    set_scatra_solution();
     poro_field()->read_restart(restart);
 
-    SetTimeStep(poro_field()->Time(), restart);
+    set_time_step(poro_field()->time(), restart);
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->structure_field()->discretization(), ScaTraField()->discretization());
+        poro_field()->structure_field()->discretization(), sca_tra_field()->discretization());
     PoroElast::UTILS::SetMaterialPointersMatchingGrid(
-        poro_field()->fluid_field()->discretization(), ScaTraField()->discretization());
+        poro_field()->fluid_field()->discretization(), sca_tra_field()->discretization());
   }
 }
 

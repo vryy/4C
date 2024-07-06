@@ -54,7 +54,7 @@ namespace THR
     TimIntExpl(const TimIntExpl& old) : TimInt(old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep() override = 0;
+    void resize_m_step() override = 0;
 
     //@}
 
@@ -62,13 +62,13 @@ namespace THR
     //@{
 
     //! Do time integration of single step
-    void IntegrateStep() override = 0;
+    void integrate_step() override = 0;
 
     //! Solve dynamic equilibrium
     //! This is a general wrapper around the specific techniques.
-    Inpar::THR::ConvergenceStatus Solve() override
+    Inpar::THR::ConvergenceStatus solve() override
     {
-      IntegrateStep();
+      integrate_step();
       return Inpar::THR::conv_success;
     }
 
@@ -106,16 +106,16 @@ namespace THR
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
-    void UpdateStepState() override = 0;
+    void update_step_state() override = 0;
 
     //! Update Element
-    void UpdateStepElement() override = 0;
+    void update_step_element() override = 0;
 
     //! update at time step end
     void update() override;
 
     //! update Newton step
-    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override
+    void update_newton(Teuchos::RCP<const Epetra_Vector> tempi) override
     {
       FOUR_C_THROW("not needed for explicit time integration");
       return;
@@ -142,7 +142,7 @@ namespace THR
     //@{
 
     //! print summary after step
-    void PrintStep() override;
+    void print_step() override;
 
     //! The text for summary print, see #print_step
     void print_step_text(FILE* ofile  //!< output file handle
@@ -154,20 +154,20 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum Inpar::THR::DynamicType MethodName() const override = 0;
+    enum Inpar::THR::DynamicType method_name() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
-    bool MethodImplicit() override { return false; }
+    bool method_implicit() override { return false; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() override = 0;
+    int method_steps() override = 0;
 
     //! Give local order of accuracy of displacement part
     int method_order_of_accuracy() override = 0;
 
     //! Return linear error coefficient of temperatures
-    double MethodLinErrCoeff() override = 0;
+    double method_lin_err_coeff() override = 0;
 
     //@}
 
@@ -175,10 +175,10 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override = 0;
+    Teuchos::RCP<Epetra_Vector> fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Epetra_Vector> Freact() override
+    Teuchos::RCP<Epetra_Vector> freact() override
     {
       FOUR_C_THROW("Not impl.");
       return Teuchos::null;
@@ -192,17 +192,17 @@ namespace THR
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> RHS() override
+    Teuchos::RCP<const Epetra_Vector> rhs() override
     {
       FOUR_C_THROW("not needed for explicit time integration");
       return Teuchos::null;
     }
 
     //! Read and set external forces from file
-    void ReadRestartForce() override = 0;
+    void read_restart_force() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //@}
 

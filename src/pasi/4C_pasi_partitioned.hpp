@@ -97,7 +97,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 01/2017
      */
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     /*!
      * \brief perform result tests
@@ -106,7 +106,7 @@ namespace PaSI
      *
      * \param[in] comm communicator
      */
-    void TestResults(const Epetra_Comm& comm);
+    void test_results(const Epetra_Comm& comm);
 
     //! get initialization status
     bool is_init() { return isinit_; };

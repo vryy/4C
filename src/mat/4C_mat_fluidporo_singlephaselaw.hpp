@@ -37,7 +37,7 @@ namespace Mat
       explicit FluidPoroPhaseLaw(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! build the phase law
-      static FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
+      static FluidPoroPhaseLaw* create_phase_law(int phaselawId);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
@@ -46,10 +46,10 @@ namespace Mat
       virtual void initialize() = 0;
 
       /// pressure ids involved in phase law
-      virtual const std::vector<int>* PresIds() = 0;
+      virtual const std::vector<int>* pres_ids() = 0;
 
       //! evaluate saturation of phase
-      virtual double EvaluateSaturation(const std::vector<double>& pressure) = 0;
+      virtual double evaluate_saturation(const std::vector<double>& pressure) = 0;
 
       //! evaluate derivative of saturation w.r.t. pressure
       virtual double evaluate_deriv_of_saturation_wrt_pressure(
@@ -60,7 +60,7 @@ namespace Mat
           int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure) = 0;
 
       //! evaluate generalized pressure related to phase law
-      virtual double EvaluateGenPressure(double saturation) = 0;
+      virtual double evaluate_gen_pressure(double saturation) = 0;
 
       //! evaluate derivative of pressure w.r.t. saturation
       virtual double evaluate_deriv_of_pressure_wrt_saturation(
@@ -91,13 +91,13 @@ namespace Mat
       //@}
 
       /// pressure ids involved in phase law
-      const std::vector<int>* PresIds() override { return &presids_; };
+      const std::vector<int>* pres_ids() override { return &presids_; };
 
       //! evaluate saturation of phase
-      double EvaluateSaturation(const std::vector<double>& pressure) override;
+      double evaluate_saturation(const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
-      double EvaluateGenPressure(double saturation) override;
+      double evaluate_gen_pressure(double saturation) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
       double evaluate_deriv_of_saturation_wrt_pressure(
@@ -138,10 +138,10 @@ namespace Mat
       //@}
 
       /// pressure ids involved in phase law
-      const std::vector<int>* PresIds() override { return &presids_; };
+      const std::vector<int>* pres_ids() override { return &presids_; };
 
       //! evaluate saturation of phase
-      double EvaluateSaturation(const std::vector<double>& pressure) override;
+      double evaluate_saturation(const std::vector<double>& pressure) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
       double evaluate_deriv_of_saturation_wrt_pressure(
@@ -152,7 +152,7 @@ namespace Mat
           int seconddoftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
-      double EvaluateGenPressure(double saturation) override;
+      double evaluate_gen_pressure(double saturation) override;
 
       //! evaluate derivative of pressure w.r.t. saturation
       double evaluate_deriv_of_pressure_wrt_saturation(int doftoderive, double saturation) override;
@@ -173,7 +173,7 @@ namespace Mat
       void initialize() override { return; };
 
       /// pressure ids involved in phase law
-      const std::vector<int>* PresIds() override
+      const std::vector<int>* pres_ids() override
       {
         FOUR_C_THROW(
             "The constraint phase law does not have pressure coupling! \n "
@@ -183,7 +183,7 @@ namespace Mat
 
 
       //! evaluate saturation of phase
-      double EvaluateSaturation(const std::vector<double>& pressure) override
+      double evaluate_saturation(const std::vector<double>& pressure) override
       {
         FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
@@ -206,7 +206,7 @@ namespace Mat
       };
 
       //! evaluate generalized pressure related to phase law
-      double EvaluateGenPressure(double saturation) override
+      double evaluate_gen_pressure(double saturation) override
       {
         FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
@@ -245,10 +245,10 @@ namespace Mat
       //@}
 
       /// pressure ids involved in phase law
-      const std::vector<int>* PresIds() override { return &presids_; };
+      const std::vector<int>* pres_ids() override { return &presids_; };
 
       //! evaluate saturation of phase
-      double EvaluateSaturation(const std::vector<double>& pressure) override;
+      double evaluate_saturation(const std::vector<double>& pressure) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
       double evaluate_deriv_of_saturation_wrt_pressure(
@@ -259,7 +259,7 @@ namespace Mat
           int seconddoftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
-      double EvaluateGenPressure(double saturation) override;
+      double evaluate_gen_pressure(double saturation) override;
 
       //! evaluate derivative of pressure w.r.t. saturation
       double evaluate_deriv_of_pressure_wrt_saturation(int doftoderive, double saturation) override;

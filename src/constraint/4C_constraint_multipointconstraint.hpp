@@ -50,8 +50,8 @@ namespace CONSTRAINTS
     virtual ~MPConstraint() { ; };
 
     /// Set state of the underlying constraint discretization
-    void SetConstrState(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<const Epetra_Vector> V        ///< values to set
+    void set_constr_state(const std::string& state,  ///< name of state to set
+        Teuchos::RCP<const Epetra_Vector> V          ///< values to set
     );
 
     /// initialization routine called by the manager ctor to get correct reference base values and
@@ -87,7 +87,7 @@ namespace CONSTRAINTS
         ) = 0;
 
     //! Is there a constraint defined in this class?
-    bool HaveConstraint() { return constrtype_ != none; };
+    bool have_constraint() { return constrtype_ != none; };
 
    protected:
     // cctor

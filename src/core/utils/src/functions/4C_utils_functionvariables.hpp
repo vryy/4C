@@ -46,16 +46,16 @@ namespace Core::UTILS
     virtual ~FunctionVariable() = default;
 
     /// evaluate the function at given time
-    virtual double Value(const double t) = 0;
+    virtual double value(const double t) = 0;
 
     /// evaluate the time derivative at given time
-    virtual double TimeDerivativeValue(const double t, const unsigned deg = 1) = 0;
+    virtual double time_derivative_value(const double t, const unsigned deg = 1) = 0;
 
     /// check the inclusion of the considered time
-    virtual bool ContainTime(const double t) = 0;
+    virtual bool contain_time(const double t) = 0;
 
     /// return the name of the variable
-    std::string Name() { return name_; }
+    std::string name() { return name_; }
 
    private:
     /// name of the variable
@@ -70,13 +70,13 @@ namespace Core::UTILS
     ParsedFunctionVariable(std::string name, const std::string& buf);
 
     /// evaluate the function at given time
-    double Value(const double t) override;
+    double value(const double t) override;
 
     /// evaluate the time derivative at given time
-    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
+    double time_derivative_value(const double t, const unsigned deg = 1) override;
 
     /// check the inclusion of the considered time
-    bool ContainTime(const double t) override;
+    bool contain_time(const double t) override;
 
    private:
     /// parsed function
@@ -92,17 +92,17 @@ namespace Core::UTILS
         std::vector<double> values, struct Periodicstruct periodicdata);
 
     /// evaluate the function at given time
-    double Value(const double t) override;
+    double value(const double t) override;
 
     /// templated function to evaluate and to derive from using sacado
     template <typename ScalarT>
-    ScalarT Value(const ScalarT& t);
+    ScalarT value(const ScalarT& t);
 
     /// evaluate the time derivative at given time
-    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
+    double time_derivative_value(const double t, const unsigned deg = 1) override;
 
     /// check the inclusion of the considered time
-    bool ContainTime(const double t) override;
+    bool contain_time(const double t) override;
 
    private:
     /// times for the interpolation
@@ -130,13 +130,13 @@ namespace Core::UTILS
         std::vector<std::string> description_vec, struct Periodicstruct periodicdata);
 
     /// evaluate the function at given time
-    double Value(const double t) override;
+    double value(const double t) override;
 
     /// evaluate the time derivative at given time
-    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
+    double time_derivative_value(const double t, const unsigned deg = 1) override;
 
     /// check the inclusion of the considered time
-    bool ContainTime(const double t) override;
+    bool contain_time(const double t) override;
 
    private:
     /// times defining each interval
@@ -165,17 +165,17 @@ namespace Core::UTILS
         std::vector<double> values, struct Periodicstruct periodicdata);
 
     /// evaluate the function at given time
-    double Value(const double t) override;
+    double value(const double t) override;
 
     /// templated function to evaluate and to derive from using sacado
     template <typename ScalarT>
-    ScalarT Value(const ScalarT& t);
+    ScalarT value(const ScalarT& t);
 
     /// evaluate the time derivative at given time
-    double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
+    double time_derivative_value(const double t, const unsigned deg = 1) override;
 
     /// check the inclusion of the considered time
-    bool ContainTime(const double t) override;
+    bool contain_time(const double t) override;
 
    private:
     /// times for the interpolation
@@ -208,11 +208,11 @@ namespace Core::UTILS
     //! Create a PiecewiseVariable from the given @p pieces.
     PiecewiseVariable(const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces);
 
-    double Value(double t) override;
+    double value(double t) override;
 
-    double TimeDerivativeValue(double t, unsigned int deg) override;
+    double time_derivative_value(double t, unsigned int deg) override;
 
-    bool ContainTime(double t) override;
+    bool contain_time(double t) override;
 
    private:
     //! Helper function to access the piece that contains time @p time. Returns the first
@@ -227,7 +227,7 @@ namespace Core::UTILS
   namespace INTERNAL
   {
     //! Internal helper to figure out the correct time points from input.
-    std::vector<double> ExtractTimeVector(const Input::LineDefinition& timevar);
+    std::vector<double> extract_time_vector(const Input::LineDefinition& timevar);
   }  // namespace INTERNAL
 }  // namespace Core::UTILS
 

@@ -42,7 +42,7 @@ namespace Adapter
     void apply_fsi_interface_displacements(Teuchos::RCP<const Epetra_Vector> idisp);
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface() const;
 
     //@}
 

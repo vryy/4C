@@ -206,8 +206,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_bgs_v(const int myrank, con
       stmpf = stmpf - Asf[0] * fy;
       // zero initial guess
       sz = 0.0;
-      richardson_v("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.Sweeps(), sbest.Damp(), Ass,
-          sbest.S(), Pss, Rss, 0, sbest.Nlevel(), sz, stmpf, true, false, true);
+      richardson_v("(s)", myrank, blocksweeps[0], blockdamps[0], sbest.sweeps(), sbest.damp(), Ass,
+          sbest.s(), Pss, Rss, 0, sbest.nlevel(), sz, stmpf, true, false, true);
       sy.Update(damp, sz, 1.0);
     }
     //---------------------- ale block
@@ -221,8 +221,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_bgs_v(const int myrank, con
         atmpf = atmpf - Aaf[0] * sy;
       // zero initial guess
       az = 0.0;
-      richardson_v("(a)", myrank, blocksweeps[2], blockdamps[2], abest.Sweeps(), abest.Damp(), Aaa,
-          abest.S(), Paa, Raa, 0, abest.Nlevel(), az, atmpf, true, false, true);
+      richardson_v("(a)", myrank, blocksweeps[2], blockdamps[2], abest.sweeps(), abest.damp(), Aaa,
+          abest.s(), Paa, Raa, 0, abest.nlevel(), az, atmpf, true, false, true);
       ay.Update(damp, az, 1.0);
     }
     //------------------------ fluid block
@@ -234,8 +234,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::richardson_bgs_v(const int myrank, con
       ftmpf = ftmpf - Afa[0] * ay;
       // zero initial guess
       fz = 0.0;
-      richardson_v("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.Sweeps(), fbest.Damp(), Aff,
-          fbest.S(), Pff, Rff, 0, fbest.Nlevel(), fz, ftmpf, true, false, true);
+      richardson_v("(f)", myrank, blocksweeps[1], blockdamps[1], fbest.sweeps(), fbest.damp(), Aff,
+          fbest.s(), Pff, Rff, 0, fbest.nlevel(), fz, ftmpf, true, false, true);
       fy.Update(damp, fz, 1.0);
     }
   }  // iterations

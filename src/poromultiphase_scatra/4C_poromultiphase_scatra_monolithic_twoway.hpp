@@ -56,16 +56,16 @@ namespace PoroMultiPhaseScaTra
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    void SetupSystem() override;
+    void setup_system() override;
 
     /// setup solver (only needed for poromultiphase monolithic coupling)
-    void SetupSolver() override;
+    void setup_solver() override;
 
     /// time step of coupled problem
-    void TimeStep() override;
+    void time_step() override;
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const
     {
       return blockrowdofmap_;
     }
@@ -334,7 +334,7 @@ namespace PoroMultiPhaseScaTra
     void build_combined_dbc_map() override;
 
     /// setup
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! return arteryscatra-artery coupling sparse matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> artery_scatra_artery_coupling_matrix();

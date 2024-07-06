@@ -33,7 +33,7 @@ namespace Mat
      *
      * \return unit vector pointing in radial direction
      */
-    virtual const Core::LinAlg::Matrix<3, 1>& GetRad() const = 0;
+    virtual const Core::LinAlg::Matrix<3, 1>& get_rad() const = 0;
 
     /*!
      * \brief Returns a reference to the unit vector pointing in axial direction
@@ -41,7 +41,7 @@ namespace Mat
      * \return const Core::LinAlg::Matrix<3, 1>& Reference to the unit vector pointing in axial
      * direction
      */
-    virtual const Core::LinAlg::Matrix<3, 1>& GetAxi() const = 0;
+    virtual const Core::LinAlg::Matrix<3, 1>& get_axi() const = 0;
 
     /*!
      * \brief Returns a reference to the unit vector pointing in circumferential direction
@@ -49,7 +49,7 @@ namespace Mat
      * \return const Core::LinAlg::Matrix<3, 1>& Reference to the unit vector pointing in
      * circumferential direction
      */
-    virtual const Core::LinAlg::Matrix<3, 1>& GetCir() const = 0;
+    virtual const Core::LinAlg::Matrix<3, 1>& get_cir() const = 0;
   };
 
 }  // namespace Mat

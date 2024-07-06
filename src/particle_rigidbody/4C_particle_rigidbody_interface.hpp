@@ -52,7 +52,7 @@ namespace ParticleRigidBody
      *
      * \param[in] timeincrement time increment
      */
-    virtual void UpdatePositions(const double timeincrement) = 0;
+    virtual void update_positions(const double timeincrement) = 0;
 
     /*!
      * \brief update velocities with given time increment
@@ -61,14 +61,14 @@ namespace ParticleRigidBody
      *
      * \param[in] timeincrement time increment
      */
-    virtual void UpdateVelocities(const double timeincrement) = 0;
+    virtual void update_velocities(const double timeincrement) = 0;
 
     /*!
      * \brief clear accelerations
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    virtual void ClearAccelerations() = 0;
+    virtual void clear_accelerations() = 0;
 
     /*!
      * \brief get rigid body data state container
@@ -87,7 +87,7 @@ namespace ParticleRigidBody
      *
      * \return owned rigid bodies by this processor
      */
-    virtual const std::vector<int>& GetOwnedRigidBodies() const = 0;
+    virtual const std::vector<int>& get_owned_rigid_bodies() const = 0;
   };
 
 }  // namespace ParticleRigidBody

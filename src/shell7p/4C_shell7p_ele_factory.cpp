@@ -20,7 +20,7 @@ std::unique_ptr<Discret::ELEMENTS::Shell7pEleCalcInterface>
 Discret::ELEMENTS::Shell7pFactory::provide_shell7p_calculation_interface(
     const Core::Elements::Element& ele, const std::set<Inpar::Solid::EleTech>& eletech)
 {
-  switch (ele.Shape())
+  switch (ele.shape())
   {
     case Core::FE::CellType::quad4:
     {

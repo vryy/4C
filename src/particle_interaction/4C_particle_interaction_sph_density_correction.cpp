@@ -45,7 +45,7 @@ ParticleInteraction::SPHDensityCorrectionInterior::SPHDensityCorrectionInterior(
   // empty constructor
 }
 
-bool ParticleInteraction::SPHDensityCorrectionInterior::ComputeDensityBC() const { return false; }
+bool ParticleInteraction::SPHDensityCorrectionInterior::compute_density_bc() const { return false; }
 
 void ParticleInteraction::SPHDensityCorrectionInterior::corrected_density_free_surface(
     const double* denssum, const double* colorfield, const double* dens_bc, double* dens) const
@@ -59,7 +59,10 @@ ParticleInteraction::SPHDensityCorrectionNormalized::SPHDensityCorrectionNormali
   // empty constructor
 }
 
-bool ParticleInteraction::SPHDensityCorrectionNormalized::ComputeDensityBC() const { return false; }
+bool ParticleInteraction::SPHDensityCorrectionNormalized::compute_density_bc() const
+{
+  return false;
+}
 
 void ParticleInteraction::SPHDensityCorrectionNormalized::corrected_density_free_surface(
     const double* denssum, const double* colorfield, const double* dens_bc, double* dens) const
@@ -73,7 +76,7 @@ ParticleInteraction::SPHDensityCorrectionRandles::SPHDensityCorrectionRandles()
   // empty constructor
 }
 
-bool ParticleInteraction::SPHDensityCorrectionRandles::ComputeDensityBC() const { return true; }
+bool ParticleInteraction::SPHDensityCorrectionRandles::compute_density_bc() const { return true; }
 
 void ParticleInteraction::SPHDensityCorrectionRandles::corrected_density_free_surface(
     const double* denssum, const double* colorfield, const double* dens_bc, double* dens) const

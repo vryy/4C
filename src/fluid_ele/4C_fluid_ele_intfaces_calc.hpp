@@ -93,7 +93,7 @@ namespace Discret
 
       /// Internal implementation class for FluidIntFace elements (the first object is created in
       /// Discret::ELEMENTS::FluidIntFace::Evaluate)
-      static FluidIntFaceImplInterface* Impl(const Core::Elements::Element* ele);
+      static FluidIntFaceImplInterface* impl(const Core::Elements::Element* ele);
     };
 
     /// Internal FluidIntFace element implementation
@@ -123,7 +123,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static FluidIntFaceImpl<distype>* Instance(
+      static FluidIntFaceImpl<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor

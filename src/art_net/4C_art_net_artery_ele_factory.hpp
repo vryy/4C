@@ -36,7 +36,7 @@ namespace Discret
       //! dtor
       virtual ~ArtNetFactory() = default;
       //! ProvideImpl
-      static ArteryEleInterface* ProvideImpl(
+      static ArteryEleInterface* provide_impl(
           Core::FE::CellType distype, Inpar::ArtDyn::ImplType problem, const std::string& disname);
 
      private:

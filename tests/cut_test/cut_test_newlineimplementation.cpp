@@ -28,7 +28,7 @@
 void test_christoph_1()
 {
   Core::Geo::Cut::MeshIntersection intersection;
-  intersection.GetOptions().Init_for_Cuttests();  // use full cln
+  intersection.get_options().init_for_cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
@@ -48,7 +48,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.016051976670389100920743885581032;
     tri3_xyze(2, 2) = 0.84372387122994985109158960767672;
     nids.push_back(-103);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -66,7 +66,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.016051976670389100920743885581032;
     tri3_xyze(2, 2) = 0.84372387122994985109158960767672;
     nids.push_back(-103);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -84,7 +84,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.016736697646654755816664206236055;
     tri3_xyze(2, 2) = 0.8403660264535651736039767456532;
     nids.push_back(-100);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -102,7 +102,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.016736697646654755816664206236055;
     tri3_xyze(2, 2) = 0.8403660264535651736039767456532;
     nids.push_back(-100);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -120,7 +120,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = 0.017916701699260025038018540044504;
     tri3_xyze(2, 2) = 0.83180330707877470075573000940494;
     nids.push_back(-96);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -138,7 +138,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.01791670169757834940593710371104;
     tri3_xyze(2, 2) = 0.83180330707815763879864334739977;
     nids.push_back(-94);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -156,7 +156,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = 0.017916701699260025038018540044504;
     tri3_xyze(2, 2) = 0.83180330707877470075573000940494;
     nids.push_back(-96);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -174,7 +174,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = 0.018393375405183418069832157470955;
     tri3_xyze(2, 2) = 0.82673347166320310108744706667494;
     nids.push_back(-93);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -192,7 +192,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.017361557460313127576601033297266;
     tri3_xyze(2, 2) = 0.83637150641930801953094487544149;
     nids.push_back(-97);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -210,7 +210,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.01791670169757834940593710371104;
     tri3_xyze(2, 2) = 0.83180330707815763879864334739977;
     nids.push_back(-94);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -228,7 +228,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.018393375403819994806653426167031;
     tri3_xyze(2, 2) = 0.82673347166241861749824693106348;
     nids.push_back(-91);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -246,7 +246,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.01791670169757834940593710371104;
     tri3_xyze(2, 2) = 0.83180330707815763879864334739977;
     nids.push_back(-94);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -264,7 +264,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.018393375403819994806653426167031;
     tri3_xyze(2, 2) = 0.82673347166241861749824693106348;
     nids.push_back(-91);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -282,7 +282,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.016736697646654755816664206236055;
     tri3_xyze(2, 2) = 0.8403660264535651736039767456532;
     nids.push_back(-100);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -300,7 +300,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = 0.018393375405183418069832157470955;
     tri3_xyze(2, 2) = 0.82673347166320310108744706667494;
     nids.push_back(-93);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -318,7 +318,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.017361557460313127576601033297266;
     tri3_xyze(2, 2) = 0.83637150641930801953094487544149;
     nids.push_back(-97);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -336,7 +336,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.018393375403819994806653426167031;
     tri3_xyze(2, 2) = 0.82673347166241861749824693106348;
     nids.push_back(-91);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -354,7 +354,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.01791670169757834940593710371104;
     tri3_xyze(2, 2) = 0.83180330707815763879864334739977;
     nids.push_back(-94);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -372,7 +372,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.017361557460313127576601033297266;
     tri3_xyze(2, 2) = 0.83637150641930801953094487544149;
     nids.push_back(-97);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -390,7 +390,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.018393375403819994806653426167031;
     tri3_xyze(2, 2) = 0.82673347166241861749824693106348;
     nids.push_back(-91);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -408,7 +408,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.017361557460313127576601033297266;
     tri3_xyze(2, 2) = 0.83637150641930801953094487544149;
     nids.push_back(-97);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
@@ -426,7 +426,7 @@ void test_christoph_1()
     tri3_xyze(1, 2) = -0.016736697646654755816664206236055;
     tri3_xyze(2, 2) = 0.8403660264535651736039767456532;
     nids.push_back(-100);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
+    intersection.add_cut_side(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
     Core::LinAlg::SerialDenseMatrix hex8_xyze(3, 8);
@@ -467,17 +467,17 @@ void test_christoph_1()
 
     intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-    intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
+    intersection.cut_test_cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
   }
 
   std::vector<double> dirDivVol;
 
-  Core::Geo::Cut::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells = mesh.VolumeCells();
+  Core::Geo::Cut::Mesh mesh = intersection.normal_mesh();
+  const std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>& other_cells = mesh.volume_cells();
   for (std::list<Teuchos::RCP<Core::Geo::Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Core::Geo::Cut::VolumeCell* vc = &**i;
-    std::cout << "Volume of Volumecell: " << vc->Volume() << std::endl;
+    std::cout << "Volume of Volumecell: " << vc->volume() << std::endl;
   }
 }

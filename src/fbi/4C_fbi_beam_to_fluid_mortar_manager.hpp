@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
      * \brief Calculate the maps for the beam and fluid dofs. The calculated maps are used in
      * Complete of the mortar matrices.
      */
-    void SetGlobalMaps();
+    void set_global_maps();
 
     /**
      * \brief This method builds the local maps from the global multi vector created in Setup. The
@@ -132,7 +132,7 @@ namespace BEAMINTERACTION
      *
      * @param contact_pairs All contact pairs on this processor.
      */
-    void SetLocalMaps(
+    void set_local_maps(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
@@ -141,14 +141,14 @@ namespace BEAMINTERACTION
      * @param lambda_row (out) Standard vector with the global IDs of the Lagrange multipliers for
      * this pair.
      */
-    void LocationVector(const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
+    void location_vector(const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
         std::vector<int>& lambda_row) const;
 
     /**
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
      * @param[in] contact_pairs Vector with all beam contact pairs in the model evaluator.
      */
-    void EvaluateGlobalDM(
+    void evaluate_global_dm(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
@@ -173,7 +173,7 @@ namespace BEAMINTERACTION
      * @param[in] vel Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(Teuchos::RCP<const Epetra_Vector> vel) const;
+    Teuchos::RCP<Epetra_Vector> get_global_lambda(Teuchos::RCP<const Epetra_Vector> vel) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
@@ -181,7 +181,7 @@ namespace BEAMINTERACTION
      * @param vel (in) Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> vel) const;
+    Teuchos::RCP<Epetra_Vector> get_global_lambda_col(Teuchos::RCP<const Epetra_Vector> vel) const;
 
    protected:
     /**

@@ -36,11 +36,11 @@ namespace
       std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new Core::Nodes::Node(lid, xrefe[lid], 0)));
+        testdis_->add_node(Teuchos::rcp(new Core::Nodes::Node(lid, xrefe[lid], 0)));
 
       testele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3eb(0, 0));
       std::array<int, 2> node_ids{0, 1};
-      testele_->SetNodeIds(2, node_ids.data());
+      testele_->set_node_ids(2, node_ids.data());
 
       // create 1 element discretization
       testdis_->add_element(testele_);
@@ -61,7 +61,7 @@ namespace
    */
   TEST_F(Beam3eb, RefLength)
   {
-    EXPECT_NEAR(testele_->RefLength(), 0.5477225575051661, testTolerance);
+    EXPECT_NEAR(testele_->ref_length(), 0.5477225575051661, testTolerance);
   }
 
   /**
@@ -90,11 +90,11 @@ namespace
       nullspace_ref(4, 4) = -0.912870929175277;
       nullspace_ref(5, 3) = 0.866666666666667;
 
-      const auto node = testele_->Nodes()[0];
+      const auto node = testele_->nodes()[0];
       int numdof, dimnsp, nv, np;
 
-      testele_->ElementType().nodal_block_information(node->Elements()[0], numdof, dimnsp, nv, np);
-      Core::LinAlg::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
+      testele_->element_type().nodal_block_information(node->elements()[0], numdof, dimnsp, nv, np);
+      Core::LinAlg::SerialDenseMatrix nullspace = testele_->element_type().compute_null_space(
           *node, std::vector{0.0, 0.0, 0.0}.data(), numdof, dimnsp);
 
       FOUR_C_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
@@ -113,11 +113,11 @@ namespace
       nullspace_ref(4, 4) = -0.912870929175277;
       nullspace_ref(5, 3) = 0.866666666666667;
 
-      const auto node = testele_->Nodes()[0];
+      const auto node = testele_->nodes()[0];
       int numdof, dimnsp, nv, np;
 
-      testele_->ElementType().nodal_block_information(node->Elements()[0], numdof, dimnsp, nv, np);
-      Core::LinAlg::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
+      testele_->element_type().nodal_block_information(node->elements()[0], numdof, dimnsp, nv, np);
+      Core::LinAlg::SerialDenseMatrix nullspace = testele_->element_type().compute_null_space(
           *node, std::vector{-0.05, 0.05, 0.3}.data(), numdof, dimnsp);
 
       FOUR_C_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);

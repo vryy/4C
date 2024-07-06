@@ -108,7 +108,7 @@ namespace GEOMETRYPAIR
      * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
      * the initial residual satisfies the convergence check.
      */
-    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+    void project_point_to_other(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
         const ElementData<Surface, ScalarType>& element_data_surface,
         Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
         const bool min_one_iteration = false) const;
@@ -130,7 +130,8 @@ namespace GEOMETRYPAIR
      * \brief Return the pointer to the evaluation data of this pair.
      * @return Pointer to the evaluation data.
      */
-    inline const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& GetEvaluationData() const
+    inline const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& get_evaluation_data()
+        const
     {
       return line_to_surface_evaluation_data_;
     }
@@ -225,7 +226,7 @@ namespace GEOMETRYPAIR
     GeometryPairLineToSurfaceFADWrapper(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
         const Teuchos::RCP<GeometryPairLineToSurface<double, Line, Surface>>& double_geometry_pair)
-        : base_class(element1, element2, double_geometry_pair->GetEvaluationData()),
+        : base_class(element1, element2, double_geometry_pair->get_evaluation_data()),
           geometry_pair_double_(double_geometry_pair){};
 
     /**
@@ -234,10 +235,10 @@ namespace GEOMETRYPAIR
      * For surface elements the pairs need the face element representing the surface, not the volume
      * element.
      */
-    inline void SetElement2(const Core::Elements::Element* element2) override
+    inline void set_element2(const Core::Elements::Element* element2) override
     {
-      base_class::SetElement2(element2);
-      geometry_pair_double_->SetElement2(element2);
+      base_class::set_element2(element2);
+      geometry_pair_double_->set_element2(element2);
     };
 
     /**

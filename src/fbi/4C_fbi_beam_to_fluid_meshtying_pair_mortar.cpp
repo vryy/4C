@@ -40,7 +40,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid,
  *
  */
 template <typename Beam, typename Fluid, typename Mortar>
-bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::EvaluateDM(
+bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evaluate_dm(
     Core::LinAlg::SerialDenseMatrix& local_D, Core::LinAlg::SerialDenseMatrix& local_M,
     Core::LinAlg::SerialDenseVector& local_kappa,
     Core::LinAlg::SerialDenseVector& local_constraint_offset)
@@ -77,19 +77,19 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::Evalu
   for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
   {
     // Factor to account for the integration segment length.
-    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].get_segment_length();
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+         i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
+          projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
@@ -99,10 +99,10 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::Evalu
       N_beam.clear();
       N_fluid.clear();
       GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
-          N_mortar, projected_gauss_point.GetEta());
+          N_mortar, projected_gauss_point.get_eta());
       GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
-          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<Fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
+          N_beam, projected_gauss_point.get_eta(), this->ele1pos_.shape_function_data_);
+      GEOMETRYPAIR::EvaluateShapeFunction<Fluid>::evaluate(N_fluid, projected_gauss_point.get_xi());
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -114,7 +114,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::Evalu
                     i_beam_node * Beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                     N_beam(i_beam_node * Beam::n_val_ + i_beam_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                    projected_gauss_point.get_gauss_weight() * segment_jacobian;
 
       // Fill in the local templated mortar matrix M.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -126,7 +126,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::Evalu
                     i_fluid_node * Fluid::n_val_ * 3 + i_fluid_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                     N_fluid(i_fluid_node * Fluid::n_val_ + i_fluid_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                    projected_gauss_point.get_gauss_weight() * segment_jacobian;
 
       // Fill in the local templated mortar scaling vector kappa.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -134,7 +134,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::Evalu
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             local_kappa(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
                 N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
-                projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                projected_gauss_point.get_gauss_weight() * segment_jacobian;
     }
   }
 
@@ -181,7 +181,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
     Teuchos::RCP<const BeamContactPair> this_rcp = Teuchos::rcp(this, false);
     std::vector<int> lambda_row;
     std::vector<double> lambda_pair;
-    mortar_manager->LocationVector(this_rcp, lambda_row);
+    mortar_manager->location_vector(this_rcp, lambda_row);
     Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
@@ -191,9 +191,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
     {
       // Get the visualization vectors.
       auto& visualization_data = visualization_discret->get_visualization_data();
-      std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
-      std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
-      std::vector<double>& lambda_vis = visualization_data.GetPointData<double>("lambda");
+      std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+      std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
+      std::vector<double>& lambda_vis = visualization_data.get_point_data<double>("lambda");
 
       for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
       {
@@ -232,14 +232,14 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
               ->get_mortar_lambda_continuous_segments();
       double xi;
       auto& visualization_data = visualization_continuous->get_visualization_data();
-      std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(
+      std::vector<double>& point_coordinates = visualization_data.get_point_coordinates(
           (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& displacement = visualization_data.GetPointData<double>(
+      std::vector<double>& displacement = visualization_data.get_point_data<double>(
           "displacement", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& lambda_vis = visualization_data.GetPointData<double>(
+      std::vector<double>& lambda_vis = visualization_data.get_point_data<double>(
           "lambda", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<uint8_t>& cell_types = visualization_data.GetCellTypes();
-      std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsets();
+      std::vector<uint8_t>& cell_types = visualization_data.get_cell_types();
+      std::vector<int32_t>& cell_offsets = visualization_data.get_cell_offsets();
 
       for (const auto& segment : this->line_to_3D_segments_)
       {
@@ -247,8 +247,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
              i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
-          xi = segment.GetEtadata() + i_curve_segment * (segment.GetEtaB() - segment.GetEtadata()) /
-                                          (double)mortar_segments;
+          xi = segment.get_etadata() + i_curve_segment *
+                                           (segment.get_eta_b() - segment.get_etadata()) /
+                                           (double)mortar_segments;
           GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1pos_, current_beamposition);
           GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1posref_, ref_beamposition);
           beamdisplacement = current_beamposition;

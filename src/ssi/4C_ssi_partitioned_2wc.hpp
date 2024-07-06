@@ -74,7 +74,7 @@ namespace SSI
     void setup() override;
 
     //! full time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! perform iteration loop between fields
     virtual void outer_loop();

@@ -75,7 +75,7 @@ namespace Mortar
        *
        *  \param[in] soltype contact solving strategy type
        */
-      static void PrintStrategyBanner(const enum Inpar::CONTACT::SolvingStrategy soltype);
+      static void print_strategy_banner(const enum Inpar::CONTACT::SolvingStrategy soltype);
 
       /*! \brief Create the desired search tree object
        *
@@ -83,14 +83,14 @@ namespace Mortar
        *
        * @param[in] interfaces All meshtying interfaces
        */
-      void BuildSearchTree(const std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const;
+      void build_search_tree(const std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const;
 
       /*! \brief Check the problem dimension
        *
        * Mortar meshtying/contact problems are implemented for 2D and 3D only.
        * Throw an error in case of any other spatial dimension.
        */
-      void CheckDimension() const;
+      void check_dimension() const;
 
      protected:
       /*! \brief Set #issetup_ flag with user-given value
@@ -140,13 +140,13 @@ namespace Mortar
       const Core::FE::Discretization& discret() const;
 
       //! returns a reference to a copy of the structural communicator
-      Epetra_Comm& comm();
-      const Epetra_Comm& comm() const;
+      Epetra_Comm& get_comm();
+      const Epetra_Comm& get_comm() const;
       Teuchos::RCP<Epetra_Comm> comm_ptr();
       Teuchos::RCP<const Epetra_Comm> comm_ptr() const;
 
       //! returns the problem dimension
-      const int& dim() const;
+      const int& n_dim() const;
 
       //!@}
 

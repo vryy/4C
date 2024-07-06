@@ -28,12 +28,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::GetImplType(
+Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::get_impl_type(
     Core::Elements::Element* ele  //! element whose ScaTra::ImplType shall be determined
 )
 {
   // the element type name, needed to cast correctly in the following
-  const std::string eletypename = ele->ElementType().Name();
+  const std::string eletypename = ele->element_type().name();
 
   // TET 4 Elements
   // tet 4 solid poro scatra
@@ -43,21 +43,21 @@ Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::GetImpl
         dynamic_cast<
             Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>*>(
             ele))
-        ->ImplType();
+        ->impl_type();
   }
   // tet4 solid porop1 scatra
   else if (eletypename == "So_tet4PoroP1ScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4,
                 Core::FE::CellType::tet4>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // tet 10 solid poro scatra
   else if (eletypename == "So_tet10PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10,
                 Core::FE::CellType::tet10>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // HEX 8 Elements
   // hex8 solid poro scatra
@@ -67,83 +67,83 @@ Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::GetImpl
         dynamic_cast<
             Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
             ele))
-        ->ImplType();
+        ->impl_type();
   }
   // hex8 solid porop1 scatra
   else if (eletypename == "So_hex8PoroP1ScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8,
                 Core::FE::CellType::hex8>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // hex27 solid poro scatra
   else if (eletypename == "So_hex27PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27,
                 Core::FE::CellType::hex27>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // nurbs 27
   else if (eletypename == "So_nurbs27PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
                 Core::FE::CellType::nurbs27>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // Solidporo
   else if (eletypename == "SolidPoroType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::SolidPoro*>(ele))->GetImplType();
+    return (dynamic_cast<Discret::ELEMENTS::SolidPoro*>(ele))->get_impl_type();
   }
   // wall poro scatra elements
   // quad 4
   else if (eletypename == "WallQuad4PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // quad 9
   else if (eletypename == "WallQuad9PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // nurbs 4
   else if (eletypename == "WallNurbs4PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // nurbs 9
   else if (eletypename == "WallNurbs9PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // tri 3
   else if (eletypename == "WallTri3PoroScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // wall poro p1 elements
   // quad 4
   else if (eletypename == "WallQuad4PoroP1ScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroP1Scatra<Core::FE::CellType::quad4>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // quad 9
   else if (eletypename == "WallQuad9PoroP1ScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroP1Scatra<Core::FE::CellType::quad9>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // tri 3
   else if (eletypename == "WallTri3PoroP1ScatraType")
   {
     return (dynamic_cast<Discret::ELEMENTS::Wall1PoroP1Scatra<Core::FE::CellType::tri3>*>(ele))
-        ->ImplType();
+        ->impl_type();
   }
   // call base class routine
   else
@@ -180,13 +180,13 @@ void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::set_element_data(
 
 
   // set material
-  trans->SetMaterial(matid, oldele);
+  trans->set_material(matid, oldele);
   // set distype as well!
-  trans->SetDisType(oldele->Shape());
+  trans->set_dis_type(oldele->shape());
 
   // now check whether ImplType is reasonable and if set the ImplType
   Inpar::ScaTra::ImplType impltype =
-      PoroElastScaTra::UTILS::PoroScatraCloneStrategy::GetImplType(oldele);
+      PoroElastScaTra::UTILS::PoroScatraCloneStrategy::get_impl_type(oldele);
 
   if (impltype == Inpar::ScaTra::impltype_undefined)
     FOUR_C_THROW(
@@ -200,7 +200,7 @@ void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::set_element_data(
         "WALLPOROSCATRA or "
         "WALLPOROP1SCATRA Elements with meaningful ImplType instead!");
 
-  trans->SetImplType(impltype);
+  trans->set_impl_type(impltype);
 }
 
 std::map<std::string, std::string>
@@ -223,7 +223,7 @@ void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::check_material_type(const 
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if ((mtype != Core::Materials::m_scatra) && (mtype != Core::Materials::m_elchmat) &&
       (mtype != Core::Materials::m_electrode) && (mtype != Core::Materials::m_matlist) &&
       (mtype != Core::Materials::m_matlist_reactions) && (mtype != Core::Materials::m_myocard) &&

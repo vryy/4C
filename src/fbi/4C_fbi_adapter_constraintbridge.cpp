@@ -38,7 +38,7 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
   beam_interaction_params_->setup();
 
   const Teuchos::ParameterList& geometry_parameter_list =
-      Global::Problem::Instance()->FBIParams().sublist("BEAM TO FLUID MESHTYING");
+      Global::Problem::instance()->fbi_params().sublist("BEAM TO FLUID MESHTYING");
 
   // Create the beaminteraction data container and set the parameters
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
@@ -61,34 +61,34 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridge::CreatePair(
+void Adapter::FBIConstraintBridge::create_pair(
     const std::vector<Core::Elements::Element const*> elements,
     const std::vector<double> beam_centerline_dofvec, const std::vector<double> fluid_nodal_dofvec)
 {
   // create a new beaminteratcion pair
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newinteractionpair =
-      FBI::PairFactory::CreatePair(elements, GetParams());
+      FBI::PairFactory::create_pair(elements, get_params());
 
   // create the underlying geometrypair doing the integration (segment or gauss point projection
   // based)
-  newinteractionpair->CreateGeometryPair(elements[0], elements[1], GetGeometryData());
-  newinteractionpair->init(GetParams(), elements);
+  newinteractionpair->create_geometry_pair(elements[0], elements[1], get_geometry_data());
+  newinteractionpair->init(get_params(), elements);
   newinteractionpair->setup();
 
   // hand in the current position and velocities of the participating elements
-  ResetPair(beam_centerline_dofvec, fluid_nodal_dofvec, newinteractionpair);
+  reset_pair(beam_centerline_dofvec, fluid_nodal_dofvec, newinteractionpair);
 
   // add to list of current contact pairs
   meshtying_pairs_->push_back(newinteractionpair);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridge::ResetPair(const std::vector<double> beam_centerline_dofvec,
+void Adapter::FBIConstraintBridge::reset_pair(const std::vector<double> beam_centerline_dofvec,
     const std::vector<double> fluid_nodal_dofvec,
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair)
 {
   // hand in the current position and velocities of the participating elements
-  interactionpair->ResetState(beam_centerline_dofvec, fluid_nodal_dofvec);
+  interactionpair->reset_state(beam_centerline_dofvec, fluid_nodal_dofvec);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

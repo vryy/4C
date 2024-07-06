@@ -53,14 +53,14 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
    protected:
-    int NumDofPerNode(const Core::Nodes::Node& node) const override;
+    int num_dof_per_node(const Core::Nodes::Node& node) const override;
 
 
   };  // class TransparentDofSet

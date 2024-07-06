@@ -47,12 +47,12 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
   // Set structure params interface pointer
   set_params_interface_ptr(params);
   // Set brwonian params interface pointer
-  if (IsParamsInterface()) set_brownian_dyn_params_interface_ptr();
+  if (is_params_interface()) set_brownian_dyn_params_interface_ptr();
 
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -102,16 +102,16 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
       switch (nnodetriad)
       {
         case 2:
-          EvaluatePTC<2>(params, elemat1);
+          evaluate_ptc<2>(params, elemat1);
           break;
         case 3:
-          EvaluatePTC<3>(params, elemat1);
+          evaluate_ptc<3>(params, elemat1);
           break;
         case 4:
-          EvaluatePTC<4>(params, elemat1);
+          evaluate_ptc<4>(params, elemat1);
           break;
         case 5:
-          EvaluatePTC<5>(params, elemat1);
+          evaluate_ptc<5>(params, elemat1);
           break;
         default:
           FOUR_C_THROW("Only Line2, Line3, Line4 and Line5 Elements implemented.");
@@ -137,7 +137,7 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
               elevec1.numRows());
         elevec1(0) = eint_;
       }
-      else if (IsParamsInterface())  // new structural time integration
+      else if (is_params_interface())  // new structural time integration
       {
         params_interface().add_contribution_to_energy_type(eint_, Solid::internal_energy);
         params_interface().add_contribution_to_energy_type(ekin_, Solid::kinetic_energy);
@@ -156,7 +156,7 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
 
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -411,13 +411,13 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::ExtractMyValues(*vel, myvel, lm);
@@ -561,7 +561,7 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
   // find out whether we will use a time curve
   double time = -1.0;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
     time = params_interface().get_total_time();
   else
     time = params.get<double>("total time", -1.0);
@@ -583,10 +583,10 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
   const unsigned int dofpertriadnode = 3;
   const unsigned int dofpercombinode = dofperclnode + dofpertriadnode;
 
-  const Core::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->shape();
 
   // gaussian points
-  const Core::FE::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
+  const Core::FE::IntegrationPoints1D intpoints(my_gauss_rule(neumann_lineload));
 
   // declaration of variables in order to store shape functions
   // used for interpolation of triad field
@@ -631,7 +631,7 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
     {
       for (unsigned int dim = 0; dim < 3; dim++)
       {
-        X_ref[dim] += H_i[vpernode * node] * Nodes()[node]->X()[dim];
+        X_ref[dim] += H_i[vpernode * node] * nodes()[node]->x()[dim];
 
         if (centerline_hermite_) X_ref[dim] += H_i[vpernode * node + 1] * (Tref_[node])(dim);
       }
@@ -658,8 +658,8 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
 
       // evaluate function at the position of the current GP
       if (functnum > 0)
-        functionfac = Global::Problem::Instance()
-                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+        functionfac = Global::Problem::instance()
+                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                           .evaluate(X_ref.data(), time, dof);
       else
         functionfac = 1.0;
@@ -721,7 +721,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_and_inertia_forces_and_stiff(
   /* unshift node positions, i.e. manipulate element displacement vector
    * as if there where no periodic boundary conditions */
   if (brownian_dyn_params_interface_ptr() != Teuchos::null)
-    UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
+    un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
   /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
    * style, i.e. initial values + displacements */
@@ -924,7 +924,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
   // for these contributions, reduced integration is applied to avoid locking
 
   // get integration points for elasticity
-  Core::FE::IntegrationPoints1D gausspoints_elast_force(MyGaussRule(res_elastic_force));
+  Core::FE::IntegrationPoints1D gausspoints_elast_force(my_gauss_rule(res_elastic_force));
 
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_elast_force.nquad);
@@ -933,10 +933,10 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
   Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodetriad, 1>(
-      gausspoints_elast_force, I_i, this->Shape());
+      gausspoints_elast_force, I_i, this->shape());
 
   Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
-      gausspoints_elast_force, H_i_xi, this->Shape(), this->RefLength());
+      gausspoints_elast_force, H_i_xi, this->shape(), this->ref_length());
 
   // re-assure correct size of strain and stress resultant class variables
   axial_strain_gp_elastf_.resize(gausspoints_elast_force.nquad);
@@ -1043,7 +1043,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
   //***********************
 
   // get integration points for elasticity
-  Core::FE::IntegrationPoints1D gausspoints_elast_moment(MyGaussRule(res_elastic_moment));
+  Core::FE::IntegrationPoints1D gausspoints_elast_moment(my_gauss_rule(res_elastic_moment));
 
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_elast_moment.nquad);
@@ -1052,7 +1052,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
   Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad, 1>(
-      gausspoints_elast_moment, I_i, I_i_xi, this->Shape());
+      gausspoints_elast_moment, I_i, I_i_xi, this->shape());
 
   // reset norm of maximal bending curvature
   kmax_ = 0.0;
@@ -1219,16 +1219,16 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
   std::vector<Core::LinAlg::Matrix<1, vpernode * nnodecl, double>> H_i;
 
   // get integration scheme for inertia forces and mass matrix
-  Core::FE::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
+  Core::FE::IntegrationPoints1D gausspoints_mass(my_gauss_rule(res_inertia));
   // reuse variables for individual shape functions and resize to new numgp
   I_i.resize(gausspoints_mass.nquad);
   H_i.resize(gausspoints_mass.nquad);
 
   // evaluate all shape functions at all specified Gauss points
   Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodetriad, 1>(
-      gausspoints_mass, I_i, this->Shape());
+      gausspoints_mass, I_i, this->shape());
   Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodecl, vpernode>(
-      gausspoints_mass, H_i, this->Shape(), this->RefLength());
+      gausspoints_mass, H_i, this->shape(), this->ref_length());
 
   // Calculate current centerline position at gauss points (needed for element intern time
   // integration)
@@ -2102,7 +2102,7 @@ void Discret::ELEMENTS::Beam3r::calc_brownian_forces_and_stiff(Teuchos::Paramete
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (brownian_dyn_params_interface_ptr() != Teuchos::null)
-    UnShiftNodePosition(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
+    un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
   /****** update/compute key variables describing displacement and velocity state of this element
    * *****/
@@ -2178,7 +2178,7 @@ void Discret::ELEMENTS::Beam3r::lumpmass(Core::LinAlg::SerialDenseMatrix* massma
  | Evaluate PTC damping (public) cyron 10/08|
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode>
-void Discret::ELEMENTS::Beam3r::EvaluatePTC(
+void Discret::ELEMENTS::Beam3r::evaluate_ptc(
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elemat1)
 {
   // apply PTC rotation damping term using a Lobatto integration rule; implemented for 2 nodes only
@@ -2229,7 +2229,7 @@ void Discret::ELEMENTS::Beam3r::EvaluatePTC(
 int Discret::ELEMENTS::Beam3r::how_many_random_numbers_i_need() const
 {
   // get Gauss rule for evaluation of stochastic force contributions
-  Core::FE::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  Core::FE::GaussRule1D gaussrule = my_gauss_rule(res_damp_stoch);
   Core::FE::IntegrationPoints1D gausspoints(gaussrule);
 
   /* at each Gauss point one needs as many random numbers as randomly excited degrees of freedom,
@@ -2256,7 +2256,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
   // get time step size
   double dt_inv = 0.0001;
-  if (IsParamsInterface())
+  if (is_params_interface())
     dt_inv = 1.0 / params_interface().get_delta_time();
   else
     dt_inv = 1.0 / params.get<double>("delta time", 1000);
@@ -2266,7 +2266,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
   get_damping_coefficients(gamma);
 
   // get Gauss points and weights for evaluation of viscous damping contributions
-  Core::FE::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  Core::FE::GaussRule1D gaussrule = my_gauss_rule(res_damp_stoch);
   Core::FE::IntegrationPoints1D gausspoints(gaussrule);
 
   //*************************** physical quantities evaluated at a certain GP
@@ -2292,7 +2292,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
   // evaluate all shape functions at all specified Gauss points
   Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodetriad, 1>(
-      gausspoints, I_i, this->Shape());
+      gausspoints, I_i, this->shape());
 
   /* vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation function
    * \tilde{I}^nnode according to (3.19), Jelenic 1999*/
@@ -2504,7 +2504,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
 
   // get time step size
   double dt_inv = 0.0001;
-  if (IsParamsInterface())
+  if (is_params_interface())
     dt_inv = 1.0 / params_interface().get_delta_time();
   else
     dt_inv = 1.0 / params.get<double>("delta time", 1000);
@@ -2530,7 +2530,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
   Core::LinAlg::Matrix<ndim, ndim> damp_mat(true);
 
   // get Gauss points and weights for evaluation of damping matrix
-  Core::FE::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  Core::FE::GaussRule1D gaussrule = my_gauss_rule(res_damp_stoch);
   Core::FE::IntegrationPoints1D gausspoints(gaussrule);
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
@@ -2543,7 +2543,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
   Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
-      gausspoints, H_i, H_i_xi, this->Shape(), this->RefLength());
+      gausspoints, H_i, H_i_xi, this->shape(), this->ref_length());
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
@@ -2711,7 +2711,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
   Core::LinAlg::Matrix<ndim, 1> f_stoch(true);
 
   // get Gauss points and weights for evaluation of damping matrix
-  Core::FE::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
+  Core::FE::GaussRule1D gaussrule = my_gauss_rule(res_damp_stoch);
   Core::FE::IntegrationPoints1D gausspoints(gaussrule);
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape
@@ -2724,7 +2724,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
   // evaluate all shape function derivatives with respect to element parameter xi at all specified
   // Gauss points
   Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
-      gausspoints, H_i, H_i_xi, this->Shape(), this->RefLength());
+      gausspoints, H_i, H_i_xi, this->shape(), this->ref_length());
 
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
@@ -2737,7 +2737,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
     for (unsigned int idim = 0; idim < ndim; idim++)
     {
 #ifndef BEAM3RCONSTSTOCHFORCE
-      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][LID()];
+      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][lid()];
 #else
       randnumvec(idim) = (*randomforces)[idim][LID()];
 #endif

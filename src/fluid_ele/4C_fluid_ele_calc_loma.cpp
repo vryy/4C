@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcLoma<distype>*
-Discret::ELEMENTS::FluidEleCalcLoma<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleCalcLoma<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -30,7 +30,7 @@ Discret::ELEMENTS::FluidEleCalcLoma<distype>::Instance(Core::UTILS::SingletonAct
             new Discret::ELEMENTS::FluidEleCalcLoma<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 
@@ -42,7 +42,7 @@ Discret::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
 {
   // we use the standard parameter list here, since there are not any additional
   // loma-specific parameters required in this derived class
-  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
 }
 
 /*----------------------------------------------------------------------*
@@ -117,14 +117,14 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
 
   Core::LinAlg::Matrix<nsd_, nen_> evelam(true);
   Core::LinAlg::Matrix<nen_, 1> epream(true);
-  if (my::fldpara_->PhysicalType() == Inpar::FLUID::weakly_compressible &&
-      my::fldparatimint_->IsGenalpha())
+  if (my::fldpara_->physical_type() == Inpar::FLUID::weakly_compressible &&
+      my::fldparatimint_->is_genalpha())
   {
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelam, &epream, "velam");
   }
-  if (my::fldpara_->PhysicalType() == Inpar::FLUID::weakly_compressible_stokes &&
-      my::fldparatimint_->IsGenalpha())
+  if (my::fldpara_->physical_type() == Inpar::FLUID::weakly_compressible_stokes &&
+      my::fldparatimint_->is_genalpha())
   {
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &evelam, &epream, "velam");
@@ -148,7 +148,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   my::extract_values_from_global_vector(
       discretization, lm, *my::rotsymmpbc_, &eveln, &escaam, "scaam");
 
-  if (not my::fldparatimint_->IsGenalpha()) eaccam.clear();
+  if (not my::fldparatimint_->is_genalpha()) eaccam.clear();
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -156,7 +156,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
   Core::LinAlg::Matrix<nsd_, nen_> egridv(true);
 
-  if (ele->IsAle())
+  if (ele->is_ale())
   {
     my::extract_values_from_global_vector(
         discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
@@ -186,22 +186,22 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   //----------------------------------------------------------------
   double CsDeltaSq = 0.0;
   double CiDeltaSq = 0.0;
-  if (my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky)
+  if (my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
   {
     Teuchos::RCP<Epetra_Vector> ele_CsDeltaSq =
         params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector>>("col_Cs_delta_sq");
     Teuchos::RCP<Epetra_Vector> ele_CiDeltaSq =
         params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector>>("col_Ci_delta_sq");
-    const int id = ele->LID();
+    const int id = ele->lid();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
   }
 
   // set element id
-  my::eid_ = ele->Id();
+  my::eid_ = ele->id();
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = evaluate_od(params, ebofoaf, eprescpgaf, elemat1, evelaf, epreaf, epream, escaaf,
-      emhist, eaccam, escadtam, escabofoaf, eveln, escaam, edispnp, egridv, mat, ele->IsAle(),
+      emhist, eaccam, escadtam, escabofoaf, eveln, escaam, edispnp, egridv, mat, ele->is_ale(),
       CsDeltaSq, CiDeltaSq, intpoints);
 
   return result;
@@ -230,10 +230,10 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::Parameter
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
   // less accurate) computations
-  if (my::fldpara_->IsInconsistent() == true) my::is_higher_order_ele_ = false;
+  if (my::fldpara_->is_inconsistent() == true) my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  if (isale and my::fldparatimint_->IsStationary())
+  if (isale and my::fldparatimint_->is_stationary())
     FOUR_C_THROW("No ALE support within stationary fluid solver.");
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
@@ -307,16 +307,16 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // get material parameters at element center
-  if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
+  if (not my::fldpara_->mat_gp() or not my::fldpara_->tau_gp())
   {
     my::get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
         thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
 
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
-    if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
-        my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
-        my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
+    if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
+        my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
+        my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
     {
       my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -325,7 +325,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
   }
 
   // calculate stabilization parameter at element center
-  if (not my::fldpara_->TauGp())
+  if (not my::fldpara_->tau_gp())
   {
     // get convective velocity at element center for evaluation of
     // stabilization parameter
@@ -344,7 +344,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
        iquad != intpoints.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    my::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+    my::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
     // get convective velocity at integration point
     // (including grid velocity in ALE case,
@@ -361,15 +361,15 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     // and/or stabilization parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
-    if (my::fldpara_->MatGp())
+    if (my::fldpara_->mat_gp())
     {
       my::get_material_params(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf,
           thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, vol);
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
-      if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
-          my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
-          my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
+      if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
+          my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
+          my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
       {
         my::calc_subgr_visc(evelaf, vol, Cs_delta_sq, Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -378,7 +378,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     }
 
     // calculate stabilization parameter at integration point
-    if (my::fldpara_->TauGp()) my::calc_stab_parameter(vol);
+    if (my::fldpara_->tau_gp()) my::calc_stab_parameter(vol);
 
     // evaluation of convective operator
     my::conv_c_.multiply_tn(my::derxy_, my::convvelint_);
@@ -392,18 +392,18 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     my::compute_subgrid_scale_scalar(escaaf, escaam);
 
     // update material parameters including subgrid-scale part of scalar
-    if (my::fldpara_->UpdateMat())
+    if (my::fldpara_->update_mat())
     {
-      if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
-          my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
-          my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
+      if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
+          my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
+          my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
         FOUR_C_THROW("No material update in combination with smagorinsky model!");
       my::update_material_params(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
           thermpressam, my::sgscaint_);
       my::visceff_ = my::visc_;
-      if (my::fldpara_->TurbModAction() == Inpar::FLUID::smagorinsky or
-          my::fldpara_->TurbModAction() == Inpar::FLUID::dynamic_smagorinsky or
-          my::fldpara_->TurbModAction() == Inpar::FLUID::vreman)
+      if (my::fldpara_->turb_mod_action() == Inpar::FLUID::smagorinsky or
+          my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky or
+          my::fldpara_->turb_mod_action() == Inpar::FLUID::vreman)
         my::visceff_ += my::sgvisc_;
     }
     //----------------------------------------------------------------------
@@ -413,7 +413,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     lin_resC_DT.clear();
 
     // transient term
-    if (not my::fldparatimint_->IsStationary())
+    if (not my::fldparatimint_->is_stationary())
     {
       const double scadtfacfac = my::scadtfac_ * my::fac_;
       for (int ui = 0; ui < nen_; ++ui)
@@ -424,7 +424,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
 
     // convective term
     const double timefac_scaconvfacaf =
-        my::fldparatimint_->TimeFac() * my::fac_ * my::scaconvfacaf_;
+        my::fldparatimint_->time_fac() * my::fac_ * my::scaconvfacaf_;
     for (int ui = 0; ui < nen_; ++ui)
     {
       lin_resC_DT(ui) += timefac_scaconvfacaf * my::conv_c_(ui);
@@ -433,8 +433,8 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     //----------------------------------------------------------------------
     // subgrid-scale-velocity term (governed by cross-stress flag here)
     //----------------------------------------------------------------------
-    if (my::fldpara_->ContiCross() == Inpar::FLUID::cross_stress_stab or
-        my::fldpara_->ContiReynolds() == Inpar::FLUID::reynolds_stress_stab)
+    if (my::fldpara_->conti_cross() == Inpar::FLUID::cross_stress_stab or
+        my::fldpara_->conti_reynolds() == Inpar::FLUID::reynolds_stress_stab)
     {
       //----------------------------------------------------------------------
       //  evaluation of various values at integration point:
@@ -485,7 +485,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       my::compute_subgrid_scale_velocity(
           eaccam, fac1, fac2, fac3, facMtau, *iquad, saccn, sveln, svelnp);
 
-      if (my::fldpara_->ContiCross() == Inpar::FLUID::cross_stress_stab)
+      if (my::fldpara_->conti_cross() == Inpar::FLUID::cross_stress_stab)
       {
         // evaluate subgrid-scale-velocity term
         for (int ui = 0; ui < nen_; ++ui)
@@ -519,7 +519,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     // computation of SUPG and contributions to element matrix
     // (potentially including Reynolds-stress term)
     //----------------------------------------------------------------------
-    if (my::fldpara_->SUPG())
+    if (my::fldpara_->supg())
     {
       // weighting functions for SUPG term
       Core::LinAlg::Matrix<nen_, 1> supg_rey_weight;
@@ -530,7 +530,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       }
 
       // weighting functions for Reynolds-stress term
-      if (my::fldpara_->Reynolds() == Inpar::FLUID::reynolds_stress_stab)
+      if (my::fldpara_->reynolds() == Inpar::FLUID::reynolds_stress_stab)
       {
         for (int vi = 0; vi < nen_; ++vi)
         {
@@ -545,7 +545,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       lin_resE_DT.clear();
 
       // transient term
-      if (not my::fldparatimint_->IsStationary())
+      if (not my::fldparatimint_->is_stationary())
       {
         const double densamfac = my::fac_ * my::densam_;
         for (int ui = 0; ui < nen_; ++ui)
@@ -555,7 +555,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       }
 
       // convective term
-      const double denstimefac = my::fldparatimint_->TimeFac() * my::fac_ * my::densaf_;
+      const double denstimefac = my::fldparatimint_->time_fac() * my::fac_ * my::densaf_;
       for (int ui = 0; ui < nen_; ++ui)
       {
         lin_resE_DT(ui) += denstimefac * my::conv_c_(ui);
@@ -576,7 +576,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
           }
         }
 
-        const double difftimefac = my::fldparatimint_->TimeFac() * my::fac_ * my::diffus_;
+        const double difftimefac = my::fldparatimint_->time_fac() * my::fac_ * my::diffus_;
         for (int ui = 0; ui < nen_; ++ui)
         {
           lin_resE_DT(ui) -= difftimefac * diff(ui);

@@ -119,11 +119,11 @@ namespace Mat
   class SuperElasticSMAType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "SuperElasticSMAType"; }
+    std::string name() const override { return "SuperElasticSMAType"; }
 
-    static SuperElasticSMAType& Instance() { return instance_; };
+    static SuperElasticSMAType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static SuperElasticSMAType instance_;
@@ -149,9 +149,9 @@ namespace Mat
     every class implementing ParObject needs a unique id defined at the
     top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return SuperElasticSMAType::Instance().UniqueParObjectId();
+      return SuperElasticSMAType::instance().unique_par_object_id();
     }
 
     /*!
@@ -159,7 +159,7 @@ namespace Mat
 
     Resizes the vector data and stores all information of a class in it.
     The first information to be stored in data has to be the
-    unique parobject id delivered by UniqueParObjectId() which will then
+    unique parobject id delivered by unique_par_object_id() which will then
     identify the exact class on the receiving processor.
 
     \param data (in/out): char vector to store class information
@@ -173,7 +173,7 @@ namespace Mat
     exact copy of an instance of a class on a different processor.
     The first entry in data has to be an integer which is the unique
     parobject id defined at the top of this file and delivered by
-    UniqueParObjectId().
+    unique_par_object_id().
 
     \param data (in) : vector storing all data to be unpacked into this
     instance.
@@ -185,38 +185,39 @@ namespace Mat
     //! @name Access methods
 
     //! material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_superelast;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new SuperElasticSMA(*this));
     }
 
     //! density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     //! return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! check if history variables are already initialized
-    bool Initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }
+    bool initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
     bool needs_defgrd() override { return true; };
@@ -238,7 +239,7 @@ namespace Mat
         int eleGID) override;
 
     /// evaluate strain energy function
-    void StrainEnergy(
+    void strain_energy(
         const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
 

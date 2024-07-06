@@ -155,7 +155,7 @@ void ScaTra::LevelSetAlgorithm::setup()
         // vector for nodal velocity for reinitialization
         // velocities (always three velocity components per node)
         // (get noderowmap of discretization for creating this multivector)
-        const Epetra_Map* noderowmap = discret_->NodeRowMap();
+        const Epetra_Map* noderowmap = discret_->node_row_map();
         nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
       }
 
@@ -184,7 +184,7 @@ void ScaTra::LevelSetAlgorithm::setup()
         // vector for nodal level-set gradient for reinitialization
         // gradients (always three gradient components per node)
         // (get noderowmap of discretization for creating this multivector)
-        const Epetra_Map* noderowmap = discret_->NodeRowMap();
+        const Epetra_Map* noderowmap = discret_->node_row_map();
         nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
       }
     }
@@ -228,7 +228,7 @@ void ScaTra::LevelSetAlgorithm::setup()
   // set flag for modification of convective velocity at contact points
   // check whether there are level-set contact point conditions
   std::vector<Core::Conditions::Condition*> lscontactpoint;
-  discret_->GetCondition("LsContact", lscontactpoint);
+  discret_->get_condition("LsContact", lscontactpoint);
 
   if (not lscontactpoint.empty()) cpbc_ = true;
 
@@ -247,20 +247,20 @@ void ScaTra::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
   ScaTra::LevelSet::Intersection intersect;
-  intersect.CaptureZeroLevelSet(phinp, scatradis, volumedomainminus, volplus, surf, interface);
+  intersect.capture_zero_level_set(phinp, scatradis, volumedomainminus, volplus, surf, interface);
 }
 
 /*----------------------------------------------------------------------*
  | time loop                                            rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::TimeLoop()
+void ScaTra::LevelSetAlgorithm::time_loop()
 {
   // safety check
   check_is_init();
   check_is_setup();
 
   // provide information about initial field (do not do for restarts!)
-  if (Step() == 0)
+  if (step() == 0)
   {
     // write out initial state
     check_and_write_output_and_restart();
@@ -279,7 +279,7 @@ void ScaTra::LevelSetAlgorithm::TimeLoop()
     // -------------------------------------------------------------------
     //                  solve level-set equation
     // -------------------------------------------------------------------
-    Solve();
+    solve();
 
     // -----------------------------------------------------------------
     //                     reinitialize level-set
@@ -324,7 +324,7 @@ void ScaTra::LevelSetAlgorithm::prepare_time_step()
 /*----------------------------------------------------------------------*
  | solve level-set equation and perform correction      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::Solve()
+void ScaTra::LevelSetAlgorithm::solve()
 {
   // -----------------------------------------------------------------
   //                    solve level-set equation
@@ -415,7 +415,7 @@ void ScaTra::LevelSetAlgorithm::check_and_write_output_and_restart()
   // -----------------------------------------------------------------
 
   // solution output and potentially restart data and/or flux data
-  if (IsResultStep())
+  if (is_result_step())
   {
     // step number and time (only after that data output is possible)
     output_->new_step(step_, time_);
@@ -431,7 +431,7 @@ void ScaTra::LevelSetAlgorithm::check_and_write_output_and_restart()
   }
 
   // add restart data
-  if (IsRestartStep()) write_restart();
+  if (is_restart_step()) write_restart();
 
   // -----------------------------------------------------------------
   //             further level-set specific values
@@ -452,10 +452,10 @@ void ScaTra::LevelSetAlgorithm::output_of_level_set_specific_values()
 /*----------------------------------------------------------------------*
  | perform result test                                  rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::TestResults()
+void ScaTra::LevelSetAlgorithm::test_results()
 {
-  problem_->AddFieldTest(Teuchos::rcp(new ScaTra::ScaTraResultTest(Teuchos::rcp(this, false))));
-  problem_->TestAll(discret_->Comm());
+  problem_->add_field_test(Teuchos::rcp(new ScaTra::ScaTraResultTest(Teuchos::rcp(this, false))));
+  problem_->test_all(discret_->get_comm());
 
   return;
 }
@@ -464,10 +464,10 @@ void ScaTra::LevelSetAlgorithm::TestResults()
 /*----------------------------------------------------------------------*
  | set time and step value                              rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::SetTimeStep(const double time, const int step)
+void ScaTra::LevelSetAlgorithm::set_time_step(const double time, const int step)
 {
   // call base class function
-  ScaTra::ScaTraTimIntImpl::SetTimeStep(time, step);
+  ScaTra::ScaTraTimIntImpl::set_time_step(time, step);
 
   return;
 }

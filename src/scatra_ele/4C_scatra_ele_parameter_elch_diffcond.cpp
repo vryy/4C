@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::ScaTraEleParameterElchDiffCond*
-Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
+Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -43,7 +43,7 @@ Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
             new ScaTraEleParameterElchDiffCond(disname));
       });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 /*----------------------------------------------------------------------*
@@ -65,7 +65,7 @@ Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCon
 /*---------------------------------------------------------------------*
  | set parameters                                           fang 02/15 |
  *---------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::SetParameters(
+void Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::set_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

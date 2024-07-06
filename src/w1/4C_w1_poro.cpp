@@ -24,7 +24,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(int id, int owner)
     : Discret::ELEMENTS::Wall1(id, owner), intpoints_(distype), weights_(true), myknots_(numdim_)
 {
-  numgpt_ = intpoints_.NumPoints();
+  numgpt_ = intpoints_.num_points();
 
   invJ_.resize(numgpt_, Core::LinAlg::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
@@ -51,11 +51,11 @@ Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const Discret::ELEMENTS::Wall1P
       anisotropic_permeability_directions_(old.anisotropic_permeability_directions_),
       anisotropic_permeability_nodal_coeffs_(old.anisotropic_permeability_nodal_coeffs_)
 {
-  numgpt_ = intpoints_.NumPoints();
+  numgpt_ = intpoints_.num_points();
 }
 
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::Wall1Poro<distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1Poro<distype>::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::Wall1Poro<distype>(*this);
   return newelement;
@@ -67,7 +67,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pack(Core::Communication::PackBuffer
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // detJ_
@@ -105,7 +105,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::unpack(const std::vector<char>& data
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // detJ_
   extract_from_pack(position, data, detJ_);
@@ -152,14 +152,14 @@ void Discret::ELEMENTS::Wall1Poro<distype>::unpack(const std::vector<char>& data
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::lines()
 {
   return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1Poro>(
       Core::Communication::buildLines, *this);
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -173,14 +173,14 @@ void Discret::ELEMENTS::Wall1Poro<distype>::print(std::ostream& os) const
 }
 
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1Poro<distype>::ReadElement(
+bool Discret::ELEMENTS::Wall1Poro<distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
-  Wall1::ReadElement(eletype, eledistype, linedef);
+  Wall1::read_element(eletype, eledistype, linedef);
 
   // setup poro material
-  Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
+  Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
   if (poromat == Teuchos::null)
     FOUR_C_THROW("material assigned to poro element is not a poro material!");
   poromat->poro_setup(numgpt_, linedef);
@@ -223,12 +223,12 @@ void Discret::ELEMENTS::Wall1Poro<distype>::get_materials()
   // get structure material
   if (struct_mat_ == Teuchos::null)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
+    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != Core::Materials::m_structporo and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeaction and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeactionECM)
+    if (struct_mat_->material_type() != Core::Materials::m_structporo and
+        struct_mat_->material_type() != Core::Materials::m_structpororeaction and
+        struct_mat_->material_type() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -236,16 +236,16 @@ void Discret::ELEMENTS::Wall1Poro<distype>::get_materials()
   if (fluid_mat_ == Teuchos::null)
   {
     // access second material in structure element
-    if (NumMaterial() > 1)
+    if (num_material() > 1)
     {
-      fluid_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(Material(1));
+      fluid_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(material(1));
       if (fluid_mat_ == Teuchos::null) return;
       // FOUR_C_THROW("cast to fluid poro material failed");
-      if (fluid_mat_->MaterialType() != Core::Materials::m_fluidporo)
+      if (fluid_mat_->material_type() != Core::Materials::m_fluidporo)
         FOUR_C_THROW("invalid fluid material for poroelasticity");
     }
     else
-      FOUR_C_THROW("no second material defined for element %i", Id());
+      FOUR_C_THROW("no second material defined for element %i", id());
   }
 }
 
@@ -255,12 +255,12 @@ void Discret::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
   // get structure material
   if (struct_mat_ == Teuchos::null)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Material());
+    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != Core::Materials::m_structporo and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeaction and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeactionECM)
+    if (struct_mat_->material_type() != Core::Materials::m_structporo and
+        struct_mat_->material_type() != Core::Materials::m_structpororeaction and
+        struct_mat_->material_type() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -268,15 +268,15 @@ void Discret::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
   if (fluidmulti_mat_ == Teuchos::null)
   {
     // access second material in structure element
-    if (NumMaterial() > 1)
+    if (num_material() > 1)
     {
-      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(Material(1));
+      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(material(1));
       if (fluidmulti_mat_ == Teuchos::null)
         FOUR_C_THROW("cast to multiphase fluid poro material failed");
-      if (fluidmulti_mat_->MaterialType() != Core::Materials::m_fluidporo_multiphase and
-          fluidmulti_mat_->MaterialType() != Core::Materials::m_fluidporo_multiphase_reactions)
+      if (fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase and
+          fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase_reactions)
         FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
-      if (fluidmulti_mat_->NumFluidPhases() == 0)
+      if (fluidmulti_mat_->num_fluid_phases() == 0)
       {
         FOUR_C_THROW(
             "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE = 0 currently not supported since this requires "
@@ -284,24 +284,24 @@ void Discret::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
       }
     }
     else
-      FOUR_C_THROW("no second material defined for element %i", Id());
+      FOUR_C_THROW("no second material defined for element %i", id());
   }
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::Wall1Poro<distype>::vis_names(std::map<std::string, int>& names)
 {
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
 }
 
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1Poro<distype>::VisData(
+bool Discret::ELEMENTS::Wall1Poro<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Wall1::VisData(name, data)) return true;
+  if (Wall1::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, numgpt_, this->Id());
+  return solid_material()->vis_data(name, data, numgpt_, this->id());
 }
 
 template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>;

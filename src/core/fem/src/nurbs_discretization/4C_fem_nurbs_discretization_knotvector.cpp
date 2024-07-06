@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::FE::Nurbs::KnotvectorObjectType Core::FE::Nurbs::KnotvectorObjectType::instance_;
 
 
-Core::Communication::ParObject* Core::FE::Nurbs::KnotvectorObjectType::Create(
+Core::Communication::ParObject* Core::FE::Nurbs::KnotvectorObjectType::create(
     const std::vector<char>& data)
 {
   return nullptr;
@@ -128,7 +128,7 @@ void Core::FE::Nurbs::Knotvector::convert_ele_gid_to_knot_ids(
   }
 
   // get number of patch containing the node
-  npatch = ReturnPatchId(gid);
+  npatch = return_patch_id(gid);
 
   // reduce gid by patchoffset to get patch local id
   const int locid = gid - offsets_[npatch];
@@ -171,7 +171,7 @@ void Core::FE::Nurbs::Knotvector::convert_ele_gid_to_knot_ids(
 /*----------------------------------------------------------------------*
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-bool Core::FE::Nurbs::Knotvector::GetEleKnots(
+bool Core::FE::Nurbs::Knotvector::get_ele_knots(
     std::vector<Core::LinAlg::SerialDenseVector>& eleknots, int gid) const
 {
   //------------------------------------------------
@@ -258,10 +258,10 @@ bool Core::FE::Nurbs::Knotvector::get_boundary_ele_and_parent_knots(
   // from
   //
   // immediately, check for multiple knots indicating zero sized elements
-  bool zero_size = GetEleKnots(eleknots, pgid);
+  bool zero_size = get_ele_knots(eleknots, pgid);
 
   // locate patch containing parent element
-  const int np = ReturnPatchId(pgid);
+  const int np = return_patch_id(pgid);
 
   if (dim_ == 3)
   {
@@ -524,7 +524,7 @@ bool Core::FE::Nurbs::Knotvector::get_boundary_ele_and_parent_knots(
 /*----------------------------------------------------------------------*
  | set knots in one direction                       (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void Core::FE::Nurbs::Knotvector::SetKnots(const int& direction, const int& npatch,
+void Core::FE::Nurbs::Knotvector::set_knots(const int& direction, const int& npatch,
     const int& degree, const int& numknots, const std::string& knotvectortype,
     Teuchos::RCP<std::vector<double>> directions_knots)
 {
@@ -570,7 +570,7 @@ void Core::FE::Nurbs::Knotvector::SetKnots(const int& direction, const int& npat
 /*----------------------------------------------------------------------*
  | finish                                           (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void Core::FE::Nurbs::Knotvector::FinishKnots(const int smallest_gid_in_dis)
+void Core::FE::Nurbs::Knotvector::finish_knots(const int smallest_gid_in_dis)
 {
   //--------------------------------------------------
   // plausibility checks
@@ -735,7 +735,7 @@ void Core::FE::Nurbs::Knotvector::pack(Core::Communication::PackBuffer& data) co
   // Core::Communication::PackBuffer::SizeMarker sm( data );
   //
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add number of patches
@@ -797,7 +797,7 @@ void Core::FE::Nurbs::Knotvector::unpack(const std::vector<char>& data)
 
   filled_ = false;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract number of patches
   extract_from_pack(position, data, npatches_);

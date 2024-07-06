@@ -117,7 +117,7 @@ namespace FLD
           const Epetra_Map& xfluiddofrowmap, const Epetra_Map& slavedofrowmap);
 
       //! destroy the coupling objects and it's content
-      void Destroy(bool throw_exception = true);
+      void destroy(bool throw_exception = true);
 
       //! @name coupling matrices x: xfluid, s: coupling slave (structure, ALE-fluid, xfluid-element
       //! with other active dofset, etc.)
@@ -145,7 +145,7 @@ namespace FLD
     /// dtor
     virtual ~XFluidState() = default;
     /// setup map extractors for dirichlet maps & velocity/pressure maps
-    void SetupMapExtractors(
+    void setup_map_extractors(
         const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret, const double& time);
 
     /// zero system matrix and related rhs vectors
@@ -158,7 +158,7 @@ namespace FLD
     virtual void complete_coupling_matrices_and_rhs();
 
     /// destroy the stored objects
-    virtual bool Destroy();
+    virtual bool destroy();
 
     /// update the coordinates of the cut boundary cells
     void update_boundary_cell_coords();
@@ -168,7 +168,7 @@ namespace FLD
     //@{
 
     /// access to the cut wizard
-    Teuchos::RCP<Core::Geo::CutWizard> Wizard() const
+    Teuchos::RCP<Core::Geo::CutWizard> wizard() const
     {
       if (wizard_ == Teuchos::null) FOUR_C_THROW("Cut wizard is uninitialized!");
       return wizard_;
@@ -176,20 +176,23 @@ namespace FLD
 
 
     //! access to the xfem-dofset
-    Teuchos::RCP<XFEM::XFEMDofSet> DofSet() { return dofset_; }
+    Teuchos::RCP<XFEM::XFEMDofSet> dof_set() { return dofset_; }
 
-    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> DBCMapExtractor() { return dbcmaps_; }
+    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> dbc_map_extractor() { return dbcmaps_; }
 
-    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() { return velpressplitter_; }
+    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter()
+    {
+      return velpressplitter_;
+    }
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() { return sysmat_; }
-    virtual Teuchos::RCP<Epetra_Vector>& Residual() { return residual_; }
-    virtual Teuchos::RCP<Epetra_Vector>& Zeros() { return zeros_; }
-    virtual Teuchos::RCP<Epetra_Vector>& IncVel() { return incvel_; }
-    virtual Teuchos::RCP<Epetra_Vector>& Velnp() { return velnp_; }
-    virtual Teuchos::RCP<Epetra_Vector>& Veln() { return veln_; }
-    virtual Teuchos::RCP<Epetra_Vector>& Accnp() { return accnp_; }
-    virtual Teuchos::RCP<Epetra_Vector>& Accn() { return accn_; }
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() { return sysmat_; }
+    virtual Teuchos::RCP<Epetra_Vector>& residual() { return residual_; }
+    virtual Teuchos::RCP<Epetra_Vector>& zeros() { return zeros_; }
+    virtual Teuchos::RCP<Epetra_Vector>& inc_vel() { return incvel_; }
+    virtual Teuchos::RCP<Epetra_Vector>& velnp() { return velnp_; }
+    virtual Teuchos::RCP<Epetra_Vector>& veln() { return veln_; }
+    virtual Teuchos::RCP<Epetra_Vector>& accnp() { return accnp_; }
+    virtual Teuchos::RCP<Epetra_Vector>& accn() { return accn_; }
     //@}
 
     /// dof-rowmap of intersected fluid
@@ -290,7 +293,7 @@ namespace FLD
      \brief initialize ALE state vectors
      @param dispnp and grivnp vectors w.r.t initial full dofrowmap
      */
-    void InitALEStateVectors(const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
+    void init_ale_state_vectors(const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
         Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
         Teuchos::RCP<const Epetra_Vector> gridvnp_initmap);
 

@@ -25,10 +25,10 @@ namespace FSI
     explicit FluidXFEMAlgorithm(const Epetra_Comm& comm);
 
     /// time loop
-    void Timeloop();
+    void timeloop();
 
     /// communicator
-    const Epetra_Comm& Comm() const { return comm_; }
+    const Epetra_Comm& get_comm() const { return comm_; }
 
     /// read restart data
     virtual void read_restart(int step);

@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 
 void poroelast_drt()
 {
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // create a communicator
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print Logo to screen
   if (comm.MyPID() == 0) PoroElast::PrintLogo();
@@ -44,16 +44,16 @@ void poroelast_drt()
   poroalgo->read_restart(restart);
 
   // now do the coupling setup and create the combined dofmap
-  poroalgo->SetupSystem();
+  poroalgo->setup_system();
 
   // solve the whole problem
-  poroalgo->TimeLoop();
+  poroalgo->time_loop();
 
   // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  poroalgo->TestResults(comm);
+  poroalgo->test_results(comm);
 }
 
 FOUR_C_NAMESPACE_CLOSE

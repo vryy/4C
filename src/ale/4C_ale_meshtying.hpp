@@ -81,10 +81,10 @@ namespace ALE
         std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp);
 
     //! Use the split of the ale mesh tying for the sysmat
-    Teuchos::RCP<Core::LinAlg::SparseOperator> MshtSplit();
+    Teuchos::RCP<Core::LinAlg::SparseOperator> msht_split();
 
     //! Check weather Dirichlet BC are defined on the master
-    void DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
+    void dirichlet_on_master(Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
     );
 
     //! Prepare matrix and residual for meshtying
@@ -94,28 +94,28 @@ namespace ALE
         Teuchos::RCP<Epetra_Vector>& dispnp);   ///> current ALE displacement vector
 
     //! Set the flag for multifield problems
-    void IsMultifield(const Core::LinAlg::MultiMapExtractor&
-                          interface,  ///< interface maps for split of ale matrix
-        bool ismultifield             ///< flag for multifield problems
+    void is_multifield(const Core::LinAlg::MultiMapExtractor&
+                           interface,  ///< interface maps for split of ale matrix
+        bool ismultifield              ///< flag for multifield problems
     );
 
     //! Use the split of the ale mesh tying for the sysmat
-    void MshtSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
+    void msht_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
     //! Use the split of the multifield problem for the sysmat
-    void MultifieldSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
+    void multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
     //! Call the constructor and the setup of the mortar coupling adapter
-    virtual void AdapterMortar(std::vector<int> coupleddof);
+    virtual void adapter_mortar(std::vector<int> coupleddof);
 
     //! Compare the size of the slave and master dof row map
-    virtual void CompareNumDof();
+    virtual void compare_num_dof();
 
     //! Get function for the slave and master dof row map
-    virtual void DofRowMaps();
+    virtual void dof_row_maps();
 
     //! Get function for the P matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixP();
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_p();
 
     //! Condensation operation for a block matrix (including ALE case):
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;
@@ -128,14 +128,14 @@ namespace ALE
         Teuchos::RCP<Epetra_Vector>& dispnp);   ///> current displacement vector
 
     //! Compute and update the increments of the slave node
-    virtual void UpdateSlaveDOF(
+    virtual void update_slave_dof(
         Teuchos::RCP<Epetra_Vector>& inc, Teuchos::RCP<Epetra_Vector>& dispnp);
 
     //! Recover method for Lagrange multipliers (do nothing in mesh tying case)
-    virtual void Recover(Teuchos::RCP<Epetra_Vector>& inc){};
+    virtual void recover(Teuchos::RCP<Epetra_Vector>& inc){};
 
     //! Solve ALE mesh tying problem
-    virtual int SolveMeshtying(Core::LinAlg::Solver& solver,
+    virtual int solve_meshtying(Core::LinAlg::Solver& solver,
         Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
         Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp);
 

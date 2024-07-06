@@ -30,7 +30,7 @@ Mat::Elastic::CoupNeoHooke::CoupNeoHooke(Mat::Elastic::PAR::CoupNeoHooke* params
 {
 }
 
-void Mat::Elastic::CoupNeoHooke::AddShearMod(
+void Mat::Elastic::CoupNeoHooke::add_shear_mod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
 ) const
@@ -40,7 +40,7 @@ void Mat::Elastic::CoupNeoHooke::AddShearMod(
   shearmod += 2 * params_->c_;
 }
 
-void Mat::Elastic::CoupNeoHooke::AddStrainEnergy(double& psi,
+void Mat::Elastic::CoupNeoHooke::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
@@ -88,7 +88,7 @@ void Mat::Elastic::CoupNeoHooke::add_third_derivatives_principal_iso(
   dddPIII_iso(2) -= c * (beta + 1.0) * (beta + 2.0) * std::pow(prinv_iso(2), -beta - 3.0);
 }
 
-void Mat::Elastic::CoupNeoHooke::AddCoupDerivVol(
+void Mat::Elastic::CoupNeoHooke::add_coup_deriv_vol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
   const double beta = params_->beta_;

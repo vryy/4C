@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyperVCU::create_materia
 Mat::PlasticElastHyperVCUType Mat::PlasticElastHyperVCUType::instance_;
 
 
-Core::Communication::ParObject* Mat::PlasticElastHyperVCUType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticElastHyperVCUType::create(const std::vector<char>& data)
 {
   Mat::PlasticElastHyperVCU* elhy = new Mat::PlasticElastHyperVCU();
   elhy->unpack(data);
@@ -76,7 +76,7 @@ Mat::PlasticElastHyperVCU::PlasticElastHyperVCU(Mat::PAR::PlasticElastHyperVCU* 
   for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
   }
@@ -90,20 +90,20 @@ void Mat::PlasticElastHyperVCU::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
+  if (mat_params() != nullptr) matid = mat_params()->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
   summandProperties_.pack(data);
 
-  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
+  if (mat_params() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->PackSummand(data);
+      potsum_[p]->pack_summand(data);
     }
   }
 
@@ -125,36 +125,37 @@ void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover MatParams()
   int matid;
   extract_from_pack(position, data, matid);
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const unsigned int probinst =
+          Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::PlasticElastHyperVCU*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
   summandProperties_.unpack(position, data);
 
-  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
+  if (mat_params() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = MatParams()->matids_.begin(); m != MatParams()->matids_.end(); ++m)
+    for (m = mat_params()->matids_.begin(); m != mat_params()->matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -162,7 +163,7 @@ void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->UnpackSummand(data, position);
+      potsum_[p]->unpack_summand(data, position);
     }
   }
 
@@ -233,7 +234,7 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
     Core::LinAlg::Matrix<6, 1> checkStr;
     Core::LinAlg::Matrix<6, 6> checkCmat;
     Core::LinAlg::Matrix<3, 3> emptymat;
-    PlasticElastHyper::EvaluateElast(defgrd, &emptymat, stress, cmat, gp, eleGID);
+    PlasticElastHyper::evaluate_elast(defgrd, &emptymat, stress, cmat, gp, eleGID);
     ElastHyper::evaluate(defgrd, &ee_test, params, &checkStr, &checkCmat, gp, eleGID);
 
     // push back
@@ -351,22 +352,22 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       Core::LinAlg::Matrix<5, 5> hess_aiso(hess_a);
       hess_a.scale(1. / dLp.norm2());
       Core::LinAlg::Matrix<5, 5> tmpSummandIdentity(hess_a);
-      double hess_aisoScalar = Isohard();
+      double hess_aisoScalar = isohard();
       hess_aisoScalar *= last_alpha_isotropic_[gp] / dLp.norm2();
-      hess_aisoScalar += Isohard();
+      hess_aisoScalar += isohard();
       hess_aiso.scale(hess_aisoScalar);
 
       hess_a.multiply_nt((-1.) / (dLp.norm2() * dLp.norm2() * dLp.norm2()), dlp_vec, dlp_vec, 1.);
       Core::LinAlg::Matrix<5, 5> tmpSummandDlpVec;
       tmpSummandDlpVec.multiply_nt(
           (-1.) / (dLp.norm2() * dLp.norm2() * dLp.norm2()), dlp_vec, dlp_vec);
-      tmpSummandDlpVec.scale(sqrt(2. / 3.) * Inityield());
-      tmpSummandIdentity.scale(sqrt(2. / 3.) * Inityield());
-      hess_a.scale(sqrt(2. / 3.) * Inityield());
+      tmpSummandDlpVec.scale(sqrt(2. / 3.) * inityield());
+      tmpSummandIdentity.scale(sqrt(2. / 3.) * inityield());
+      hess_a.scale(sqrt(2. / 3.) * inityield());
 
       Core::LinAlg::Matrix<5, 5> tmp55;
       tmp55.multiply_nt(dlp_vec, dlp_vec);
-      tmp55.scale((sqrt(2. / 3.) * last_alpha_isotropic_[gp] * Isohard()) /
+      tmp55.scale((sqrt(2. / 3.) * last_alpha_isotropic_[gp] * isohard()) /
                   (dLp.norm2() * dLp.norm2() * dLp.norm2()));
 
       hess_aiso.update(-1., tmp55, 1.);
@@ -377,20 +378,20 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       for (int i = 0; i < 5; ++i) hessIsoNL(i, i) = 2.;
       hessIsoNL(0, 1) = 1.;
       hessIsoNL(1, 0) = 1.;
-      double hessIsoNLscalar = Isohard();
+      double hessIsoNLscalar = isohard();
       double new_ai = last_alpha_isotropic_[gp] + sqrt(2. / 3.) * dLp.norm2();
-      double k = Infyield() - Inityield();
+      double k = infyield() - inityield();
       hessIsoNLscalar *= new_ai;
       hessIsoNLscalar += k;
-      hessIsoNLscalar -= k * std::exp(-1. * Expisohard() * new_ai);
+      hessIsoNLscalar -= k * std::exp(-1. * expisohard() * new_ai);
       hessIsoNL.scale(hessIsoNLscalar / dLp.norm2());
       Core::LinAlg::Matrix<5, 5> tmpNL55;
       tmpNL55.multiply_nt(dlp_vec, dlp_vec);
       Core::LinAlg::Matrix<5, 5> tmp2(tmpNL55);
       tmpNL55.scale(hessIsoNLscalar / (dLp.norm2() * dLp.norm2() * dLp.norm2()));
       hessIsoNL.update(-1., tmpNL55, 1.);
-      double tmp2scalar = Isohard();
-      tmp2scalar += Expisohard() * k * std::exp(-1. * Expisohard() * new_ai);
+      double tmp2scalar = isohard();
+      tmp2scalar += expisohard() * k * std::exp(-1. * expisohard() * new_ai);
       tmp2.scale((sqrt(2. / 3.) * tmp2scalar) / (dLp.norm2() * dLp.norm2()));
       hessIsoNL.update(1., tmp2, 1.);
       hessIsoNL.scale(sqrt(2. / 3.));
@@ -404,7 +405,7 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
 
       iH = hess_analyt;
       Core::LinAlg::FixedSizeSerialDenseSolver<5, 5, 1> solver;
-      solver.SetMatrix(iH);
+      solver.set_matrix(iH);
       if (solver.invert() != 0) FOUR_C_THROW("Inversion failed");
 
       Core::LinAlg::Matrix<5, 1> beta_incr;
@@ -500,7 +501,7 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
 
     // Compute the total stresses
     Core::LinAlg::Matrix<6, 6> tangent_elast;
-    PlasticElastHyper::EvaluateElast(defgrd, &dLp, stress, &tangent_elast, gp, eleGID);
+    PlasticElastHyper::evaluate_elast(defgrd, &dLp, stress, &tangent_elast, gp, eleGID);
 
     Core::LinAlg::Matrix<6, 9> dPK2dFpinvIsoprinc;
     dpk2d_fpi(gp, eleGID, defgrd, &plastic_defgrd_inverse_[gp], dPK2dFpinvIsoprinc);
@@ -596,13 +597,13 @@ void Mat::PlasticElastHyperVCU::yield_function(const double last_ai,
 {
   double Qi = 0.0;
   double new_ai = last_ai + norm_dLp * sqrt(2. / 3.);  // fixme sqrt
-  double k = Infyield() - Inityield();
-  Qi -= Isohard() * new_ai;
+  double k = infyield() - inityield();
+  Qi -= isohard() * new_ai;
   Qi -= k;
-  Qi += k * std::exp(-1. * Expisohard() * new_ai);
+  Qi += k * std::exp(-1. * expisohard() * new_ai);
   Qi *= sqrt(2. / 3.);
 
-  double Qeq = sqrt(2. / 3.) * Inityield();
+  double Qeq = sqrt(2. / 3.) * inityield();
 
   Core::LinAlg::Matrix<3, 3> ce;
   Core::LinAlg::Matrix<3, 3> tmp;
@@ -676,30 +677,30 @@ void Mat::PlasticElastHyperVCU::comp_elast_quant(const Core::LinAlg::Matrix<3, 3
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::VisNames(std::map<std::string, int>& names)
+void Mat::PlasticElastHyperVCU::vis_names(std::map<std::string, int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
 
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool Mat::PlasticElastHyperVCU::VisData(
+bool Mat::PlasticElastHyperVCU::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double tmp = 0.;
-    for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++) tmp += AccumulatedStrain(gp);
+    for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++) tmp += accumulated_strain(gp);
     data[0] = tmp / last_alpha_isotropic_.size();
   }
   return false;
 
-}  // VisData()
+}  // vis_data()
 
 
 // 2nd matrix exponential derivatives with 6 parameters
@@ -970,16 +971,16 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
 
 
   double new_ai = last_alpha_isotropic_[gp] + sqrt(2. / 3.) * dLp.norm2();
-  double k = Infyield() - Inityield();
-  double rhsPlastScalar = Isohard();
+  double k = infyield() - inityield();
+  double rhsPlastScalar = isohard();
   rhsPlastScalar *= new_ai;
   rhsPlastScalar += k;
-  rhsPlastScalar -= k * std::exp(-1. * Expisohard() * new_ai);
+  rhsPlastScalar -= k * std::exp(-1. * expisohard() * new_ai);
   rhs6.update((rhsPlastScalar * sqrt(2. / 3.)) / dLp.norm2(), dLp_vec,
       1.);  // plastic component, nonlinear iso hardening
 
 
-  rhs6.update((Inityield() * sqrt(2. / 3.)) / dLp.norm2(), dLp_vec, 1.);  // dissipative component
+  rhs6.update((inityield() * sqrt(2. / 3.)) / dLp.norm2(), dLp_vec, 1.);  // dissipative component
 
   rhs6.multiply_tn(0.5, dcedlp, se, 1.);  // elastic component
   Core::LinAlg::Matrix<6, 1> rhs6Elast(
@@ -1002,7 +1003,7 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
 
   return;
 }
-void Mat::PlasticElastHyperVCU::EvaluatePlast(Core::LinAlg::Matrix<6, 9>& dPK2dFpinvIsoprinc,
+void Mat::PlasticElastHyperVCU::evaluate_plast(Core::LinAlg::Matrix<6, 9>& dPK2dFpinvIsoprinc,
     const Core::LinAlg::Matrix<3, 1>& gamma, const Core::LinAlg::Matrix<8, 1>& delta,
     const Core::LinAlg::Matrix<3, 3>& id2, const Core::LinAlg::Matrix<6, 1>& Cpi,
     const Core::LinAlg::Matrix<3, 3>& Fpi, const Core::LinAlg::Matrix<3, 3>& CpiC,
@@ -1132,7 +1133,7 @@ void Mat::PlasticElastHyperVCU::dpk2d_fpi(const int gp, const int eleGID,
   evaluate_kin_quant_plast(gp, eleGID, defgrd, fpi, gamma, delta, id2, Cpi, CpiC, CFpi, CFpiCei,
       ircg, FpiCe, CFpiCe, CpiCCpi);
 
-  EvaluatePlast(dPK2dFpinvIsoprinc, gamma, delta, id2, Cpi, *fpi, CpiC, CFpi, CFpiCei, ircg, FpiCe,
+  evaluate_plast(dPK2dFpinvIsoprinc, gamma, delta, id2, Cpi, *fpi, CpiC, CFpi, CFpiCei, ircg, FpiCe,
       CFpiCe, CpiCCpi);
 }
 

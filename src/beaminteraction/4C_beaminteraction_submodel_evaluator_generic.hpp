@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
 
      public:
       //! Returns the type of the current model evaluator
-      virtual Inpar::BEAMINTERACTION::SubModelType Type() const = 0;
+      virtual Inpar::BEAMINTERACTION::SubModelType type() const = 0;
 
       //! \brief reset model specific variables (without jacobian)
       virtual void reset() = 0;
@@ -133,13 +133,13 @@ namespace BEAMINTERACTION
       virtual bool evaluate_force_stiff() = 0;
 
       //! update state
-      virtual void UpdateStepState(const double& timefac_n) = 0;
+      virtual void update_step_state(const double& timefac_n) = 0;
 
       //! pre update step element
       virtual bool pre_update_step_element(bool beam_redist) = 0;
 
       //! update step element
-      virtual void UpdateStepElement(bool repartition_was_done) = 0;
+      virtual void update_step_element(bool repartition_was_done) = 0;
 
       //! post update step element
       virtual void post_update_step_element() = 0;
@@ -148,13 +148,13 @@ namespace BEAMINTERACTION
       virtual std::map<Solid::EnergyType, double> get_energy() const = 0;
 
       //! write submodel specific output
-      virtual void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const = 0;
+      virtual void output_step_state(Core::IO::DiscretizationWriter& iowriter) const = 0;
 
       //! write submodel specific output during runtime
       virtual void runtime_output_step_state() const = 0;
 
       //! reset routine for model evlaluator
-      virtual void ResetStepState() = 0;
+      virtual void reset_step_state() = 0;
 
       //! \brief write model specific restart
       virtual void write_restart(Core::IO::DiscretizationWriter& ia_writer,
@@ -167,10 +167,10 @@ namespace BEAMINTERACTION
           Core::IO::DiscretizationReader& bin_writer) = 0;
 
       //! \brief do stuff pre reading of model specific restart information
-      virtual void PreReadRestart() = 0;
+      virtual void pre_read_restart() = 0;
 
       //! \brief do stuff post reading of model specific restart information
-      virtual void PostReadRestart() = 0;
+      virtual void post_read_restart() = 0;
 
       /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
        *
@@ -184,7 +184,7 @@ namespace BEAMINTERACTION
           Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelvector) = 0;
 
       //! \brief add subproblem specific contributions to bin col map
-      virtual void AddBinsToBinColMap(std::set<int>& colbins) = 0;
+      virtual void add_bins_to_bin_col_map(std::set<int>& colbins) = 0;
 
       //! \brief add subproblem specific contributions to bin col map
       virtual void add_bins_with_relevant_content_for_ia_discret_col_map(
@@ -202,24 +202,24 @@ namespace BEAMINTERACTION
       //! @name internal accessors
       //! @{
       //! Returns the (structural) discretization
-      Core::FE::Discretization& Discret();
-      Teuchos::RCP<Core::FE::Discretization>& DiscretPtr();
-      Teuchos::RCP<const Core::FE::Discretization> DiscretPtr() const;
-      Core::FE::Discretization const& Discret() const;
+      Core::FE::Discretization& discret();
+      Teuchos::RCP<Core::FE::Discretization>& discret_ptr();
+      Teuchos::RCP<const Core::FE::Discretization> discret_ptr() const;
+      Core::FE::Discretization const& discret() const;
 
-      Core::FE::Discretization& BinDiscret();
-      Teuchos::RCP<Core::FE::Discretization>& BinDiscretPtr();
-      Teuchos::RCP<const Core::FE::Discretization> BinDiscretPtr() const;
-      Core::FE::Discretization const& BinDiscret() const;
+      Core::FE::Discretization& bin_discret();
+      Teuchos::RCP<Core::FE::Discretization>& bin_discret_ptr();
+      Teuchos::RCP<const Core::FE::Discretization> bin_discret_ptr() const;
+      Core::FE::Discretization const& bin_discret() const;
 
       //! Returns the global state data container
-      Solid::TimeInt::BaseDataGlobalState& GState();
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& GStatePtr();
-      Solid::TimeInt::BaseDataGlobalState const& GState() const;
+      Solid::TimeInt::BaseDataGlobalState& g_state();
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& g_state_ptr();
+      Solid::TimeInt::BaseDataGlobalState const& g_state() const;
 
       //! Returns the global input/output data container
-      Solid::TimeInt::BaseDataIO& GInOutput();
-      Solid::TimeInt::BaseDataIO const& GInOutput() const;
+      Solid::TimeInt::BaseDataIO& g_in_output();
+      Solid::TimeInt::BaseDataIO const& g_in_output() const;
 
       //! Returns the global state data container
       Solid::MODELEVALUATOR::BeamInteractionDataState& beam_interaction_data_state();
@@ -231,17 +231,17 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
       BEAMINTERACTION::BeamCrosslinkerHandler const& beam_crosslinker_handler() const;
 
-      Core::Binstrategy::BinningStrategy& BinStrategy();
-      Teuchos::RCP<Core::Binstrategy::BinningStrategy>& BinStrategyPtr();
-      Core::Binstrategy::BinningStrategy const& BinStrategy() const;
+      Core::Binstrategy::BinningStrategy& bin_strategy();
+      Teuchos::RCP<Core::Binstrategy::BinningStrategy>& bin_strategy_ptr();
+      Core::Binstrategy::BinningStrategy const& bin_strategy() const;
 
-      Core::Geo::MeshFree::BoundingBox& PeriodicBoundingBox();
+      Core::Geo::MeshFree::BoundingBox& periodic_bounding_box();
       Teuchos::RCP<Core::Geo::MeshFree::BoundingBox>& periodic_bounding_box_ptr();
-      Core::Geo::MeshFree::BoundingBox const& PeriodicBoundingBox() const;
+      Core::Geo::MeshFree::BoundingBox const& periodic_bounding_box() const;
 
-      BEAMINTERACTION::UTILS::MapExtractor& EleTypeMapExtractor();
+      BEAMINTERACTION::UTILS::MapExtractor& ele_type_map_extractor();
       Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& ele_type_map_extractor_ptr();
-      BEAMINTERACTION::UTILS::MapExtractor const& EleTypeMapExtractor() const;
+      BEAMINTERACTION::UTILS::MapExtractor const& ele_type_map_extractor() const;
 
       //! @}
      protected:

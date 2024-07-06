@@ -78,7 +78,7 @@ namespace CONTACT
     \brief Update slabs of current tree node in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& enlarge) final;
+    void update_slabs_bottom_up(double& enlarge) final;
 
     /*!
     \brief Calculate the logical array of qualified sample vectors for leaf nodes
@@ -96,13 +96,13 @@ namespace CONTACT
     \brief Return logical array of qualified sample vectors
 
     */
-    std::vector<bool> QualifiedVectors() const { return qualifiedvectors_; }
+    std::vector<bool> qualified_vectors() const { return qualifiedvectors_; }
 
     /*!
     \brief Print type of tree node to std::cout
 
     */
-    void PrintType() final;
+    void print_type() final;
     //@}
 
     //! @name Access methods
@@ -111,25 +111,25 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    const Epetra_Comm& Comm() const;
+    const Epetra_Comm& get_comm() const;
 
     /*!
     \brief Complete tree by filling tree node storage scheme
 
     */
-    void CompleteTree(int layer, double& enlarge);
+    void complete_tree(int layer, double& enlarge);
 
     /*!
     \brief Return pointer to type of treenode
 
     */
-    SelfBinaryTreeNodeType Type() const { return type_; }
+    SelfBinaryTreeNodeType type() const { return type_; }
 
     /*!
     \brief Return pointer to adjacent tree nodes
 
     */
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> AdjacentTreenodes()
+    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacent_treenodes()
     {
       return adjacent_treenodes_;
     }
@@ -138,7 +138,7 @@ namespace CONTACT
     \brief set adjacent tree nodes
 
     */
-    void SetAdjacentTnodes(std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjTnodes)
+    void set_adjacent_tnodes(std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjTnodes)
     {
       adjacent_treenodes_ = adjTnodes;
     }
@@ -147,68 +147,68 @@ namespace CONTACT
     \brief Return list of endnodes
 
     */
-    std::vector<int> Endnodes() const { return endnodes_; }
+    std::vector<int> endnodes() const { return endnodes_; }
 
     /*!
     \brief Set list of endnodes
 
     */
-    void SetEndnodes(std::vector<int> endnodes) { endnodes_ = endnodes; }
+    void set_endnodes(std::vector<int> endnodes) { endnodes_ = endnodes; }
 
     /*!
     \brief Update list of endnodes with endnodes of children
 
     */
-    void UpdateEndnodes();
+    void update_endnodes();
 
     /*!
     \brief Return pointer to right child
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> Rightchild() const { return rightchild_; }
+    Teuchos::RCP<SelfBinaryTreeNode> rightchild() const { return rightchild_; }
 
     /*!
     \brief Return pointer to left child
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> Leftchild() const { return leftchild_; }
+    Teuchos::RCP<SelfBinaryTreeNode> leftchild() const { return leftchild_; }
 
     /*!
     \brief set children of a Binary Tree Node
 
     */
-    void SetChildren(
+    void set_children(
         Teuchos::RCP<SelfBinaryTreeNode> leftchild, Teuchos::RCP<SelfBinaryTreeNode> rightchild);
 
     /*!
     \brief Return pointer to parent
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> Parent() const { return parent_; }
+    Teuchos::RCP<SelfBinaryTreeNode> parent() const { return parent_; }
 
     /*!
     \brief set parent of tree node
 
     */
-    void SetParent(Teuchos::RCP<SelfBinaryTreeNode> parent) { parent_ = parent; }
+    void set_parent(Teuchos::RCP<SelfBinaryTreeNode> parent) { parent_ = parent; }
 
     /*!
     \brief Return owner of current tree node
 
     */
-    int Owner() const { return owner_; }
+    int owner() const { return owner_; }
 
     /*!
     \brief set owner of tree node
 
     */
-    void SetOwner(int treenodeowner) { owner_ = treenodeowner; }
+    void set_owner(int treenodeowner) { owner_ = treenodeowner; }
 
     /*!
     \brief set owner of parent according to owner of children
 
     */
-    void SetParentOwner(int leftchildowner, int rightchildowner);
+    void set_parent_owner(int leftchildowner, int rightchildowner);
     //@}
 
    private:
@@ -407,32 +407,32 @@ namespace CONTACT
     \brief Return costs
 
     */
-    double Costs() const { return costs_; }
+    double costs() const { return costs_; }
 
     /*!
     \brief Return first node of dual edge
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> GetNode1() const { return node1_; }
+    Teuchos::RCP<SelfBinaryTreeNode> get_node1() const { return node1_; }
 
     /*!
     \brief Return second node of dual edge
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> GetNode2() const { return node2_; }
+    Teuchos::RCP<SelfBinaryTreeNode> get_node2() const { return node2_; }
 
     /*!
     \brief Return common tree node of two dual edges
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> CommonNode(Teuchos::RCP<SelfDualEdge> treenode)
+    Teuchos::RCP<SelfBinaryTreeNode> common_node(Teuchos::RCP<SelfDualEdge> treenode)
     {
-      Teuchos::RCP<SelfBinaryTreeNode> node1 = treenode->GetNode1();
-      Teuchos::RCP<SelfBinaryTreeNode> node2 = treenode->GetNode2();
+      Teuchos::RCP<SelfBinaryTreeNode> node1 = treenode->get_node1();
+      Teuchos::RCP<SelfBinaryTreeNode> node2 = treenode->get_node2();
 
-      if (GetNode1() == node1 or GetNode2() == node1)
+      if (get_node1() == node1 or get_node2() == node1)
         return node1;
-      else if (GetNode1() == node2 or GetNode2() == node2)
+      else if (get_node1() == node2 or get_node2() == node2)
         return node2;
       else
         return Teuchos::null;
@@ -554,7 +554,7 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    const Epetra_Comm& comm() const;
+    const Epetra_Comm& get_comm() const;
 
     /*!
     \brief Get access to the contact pairs

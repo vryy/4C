@@ -79,9 +79,9 @@ Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_log_strain(
 
 int Solid::UTILS::ReadElement::read_element_material(Input::LineDefinition* linedef)
 {
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  return material;
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  return material_id;
 }
 
 Inpar::Solid::KinemType Solid::UTILS::ReadElement::read_element_kinematic_type(

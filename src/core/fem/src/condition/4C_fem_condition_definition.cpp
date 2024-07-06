@@ -53,10 +53,10 @@ void Core::Conditions::ConditionDefinition::add_component(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Conditions::ConditionDefinition::Read(Core::IO::DatFileReader& reader,
+void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader,
     std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap)
 {
-  std::vector<const char*> section = reader.Section("--" + sectionname_);
+  std::vector<const char*> section = reader.section("--" + sectionname_);
 
   if (section.empty()) return;
 
@@ -87,8 +87,8 @@ void Core::Conditions::ConditionDefinition::Read(Core::IO::DatFileReader& reader
           }
         });
 
-    parser.Consume(line, expected_geometry_type);
-    const int condition_count = parser.Read<int>(line);
+    parser.consume(line, expected_geometry_type);
+    const int condition_count = parser.read<int>(line);
 
     if (condition_count != static_cast<int>(section.size() - 1))
     {
@@ -108,17 +108,17 @@ void Core::Conditions::ConditionDefinition::Read(Core::IO::DatFileReader& reader
     condline->seekp(0, condline->end);
     *condline << " ";
 
-    parser.Consume(*condline, "E");
+    parser.consume(*condline, "E");
     // Read a one-based condition number but convert it to zero-based for internal use.
-    const int dobjid = parser.Read<int>(*condline) - 1;
-    parser.Consume(*condline, "-");
+    const int dobjid = parser.read<int>(*condline) - 1;
+    parser.consume(*condline, "-");
 
     Teuchos::RCP<Core::Conditions::Condition> condition =
         Teuchos::rcp(new Core::Conditions::Condition(dobjid, condtype_, buildgeometry_, gtype_));
 
     for (auto& j : inputline_)
     {
-      condline = j->read(SectionName(), condline, condition->parameters());
+      condline = j->read(section_name(), condline, condition->parameters());
     }
 
     //------------------------------- put condition in map of conditions
@@ -161,10 +161,10 @@ std::ostream& Core::Conditions::ConditionDefinition::print(
   if (dis != nullptr)
   {
     std::vector<Core::Conditions::Condition*> conds;
-    dis->GetCondition(conditionname_, conds);
+    dis->get_condition(conditionname_, conds);
     for (auto& cond : conds)
     {
-      if (cond->GType() == gtype_)
+      if (cond->g_type() == gtype_)
       {
         count += 1;
       }
@@ -189,13 +189,13 @@ std::ostream& Core::Conditions::ConditionDefinition::print(
   if (dis != nullptr)
   {
     std::vector<Core::Conditions::Condition*> conds;
-    dis->GetCondition(conditionname_, conds);
+    dis->get_condition(conditionname_, conds);
 
     for (auto& cond : conds)
     {
-      if (cond->GType() == gtype_)
+      if (cond->g_type() == gtype_)
       {
-        stream << "E " << cond->Id() << " - ";
+        stream << "E " << cond->id() << " - ";
         for (auto& i : inputline_)
         {
           i->print(stream, cond->parameters());

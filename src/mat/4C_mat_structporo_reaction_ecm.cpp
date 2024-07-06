@@ -38,7 +38,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReactionECM::create_materi
 /*----------------------------------------------------------------------*/
 Mat::StructPoroReactionECMType Mat::StructPoroReactionECMType::instance_;
 
-Core::Communication::ParObject* Mat::StructPoroReactionECMType::Create(
+Core::Communication::ParObject* Mat::StructPoroReactionECMType::create(
     const std::vector<char>& data)
 {
   Mat::StructPoroReactionECM* struct_poro = new Mat::StructPoroReactionECM();
@@ -88,7 +88,7 @@ void Mat::StructPoroReactionECM::setup(int numgp, Input::LineDefinition* linedef
   chempot_init_.resize(numgp, 0.0);
 
   for (std::vector<double>::size_type i = 0; i < chempot_init_.size(); i++)
-    chempot_init_[i] = -(1.0 - deltaphi / (1.0 - initphi)) / mat_->Density() * dpsidphiref;
+    chempot_init_[i] = -(1.0 - deltaphi / (1.0 - initphi)) / mat_->density() * dpsidphiref;
 }
 
 /*----------------------------------------------------------------------*/
@@ -98,12 +98,12 @@ void Mat::StructPoroReactionECM::pack(Core::Communication::PackBuffer& data) con
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 
   // refporosity_
@@ -125,23 +125,23 @@ void Mat::StructPoroReactionECM::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::StructPoroReactionECM*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   extract_from_pack(position, data, refporosity_old_);
@@ -185,10 +185,10 @@ void Mat::StructPoroReactionECM::update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReactionECM::VisNames(std::map<std::string, int>& names)
+void Mat::StructPoroReactionECM::vis_names(std::map<std::string, int>& names)
 {
   // call base class
-  StructPoroReaction::VisNames(names);
+  StructPoroReaction::vis_names(names);
 
   std::string name = "chemical_potential";
   names[name] = 1;  // scalar
@@ -196,11 +196,11 @@ void Mat::StructPoroReactionECM::VisNames(std::map<std::string, int>& names)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Mat::StructPoroReactionECM::VisData(
+bool Mat::StructPoroReactionECM::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   // call base class
-  if (StructPoroReaction::VisData(name, data, numgp, eleID)) return true;
+  if (StructPoroReaction::vis_data(name, data, numgp, eleID)) return true;
   if (name == "chemical_potential")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
@@ -213,7 +213,7 @@ bool Mat::StructPoroReactionECM::VisData(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReactionECM::ChemPotential(
+void Mat::StructPoroReactionECM::chem_potential(
     const Core::LinAlg::Matrix<6, 1>& glstrain,  ///< (i) green lagrange strain
     const double porosity,                       ///< (i) porosity
     const double press,                          ///< (i) pressure at gauss point
@@ -232,7 +232,7 @@ void Mat::StructPoroReactionECM::ChemPotential(
 
   double psi = 0.0;
   // evaluate strain energy
-  mat_->StrainEnergy(glstrain, psi, gp, EleID);
+  mat_->strain_energy(glstrain, psi, gp, EleID);
 
   // derivative of
   double dpsidphiref = 0.0;
@@ -240,7 +240,7 @@ void Mat::StructPoroReactionECM::ChemPotential(
   params_->poro_law_->constitutive_derivatives(
       params, press, J, porosity, refporosity_, nullptr, nullptr, nullptr, &dpsidphiref, nullptr);
 
-  pot = 1.0 / Density() * psi - 1.0 / mat_->Density() * dpsidphiref - chempot_init_[gp];
+  pot = 1.0 / density() * psi - 1.0 / mat_->density() * dpsidphiref - chempot_init_[gp];
   chempot_[gp] = pot;
 
   return;

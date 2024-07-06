@@ -91,7 +91,7 @@ FSI::FSIResultTest::FSIResultTest(
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->fluid_field()->discretization();
       auto copy = Teuchos::rcp(new Epetra_Vector(*fsiobject->lag_mult_));
-      copy->ReplaceMap(*fsiobject->fluid_field()->Interface()->fsi_cond_map());
+      copy->ReplaceMap(*fsiobject->fluid_field()->interface()->fsi_cond_map());
       fsilambda_ = copy;
 
       break;
@@ -208,25 +208,25 @@ void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(slavedisc_->HaveGlobalNode(node));
+  int havenode(slavedisc_->have_global_node(node));
   int isnodeofanybody(0);
-  slavedisc_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  slavedisc_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
     FOUR_C_THROW(
-        "Node %d does not belong to discretization %s", node + 1, slavedisc_->Name().c_str());
+        "Node %d does not belong to discretization %s", node + 1, slavedisc_->name().c_str());
   }
   else
   {
-    if (slavedisc_->HaveGlobalNode(node))
+    if (slavedisc_->have_global_node(node))
     {
-      const Core::Nodes::Node* actnode = slavedisc_->gNode(node);
+      const Core::Nodes::Node* actnode = slavedisc_->g_node(node);
 
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just
       // interested in our nodes!
-      if (actnode->Owner() != slavedisc_->Comm().MyPID()) return;
+      if (actnode->owner() != slavedisc_->get_comm().MyPID()) return;
 
       std::string quantity;
       res.extract_string("QUANTITY", quantity);
@@ -240,17 +240,17 @@ void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
         if (quantity == "lambdax")
         {
           unknownquantity = false;
-          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0, actnode, 0))];
+          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->dof(0, actnode, 0))];
         }
         else if (quantity == "lambday")
         {
           unknownquantity = false;
-          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0, actnode, 1))];
+          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->dof(0, actnode, 1))];
         }
         else if (quantity == "lambdaz")
         {
           unknownquantity = false;
-          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0, actnode, 2))];
+          result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->dof(0, actnode, 2))];
         }
       }
 
@@ -270,7 +270,7 @@ void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& t
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestElement(Input::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::test_element(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("FSI ELEMENT test not implemented, yet.");
 
@@ -279,7 +279,7 @@ void FSI::FSIResultTest::TestElement(Input::LineDefinition& res, int& nerr, int&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
   res.extract_string("QUANTITY", quantity);
@@ -290,21 +290,21 @@ void FSI::FSIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int&
   if (quantity == "dt")
   {
     unknownquantity = false;
-    result = fsi_->Dt();
+    result = fsi_->dt();
   }
 
   // test for number of repetitions of time step in case of time step size adaptivity
   if (quantity == "adasteps")
   {
     unknownquantity = false;
-    result = fsi_->GetNumAdaptSteps();
+    result = fsi_->get_num_adapt_steps();
   }
 
   // test for simulation time in case of time step size adaptivity
   if (quantity == "time")
   {
     unknownquantity = false;
-    result = fsi_->Time();
+    result = fsi_->time();
   }
 
   // catch quantity strings, which are not handled by fsi result test

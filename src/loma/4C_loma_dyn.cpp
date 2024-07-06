@@ -35,18 +35,18 @@ FOUR_C_NAMESPACE_OPEN
 void loma_dyn(int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
 
   // print warning to screen
   if (comm.MyPID() == 0)
     std::cout << "You are now about to enter the module for low-Mach-number flow!" << std::endl;
 
   // define abbreviation
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // access fluid and (typically empty) scatra discretization
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
   // ensure that all dofs are assigned in the right order such that
   // dof numbers are created with fluid dof < scatra/elch dof
@@ -54,13 +54,13 @@ void loma_dyn(int restart)
   scatradis->fill_complete();
 
   // access problem-specific parameter list for LOMA
-  const Teuchos::ParameterList& lomacontrol = problem->LOMAControlParams();
+  const Teuchos::ParameterList& lomacontrol = problem->loma_control_params();
 
   // access parameter list for scatra
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // access parameter list for fluid
-  const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = problem->fluid_dynamic_params();
 
   // identify type of velocity field
   const Inpar::ScaTra::VelocityField veltype =
@@ -73,7 +73,7 @@ void loma_dyn(int restart)
     case Inpar::ScaTra::velocity_function:  // velocity field prescribed by function
     {
       // directly use elements from input section 'transport elements'
-      if (scatradis->NumGlobalNodes() == 0)
+      if (scatradis->num_global_nodes() == 0)
         FOUR_C_THROW("No elements in input section ---TRANSPORT ELEMENTS!");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
@@ -86,15 +86,15 @@ void loma_dyn(int restart)
       // create instance of scalar transport basis algorithm (no fluid discretization)
       Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
           Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
-              lomacontrol, scatradyn, Global::Problem::Instance()->SolverParams(linsolvernumber)));
+              lomacontrol, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
           Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-              Global::Problem::Instance()->NDim() + 1, 0, 0, true));
-      if (scatradis->AddDofSet(dofsetaux) != 1)
+              Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+      if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
+      scatraonly->sca_tra_field()->set_number_of_dof_set_velocity(1);
 
       // now we can call init() on base algo
       scatraonly->init();
@@ -106,27 +106,27 @@ void loma_dyn(int restart)
       scatraonly->setup();
 
       // read restart information
-      if (restart) (scatraonly->ScaTraField())->read_restart(restart);
+      if (restart) (scatraonly->sca_tra_field())->read_restart(restart);
 
       // set initial velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      (scatraonly->ScaTraField())->set_velocity_field();
+      (scatraonly->sca_tra_field())->set_velocity_field();
 
       // enter time loop to solve problem with given convective velocity field
-      (scatraonly->ScaTraField())->TimeLoop();
+      (scatraonly->sca_tra_field())->time_loop();
 
       // perform result test if required
-      problem->AddFieldTest(scatraonly->create_sca_tra_field_test());
-      problem->TestAll(comm);
+      problem->add_field_test(scatraonly->create_sca_tra_field_test());
+      problem->test_all(comm);
 
       break;
     }
     case Inpar::ScaTra::velocity_Navier_Stokes:  // Navier_Stokes
     {
       // use fluid discretization as layout for scatra discretization
-      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
+      if (fluiddis->num_global_nodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       // to generate turbulent flow in the inflow section only, it is not necessary to
       // solve the transport equation for the temperature
@@ -137,21 +137,21 @@ void loma_dyn(int restart)
         FOUR_C_THROW("Choose problem type fluid to generate turbulent flow in the inflow section!");
 
       // create scatra elements if scatra discretization is empty (typical case)
-      if (scatradis->NumGlobalNodes() == 0)
+      if (scatradis->num_global_nodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
         Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
-            fluiddis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
+            fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
 
         // set implementation type of cloned scatra elements to loma
-        for (int i = 0; i < scatradis->NumMyColElements(); ++i)
+        for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
         {
           Discret::ELEMENTS::Transport* element =
-              dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->lColElement(i));
+              dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->l_col_element(i));
           if (element == nullptr)
             FOUR_C_THROW("Invalid element type!");
           else
-            element->SetImplType(Inpar::ScaTra::impltype_loma);
+            element->set_impl_type(Inpar::ScaTra::impltype_loma);
         }
       }
       else
@@ -166,12 +166,12 @@ void loma_dyn(int restart)
 
       // create a LowMach::Algorithm instance
       Teuchos::RCP<LowMach::Algorithm> loma = Teuchos::rcp(new LowMach::Algorithm(
-          comm, lomacontrol, Global::Problem::Instance()->SolverParams(linsolvernumber)));
+          comm, lomacontrol, Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // add proxy of fluid transport degrees of freedom to scatra discretization
-      if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+      if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      loma->ScaTraField()->set_number_of_dof_set_velocity(1);
+      loma->sca_tra_field()->set_number_of_dof_set_velocity(1);
 
       loma->init();
 
@@ -185,21 +185,21 @@ void loma_dyn(int restart)
         if ((Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
                 true) and
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
-          loma->ReadInflowRestart(restart);
+          loma->read_inflow_restart(restart);
         else
           loma->read_restart(restart);
       }
 
       // enter LOMA algorithm
-      loma->TimeLoop();
+      loma->time_loop();
 
       // summarize performance measurements
       Teuchos::TimeMonitor::summarize();
 
       // perform result test if required
-      problem->AddFieldTest(loma->fluid_field()->CreateFieldTest());
-      problem->AddFieldTest(loma->create_sca_tra_field_test());
-      problem->TestAll(comm);
+      problem->add_field_test(loma->fluid_field()->create_field_test());
+      problem->add_field_test(loma->create_sca_tra_field_test());
+      problem->test_all(comm);
 
       break;
     }

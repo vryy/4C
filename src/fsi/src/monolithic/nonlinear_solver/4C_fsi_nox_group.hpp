@@ -40,7 +40,7 @@ namespace NOX
       );
 
       /// fetch the known Jacobian and RHS from the field solvers
-      void CaptureSystemState();
+      void capture_system_state();
 
       /// calculate the RHS vector
       ::NOX::Abstract::Group::ReturnType computeF() override;

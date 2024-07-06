@@ -64,7 +64,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] freeuniquegids free unique global ids
      */
-    virtual void FreeUniqueGlobalIds(std::vector<int>& freeuniquegids) = 0;
+    virtual void free_unique_global_ids(std::vector<int>& freeuniquegids) = 0;
 
     /*!
      * \brief get unique global ids for all particles
@@ -186,7 +186,7 @@ namespace PARTICLEENGINE
      *
      * \return pointer to bin size
      */
-    virtual std::array<double, 3> BinSize() const = 0;
+    virtual std::array<double, 3> bin_size() const = 0;
 
     /*!
      * \brief get minimum relevant bin size
@@ -195,7 +195,7 @@ namespace PARTICLEENGINE
      *
      * \return minimum relevant bin size
      */
-    virtual double MinBinSize() const = 0;
+    virtual double min_bin_size() const = 0;
 
     /*!
      * \brief get flag indicating periodic boundary conditions

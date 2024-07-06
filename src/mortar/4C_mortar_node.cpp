@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 Mortar::NodeType Mortar::NodeType::instance_;
 
 
-Core::Communication::ParObject* Mortar::NodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mortar::NodeType::create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
@@ -37,11 +37,11 @@ Mortar::NodeDataContainer::NodeDataContainer()
   for (int i = 0; i < 3; ++i)
   {
     n()[i] = 0.0;
-    EdgeTangent()[i] = 0.0;
+    edge_tangent()[i] = 0.0;
     lm()[i] = 0.0;
     lmold()[i] = 0.0;
     lmuzawa()[i] = 0.0;
-    GetDscale() = 0.0;
+    get_dscale() = 0.0;
   }
 }
 
@@ -107,7 +107,7 @@ Mortar::Node::Node(int id, const std::vector<double>& coords, const int owner,
   for (std::size_t i = 0; i < coords.size(); ++i)
   {
     uold()[i] = 0.0;
-    xspatial()[i] = X()[i];
+    xspatial()[i] = x()[i];
     dbcdofs_[i] = false;
   }
 }
@@ -137,7 +137,7 @@ Mortar::Node::Node(const Mortar::Node& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::Node* Mortar::Node::Clone() const
+Mortar::Node* Mortar::Node::clone() const
 {
   auto* newnode = new Mortar::Node(*this);
   return newnode;
@@ -161,12 +161,12 @@ void Mortar::Node::print(std::ostream& os) const
   os << "Mortar ";
   Core::Nodes::Node::print(os);
 
-  if (IsSlave())
+  if (is_slave())
     os << " Slave  ";
   else
     os << " Master ";
 
-  if (IsOnBound())
+  if (is_on_bound())
     os << " Boundary ";
   else
     os << " Interior ";
@@ -180,7 +180,7 @@ void Mortar::Node::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Core::Nodes::Node
   Core::Nodes::Node::pack(data);
@@ -228,7 +228,7 @@ void Mortar::Node::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
@@ -284,114 +284,114 @@ void Mortar::Node::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddDValue(const int& colnode, const double& val)
+void Mortar::Node::add_d_value(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (not IsSlave()) FOUR_C_THROW("AddDValue: function called for master node %i", Id());
-  if (IsOnBound()) FOUR_C_THROW("AddDValue: function called for boundary node %i", Id());
+  if (not is_slave()) FOUR_C_THROW("AddDValue: function called for master node %i", id());
+  if (is_on_bound()) FOUR_C_THROW("AddDValue: function called for boundary node %i", id());
 
   // check if this has been called before
-  if ((int)MoData().GetD().size() == 0) MoData().GetD().resize(dentries_);
+  if ((int)mo_data().get_d().size() == 0) mo_data().get_d().resize(dentries_);
 
   // add the pair (col,val) to the given row
-  MoData().GetD()[colnode] += val;
+  mo_data().get_d()[colnode] += val;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddDntsValue(const int& colnode, const double& val)
+void Mortar::Node::add_dnts_value(const int& colnode, const double& val)
 {
   // check if this has been called before
-  if ((int)MoData().GetDnts().size() == 0) MoData().GetDnts().resize(dentries_);
+  if ((int)mo_data().get_dnts().size() == 0) mo_data().get_dnts().resize(dentries_);
 
   // add the pair (col,val) to the given row
-  MoData().GetDnts()[colnode] += val;
+  mo_data().get_dnts()[colnode] += val;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddDltsValue(const int& colnode, const double& val)
+void Mortar::Node::add_dlts_value(const int& colnode, const double& val)
 {
   // check if this has been called before
-  if ((int)MoData().GetDlts().size() == 0) MoData().GetDlts().resize(dentries_);
+  if ((int)mo_data().get_dlts().size() == 0) mo_data().get_dlts().resize(dentries_);
 
   // add the pair (col,val) to the given row
-  MoData().GetDlts()[colnode] += val;
+  mo_data().get_dlts()[colnode] += val;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddDltlValue(const int& colnode, const double& val)
+void Mortar::Node::add_dltl_value(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (not IsSlave()) FOUR_C_THROW("AddDValue: function called for master node %i", Id());
-  if (not IsOnEdge()) FOUR_C_THROW("function called for non-edge node %i", Id());
+  if (not is_slave()) FOUR_C_THROW("AddDValue: function called for master node %i", id());
+  if (not is_on_edge()) FOUR_C_THROW("function called for non-edge node %i", id());
 
   // check if this has been called before
-  if (static_cast<int>(MoData().GetDltl().size()) == 0) MoData().GetDltl().resize(dentries_);
+  if (static_cast<int>(mo_data().get_dltl().size()) == 0) mo_data().get_dltl().resize(dentries_);
 
   // add the pair (col,val) to the given row
-  MoData().GetDltl()[colnode] += val;
+  mo_data().get_dltl()[colnode] += val;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddMValue(const int& colnode, const double& val)
+void Mortar::Node::add_m_value(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (not IsSlave()) FOUR_C_THROW("AddMValue: function called for master node %i", Id());
-  if (IsOnBoundorCE()) FOUR_C_THROW("AddMValue: function called for boundary node %i", Id());
+  if (not is_slave()) FOUR_C_THROW("AddMValue: function called for master node %i", id());
+  if (is_on_boundor_ce()) FOUR_C_THROW("AddMValue: function called for boundary node %i", id());
 
   // add the pair (col,val) to the given row
-  MoData().GetM()[colnode] += val;
+  mo_data().get_m()[colnode] += val;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddMntsValue(const int& colnode, const double& val)
+void Mortar::Node::add_mnts_value(const int& colnode, const double& val)
 {
   // add the pair (col,val) to the given row
-  MoData().GetMnts()[colnode] += val;
+  mo_data().get_mnts()[colnode] += val;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddMltsValue(const int& colnode, const double& val)
+void Mortar::Node::add_mlts_value(const int& colnode, const double& val)
 {
   // add the pair (col,val) to the given row
-  MoData().GetMlts()[colnode] += val;
+  mo_data().get_mlts()[colnode] += val;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::AddMltlValue(const int& colnode, const double& val)
-{
-  // check if this is a master node or slave boundary node
-  if (not IsSlave()) FOUR_C_THROW("AddMValue: function called for master node %i", Id());
-  if (not IsOnEdge()) FOUR_C_THROW("function called for non-edge node %i", Id());
-
-  // add the pair (col,val) to the given row
-  MoData().GetMltl()[colnode] += val;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Mortar::Node::AddMmodValue(const int& colnode, const double& val)
+void Mortar::Node::add_mltl_value(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (not IsSlave()) FOUR_C_THROW("AddMmodValue: function called for master node %i", Id());
-  if (IsOnBound()) FOUR_C_THROW("AddMmodValue: function called for boundary node %i", Id());
+  if (not is_slave()) FOUR_C_THROW("AddMValue: function called for master node %i", id());
+  if (not is_on_edge()) FOUR_C_THROW("function called for non-edge node %i", id());
 
   // add the pair (col,val) to the given row
-  MoData().GetMmod()[colnode] += val;
+  mo_data().get_mltl()[colnode] += val;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void Mortar::Node::add_mmod_value(const int& colnode, const double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (not is_slave()) FOUR_C_THROW("AddMmodValue: function called for master node %i", id());
+  if (is_on_bound()) FOUR_C_THROW("AddMmodValue: function called for boundary node %i", id());
+
+  // add the pair (col,val) to the given row
+  mo_data().get_mmod()[colnode] += val;
 }
 
 
@@ -403,13 +403,13 @@ void Mortar::Node::initialize_data_container()
   dentries_ = 0;
   std::set<int> sIdCheck;
   std::pair<std::set<int>::iterator, bool> check;
-  for (int i = 0; i < NumElement(); ++i)
+  for (int i = 0; i < num_element(); ++i)
   {
-    const int* snodeIds = Elements()[i]->NodeIds();
-    for (int j = 0; j < Elements()[i]->num_node(); ++j)
+    const int* snodeIds = elements()[i]->node_ids();
+    for (int j = 0; j < elements()[i]->num_node(); ++j)
     {
       check = sIdCheck.insert(snodeIds[j]);
-      if (check.second) dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
+      if (check.second) dentries_ += elements()[i]->num_dof_per_node(*(elements()[i]->nodes()[j]));
     }
   }
 
@@ -420,7 +420,7 @@ void Mortar::Node::initialize_data_container()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::ResetDataContainer()
+void Mortar::Node::reset_data_container()
 {
   // reset to Teuchos::null
   modata_ = Teuchos::null;
@@ -429,13 +429,13 @@ void Mortar::Node::ResetDataContainer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::BuildAveragedNormal()
+void Mortar::Node::build_averaged_normal()
 {
   // reset normal and tangents when this method is called
-  for (int j = 0; j < 3; ++j) MoData().n()[j] = 0.0;
+  for (int j = 0; j < 3; ++j) mo_data().n()[j] = 0.0;
 
-  int nseg = NumElement();
-  Core::Elements::Element** adjeles = Elements();
+  int nseg = num_element();
+  Core::Elements::Element** adjeles = elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -456,25 +456,25 @@ void Mortar::Node::BuildAveragedNormal()
     // build element normal at current node
     // (we have to pass in the index i to be able to store the
     // normal and other information at the right place in elens)
-    adjmrtrele->BuildNormalAtNode(Id(), i, elens);
+    adjmrtrele->build_normal_at_node(id(), i, elens);
 
     // add (weighted) element normal to nodal normal n
-    for (int j = 0; j < 3; ++j) MoData().n()[j] += elens(j, i) / elens(4, i);
+    for (int j = 0; j < 3; ++j) mo_data().n()[j] += elens(j, i) / elens(4, i);
   }
 
   // create unit normal vector
-  double length = sqrt(MoData().n()[0] * MoData().n()[0] + MoData().n()[1] * MoData().n()[1] +
-                       MoData().n()[2] * MoData().n()[2]);
+  double length = sqrt(mo_data().n()[0] * mo_data().n()[0] + mo_data().n()[1] * mo_data().n()[1] +
+                       mo_data().n()[2] * mo_data().n()[2]);
   if (length == 0.0)
-    FOUR_C_THROW("Nodal normal length 0, node ID %i", Id());
+    FOUR_C_THROW("Nodal normal length 0, node ID %i", id());
   else
-    for (int j = 0; j < 3; ++j) MoData().n()[j] /= length;
+    for (int j = 0; j < 3; ++j) mo_data().n()[j] /= length;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::Node* Mortar::Node::FindClosestNode(const Teuchos::RCP<Core::FE::Discretization> intdis,
+Mortar::Node* Mortar::Node::find_closest_node(const Teuchos::RCP<Core::FE::Discretization> intdis,
     const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist)
 {
   Node* closestnode = nullptr;
@@ -484,7 +484,7 @@ Mortar::Node* Mortar::Node::FindClosestNode(const Teuchos::RCP<Core::FE::Discret
   for (int i = 0; i < nodesearchmap->NumMyElements(); ++i)
   {
     int gid = nodesearchmap->GID(i);
-    Core::Nodes::Node* node = intdis->gNode(gid);
+    Core::Nodes::Node* node = intdis->g_node(gid);
     if (!node) FOUR_C_THROW("FindClosestNode: Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
@@ -512,30 +512,30 @@ Mortar::Node* Mortar::Node::FindClosestNode(const Teuchos::RCP<Core::FE::Discret
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Mortar::Node::CheckMeshDistortion(double& relocation, const double& limit)
+bool Mortar::Node::check_mesh_distortion(double& relocation, const double& limit)
 {
   // initialize return parameter
   bool ok = true;
 
   // loop over all adjacent elements of this node
-  for (int i = 0; i < NumElement(); ++i)
+  for (int i = 0; i < num_element(); ++i)
   {
     // get the current element
-    Core::Elements::Element* ele = Elements()[i];
+    Core::Elements::Element* ele = elements()[i];
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
     auto* mrtrele = dynamic_cast<Mortar::Element*>(ele);
 
     // minimal edge size of the current element
-    const double minedgesize = mrtrele->MinEdgeSize();
+    const double minedgesize = mrtrele->min_edge_size();
 
     // check whether relocation is not too large
     if (relocation > limit * minedgesize)
     {
       // print information to screen
       std::cout << "\n*****************WARNING***********************" << '\n';
-      std::cout << "Checking distortion for CNode:     " << Id() << '\n';
+      std::cout << "Checking distortion for CNode:     " << id() << '\n';
       std::cout << "Relocation distance:               " << relocation << '\n';
-      std::cout << "AdjEle: " << mrtrele->Id() << "\tLimit*MinEdgeSize: " << limit * minedgesize
+      std::cout << "AdjEle: " << mrtrele->id() << "\tLimit*MinEdgeSize: " << limit * minedgesize
                 << '\n';
       std::cout << "*****************WARNING***********************" << '\n';
 

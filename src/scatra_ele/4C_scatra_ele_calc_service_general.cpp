@@ -51,7 +51,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over integration points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
       {
         // evaluate values of shape functions and domain integration factor at current integration
         // point
@@ -84,13 +84,13 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
     case ScaTra::Action::calc_flux_domain:
     {
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = scatrapara_->NdsVel();
+      const int ndsvel = scatrapara_->nds_vel();
 
       // get velocity values at nodes
       const Teuchos::RCP<const Epetra_Vector> convel =
-          discretization.GetState(ndsvel, "convective velocity field");
+          discretization.get_state(ndsvel, "convective velocity field");
       const Teuchos::RCP<const Epetra_Vector> vel =
-          discretization.GetState(ndsvel, "velocity field");
+          discretization.get_state(ndsvel, "velocity field");
 
       // safety check
       if (convel == Teuchos::null or vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector");
@@ -114,13 +114,13 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
       // need current values of transported scalar
       // -> extract local values from global vectors
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // access control parameter for flux calculation
-      Inpar::ScaTra::FluxType fluxtype = scatrapara_->CalcFluxDomain();
-      Teuchos::RCP<std::vector<int>> writefluxids = scatrapara_->WriteFluxIds();
+      Inpar::ScaTra::FluxType fluxtype = scatrapara_->calc_flux_domain();
+      Teuchos::RCP<std::vector<int>> writefluxids = scatrapara_->write_flux_ids();
 
       // we always get an 3D flux vector for each node
       Core::LinAlg::Matrix<3, nen_> eflux(true);
@@ -153,7 +153,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       const bool calc_grad_phi = params.get<bool>("calc_grad_phi");
       // need current scalar vector
       // -> extract local values from the global vectors
-      auto phinp = discretization.GetState("phinp");
+      auto phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
@@ -317,11 +317,11 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
     case ScaTra::Action::calc_mean_Cai:
     {
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = scatrapara_->NdsVel();
+      const int ndsvel = scatrapara_->nds_vel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
-          discretization.GetState(ndsvel, "convective velocity field");
+          discretization.get_state(ndsvel, "convective velocity field");
       if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
@@ -340,17 +340,18 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
 
       // get phi for material parameters
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
-      if (turbparams_->TurbModel() != Inpar::FLUID::multifractal_subgrid_scales)
+      if (turbparams_->turb_model() != Inpar::FLUID::multifractal_subgrid_scales)
         FOUR_C_THROW("Multifractal_Subgrid_Scales expected");
 
       double Cai = 0.0;
       double vol = 0.0;
       // calculate Cai and volume, do not include elements of potential inflow section
-      if (turbparams_->AdaptCsgsPhi() and turbparams_->Nwl() and (not ScaTra::inflow_element(ele)))
+      if (turbparams_->adapt_csgs_phi() and turbparams_->nwl() and
+          (not ScaTra::inflow_element(ele)))
       {
         // use one-point Gauss rule to do calculations at the element center
         Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -358,14 +359,14 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         vol = eval_shape_func_and_derivs_at_int_point(intpoints, 0);
 
         // adopt integration points and weights for gauss point evaluation of B
-        if (turbparams_->BD_Gp())
+        if (turbparams_->bd_gp())
         {
           const Core::FE::IntPointsAndWeights<nsd_ele_> gauss_intpoints(
               ScaTra::DisTypeToOptGaussRule<distype>::rule);
           intpoints = gauss_intpoints;
         }
 
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
           const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -452,11 +453,11 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
                   << std::endl;
       }
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->Owner() == discretization.Comm().MyPID())
+      if (ele->owner() == discretization.get_comm().MyPID())
       {
         // need current scalar vector
         // -> extract local values from the global vectors
-        Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+        Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
         if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
         Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
@@ -472,7 +473,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
@@ -498,17 +499,17 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
     case ScaTra::Action::micro_scale_initialize:
     {
-      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
+      if (ele->material()->material_type() == Core::Materials::m_scatra_multiscale)
       {
         const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
           // initialize micro scale in multi-scale simulations
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
-              ->initialize(ele->Id(), iquad, scatrapara_->IsAle());
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())
+              ->initialize(ele->id(), iquad, scatrapara_->is_ale());
         }
       }
 
@@ -518,17 +519,17 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
     case ScaTra::Action::micro_scale_prepare_time_step:
     case ScaTra::Action::micro_scale_solve:
     {
-      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
+      if (ele->material()->material_type() == Core::Materials::m_scatra_multiscale)
       {
         // extract state variables at element nodes
         Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
-            *discretization.GetState("phinp"), ephinp_, lm);
+            *discretization.get_state("phinp"), ephinp_, lm);
 
         const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
           // evaluate shape functions at Gauss point
           eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -539,8 +540,8 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           if (action == ScaTra::Action::micro_scale_prepare_time_step)
           {
             // prepare time step on micro scale
-            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
-                ->prepare_time_step(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)));
+            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())
+                ->prepare_time_step(iquad, std::vector<double>(1, scatravarmanager_->phinp(0)));
           }
           else
           {
@@ -551,8 +552,8 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
             // solve micro scale
             std::vector<double> dummy(1, 0.);
-            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
-                ->evaluate(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0],
+            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())
+                ->evaluate(iquad, std::vector<double>(1, scatravarmanager_->phinp(0)), dummy[0],
                     dummy, detF);
           }
         }
@@ -563,15 +564,15 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
     case ScaTra::Action::micro_scale_update:
     {
-      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
+      if (ele->material()->material_type() == Core::Materials::m_scatra_multiscale)
       {
         const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
           // update multi-scale scalar transport material
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->update(iquad);
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())->update(iquad);
       }
 
       break;
@@ -579,15 +580,15 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
     case ScaTra::Action::micro_scale_output:
     {
-      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
+      if (ele->material()->material_type() == Core::Materials::m_scatra_multiscale)
       {
         const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
           // create output on micro scale
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->output(iquad);
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->material())->output(iquad);
       }
 
       break;
@@ -595,15 +596,15 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
     case ScaTra::Action::micro_scale_read_restart:
     {
-      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
+      if (ele->material()->material_type() == Core::Materials::m_scatra_multiscale)
       {
         const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
           // read restart on micro scale
-          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->Material())->read_restart(iquad);
+          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->material())->read_restart(iquad);
       }
 
       break;
@@ -611,16 +612,16 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
     case ScaTra::Action::micro_scale_set_time:
     {
-      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
+      if (ele->material()->material_type() == Core::Materials::m_scatra_multiscale)
       {
         const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
-        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         {
-          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->Material())
-              ->SetTimeStepping(iquad, params.get<double>("dt"), params.get<double>("time"),
+          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->material())
+              ->set_time_stepping(iquad, params.get<double>("dt"), params.get<double>("time"),
                   params.get<int>("step"));
         }
       }
@@ -702,7 +703,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
       eval_shape_func_and_derivs_in_parameter_space();
 
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
@@ -733,7 +734,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
  | evaluate service routine                                  fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(
+int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_service(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -743,17 +744,17 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(
     Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // setup
-  if (SetupCalc(ele, discretization) == -1) return 0;
+  if (setup_calc(ele, discretization) == -1) return 0;
 
   // check for the action parameter
   const auto action = Teuchos::getIntegralValue<ScaTra::Action>(params, "action");
 
-  if (scatrapara_->IsAle() and action != ScaTra::Action::micro_scale_read_restart)
+  if (scatrapara_->is_ale() and action != ScaTra::Action::micro_scale_read_restart)
   {
     // get number of dofset associated with displacement related dofs
-    const int ndsdisp = scatrapara_->NdsDisp();
+    const int ndsdisp = scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
@@ -790,16 +791,16 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // extract scalar values from global vector
-  Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
+  Teuchos::RCP<const Epetra_Vector> scalar = discretization.get_state("scalar");
   if (scalar == Teuchos::null) FOUR_C_THROW("Cannot get scalar!");
   Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
 
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = scatrapara_->NdsVel();
+  const int ndsvel = scatrapara_->nds_vel();
 
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
-      discretization.GetState(ndsvel, "convective velocity field");
+      discretization.get_state(ndsvel, "convective velocity field");
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
@@ -911,20 +912,20 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
   // the stabilisation parameters (one per transported scalar)
   std::vector<double> tau(numscal_, 0.0);
 
-  if (not scatrapara_->MatGP() or not scatrapara_->TauGP())
+  if (not scatrapara_->mat_gp() or not scatrapara_->tau_gp())
   {
     set_internal_variables_for_mat_and_rhs();
 
     get_material_params(ele, densn, densnp, densam, visc);
 
-    if (not scatrapara_->TauGP())
+    if (not scatrapara_->tau_gp())
     {
       for (int k = 0; k < numscal_; ++k)  // loop of each transported scalar
       {
         // calculation of stabilization parameter at element center
-        calc_tau(tau[k], diffmanager_->GetIsotropicDiff(k),
-            reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
-            scatravarmanager_->ConVel(k), vol);
+        calc_tau(tau[k], diffmanager_->get_isotropic_diff(k),
+            reamanager_->get_stabilization_coeff(k, scatravarmanager_->phinp(k)), densnp[k],
+            scatravarmanager_->con_vel(k), vol);
       }
     }
   }
@@ -936,7 +937,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
   /*----------------------------------------------------------------------*/
   // element integration loop
   /*----------------------------------------------------------------------*/
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -945,20 +946,20 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
+    if (scatrapara_->mat_gp()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     //------------ get values of variables at integration point
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
     {
       // get phi at integration point for all scalars
-      const double& phiint = scatravarmanager_->Phinp(k);
+      const double& phiint = scatravarmanager_->phinp(k);
 
       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      Core::LinAlg::Matrix<nen_, 1> conv = scatravarmanager_->Conv(k);
+      Core::LinAlg::Matrix<nen_, 1> conv = scatravarmanager_->conv(k);
 
       // velocity divergence required for conservative form
       double vdiv(0.0);
-      if (scatrapara_->IsConservative()) get_divergence(vdiv, evelnp_);
+      if (scatrapara_->is_conservative()) get_divergence(vdiv, evelnp_);
 
       // diffusive part used in stabilization terms
       Core::LinAlg::Matrix<nen_, 1> diff(true);
@@ -967,15 +968,15 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         get_laplacian_strong_form(diff);
-        diff.scale(diffmanager_->GetIsotropicDiff(k));
+        diff.scale(diffmanager_->get_isotropic_diff(k));
       }
 
       // calculation of stabilization parameter at integration point
-      if (scatrapara_->TauGP())
+      if (scatrapara_->tau_gp())
       {
-        calc_tau(tau[k], diffmanager_->GetIsotropicDiff(k),
-            reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
-            scatravarmanager_->ConVel(k), vol);
+        calc_tau(tau[k], diffmanager_->get_isotropic_diff(k),
+            reamanager_->get_stabilization_coeff(k, scatravarmanager_->phinp(k)), densnp[k],
+            scatravarmanager_->con_vel(k), vol);
       }
 
       const double fac_tau = fac * tau[k];
@@ -991,7 +992,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
       //----------------------------------------------------------------
       // the stabilization term is deactivated in calc_initial_time_derivative() on time integrator
       // level
-      if (scatrapara_->StabType() != Inpar::ScaTra::stabtype_no_stabilization)
+      if (scatrapara_->stab_type() != Inpar::ScaTra::stabtype_no_stabilization)
       {
         // subgrid-scale velocity (dummy)
         Core::LinAlg::Matrix<nen_, 1> sgconv(true);
@@ -1016,7 +1017,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
   // scale element matrix appropriately to be consistent with scaling of global residual vector
   // computed by assemble_mat_and_rhs() routine (see calc_initial_time_derivative() routine on time
   // integrator level)
-  emat.scale(scatraparatimint_->TimeFacRhs());
+  emat.scale(scatraparatimint_->time_fac_rhs());
 }  // ScaTraEleCalc::calc_initial_time_derivative()
 
 
@@ -1029,7 +1030,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_r
     const double phinp)
 {
   // fac->-fac to change sign of rhs
-  if (scatraparatimint_->IsIncremental())
+  if (scatraparatimint_->is_incremental())
     calc_rhs_lin_mass(erhs, k, 0.0, -fac, 0.0, densnp);
   else
     FOUR_C_THROW("Must be incremental!");
@@ -1055,7 +1056,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functio
   // loop over integration points
   // this order is not efficient since the integration of the shape functions is always the same for
   // all species
-  for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
+  for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
 
@@ -1105,7 +1106,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
   double visc(0.0);
 
   // get material parameters (evaluation at element center)
-  if (not scatrapara_->MatGP())
+  if (not scatrapara_->mat_gp())
   {
     set_internal_variables_for_mat_and_rhs();
 
@@ -1117,7 +1118,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -1125,7 +1126,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
     set_internal_variables_for_mat_and_rhs();
 
     // get material parameters (evaluation at integration point)
-    if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc);
+    if (scatrapara_->mat_gp()) get_material_params(ele, densn, densnp, densam, visc);
 
     // get velocity at integration point
     Core::LinAlg::Matrix<nsd_, 1> velint(true);
@@ -1145,12 +1146,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
     {
       case Inpar::ScaTra::flux_total:
         // convective flux contribution
-        q.update(densnp[k] * scatravarmanager_->Phinp(k), convelint);
+        q.update(densnp[k] * scatravarmanager_->phinp(k), convelint);
 
         [[fallthrough]];
       case Inpar::ScaTra::flux_diffusive:
         // diffusive flux contribution
-        q.update(-(diffmanager_->GetIsotropicDiff(k)), gradphi, 1.0);
+        q.update(-(diffmanager_->get_isotropic_diff(k)), gradphi, 1.0);
 
         break;
       default:
@@ -1198,7 +1199,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -1225,7 +1226,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate everything on current GP
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -1256,7 +1257,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
 
       for (int k = 0; k < numscal_; k++)
       {
-        const double gradphi_l2norm_gp = scatravarmanager_->GradPhi()[k].norm2();
+        const double gradphi_l2norm_gp = scatravarmanager_->grad_phi()[k].norm2();
         scalars[numdofpernode_ + 1 + k] += gradphi_l2norm_gp * fac;
       }
     }
@@ -1275,7 +1276,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_d
 )
 {
   // extract scalar time derivatives from global state vector
-  const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+  const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.get_state("phidtnp");
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
   static std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(numscal_);
   Core::FE::ExtractMyValues(*phidtnp, ephidtnp, lm);
@@ -1285,7 +1286,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_d
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -1317,7 +1318,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -1336,7 +1337,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_
       // Coordinate * shapefunction to get the coordinate value of the gausspoint.
       for (unsigned idim = 0; idim < nsd_; idim++)
       {
-        gpcoord[idim] += funct_(i) * (ele->Nodes()[i]->X()[idim]);
+        gpcoord[idim] += funct_(i) * (ele->nodes()[i]->x()[idim]);
       }
 
       // Summation of fac*funct_ for volume calculation.
@@ -1384,17 +1385,17 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     for (int k = 0; k < numscal_; ++k)
     {
       // set diffusion coeff to 1.0
-      diffmanager_->SetIsotropicDiff(1.0, k);
+      diffmanager_->set_isotropic_diff(1.0, k);
 
       // calculation of diffusive element matrix
-      double timefacfac = scatraparatimint_->TimeFac() * fac;
+      double timefacfac = scatraparatimint_->time_fac() * fac;
       calc_mat_diff(emat, k, timefacfac);
 
       /*subtract SUPG term */
@@ -1413,7 +1414,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
     Core::LinAlg::SerialDenseVector& subgrdiff)
 {
   // screen output
-  std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
+  std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->id();
 
   // make a copy of state variables to undo perturbations later
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp_original(numscal_);
@@ -1422,7 +1423,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
 
   // generalized-alpha time integration requires a copy of history variables as well
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ehist_original(numscal_);
-  if (scatraparatimint_->IsGenAlpha())
+  if (scatraparatimint_->is_gen_alpha())
   {
     for (int k = 0; k < numscal_; ++k)
       for (unsigned i = 0; i < nen_; ++i) ehist_original[k](i, 0) = ehist_[k](i, 0);
@@ -1456,23 +1457,23 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
       // fill state vectors with original state variables
       for (int k = 0; k < numscal_; ++k)
         for (unsigned i = 0; i < nen_; ++i) ephinp_[k](i, 0) = ephinp_original[k](i, 0);
-      if (scatraparatimint_->IsGenAlpha())
+      if (scatraparatimint_->is_gen_alpha())
         for (int k = 0; k < numscal_; ++k)
           for (unsigned i = 0; i < nen_; ++i) ehist_[k](i, 0) = ehist_original[k](i, 0);
 
       // impose perturbation
-      if (scatraparatimint_->IsGenAlpha())
+      if (scatraparatimint_->is_gen_alpha())
       {
         // perturbation of phi(n+alphaF), not of phi(n+1) => scale epsilon by factor alphaF
-        ephinp_[idof](inode, 0) += scatraparatimint_->AlphaF() * scatrapara_->FDCheckEps();
+        ephinp_[idof](inode, 0) += scatraparatimint_->alpha_f() * scatrapara_->fd_check_eps();
 
         // perturbation of phi(n+alphaF) by alphaF*epsilon corresponds to perturbation of phidtam
         // (stored in ehist_) by alphaM*epsilon/(gamma*dt); note: alphaF/timefac = alphaM/(gamma*dt)
-        ehist_[idof](inode, 0) +=
-            scatraparatimint_->AlphaF() / scatraparatimint_->TimeFac() * scatrapara_->FDCheckEps();
+        ehist_[idof](inode, 0) += scatraparatimint_->alpha_f() / scatraparatimint_->time_fac() *
+                                  scatrapara_->fd_check_eps();
       }
       else
-        ephinp_[idof](inode, 0) += scatrapara_->FDCheckEps();
+        ephinp_[idof](inode, 0) += scatrapara_->fd_check_eps();
 
       // calculate element right-hand side vector for perturbed state
       sysmat(ele, emat_dummy, erhs_perturbed, subgrdiff_dummy);
@@ -1495,8 +1496,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
 
         // finite difference suggestion (first divide by epsilon and then subtract for better
         // conditioning)
-        const double fdval = -erhs_perturbed(row) / scatrapara_->FDCheckEps() +
-                             erhs(row) / scatrapara_->FDCheckEps();
+        const double fdval = -erhs_perturbed(row) / scatrapara_->fd_check_eps() +
+                             erhs(row) / scatrapara_->fd_check_eps();
 
         // confirm accuracy of first comparison
         if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
@@ -1513,7 +1514,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
         if (abs(relerr1) > abs(maxrelerr)) maxrelerr = relerr1;
 
         // evaluate first comparison
-        if (abs(relerr1) > scatrapara_->FDCheckTol())
+        if (abs(relerr1) > scatrapara_->fd_check_tol())
         {
           if (!counter) std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
           std::cout << "emat[" << row << "," << col << "]:  " << entry << "   ";
@@ -1528,10 +1529,10 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
         else
         {
           // left-hand side in second comparison
-          const double left = entry - erhs(row) / scatrapara_->FDCheckEps();
+          const double left = entry - erhs(row) / scatrapara_->fd_check_eps();
 
           // right-hand side in second comparison
-          const double right = -erhs_perturbed(row) / scatrapara_->FDCheckEps();
+          const double right = -erhs_perturbed(row) / scatrapara_->fd_check_eps();
 
           // confirm accuracy of second comparison
           if (abs(right) > 1.e-17 and abs(right) < 1.e-15)
@@ -1548,7 +1549,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
           if (abs(relerr2) > abs(maxrelerr)) maxrelerr = relerr2;
 
           // evaluate second comparison
-          if (abs(relerr2) > scatrapara_->FDCheckTol())
+          if (abs(relerr2) > scatrapara_->fd_check_tol())
           {
             if (!counter) std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
             std::cout << "emat[" << row << "," << col << "]-erhs[" << row << "]/eps:  " << left
@@ -1572,7 +1573,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
   // undo perturbations of state variables
   for (int k = 0; k < numscal_; ++k)
     for (unsigned i = 0; i < nen_; ++i) ephinp_[k](i, 0) = ephinp_original[k](i, 0);
-  if (scatraparatimint_->IsGenAlpha())
+  if (scatraparatimint_->is_gen_alpha())
     for (int k = 0; k < numscal_; ++k)
       for (unsigned i = 0; i < nen_; ++i) ehist_[k](i, 0) = ehist_original[k](i, 0);
 }
@@ -1590,7 +1591,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
 
   // -------------- prepare common things first ! -----------------------
   // set constants for analytical solution
-  const double t = scatraparatimint_->Time();
+  const double t = scatraparatimint_->time();
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -1613,7 +1614,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
       Core::LinAlg::Matrix<nsd_, 1> deltagradphi(true);
 
       // start loop over integration points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
       {
         const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -1634,13 +1635,13 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
           // spatial gradient of current scalar value
           gradphi.multiply(derxy_, ephinp_[k]);
 
-          phi_exact = Global::Problem::Instance()
-                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+          phi_exact = Global::Problem::instance()
+                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                           .evaluate(position, t, k);
 
           std::vector<double> gradphi_exact_vec =
-              Global::Problem::Instance()
-                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+              Global::Problem::instance()
+                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                   .evaluate_spatial_derivative(position, t, k);
 
           if (gradphi_exact_vec.size())
@@ -1700,7 +1701,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
       Core::LinAlg::Matrix<nsd_, 1> deltagradphi(true);
 
       // start loop over integration points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; iquad++)
       {
         const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -1792,22 +1793,22 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
   // the stabilization parameters (one per transported scalar)
   std::vector<double> tau(numscal_, 0.0);
 
-  if (not scatrapara_->TauGP())
+  if (not scatrapara_->tau_gp())
   {
     for (int k = 0; k < numscal_; ++k)  // loop of each transported scalar
     {
       // get velocity at element center
-      Core::LinAlg::Matrix<nsd_, 1> convelint = scatravarmanager_->ConVel(k);
+      Core::LinAlg::Matrix<nsd_, 1> convelint = scatravarmanager_->con_vel(k);
       // calculation of stabilization parameter at element center
-      calc_tau(tau[k], diffmanager_->GetIsotropicDiff(k),
-          reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
+      calc_tau(tau[k], diffmanager_->get_isotropic_diff(k),
+          reamanager_->get_stabilization_coeff(k, scatravarmanager_->phinp(k)), densnp[k],
           convelint, vol);
     }
   }
 
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
-  if (not scatrapara_->MatGP())
+  if (not scatrapara_->mat_gp())
   {
     // set gauss point variables needed for evaluation of mat and rhs
     set_internal_variables_for_mat_and_rhs();
@@ -1822,7 +1823,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -1832,14 +1833,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc, iquad);
+    if (scatrapara_->mat_gp()) get_material_params(ele, densn, densnp, densam, visc, iquad);
 
     // loop all scalars
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
     {
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
-      rea_phi = densnp[k] * scatravarmanager_->Phinp(k) * reamanager_->GetReaCoeff(k);
+      rea_phi = densnp[k] * scatravarmanager_->phinp(k) * reamanager_->get_rea_coeff(k);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -1852,13 +1853,13 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
       // calculate strong residual
       calc_strong_residual(k, scatrares, densam[k], densnp[k], rea_phi, rhsint, tau[k]);
 
-      if (scatrapara_->TauGP())
+      if (scatrapara_->tau_gp())
       {
         // (re)compute stabilization parameter at integration point, since diffusion may have
         // changed
-        calc_tau(tau[k], diffmanager_->GetIsotropicDiff(k),
-            reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
-            scatravarmanager_->ConVel(k), vol);  // TODO:(Thon) do we really have to do this??
+        calc_tau(tau[k], diffmanager_->get_isotropic_diff(k),
+            reamanager_->get_stabilization_coeff(k, scatravarmanager_->phinp(k)), densnp[k],
+            scatravarmanager_->con_vel(k), vol);  // TODO:(Thon) do we really have to do this??
       }
 
       //----------------------------------------------------------------
@@ -1867,8 +1868,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
 
       // stabilization parameter and integration factors
       const double taufac = tau[k] * fac;
-      const double timefacfac = scatraparatimint_->TimeFac() * fac;
-      const double timetaufac = scatraparatimint_->TimeFac() * taufac;
+      const double timefacfac = scatraparatimint_->time_fac() * fac;
+      const double timetaufac = scatraparatimint_->time_fac() * taufac;
 
       //----------------------------------------------------------------
       // 3) element matrix: reactive term
@@ -1881,11 +1882,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         get_laplacian_strong_form(diff);
-        diff.scale(diffmanager_->GetIsotropicDiff(k));
+        diff.scale(diffmanager_->get_isotropic_diff(k));
       }
 
       // including stabilization
-      if (reamanager_->Active())
+      if (reamanager_->active())
       {
         calc_mat_react(emat, k, timefacfac, timetaufac, taufac, densnp[k], sgconv, diff);
       }
@@ -1899,8 +1900,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
       // term (if required) on right hand side depending on respective
       // (non-)incremental stationary or time-integration scheme
       //----------------------------------------------------------------
-      double rhsfac = scatraparatimint_->TimeFacRhs() * fac;
-      double rhstaufac = scatraparatimint_->TimeFacRhsTau() * taufac;
+      double rhsfac = scatraparatimint_->time_fac_rhs() * fac;
+      double rhstaufac = scatraparatimint_->time_fac_rhs_tau() * taufac;
 
       compute_rhs_int(rhsint, densam[k], densnp[k], 0.0);
 
@@ -1915,7 +1916,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
       // reactive terms (standard Galerkin and stabilization) on rhs
       //----------------------------------------------------------------
 
-      if (reamanager_->Active())
+      if (reamanager_->active())
         calc_rhs_react(erhs, k, rhsfac, rhstaufac, rea_phi, densnp[k], scatrares);
 
     }  // end loop all scalars

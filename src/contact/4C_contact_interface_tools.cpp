@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Visualize contact stuff with gmsh                         popp 08/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
+void CONTACT::Interface::visualize_gmsh(const int step, const int iter)
 {
   //**********************************************************************
   // GMSH output of all interface elements
@@ -37,7 +37,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   // basic information
   std::ostringstream filename;
   const std::string filebase =
-      Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
+      Global::Problem::instance()->output_control_file()->file_name_only_prefix();
   filename << "o/gmsh_output/" << filebase << "_co_id";
   if (id_ < 10)
     filename << 0;
@@ -91,9 +91,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   //**********************************************************************
   // Start GMSH output
   //**********************************************************************
-  for (int proc = 0; proc < Comm().NumProc(); ++proc)
+  for (int proc = 0; proc < get_comm().NumProc(); ++proc)
   {
-    if (proc == Comm().MyPID())
+    if (proc == get_comm().MyPID())
     {
       // open files (overwrite if proc==0, else append)
       if (proc == 0)
@@ -126,21 +126,21 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       //******************************************************************
       // plot elements
       //******************************************************************
-      for (int i = 0; i < idiscret_->NumMyRowElements(); ++i)
+      for (int i = 0; i < idiscret_->num_my_row_elements(); ++i)
       {
-        Mortar::Element* element = dynamic_cast<Mortar::Element*>(idiscret_->lRowElement(i));
+        Mortar::Element* element = dynamic_cast<Mortar::Element*>(idiscret_->l_row_element(i));
         int nnodes = element->num_node();
         Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
-        element->GetNodalCoords(coord);
-        double color = (double)element->Owner();
+        element->get_nodal_coords(coord);
+        double color = (double)element->owner();
 
         // local center
         double xi[2] = {0.0, 0.0};
 
         // 2D linear case (2noded line elements)
-        if (element->Shape() == Core::FE::CellType::line2)
+        if (element->shape() == Core::FE::CellType::line2)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SL(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -167,9 +167,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 2D quadratic case (3noded line elements)
-        if (element->Shape() == Core::FE::CellType::line3)
+        if (element->shape() == Core::FE::CellType::line3)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SL2(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -202,9 +202,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D linear case (3noded triangular elements)
-        if (element->Shape() == Core::FE::CellType::tri3)
+        if (element->shape() == Core::FE::CellType::tri3)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "ST(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -239,9 +239,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D bilinear case (4noded quadrilateral elements)
-        if (element->Shape() == Core::FE::CellType::quad4)
+        if (element->shape() == Core::FE::CellType::quad4)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SQ(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -278,9 +278,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D quadratic case (6noded triangular elements)
-        if (element->Shape() == Core::FE::CellType::tri6)
+        if (element->shape() == Core::FE::CellType::tri6)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "ST2(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -329,9 +329,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D serendipity case (8noded quadrilateral elements)
-        if (element->Shape() == Core::FE::CellType::quad8)
+        if (element->shape() == Core::FE::CellType::quad8)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "ST(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 4) << "," << coord(1, 4) << ","
@@ -464,9 +464,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D biquadratic case (9noded quadrilateral elements)
-        if (element->Shape() == Core::FE::CellType::quad9)
+        if (element->shape() == Core::FE::CellType::quad9)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "SQ2(" << std::scientific << coord(0, 0) << "," << coord(1, 0) << ","
                             << coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1) << ","
@@ -528,55 +528,55 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
 
         // plot element number in element center
         double elec[3];
-        element->LocalToGlobal(xi, elec, 0);
+        element->local_to_global(xi, elec, 0);
 
-        if (element->IsSlave())
+        if (element->is_slave())
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2]
                           << "," << 17 << ")";
           gmshfilecontent << "{\""
-                          << "S" << element->Id() << "\"};" << std::endl;
+                          << "S" << element->id() << "\"};" << std::endl;
           gmshfilecontentslave << "T3(" << std::scientific << elec[0] << "," << elec[1] << ","
                                << elec[2] << "," << 17 << ")";
           gmshfilecontentslave << "{\""
-                               << "S" << element->Id() << "\"};" << std::endl;
+                               << "S" << element->id() << "\"};" << std::endl;
         }
         else
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2]
                           << "," << 17 << ")";
           gmshfilecontent << "{\""
-                          << "M" << element->Id() << "\"};" << std::endl;
+                          << "M" << element->id() << "\"};" << std::endl;
           gmshfilecontentmaster << "T3(" << std::scientific << elec[0] << "," << elec[1] << ","
                                 << elec[2] << "," << 17 << ")";
           gmshfilecontentmaster << "{\""
-                                << "M" << element->Id() << "\"};" << std::endl;
+                                << "M" << element->id() << "\"};" << std::endl;
         }
 
         // plot node numbers at the nodes
         for (int j = 0; j < nnodes; ++j)
         {
-          if (element->IsSlave())
+          if (element->is_slave())
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j) << ","
                             << coord(2, j) << "," << 17 << ")";
             gmshfilecontent << "{\""
-                            << "SN" << element->NodeIds()[j] << "\"};" << std::endl;
+                            << "SN" << element->node_ids()[j] << "\"};" << std::endl;
             gmshfilecontentslave << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j)
                                  << "," << coord(2, j) << "," << 17 << ")";
             gmshfilecontentslave << "{\""
-                                 << "SN" << element->NodeIds()[j] << "\"};" << std::endl;
+                                 << "SN" << element->node_ids()[j] << "\"};" << std::endl;
           }
           else
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j) << ","
                             << coord(2, j) << "," << 17 << ")";
             gmshfilecontent << "{\""
-                            << "MN" << element->NodeIds()[j] << "\"};" << std::endl;
+                            << "MN" << element->node_ids()[j] << "\"};" << std::endl;
             gmshfilecontentmaster << "T3(" << std::scientific << coord(0, j) << "," << coord(1, j)
                                   << "," << coord(2, j) << "," << 17 << ")";
             gmshfilecontentmaster << "{\""
-                                  << "MN" << element->NodeIds()[j] << "\"};" << std::endl;
+                                  << "MN" << element->node_ids()[j] << "\"};" << std::endl;
           }
         }
       }
@@ -587,7 +587,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
       {
         int gid = snoderowmap_->GID(i);
-        Core::Nodes::Node* node = idiscret_->gNode(gid);
+        Core::Nodes::Node* node = idiscret_->g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
         if (!cnode) FOUR_C_THROW("Static Cast to Node* failed");
@@ -600,9 +600,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         for (int j = 0; j < 3; ++j)
         {
           nc[j] = cnode->xspatial()[j];
-          nn[j] = cnode->MoData().n()[j];
-          nt1[j] = cnode->Data().txi()[j];
-          nt2[j] = cnode->Data().teta()[j];
+          nn[j] = cnode->mo_data().n()[j];
+          nt1[j] = cnode->data().txi()[j];
+          nt2[j] = cnode->data().teta()[j];
         }
 
         //******************************************************************
@@ -629,7 +629,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         // plot contact status of slave nodes (inactive, active, stick, slip)
         //******************************************************************
         // frictionless contact, active node = {A}
-        if (!friction_ && cnode->Active())
+        if (!friction_ && cnode->active())
         {
           gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2]
                                << "," << 17 << ")";
@@ -639,15 +639,15 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // frictionless contact, inactive node = { }
-        else if (!friction_ && !cnode->Active())
+        else if (!friction_ && !cnode->active())
         {
           // do nothing
         }
 
         // frictional contact, slip node = {G}
-        else if (friction_ && cnode->Active())
+        else if (friction_ && cnode->active())
         {
-          if (dynamic_cast<FriNode*>(cnode)->FriData().Slip())
+          if (dynamic_cast<FriNode*>(cnode)->fri_data().slip())
           {
             gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << ","
                                  << nc[2] << "," << 17 << ")";
@@ -667,7 +667,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       }
 
       // end GMSH output section in all files
-      if (proc == Comm().NumProc() - 1)
+      if (proc == get_comm().NumProc() - 1)
       {
         gmshfilecontent << "};" << std::endl;
         gmshfilecontentslave << "};" << std::endl;
@@ -682,7 +682,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       fclose(fps);
       fclose(fpm);
     }
-    Comm().Barrier();
+    get_comm().Barrier();
   }
 
 
@@ -700,7 +700,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
   const std::string filebasetn =
-      Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
+      Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
   filenametn << "o/gmsh_output/" << filebasetn << "_";
 
   if (step < 10)
@@ -871,7 +871,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
 #ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
   const std::string filebasectn =
-      Global::Problem::Instance()->OutputControlFile()->file_name_only_prefix();
+      Global::Problem::instance()->OutputControlFile()->file_name_only_prefix();
   filenamectn << "o/gmsh_output/" << filebasectn << "_";
   if (step < 10)
     filenamectn << 0 << 0 << 0 << 0;
@@ -986,12 +986,12 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
 /*----------------------------------------------------------------------*
  | Finite difference check for normal/tangent deriv.          popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckNormalDeriv()
+void CONTACT::Interface::fd_check_normal_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1016,26 +1016,26 @@ void CONTACT::Interface::FDCheckNormalDeriv()
   std::vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store all nodal normals / derivatives (reference)
   for (int j = 0; j < snodecolmapbound_->NumMyElements(); ++j)
   {
     int jgid = snodecolmapbound_->GID(j);
-    Core::Nodes::Node* jnode = idiscret_->gNode(jgid);
+    Core::Nodes::Node* jnode = idiscret_->g_node(jgid);
     if (!jnode) FOUR_C_THROW("Cannot find node with gid %", jgid);
     Node* jcnode = dynamic_cast<Node*>(jnode);
 
     // store reference normals / tangents
-    refnx[j] = jcnode->MoData().n()[0];
-    refny[j] = jcnode->MoData().n()[1];
-    refnz[j] = jcnode->MoData().n()[2];
-    reftxix[j] = jcnode->Data().txi()[0];
-    reftxiy[j] = jcnode->Data().txi()[1];
-    reftxiz[j] = jcnode->Data().txi()[2];
-    reftetax[j] = jcnode->Data().teta()[0];
-    reftetay[j] = jcnode->Data().teta()[1];
-    reftetaz[j] = jcnode->Data().teta()[2];
+    refnx[j] = jcnode->mo_data().n()[0];
+    refny[j] = jcnode->mo_data().n()[1];
+    refnz[j] = jcnode->mo_data().n()[2];
+    reftxix[j] = jcnode->data().txi()[0];
+    reftxiy[j] = jcnode->data().txi()[1];
+    reftxiz[j] = jcnode->data().txi()[2];
+    reftetax[j] = jcnode->data().teta()[0];
+    reftetay[j] = jcnode->data().teta()[1];
+    reftetaz[j] = jcnode->data().teta()[2];
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -1052,11 +1052,11 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 
     // now finally get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(i / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[i % dim];
+    int sdof = snode->dofs()[i % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
 
@@ -1082,22 +1082,22 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     for (int k = 0; k < snodecolmapbound_->NumMyElements(); ++k)
     {
       int kgid = snodecolmapbound_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       // build NEW averaged normal at each slave node
-      kcnode->BuildAveragedNormal();
+      kcnode->build_averaged_normal();
 
-      newnx[k] = kcnode->MoData().n()[0];
-      newny[k] = kcnode->MoData().n()[1];
-      newnz[k] = kcnode->MoData().n()[2];
-      newtxix[k] = kcnode->Data().txi()[0];
-      newtxiy[k] = kcnode->Data().txi()[1];
-      newtxiz[k] = kcnode->Data().txi()[2];
-      newtetax[k] = kcnode->Data().teta()[0];
-      newtetay[k] = kcnode->Data().teta()[1];
-      newtetaz[k] = kcnode->Data().teta()[2];
+      newnx[k] = kcnode->mo_data().n()[0];
+      newny[k] = kcnode->mo_data().n()[1];
+      newnz[k] = kcnode->mo_data().n()[2];
+      newtxix[k] = kcnode->data().txi()[0];
+      newtxiy[k] = kcnode->data().txi()[1];
+      newtxiz[k] = kcnode->data().txi()[2];
+      newtetax[k] = kcnode->data().teta()[0];
+      newtetay[k] = kcnode->data().teta()[1];
+      newtetaz[k] = kcnode->data().teta()[2];
 
       // get reference normal / tangent
       std::array<double, 3> refn = {0.0, 0.0, 0.0};
@@ -1134,12 +1134,12 @@ void CONTACT::Interface::FDCheckNormalDeriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newn[d] - refn[d]) / delta;
-          double analy = (kcnode->Data().GetDerivN()[d])[snode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_n()[d])[snode->dofs()[i % dim]];
           double dev = finit - analy;
 
           // kgid: id of currently tested slave node
           // snode->Dofs()[fd%dim]: currently modified slave dof
-          std::cout << "NORMAL(" << kgid << "," << d << "," << snode->Dofs()[i % dim]
+          std::cout << "NORMAL(" << kgid << "," << d << "," << snode->dofs()[i % dim]
                     << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1163,12 +1163,12 @@ void CONTACT::Interface::FDCheckNormalDeriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newtxi[d] - reftxi[d]) / delta;
-          double analy = (kcnode->Data().GetDerivTxi()[d])[snode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_txi()[d])[snode->dofs()[i % dim]];
           double dev = finit - analy;
 
           // kgid: id of currently tested slave node
           // snode->Dofs()[fd%dim]: currently modified slave dof
-          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << snode->Dofs()[i % dim]
+          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << snode->dofs()[i % dim]
                     << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1192,12 +1192,12 @@ void CONTACT::Interface::FDCheckNormalDeriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newteta[d] - refteta[d]) / delta;
-          double analy = (kcnode->Data().GetDerivTeta()[d])[snode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_teta()[d])[snode->dofs()[i % dim]];
           double dev = finit - analy;
 
           // kgid: id of currently tested slave node
           // snode->Dofs()[fd%dim]: currently modified slave dof
-          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << snode->Dofs()[i % dim]
+          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << snode->dofs()[i % dim]
                     << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1256,7 +1256,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1281,28 +1281,28 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
   std::vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store all nodal normals / derivatives (reference)
   for (int j = 0; j < snodecolmapbound_->NumMyElements(); ++j)
   {
     int jgid = snodecolmapbound_->GID(j);
-    Core::Nodes::Node* jnode = idiscret_->gNode(jgid);
+    Core::Nodes::Node* jnode = idiscret_->g_node(jgid);
     if (!jnode) FOUR_C_THROW("Cannot find node with gid %", jgid);
     Node* jcnode = dynamic_cast<Node*>(jnode);
 
-    if (!jcnode->IsOnEdge()) continue;
+    if (!jcnode->is_on_edge()) continue;
 
     // store reference normals / tangents
-    refnx[j] = jcnode->MoData().n()[0];
-    refny[j] = jcnode->MoData().n()[1];
-    refnz[j] = jcnode->MoData().n()[2];
-    reftxix[j] = jcnode->Data().txi()[0];
-    reftxiy[j] = jcnode->Data().txi()[1];
-    reftxiz[j] = jcnode->Data().txi()[2];
-    reftetax[j] = jcnode->Data().teta()[0];
-    reftetay[j] = jcnode->Data().teta()[1];
-    reftetaz[j] = jcnode->Data().teta()[2];
+    refnx[j] = jcnode->mo_data().n()[0];
+    refny[j] = jcnode->mo_data().n()[1];
+    refnz[j] = jcnode->mo_data().n()[2];
+    reftxix[j] = jcnode->data().txi()[0];
+    reftxiy[j] = jcnode->data().txi()[1];
+    reftxiz[j] = jcnode->data().txi()[2];
+    reftetax[j] = jcnode->data().teta()[0];
+    reftetay[j] = jcnode->data().teta()[1];
+    reftetaz[j] = jcnode->data().teta()[2];
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -1321,11 +1321,11 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
 
     // now finally get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(i / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[i % dim];
+    int sdof = snode->dofs()[i % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
 
@@ -1353,24 +1353,24 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     for (int k = 0; k < snodecolmapbound_->NumMyElements(); ++k)
     {
       int kgid = snodecolmapbound_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (!kcnode->IsOnEdge()) continue;
+      if (!kcnode->is_on_edge()) continue;
 
       // build NEW averaged normal at each slave node
       //      kcnode->BuildAveragedNormal();
 
-      newnx[k] = kcnode->MoData().n()[0];
-      newny[k] = kcnode->MoData().n()[1];
-      newnz[k] = kcnode->MoData().n()[2];
-      newtxix[k] = kcnode->Data().txi()[0];
-      newtxiy[k] = kcnode->Data().txi()[1];
-      newtxiz[k] = kcnode->Data().txi()[2];
-      newtetax[k] = kcnode->Data().teta()[0];
-      newtetay[k] = kcnode->Data().teta()[1];
-      newtetaz[k] = kcnode->Data().teta()[2];
+      newnx[k] = kcnode->mo_data().n()[0];
+      newny[k] = kcnode->mo_data().n()[1];
+      newnz[k] = kcnode->mo_data().n()[2];
+      newtxix[k] = kcnode->data().txi()[0];
+      newtxiy[k] = kcnode->data().txi()[1];
+      newtxiz[k] = kcnode->data().txi()[2];
+      newtetax[k] = kcnode->data().teta()[0];
+      newtetay[k] = kcnode->data().teta()[1];
+      newtetaz[k] = kcnode->data().teta()[2];
 
       // get reference normal / tangent
       std::array<double, 3> refn = {0.0, 0.0, 0.0};
@@ -1407,7 +1407,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newn[d] - refn[d]) / delta;
-          double analy = (kcnode->Data().GetDerivN()[d])[snode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_n()[d])[snode->dofs()[i % dim]];
           double dev = finit - analy;
 
           if (abs(finit) < 1e-12) continue;
@@ -1415,7 +1415,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
           // snode->Dofs()[fd%dim]: currently modified slave dof
 
           if (abs(analy) > 1e-12)
-            std::cout << "NORMAL(" << kgid << "," << d << "," << snode->Dofs()[i % dim]
+            std::cout << "NORMAL(" << kgid << "," << d << "," << snode->dofs()[i % dim]
                       << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1439,14 +1439,14 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newtxi[d] - reftxi[d]) / delta;
-          double analy = (kcnode->Data().GetDerivTxi()[d])[snode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_txi()[d])[snode->dofs()[i % dim]];
           double dev = finit - analy;
 
           if (abs(finit) < 1e-12) continue;
 
           // kgid: id of currently tested slave node
           // snode->Dofs()[fd%dim]: currently modified slave dof
-          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << snode->Dofs()[i % dim]
+          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << snode->dofs()[i % dim]
                     << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1470,14 +1470,14 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newteta[d] - refteta[d]) / delta;
-          double analy = (kcnode->Data().GetDerivTeta()[d])[snode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_teta()[d])[snode->dofs()[i % dim]];
           double dev = finit - analy;
 
           if (abs(finit) < 1e-12) continue;
 
           // kgid: id of currently tested slave node
           // snode->Dofs()[fd%dim]: currently modified slave dof
-          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << snode->Dofs()[i % dim]
+          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << snode->dofs()[i % dim]
                     << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1532,11 +1532,11 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
 
     // now finally get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(i / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[i % dim];
+    int mdof = mnode->dofs()[i % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
 
@@ -1564,24 +1564,24 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
     for (int k = 0; k < snodecolmapbound_->NumMyElements(); ++k)
     {
       int kgid = snodecolmapbound_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (!kcnode->IsOnEdge()) continue;
+      if (!kcnode->is_on_edge()) continue;
 
       // build NEW averaged normal at each slave node
       //      kcnode->BuildAveragedNormal();
 
-      newnx[k] = kcnode->MoData().n()[0];
-      newny[k] = kcnode->MoData().n()[1];
-      newnz[k] = kcnode->MoData().n()[2];
-      newtxix[k] = kcnode->Data().txi()[0];
-      newtxiy[k] = kcnode->Data().txi()[1];
-      newtxiz[k] = kcnode->Data().txi()[2];
-      newtetax[k] = kcnode->Data().teta()[0];
-      newtetay[k] = kcnode->Data().teta()[1];
-      newtetaz[k] = kcnode->Data().teta()[2];
+      newnx[k] = kcnode->mo_data().n()[0];
+      newny[k] = kcnode->mo_data().n()[1];
+      newnz[k] = kcnode->mo_data().n()[2];
+      newtxix[k] = kcnode->data().txi()[0];
+      newtxiy[k] = kcnode->data().txi()[1];
+      newtxiz[k] = kcnode->data().txi()[2];
+      newtetax[k] = kcnode->data().teta()[0];
+      newtetay[k] = kcnode->data().teta()[1];
+      newtetaz[k] = kcnode->data().teta()[2];
 
       // get reference normal / tangent
       std::array<double, 3> refn = {0.0, 0.0, 0.0};
@@ -1618,7 +1618,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newn[d] - refn[d]) / delta;
-          double analy = (kcnode->Data().GetDerivN()[d])[mnode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_n()[d])[mnode->dofs()[i % dim]];
           double dev = finit - analy;
 
           if (abs(finit) < 1e-12) continue;
@@ -1626,7 +1626,7 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
           // snode->Dofs()[fd%dim]: currently modified slave dof
 
           if (abs(analy) > 1e-12)
-            std::cout << "NORMAL(" << kgid << "," << d << "," << mnode->Dofs()[i % dim]
+            std::cout << "NORMAL(" << kgid << "," << d << "," << mnode->dofs()[i % dim]
                       << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1650,13 +1650,13 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newtxi[d] - reftxi[d]) / delta;
-          double analy = (kcnode->Data().GetDerivTxi()[d])[mnode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_txi()[d])[mnode->dofs()[i % dim]];
           double dev = finit - analy;
 
           if (abs(finit) < 1e-12) continue;
           // kgid: id of currently tested slave node
           // snode->Dofs()[fd%dim]: currently modified slave dof
-          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << mnode->Dofs()[i % dim]
+          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << mnode->dofs()[i % dim]
                     << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1680,13 +1680,13 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
         for (int d = 0; d < dim; ++d)
         {
           double finit = (newteta[d] - refteta[d]) / delta;
-          double analy = (kcnode->Data().GetDerivTeta()[d])[mnode->Dofs()[i % dim]];
+          double analy = (kcnode->data().get_deriv_teta()[d])[mnode->dofs()[i % dim]];
           double dev = finit - analy;
 
           if (abs(finit) < 1e-12) continue;
           // kgid: id of currently tested slave node
           // snode->Dofs()[fd%dim]: currently modified slave dof
-          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << mnode->Dofs()[i % dim]
+          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << mnode->dofs()[i % dim]
                     << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
 
           if (abs(dev) > 1e-4)
@@ -1740,12 +1740,12 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
 /*----------------------------------------------------------------------*
  | Finite difference check for D-Mortar derivatives           popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckMortarDDeriv()
+void CONTACT::Interface::fd_check_mortar_d_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, double> refD;  // stores dof-wise the entries of D
@@ -1755,26 +1755,26 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
       refDerivD;  // stores old derivm for every node
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // print reference to screen (D-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
-    if ((int)(cnode->MoData().GetD().size()) == 0) continue;
+    if ((int)(cnode->mo_data().get_d().size()) == 0) continue;
 
-    for (_CI it = cnode->MoData().GetD().begin(); it != cnode->MoData().GetD().end(); ++it)
+    for (_CI it = cnode->mo_data().get_d().begin(); it != cnode->mo_data().get_d().end(); ++it)
       refD[it->first] = it->second;
 
 
-    refDerivD[gid] = cnode->Data().GetDerivD();
+    refDerivD[gid] = cnode->data().get_deriv_d();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -1788,11 +1788,11 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
@@ -1823,16 +1823,16 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if ((int)(kcnode->MoData().GetD().size()) == 0) continue;
+      if ((int)(kcnode->mo_data().get_d().size()) == 0) continue;
 
       typedef std::map<int, double>::const_iterator CI;
       typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
-      for (_CI it = kcnode->MoData().GetD().begin(); it != kcnode->MoData().GetD().end(); ++it)
+      for (_CI it = kcnode->mo_data().get_d().begin(); it != kcnode->mo_data().get_d().end(); ++it)
         newD[it->first] = it->second;
 
       // print results (derivatives) to screen
@@ -1895,11 +1895,11 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
@@ -1930,16 +1930,16 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if ((int)(kcnode->MoData().GetD().size()) == 0) continue;
+      if ((int)(kcnode->mo_data().get_d().size()) == 0) continue;
 
       typedef std::map<int, double>::const_iterator CI;
       typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
-      for (_CI it = kcnode->MoData().GetD().begin(); it != kcnode->MoData().GetD().end(); ++it)
+      for (_CI it = kcnode->mo_data().get_d().begin(); it != kcnode->mo_data().get_d().end(); ++it)
         newD[it->first] = it->second;
 
       // print results (derivatives) to screen
@@ -2010,12 +2010,12 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
 /*----------------------------------------------------------------------*
  | Finite difference check for M-Mortar derivatives           popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckMortarMDeriv()
+void CONTACT::Interface::fd_check_mortar_m_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for M-Matrix entries
   std::map<int, double> refM;  // stores dof-wise the entries of M
@@ -2025,25 +2025,25 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       refDerivM;  // stores old derivm for every node
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // print reference to screen (M-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // typedef std::map<int,std::map<int,double> >::const_iterator CIM;
     // typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->MoData().GetM().size()) == 0) continue;
+    if ((int)(cnode->mo_data().get_m().size()) == 0) continue;
 
-    refM = cnode->MoData().GetM();
+    refM = cnode->mo_data().get_m();
 
-    refDerivM[gid] = cnode->Data().GetDerivM();
+    refDerivM[gid] = cnode->data().get_deriv_m();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -2057,11 +2057,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
 
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
@@ -2092,16 +2092,16 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if ((int)(kcnode->MoData().GetM().size()) == 0) continue;
+      if ((int)(kcnode->mo_data().get_m().size()) == 0) continue;
 
       typedef std::map<int, double>::const_iterator CI;
 
       // store M-values into refM
-      newM = kcnode->MoData().GetM();
+      newM = kcnode->mo_data().get_m();
 
       // print results (derivatives) to screen
       for (CI p = newM.begin(); p != newM.end(); ++p)
@@ -2163,11 +2163,11 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
 
     std::cout << "\nDEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
@@ -2198,16 +2198,16 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if ((int)(kcnode->MoData().GetM().size()) == 0) continue;
+      if ((int)(kcnode->mo_data().get_m().size()) == 0) continue;
 
       typedef std::map<int, double>::const_iterator CI;
 
       // store M-values into refM
-      newM = kcnode->MoData().GetM();
+      newM = kcnode->mo_data().get_m();
 
       // print results (derivatives) to screen
       for (CI p = newM.begin(); p != newM.end(); ++p)
@@ -2283,7 +2283,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2291,18 +2291,18 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
   std::vector<double> newU(nrow);
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store reference
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    refU[i] = cnode->FriData().jump_var()[0];  // txi value
+    refU[i] = cnode->fri_data().jump_var()[0];  // txi value
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -2316,11 +2316,11 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
@@ -2350,22 +2350,22 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newU[k] = kcnode->FriData().jump_var()[0];
+      newU[k] = kcnode->fri_data().jump_var()[0];
 
       if (abs(newU[k] - refU[k]) > 1e-12 && newU[k] != 1.0e12 && refU[k] != 1.0e12)
       {
         double finit = (newU[k] - refU[k]) / delta;
-        double analy = kcnode->FriData().GetDerivVarJump()[0][snode->Dofs()[fd % dim]];
+        double analy = kcnode->fri_data().get_deriv_var_jump()[0][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivu -- 1=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -2414,11 +2414,11 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // do step forward (modify nodal displacement)
@@ -2448,22 +2448,22 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newU[k] = kcnode->FriData().jump_var()[0];
+      newU[k] = kcnode->fri_data().jump_var()[0];
 
       if (abs(newU[k] - refU[k]) > 1e-12 && newU[k] != 1.0e12 && refU[k] != 1.0e12)
       {
         double finit = (newU[k] - refU[k]) / delta;
-        double analy = kcnode->FriData().GetDerivVarJump()[0][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->fri_data().get_deriv_var_jump()[0][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivu -- 1=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -2516,7 +2516,7 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2524,19 +2524,19 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
   std::vector<double> newU(nrow);
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store reference
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store gap-values into refG
-    refU[i] = cnode->FriData().jump_var()[1];  // txi value
+    refU[i] = cnode->fri_data().jump_var()[1];  // txi value
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -2550,11 +2550,11 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
@@ -2584,22 +2584,22 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newU[k] = kcnode->FriData().jump_var()[1];
+      newU[k] = kcnode->fri_data().jump_var()[1];
 
       if (abs(newU[k] - refU[k]) > 1e-12 && newU[k] != 1.0e12 && refU[k] != 1.0e12)
       {
         double finit = (newU[k] - refU[k]) / delta;
-        double analy = kcnode->FriData().GetDerivVarJump()[1][snode->Dofs()[fd % dim]];
+        double analy = kcnode->fri_data().get_deriv_var_jump()[1][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivu -- 2=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -2648,11 +2648,11 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // do step forward (modify nodal displacement)
@@ -2682,22 +2682,22 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newU[k] = kcnode->FriData().jump_var()[1];
+      newU[k] = kcnode->fri_data().jump_var()[1];
 
       if (abs(newU[k] - refU[k]) > 1e-12 && newU[k] != 1.0e12 && refU[k] != 1.0e12)
       {
         double finit = (newU[k] - refU[k]) / delta;
-        double analy = kcnode->FriData().GetDerivVarJump()[1][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->fri_data().get_deriv_var_jump()[1][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivu -- 2=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -2745,12 +2745,12 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 /*----------------------------------------------------------------------*
  | Finite difference check for alpha derivatives             farah 05/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckAlphaDeriv()
+void CONTACT::Interface::fd_check_alpha_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2760,14 +2760,14 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
   std::vector<double> newa(nrow);
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store reference
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2816,8 +2816,8 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     //    }
 
     // store gap-values into refG
-    refG[i] = cnode->Data().Getg();
-    refa[i] = cnode->Data().GetAlphaN();
+    refG[i] = cnode->data().getg();
+    refa[i] = cnode->data().get_alpha_n();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -2831,11 +2831,11 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
@@ -2872,11 +2872,11 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (kcnode->Data().GetAlphaN() < 0.0) continue;
+      if (kcnode->data().get_alpha_n() < 0.0) continue;
 
       //      if (kcnode->Active())
       //      {
@@ -2923,19 +2923,19 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
       //      }
 
       // store gap-values into newG
-      newG[k] = kcnode->Data().Getg();
-      newa[k] = kcnode->Data().GetAlphaN();
+      newG[k] = kcnode->data().getg();
+      newa[k] = kcnode->data().get_alpha_n();
 
 
       if (abs(newa[k] - refa[k]) > 1e-12 && newa[k] != 1.0e12 && refa[k] != 1.0e12)
       {
         double finit = (newa[k] - refa[k]) / delta;
-        double analy = kcnode->Data().GetAlpha()[snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_alpha()[snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -2983,11 +2983,11 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
@@ -3024,35 +3024,35 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (kcnode->Data().GetAlphaN() < 0.0) continue;
+      if (kcnode->data().get_alpha_n() < 0.0) continue;
 
-      if (kcnode->Active())
+      if (kcnode->active())
       {
         // check two versions of weighted gap
-        std::map<int, double>& mmap = kcnode->MoData().GetM();
+        std::map<int, double>& mmap = kcnode->mo_data().get_m();
         std::map<int, double>::const_iterator mcurr;
 
         for (int m = 0; m < mnodefullmap->NumMyElements(); ++m)
         {
           int gid = mnodefullmap->GID(m);
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
           for (mcurr = mmap.begin(); mcurr != mmap.end(); ++mcurr)
-            if ((mcurr->first) == cmnode->Id())
+            if ((mcurr->first) == cmnode->id())
             {
               hasentry = true;
               break;
             }
 
-          double mik = mmap[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
 
           // get out of here, if master node not adjacent or coupling very weak
           if (!hasentry || abs(mik) < 1.0e-12) continue;
@@ -3060,18 +3060,18 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
       }
 
       // store gap-values into newG
-      newG[k] = kcnode->Data().Getg();
-      newa[k] = kcnode->Data().GetAlphaN();
+      newG[k] = kcnode->data().getg();
+      newa[k] = kcnode->data().get_alpha_n();
 
       if (abs(newa[k] - refa[k]) > 1e-12 && newa[k] != 1.0e12 && refa[k] != 1.0e12)
       {
         double finit = (newa[k] - refa[k]) / delta;
-        double analy = kcnode->Data().GetAlpha()[mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_alpha()[mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3118,12 +3118,12 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
 /*----------------------------------------------------------------------*
  | Finite difference check for normal gap derivatives        Farah 06/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckGapDerivLTL()
+void CONTACT::Interface::fd_check_gap_deriv_ltl()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3134,21 +3134,21 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
   std::vector<double> refG2(nrow);
   std::vector<double> newG2(nrow);
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store reference
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // store gap-values into refG
-    refG0[i] = cnode->Data().Getgltl()[0];
-    refG1[i] = cnode->Data().Getgltl()[1];
-    refG2[i] = cnode->Data().Getgltl()[2];
+    refG0[i] = cnode->data().getgltl()[0];
+    refG1[i] = cnode->data().getgltl()[1];
+    refG2[i] = cnode->data().getgltl()[2];
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -3162,11 +3162,11 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
@@ -3203,25 +3203,25 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       // store gap-values into newG
-      newG0[k] = kcnode->Data().Getgltl()[0];
-      newG1[k] = kcnode->Data().Getgltl()[1];
-      newG2[k] = kcnode->Data().Getgltl()[2];
+      newG0[k] = kcnode->data().getgltl()[0];
+      newG1[k] = kcnode->data().getgltl()[1];
+      newG2[k] = kcnode->data().getgltl()[2];
 
 
       if (abs(newG0[k] - refG0[k]) > 1e-12 && newG0[k] != 1.0e12 && refG0[k] != 1.0e12)
       {
         double finit = (newG0[k] - refG0[k]) / delta;
-        double analy = kcnode->Data().GetDerivGltl()[0][snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_gltl()[0][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3240,12 +3240,12 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
       if (abs(newG1[k] - refG1[k]) > 1e-12 && newG1[k] != 1.0e12 && refG1[k] != 1.0e12)
       {
         double finit = (newG1[k] - refG1[k]) / delta;
-        double analy = kcnode->Data().GetDerivGltl()[1][snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_gltl()[1][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3264,12 +3264,12 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
       if (abs(newG2[k] - refG2[k]) > 1e-12 && newG2[k] != 1.0e12 && refG2[k] != 1.0e12)
       {
         double finit = (newG2[k] - refG2[k]) / delta;
-        double analy = kcnode->Data().GetDerivGltl()[2][snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_gltl()[2][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3317,11 +3317,11 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
@@ -3358,34 +3358,34 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (kcnode->Active())
+      if (kcnode->active())
       {
         // check two versions of weighted gap
 
-        std::map<int, double>& mmap = kcnode->MoData().GetM();
+        std::map<int, double>& mmap = kcnode->mo_data().get_m();
         std::map<int, double>::const_iterator mcurr;
 
         for (int m = 0; m < mnodefullmap->NumMyElements(); ++m)
         {
           int gid = mnodefullmap->GID(m);
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
           for (mcurr = mmap.begin(); mcurr != mmap.end(); ++mcurr)
-            if ((mcurr->first) == cmnode->Id())
+            if ((mcurr->first) == cmnode->id())
             {
               hasentry = true;
               break;
             }
 
-          double mik = mmap[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
 
           // get out of here, if master node not adjacent or coupling very weak
           if (!hasentry || abs(mik) < 1.0e-12) continue;
@@ -3393,19 +3393,19 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
       }
 
       // store gap-values into newG
-      newG0[k] = kcnode->Data().Getgltl()[0];
-      newG1[k] = kcnode->Data().Getgltl()[1];
-      newG2[k] = kcnode->Data().Getgltl()[2];
+      newG0[k] = kcnode->data().getgltl()[0];
+      newG1[k] = kcnode->data().getgltl()[1];
+      newG2[k] = kcnode->data().getgltl()[2];
 
       if (abs(newG0[k] - refG0[k]) > 1e-12 && newG0[k] != 1.0e12 && refG0[k] != 1.0e12)
       {
         double finit = (newG0[k] - refG0[k]) / delta;
-        double analy = kcnode->Data().GetDerivGltl()[0][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_gltl()[0][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3424,12 +3424,12 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
       if (abs(newG1[k] - refG1[k]) > 1e-12 && newG1[k] != 1.0e12 && refG1[k] != 1.0e12)
       {
         double finit = (newG1[k] - refG1[k]) / delta;
-        double analy = kcnode->Data().GetDerivGltl()[1][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_gltl()[1][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3448,12 +3448,12 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
       if (abs(newG2[k] - refG2[k]) > 1e-12 && newG2[k] != 1.0e12 && refG2[k] != 1.0e12)
       {
         double finit = (newG2[k] - refG2[k]) / delta;
-        double analy = kcnode->Data().GetDerivGltl()[2][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_gltl()[2][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3500,12 +3500,12 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
 /*----------------------------------------------------------------------*
  | Finite difference check for normal gap derivatives        Farah 06/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckJumpDerivLTL()
+void CONTACT::Interface::fd_check_jump_deriv_ltl()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3516,21 +3516,21 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
   std::vector<double> refG2(nrow);
   std::vector<double> newG2(nrow);
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store reference
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // store gap-values into refG
-    refG0[i] = cnode->Data().Getjumpltl()[0];
-    refG1[i] = cnode->Data().Getjumpltl()[1];
-    refG2[i] = cnode->Data().Getjumpltl()[2];
+    refG0[i] = cnode->data().getjumpltl()[0];
+    refG1[i] = cnode->data().getjumpltl()[1];
+    refG2[i] = cnode->data().getjumpltl()[2];
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -3544,11 +3544,11 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
@@ -3585,25 +3585,25 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       // store gap-values into newG
-      newG0[k] = kcnode->Data().Getjumpltl()[0];
-      newG1[k] = kcnode->Data().Getjumpltl()[1];
-      newG2[k] = kcnode->Data().Getjumpltl()[2];
+      newG0[k] = kcnode->data().getjumpltl()[0];
+      newG1[k] = kcnode->data().getjumpltl()[1];
+      newG2[k] = kcnode->data().getjumpltl()[2];
 
 
       if (abs(newG0[k] - refG0[k]) > 1e-12 && newG0[k] != 1.0e12 && refG0[k] != 1.0e12)
       {
         double finit = (newG0[k] - refG0[k]) / delta;
-        double analy = kcnode->Data().GetDerivJumpltl()[0][snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_jumpltl()[0][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivj=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3622,12 +3622,12 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
       if (abs(newG1[k] - refG1[k]) > 1e-12 && newG1[k] != 1.0e12 && refG1[k] != 1.0e12)
       {
         double finit = (newG1[k] - refG1[k]) / delta;
-        double analy = kcnode->Data().GetDerivJumpltl()[1][snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_jumpltl()[1][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivj=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3646,12 +3646,12 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
       if (abs(newG2[k] - refG2[k]) > 1e-12 && newG2[k] != 1.0e12 && refG2[k] != 1.0e12)
       {
         double finit = (newG2[k] - refG2[k]) / delta;
-        double analy = kcnode->Data().GetDerivJumpltl()[2][snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_jumpltl()[2][snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivj=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3699,11 +3699,11 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
@@ -3740,33 +3740,33 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (kcnode->Active())
+      if (kcnode->active())
       {
         // check two versions of weighted gap
-        std::map<int, double>& mmap = kcnode->MoData().GetM();
+        std::map<int, double>& mmap = kcnode->mo_data().get_m();
         std::map<int, double>::const_iterator mcurr;
 
         for (int m = 0; m < mnodefullmap->NumMyElements(); ++m)
         {
           int gid = mnodefullmap->GID(m);
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
           for (mcurr = mmap.begin(); mcurr != mmap.end(); ++mcurr)
-            if ((mcurr->first) == cmnode->Id())
+            if ((mcurr->first) == cmnode->id())
             {
               hasentry = true;
               break;
             }
 
-          double mik = mmap[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
 
           // get out of here, if master node not adjacent or coupling very weak
           if (!hasentry || abs(mik) < 1.0e-12) continue;
@@ -3774,19 +3774,19 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
       }
 
       // store gap-values into newG
-      newG0[k] = kcnode->Data().Getjumpltl()[0];
-      newG1[k] = kcnode->Data().Getjumpltl()[1];
-      newG2[k] = kcnode->Data().Getjumpltl()[2];
+      newG0[k] = kcnode->data().getjumpltl()[0];
+      newG1[k] = kcnode->data().getjumpltl()[1];
+      newG2[k] = kcnode->data().getjumpltl()[2];
 
       if (abs(newG0[k] - refG0[k]) > 1e-12 && newG0[k] != 1.0e12 && refG0[k] != 1.0e12)
       {
         double finit = (newG0[k] - refG0[k]) / delta;
-        double analy = kcnode->Data().GetDerivJumpltl()[0][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_jumpltl()[0][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivj=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3805,12 +3805,12 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
       if (abs(newG1[k] - refG1[k]) > 1e-12 && newG1[k] != 1.0e12 && refG1[k] != 1.0e12)
       {
         double finit = (newG1[k] - refG1[k]) / delta;
-        double analy = kcnode->Data().GetDerivJumpltl()[1][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_jumpltl()[1][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivj=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3829,12 +3829,12 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
       if (abs(newG2[k] - refG2[k]) > 1e-12 && newG2[k] != 1.0e12 && refG2[k] != 1.0e12)
       {
         double finit = (newG2[k] - refG2[k]) / delta;
-        double analy = kcnode->Data().GetDerivJumpltl()[2][mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_jumpltl()[2][mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivj=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -3881,12 +3881,12 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
 /*----------------------------------------------------------------------*
  | Finite difference check for normal gap derivatives         popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckGapDeriv()
+void CONTACT::Interface::fd_check_gap_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3894,18 +3894,18 @@ void CONTACT::Interface::FDCheckGapDeriv()
   std::vector<double> newG(nrow);
 
   // problem dimension (2D or 3D)
-  int dim = Dim();
+  int dim = n_dim();
 
   // store reference
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (!cnode->IsOnEdge()) continue;
+    if (!cnode->is_on_edge()) continue;
 
     //    if (cnode->Active())
     //    {
@@ -3952,7 +3952,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     //    }
 
     // store gap-values into refG
-    refG[i] = cnode->Data().Getg();
+    refG[i] = cnode->data().getg();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -3966,11 +3966,11 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % dim];
+    int sdof = snode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // apply finite difference scheme
@@ -4007,11 +4007,11 @@ void CONTACT::Interface::FDCheckGapDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (!kcnode->IsOnEdge()) continue;
+      if (!kcnode->is_on_edge()) continue;
 
       //      if (kcnode->Active())
       //      {
@@ -4058,18 +4058,18 @@ void CONTACT::Interface::FDCheckGapDeriv()
       //      }
 
       // store gap-values into newG
-      newG[k] = kcnode->Data().Getg();
+      newG[k] = kcnode->data().getg();
 
 
       if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
         double finit = (newG[k] - refG[k]) / delta;
-        double analy = kcnode->Data().GetDerivG()[snode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_g()[snode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // snode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << snode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << snode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -4117,11 +4117,11 @@ void CONTACT::Interface::FDCheckGapDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % dim];
+    int mdof = mnode->dofs()[fd % dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
@@ -4158,52 +4158,52 @@ void CONTACT::Interface::FDCheckGapDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      if (!kcnode->IsOnEdge()) continue;
+      if (!kcnode->is_on_edge()) continue;
 
-      if (kcnode->Active())
+      if (kcnode->active())
       {
         // check two versions of weighted gap
-        std::map<int, double>& mmap = kcnode->MoData().GetM();
+        std::map<int, double>& mmap = kcnode->mo_data().get_m();
         std::map<int, double>::const_iterator mcurr;
 
         for (int m = 0; m < mnodefullmap->NumMyElements(); ++m)
         {
           int gid = mnodefullmap->GID(m);
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
           for (mcurr = mmap.begin(); mcurr != mmap.end(); ++mcurr)
-            if ((mcurr->first) == cmnode->Id())
+            if ((mcurr->first) == cmnode->id())
             {
               hasentry = true;
               break;
             }
 
-          double mik = mmap[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
           // get out of here, if master node not adjacent or coupling very weak
           if (!hasentry || abs(mik) < 1.0e-12) continue;
         }
       }
 
       // store gap-values into newG
-      newG[k] = kcnode->Data().Getg();
+      newG[k] = kcnode->data().getg();
 
       if (abs(newG[k] - refG[k]) > 1e-12 && newG[k] != 1.0e12 && refG[k] != 1.0e12)
       {
         double finit = (newG[k] - refG[k]) / delta;
-        double analy = kcnode->Data().GetDerivG()[mnode->Dofs()[fd % dim]];
+        double analy = kcnode->data().get_deriv_g()[mnode->dofs()[fd % dim]];
         double dev = finit - analy;
 
         // kgid: id of currently tested slave node
         // mnode->Dofs()[fd%dim]: currently modified slave dof
-        std::cout << "(" << kgid << "," << mnode->Dofs()[fd % dim] << ") : fd=" << finit
+        std::cout << "(" << kgid << "," << mnode->dofs()[fd % dim] << ") : fd=" << finit
                   << " derivg=" << analy << " DEVIATION " << dev;
 
         if (abs(dev) > 1e-4)
@@ -4251,12 +4251,12 @@ void CONTACT::Interface::FDCheckGapDeriv()
 /*----------------------------------------------------------------------*
  | Finite difference check for tang. LM derivatives           popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckTangLMDeriv()
+void CONTACT::Interface::fd_check_tang_lm_deriv()
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
@@ -4270,7 +4270,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -4278,8 +4278,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     double valeta = 0.0;
     for (int dim = 0; dim < 3; ++dim)
     {
-      valxi += (cnode->Data().txi()[dim]) * (cnode->MoData().lm()[dim]);
-      valeta += (cnode->Data().teta()[dim]) * (cnode->MoData().lm()[dim]);
+      valxi += (cnode->data().txi()[dim]) * (cnode->mo_data().lm()[dim]);
+      valeta += (cnode->data().teta()[dim]) * (cnode->mo_data().lm()[dim]);
     }
 
     // store gap-values into refTLM
@@ -4293,59 +4293,59 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+    for (int i = 0; i < idiscret_->num_my_col_nodes(); ++i)
     {
-      CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
+      CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->l_col_node(i));
 
       // reset nodal normal vector
       for (int j = 0; j < 3; ++j)
       {
-        node->MoData().n()[j] = 0.0;
-        node->Data().txi()[j] = 0.0;
-        node->Data().teta()[j] = 0.0;
+        node->mo_data().n()[j] = 0.0;
+        node->data().txi()[j] = 0.0;
+        node->data().teta()[j] = 0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j = 0; j < (int)((node->Data().GetDerivN()).size()); ++j)
-        (node->Data().GetDerivN())[j].clear();
-      (node->Data().GetDerivN()).resize(0, 0);
+      for (int j = 0; j < (int)((node->data().get_deriv_n()).size()); ++j)
+        (node->data().get_deriv_n())[j].clear();
+      (node->data().get_deriv_n()).resize(0, 0);
 
       // reset derivative maps of tangent vectors
-      for (int j = 0; j < (int)((node->Data().GetDerivTxi()).size()); ++j)
-        (node->Data().GetDerivTxi())[j].clear();
-      (node->Data().GetDerivTxi()).resize(0, 0);
-      for (int j = 0; j < (int)((node->Data().GetDerivTeta()).size()); ++j)
-        (node->Data().GetDerivTeta())[j].clear();
-      (node->Data().GetDerivTeta()).resize(0, 0);
+      for (int j = 0; j < (int)((node->data().get_deriv_txi()).size()); ++j)
+        (node->data().get_deriv_txi())[j].clear();
+      (node->data().get_deriv_txi()).resize(0, 0);
+      for (int j = 0; j < (int)((node->data().get_deriv_teta()).size()); ++j)
+        (node->data().get_deriv_teta())[j].clear();
+      (node->data().get_deriv_teta()).resize(0, 0);
 
       // reset nodal Mortar maps
-      node->MoData().GetD().clear();
-      node->MoData().GetM().clear();
-      node->MoData().GetMmod().clear();
+      node->mo_data().get_d().clear();
+      node->mo_data().get_m().clear();
+      node->mo_data().get_mmod().clear();
 
       // reset derivative map of Mortar matrices
-      (node->Data().GetDerivD()).clear();
-      (node->Data().GetDerivM()).clear();
+      (node->data().get_deriv_d()).clear();
+      (node->data().get_deriv_m()).clear();
 
       // reset nodal weighted gap
-      node->Data().Getg() = 1.0e12;
-      (node->Data().GetDerivG()).clear();
+      node->data().getg() = 1.0e12;
+      (node->data().get_deriv_g()).clear();
 
       // reset feasible projection and segmentation status
-      node->HasProj() = false;
-      node->HasSegment() = false;
+      node->has_proj() = false;
+      node->has_segment() = false;
     }
 
     // loop over all elements to reset candidates / search lists
     // (use standard slave column map)
-    for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
+    for (int i = 0; i < slave_col_elements()->NumMyElements(); ++i)
     {
-      int gid = SlaveColElements()->GID(i);
-      Core::Elements::Element* ele = Discret().gElement(gid);
+      int gid = slave_col_elements()->GID(i);
+      Core::Elements::Element* ele = discret().g_element(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
-      mele->MoData().SearchElements().resize(0);
+      mele->mo_data().search_elements().resize(0);
     }
 
     // reset matrix containing interface contact segments (gmsh)
@@ -4353,15 +4353,15 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (Comm().MyPID() == snode->Owner())
+    if (get_comm().MyPID() == snode->owner())
     {
-      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd % 3
-                << " Dof(g): " << snode->Dofs()[fd % 3] << std::endl;
+      std::cout << "\nBuilding FD for Slave Node: " << snode->id() << " Dof(l): " << fd % 3
+                << " Dof(g): " << snode->dofs()[fd % 3] << std::endl;
     }
 
     // do step forward (modify nodal displacement)
@@ -4391,12 +4391,12 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
     {
       int gid1 = snodecolmapbound_->GID(i);
-      Core::Nodes::Node* node = idiscret_->gNode(gid1);
+      Core::Nodes::Node* node = idiscret_->g_node(gid1);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid1);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
+      cnode->build_averaged_normal();
     }
 
     // contact search algorithm
@@ -4407,7 +4407,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
     {
       int gid1 = selecolmap_->GID(i);
-      Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
+      Core::Elements::Element* ele1 = idiscret_->g_element(gid1);
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Mortar::Element* selement = dynamic_cast<Mortar::Element*>(ele1);
 
@@ -4416,10 +4416,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
-      for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
+      for (int j = 0; j < selement->mo_data().num_search_elements(); ++j)
       {
-        int gid2 = selement->MoData().SearchElements()[j];
-        Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
+        int gid2 = selement->mo_data().search_elements()[j];
+        Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
         if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         Mortar::Element* melement = dynamic_cast<Mortar::Element*>(ele2);
         melements.push_back(melement);
@@ -4430,7 +4430,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      MortarCoupling(selement, melements, Teuchos::null);
+      mortar_coupling(selement, melements, Teuchos::null);
     }
     // *******************************************************************
 
@@ -4438,7 +4438,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
@@ -4446,8 +4446,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       double valeta = 0.0;
       for (int dim = 0; dim < 3; ++dim)
       {
-        valxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-        valeta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+        valxi += (kcnode->data().txi()[dim]) * (kcnode->mo_data().lm()[dim]);
+        valeta += (kcnode->data().teta()[dim]) * (kcnode->mo_data().lm()[dim]);
       }
 
       // store gap-values into newTLM
@@ -4457,19 +4457,19 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       // print results (derivatives) to screen
       if (abs(newTLMxi[k] - refTLMxi[k]) > 1e-12)
       {
-        std::cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << std::endl;
+        std::cout << "Xi-TLM-FD-derivative for node S" << kcnode->id() << std::endl;
         // std::cout << "Ref-Xi-TLM: " << refTLMxi[k] << std::endl;
         // std::cout << "New-Xi-TLM: " << newTLMxi[k] << std::endl;
-        std::cout << "Deriv: " << snode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv: " << snode->dofs()[fd % 3] << " "
                   << (newTLMxi[k] - refTLMxi[k]) / delta << std::endl;
       }
       // print results (derivatives) to screen
       if (abs(newTLMeta[k] - refTLMeta[k]) > 1e-12)
       {
-        std::cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << std::endl;
+        std::cout << "Eta-TLM-FD-derivative for node S" << kcnode->id() << std::endl;
         // std::cout << "Ref-TLM: " << refTLMeta[k] << std::endl;
         // std::cout << "New-TLM: " << newTLMeta[k] << std::endl;
-        std::cout << "Deriv: " << snode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv: " << snode->dofs()[fd % 3] << " "
                   << (newTLMeta[k] - refTLMeta[k]) / delta << std::endl;
       }
     }
@@ -4495,59 +4495,59 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
     // (use fully overlapping column map)
-    for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+    for (int i = 0; i < idiscret_->num_my_col_nodes(); ++i)
     {
-      CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
+      CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->l_col_node(i));
 
       // reset nodal normal vector
       for (int j = 0; j < 3; ++j)
       {
-        node->MoData().n()[j] = 0.0;
-        node->Data().txi()[j] = 0.0;
-        node->Data().teta()[j] = 0.0;
+        node->mo_data().n()[j] = 0.0;
+        node->data().txi()[j] = 0.0;
+        node->data().teta()[j] = 0.0;
       }
 
       // reset derivative maps of normal vector
-      for (int j = 0; j < (int)((node->Data().GetDerivN()).size()); ++j)
-        (node->Data().GetDerivN())[j].clear();
-      (node->Data().GetDerivN()).resize(0, 0);
+      for (int j = 0; j < (int)((node->data().get_deriv_n()).size()); ++j)
+        (node->data().get_deriv_n())[j].clear();
+      (node->data().get_deriv_n()).resize(0, 0);
 
       // reset derivative maps of tangent vectors
-      for (int j = 0; j < (int)((node->Data().GetDerivTxi()).size()); ++j)
-        (node->Data().GetDerivTxi())[j].clear();
-      (node->Data().GetDerivTxi()).resize(0, 0);
-      for (int j = 0; j < (int)((node->Data().GetDerivTeta()).size()); ++j)
-        (node->Data().GetDerivTeta())[j].clear();
-      (node->Data().GetDerivTeta()).resize(0, 0);
+      for (int j = 0; j < (int)((node->data().get_deriv_txi()).size()); ++j)
+        (node->data().get_deriv_txi())[j].clear();
+      (node->data().get_deriv_txi()).resize(0, 0);
+      for (int j = 0; j < (int)((node->data().get_deriv_teta()).size()); ++j)
+        (node->data().get_deriv_teta())[j].clear();
+      (node->data().get_deriv_teta()).resize(0, 0);
 
       // reset nodal Mortar maps
-      node->MoData().GetD().clear();
-      node->MoData().GetM().clear();
-      node->MoData().GetMmod().clear();
+      node->mo_data().get_d().clear();
+      node->mo_data().get_m().clear();
+      node->mo_data().get_mmod().clear();
 
       // reset derivative map of Mortar matrices
-      (node->Data().GetDerivD()).clear();
-      (node->Data().GetDerivM()).clear();
+      (node->data().get_deriv_d()).clear();
+      (node->data().get_deriv_m()).clear();
 
       // reset nodal weighted gap
-      node->Data().Getg() = 1.0e12;
-      (node->Data().GetDerivG()).clear();
+      node->data().getg() = 1.0e12;
+      (node->data().get_deriv_g()).clear();
 
       // reset feasible projection and segmentation status
-      node->HasProj() = false;
-      node->HasSegment() = false;
+      node->has_proj() = false;
+      node->has_segment() = false;
     }
 
     // loop over all elements to reset candidates / search lists
     // (use standard slave column map)
-    for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
+    for (int i = 0; i < slave_col_elements()->NumMyElements(); ++i)
     {
-      int gid = SlaveColElements()->GID(i);
-      Core::Elements::Element* ele = Discret().gElement(gid);
+      int gid = slave_col_elements()->GID(i);
+      Core::Elements::Element* ele = discret().g_element(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
-      mele->MoData().SearchElements().resize(0);
+      mele->mo_data().search_elements().resize(0);
     }
 
     // reset matrix containing interface contact segments (gmsh)
@@ -4555,15 +4555,15 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (Comm().MyPID() == mnode->Owner())
+    if (get_comm().MyPID() == mnode->owner())
     {
-      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd % 3
-                << " Dof(g): " << mnode->Dofs()[fd % 3] << std::endl;
+      std::cout << "\nBuilding FD for Master Node: " << mnode->id() << " Dof(l): " << fd % 3
+                << " Dof(g): " << mnode->dofs()[fd % 3] << std::endl;
     }
 
     // do step forward (modify nodal displacement)
@@ -4593,12 +4593,12 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
     {
       int gid1 = snodecolmapbound_->GID(i);
-      Core::Nodes::Node* node = idiscret_->gNode(gid1);
+      Core::Nodes::Node* node = idiscret_->g_node(gid1);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid1);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // build averaged normal at each slave node
-      cnode->BuildAveragedNormal();
+      cnode->build_averaged_normal();
     }
 
     // contact search algorithm
@@ -4609,7 +4609,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
     {
       int gid1 = selecolmap_->GID(i);
-      Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
+      Core::Elements::Element* ele1 = idiscret_->g_element(gid1);
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Mortar::Element* selement = dynamic_cast<Mortar::Element*>(ele1);
 
@@ -4618,10 +4618,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
       // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
-      for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
+      for (int j = 0; j < selement->mo_data().num_search_elements(); ++j)
       {
-        int gid2 = selement->MoData().SearchElements()[j];
-        Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
+        int gid2 = selement->mo_data().search_elements()[j];
+        Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
         if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         Mortar::Element* melement = dynamic_cast<Mortar::Element*>(ele2);
         melements.push_back(melement);
@@ -4632,7 +4632,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      MortarCoupling(selement, melements, Teuchos::null);
+      mortar_coupling(selement, melements, Teuchos::null);
     }
     // *******************************************************************
 
@@ -4640,7 +4640,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
@@ -4648,8 +4648,8 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       double valeta = 0.0;
       for (int dim = 0; dim < 3; ++dim)
       {
-        valxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-        valeta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
+        valxi += (kcnode->data().txi()[dim]) * (kcnode->mo_data().lm()[dim]);
+        valeta += (kcnode->data().teta()[dim]) * (kcnode->mo_data().lm()[dim]);
       }
 
       // store gap-values into newTLM
@@ -4659,19 +4659,19 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       // print results (derivatives) to screen
       if (abs(newTLMxi[k] - refTLMxi[k]) > 1e-12)
       {
-        std::cout << "Xi-TLM-FD-derivative for node S" << kcnode->Id() << std::endl;
+        std::cout << "Xi-TLM-FD-derivative for node S" << kcnode->id() << std::endl;
         // std::cout << "Ref-TLM: " << refTLMxi[k] << std::endl;
         // std::cout << "New-TLM: " << newTLMxi[k] << std::endl;
-        std::cout << "Deriv: " << mnode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv: " << mnode->dofs()[fd % 3] << " "
                   << (newTLMxi[k] - refTLMxi[k]) / delta << std::endl;
       }
       // print results (derivatives) to screen
       if (abs(newTLMeta[k] - refTLMeta[k]) > 1e-12)
       {
-        std::cout << "Eta-TLM-FD-derivative for node S" << kcnode->Id() << std::endl;
+        std::cout << "Eta-TLM-FD-derivative for node S" << kcnode->id() << std::endl;
         // std::cout << "Ref-TLM: " << refTLMeta[k] << std::endl;
         // std::cout << "New-TLM: " << newTLMeta[k] << std::endl;
-        std::cout << "Deriv: " << mnode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv: " << mnode->dofs()[fd % 3] << " "
                   << (newTLMeta[k] - refTLMeta[k]) / delta << std::endl;
       }
     }
@@ -4696,59 +4696,59 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   // Initialize
   // loop over all nodes to reset normals, closestnode and Mortar maps
   // (use fully overlapping column map)
-  for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+  for (int i = 0; i < idiscret_->num_my_col_nodes(); ++i)
   {
-    CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->lColNode(i));
+    CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscret_->l_col_node(i));
 
     // reset nodal normal vector
     for (int j = 0; j < 3; ++j)
     {
-      node->MoData().n()[j] = 0.0;
-      node->Data().txi()[j] = 0.0;
-      node->Data().teta()[j] = 0.0;
+      node->mo_data().n()[j] = 0.0;
+      node->data().txi()[j] = 0.0;
+      node->data().teta()[j] = 0.0;
     }
 
     // reset derivative maps of normal vector
-    for (int j = 0; j < (int)((node->Data().GetDerivN()).size()); ++j)
-      (node->Data().GetDerivN())[j].clear();
-    (node->Data().GetDerivN()).resize(0, 0);
+    for (int j = 0; j < (int)((node->data().get_deriv_n()).size()); ++j)
+      (node->data().get_deriv_n())[j].clear();
+    (node->data().get_deriv_n()).resize(0, 0);
 
     // reset derivative maps of tangent vectors
-    for (int j = 0; j < (int)((node->Data().GetDerivTxi()).size()); ++j)
-      (node->Data().GetDerivTxi())[j].clear();
-    (node->Data().GetDerivTxi()).resize(0, 0);
-    for (int j = 0; j < (int)((node->Data().GetDerivTeta()).size()); ++j)
-      (node->Data().GetDerivTeta())[j].clear();
-    (node->Data().GetDerivTeta()).resize(0, 0);
+    for (int j = 0; j < (int)((node->data().get_deriv_txi()).size()); ++j)
+      (node->data().get_deriv_txi())[j].clear();
+    (node->data().get_deriv_txi()).resize(0, 0);
+    for (int j = 0; j < (int)((node->data().get_deriv_teta()).size()); ++j)
+      (node->data().get_deriv_teta())[j].clear();
+    (node->data().get_deriv_teta()).resize(0, 0);
 
     // reset nodal Mortar maps
-    node->MoData().GetD().clear();
-    node->MoData().GetM().clear();
-    node->MoData().GetMmod().clear();
+    node->mo_data().get_d().clear();
+    node->mo_data().get_m().clear();
+    node->mo_data().get_mmod().clear();
 
     // reset derivative map of Mortar matrices
-    (node->Data().GetDerivD()).clear();
-    (node->Data().GetDerivM()).clear();
+    (node->data().get_deriv_d()).clear();
+    (node->data().get_deriv_m()).clear();
 
     // reset nodal weighted gap
-    node->Data().Getg() = 1.0e12;
-    (node->Data().GetDerivG()).clear();
+    node->data().getg() = 1.0e12;
+    (node->data().get_deriv_g()).clear();
 
     // reset feasible projection and segmentation status
-    node->HasProj() = false;
-    node->HasSegment() = false;
+    node->has_proj() = false;
+    node->has_segment() = false;
   }
 
   // loop over all elements to reset candidates / search lists
   // (use standard slave column map)
-  for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
+  for (int i = 0; i < slave_col_elements()->NumMyElements(); ++i)
   {
-    int gid = SlaveColElements()->GID(i);
-    Core::Elements::Element* ele = Discret().gElement(gid);
+    int gid = slave_col_elements()->GID(i);
+    Core::Elements::Element* ele = discret().g_element(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
-    mele->MoData().SearchElements().resize(0);
+    mele->mo_data().search_elements().resize(0);
   }
 
   // reset matrix containing interface contact segments (gmsh)
@@ -4766,12 +4766,12 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   for (int i = 0; i < snodecolmapbound_->NumMyElements(); ++i)
   {
     int gid1 = snodecolmapbound_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid1);
+    Core::Nodes::Node* node = idiscret_->g_node(gid1);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid1);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // build averaged normal at each slave node
-    cnode->BuildAveragedNormal();
+    cnode->build_averaged_normal();
   }
 
   // contact search algorithm
@@ -4782,7 +4782,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->g_element(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Mortar::Element* selement = dynamic_cast<Mortar::Element*>(ele1);
 
@@ -4791,10 +4791,10 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
-    for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
+    for (int j = 0; j < selement->mo_data().num_search_elements(); ++j)
     {
-      int gid2 = selement->MoData().SearchElements()[j];
-      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      int gid2 = selement->mo_data().search_elements()[j];
+      Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Mortar::Element* melement = dynamic_cast<Mortar::Element*>(ele2);
       melements.push_back(melement);
@@ -4805,7 +4805,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // 2) integrate Mortar matrix M and weighted gap g
     // 3) compute directional derivative of M and g and store into nodes
     //********************************************************************
-    MortarCoupling(selement, melements, Teuchos::null);
+    mortar_coupling(selement, melements, Teuchos::null);
   }
   // *******************************************************************
 
@@ -4817,7 +4817,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
  | Not for Wear Lin. or modifications concerning the compl.             |
  | fnc. !!! See flags CONSISTENTSTICK / CONSISTENTSLIP                  |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckStickDeriv(
+void CONTACT::Interface::fd_check_stick_deriv(
     Core::LinAlg::SparseMatrix& linstickLMglobal, Core::LinAlg::SparseMatrix& linstickDISglobal)
 {
   // create stream
@@ -4826,11 +4826,11 @@ void CONTACT::Interface::FDCheckStickDeriv(
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
-  int dim = Dim();
+  int dim = n_dim();
   std::vector<double> refCtxi(nrow);
   std::vector<double> refCteta(nrow);
   std::vector<double> newCtxi(nrow);
@@ -4841,27 +4841,27 @@ void CONTACT::Interface::FDCheckStickDeriv(
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     double jumptxi = 0;
     double jumpteta = 0;
 
-    if (cnode->Active() and !(cnode->FriData().Slip()))
+    if (cnode->active() and !(cnode->fri_data().slip()))
     {
       // calculate value of C-function
-      double D = cnode->MoData().GetD()[cnode->Id()];
-      double Dold = cnode->FriData().GetDOld()[cnode->Id()];
+      double D = cnode->mo_data().get_d()[cnode->id()];
+      double Dold = cnode->fri_data().get_d_old()[cnode->id()];
 
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      for (int dim = 0; dim < cnode->num_dof(); ++dim)
       {
-        jumptxi -= (cnode->Data().txi()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
-        jumpteta -= (cnode->Data().teta()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        jumptxi -= (cnode->data().txi()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        jumpteta -= (cnode->data().teta()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
       }
 
-      std::map<int, double>& mmap = cnode->MoData().GetM();
-      std::map<int, double>& mmapold = cnode->FriData().GetMOld();
+      std::map<int, double>& mmap = cnode->mo_data().get_m();
+      std::map<int, double>& mmapold = cnode->fri_data().get_m_old();
 
       std::map<int, double>::const_iterator colcurr;
       std::set<int> mnodes;
@@ -4877,29 +4877,29 @@ void CONTACT::Interface::FDCheckStickDeriv(
       for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
         int gid = *mcurr;
-        Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+        Core::Nodes::Node* mnode = idiscret_->g_node(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
-        double mik = mmap[cmnode->Id()];
-        double mikold = mmapold[cmnode->Id()];
+        double mik = mmap[cmnode->id()];
+        double mikold = mmapold[cmnode->id()];
 
         std::map<int, double>::iterator mcurr;
 
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < cnode->num_dof(); ++dim)
         {
-          jumptxi += (cnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-          jumpteta += (cnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+          jumptxi += (cnode->data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+          jumpteta += (cnode->data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
         }
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
       if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
-        jumptxi = cnode->FriData().jump_var()[0];
+        jumptxi = cnode->fri_data().jump_var()[0];
         jumpteta = 0.0;
 
-        if (Dim() == 3) jumpteta = cnode->FriData().jump_var()[1];
+        if (n_dim() == 3) jumpteta = cnode->fri_data().jump_var()[1];
       }
     }  // if cnode == Stick
 
@@ -4921,12 +4921,12 @@ void CONTACT::Interface::FDCheckStickDeriv(
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
-    if (Comm().MyPID() == snode->Owner())
+    if (get_comm().MyPID() == snode->owner())
     {
       // std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
       //     << " Dof: " << snode->Dofs()[fd%3] << endl;
@@ -4937,17 +4937,17 @@ void CONTACT::Interface::FDCheckStickDeriv(
     if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof = snode->Dofs()[0];
+      coldof = snode->dofs()[0];
     }
     else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof = snode->Dofs()[1];
+      coldof = snode->dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof = snode->Dofs()[2];
+      coldof = snode->dofs()[2];
     }
 
     // compute element areas
@@ -4962,27 +4962,27 @@ void CONTACT::Interface::FDCheckStickDeriv(
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
       double jumpteta = 0;
 
-      if (kcnode->Active() and !(kcnode->FriData().Slip()))
+      if (kcnode->active() and !(kcnode->fri_data().slip()))
       {
         // check two versions of weighted gap
-        double D = kcnode->MoData().GetD()[kcnode->Id()];
-        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
+        double D = kcnode->mo_data().get_d()[kcnode->id()];
+        double Dold = kcnode->fri_data().get_d_old()[kcnode->id()];
 
-        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+        for (int dim = 0; dim < kcnode->num_dof(); ++dim)
         {
-          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumptxi -= (kcnode->data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
         }
 
-        std::map<int, double> mmap = kcnode->MoData().GetM();
-        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->mo_data().get_m();
+        std::map<int, double> mmapold = kcnode->fri_data().get_m_old();
 
         std::map<int, double>::iterator colcurr;
         std::set<int> mnodes;
@@ -4999,29 +4999,29 @@ void CONTACT::Interface::FDCheckStickDeriv(
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
-          double mik = mmap[cmnode->Id()];
-          double mikold = mmapold[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
+          double mikold = mmapold[cmnode->id()];
 
           std::map<int, double>::iterator mcurr;
 
-          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+          for (int dim = 0; dim < kcnode->num_dof(); ++dim)
           {
-            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
         if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
-          jumptxi = kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
+          if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
       }  // if cnode == Slip
 
@@ -5033,15 +5033,15 @@ void CONTACT::Interface::FDCheckStickDeriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
-      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[1], sparselength, sparsenumentries,
           sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
@@ -5057,15 +5057,15 @@ void CONTACT::Interface::FDCheckStickDeriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
-      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[2], sparselength2, sparsenumentries2,
           sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
@@ -5083,8 +5083,8 @@ void CONTACT::Interface::FDCheckStickDeriv(
       // print results (derivatives) to screen
       if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "STICK DIS-Deriv_xi:  " << kcnode->Id()
-                  << "\t w.r.t Master: " << snode->Dofs()[fd % dim]
+        std::cout << "STICK DIS-Deriv_xi:  " << kcnode->id()
+                  << "\t w.r.t Master: " << snode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
                   << "\t analyt= " << std::setprecision(4) << analyt_txi
                   << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
@@ -5096,8 +5096,8 @@ void CONTACT::Interface::FDCheckStickDeriv(
 
       if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "STICK DIS-Deriv_eta: " << kcnode->Id()
-                  << "\t w.r.t Master: " << snode->Dofs()[fd % dim]
+        std::cout << "STICK DIS-Deriv_eta: " << kcnode->id()
+                  << "\t w.r.t Master: " << snode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCteta[k] - refCteta[k]) / delta
                   << "\t analyt= " << std::setprecision(4) << analyt_teta
                   << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
@@ -5135,12 +5135,12 @@ void CONTACT::Interface::FDCheckStickDeriv(
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
-    if (Comm().MyPID() == mnode->Owner())
+    if (get_comm().MyPID() == mnode->owner())
     {
       // std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
       //     << " Dof: " << mnode->Dofs()[fd%3] << endl;
@@ -5151,17 +5151,17 @@ void CONTACT::Interface::FDCheckStickDeriv(
     if (fd % dim == 0)
     {
       mnode->xspatial()[0] += delta;
-      coldof = mnode->Dofs()[0];
+      coldof = mnode->dofs()[0];
     }
     else if (fd % dim == 1)
     {
       mnode->xspatial()[1] += delta;
-      coldof = mnode->Dofs()[1];
+      coldof = mnode->dofs()[1];
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      coldof = mnode->Dofs()[2];
+      coldof = mnode->dofs()[2];
     }
 
     // compute element areas
@@ -5176,27 +5176,27 @@ void CONTACT::Interface::FDCheckStickDeriv(
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
       double jumpteta = 0;
 
-      if (kcnode->Active() and !(kcnode->FriData().Slip()))
+      if (kcnode->active() and !(kcnode->fri_data().slip()))
       {
         // check two versions of weighted gap
-        double D = kcnode->MoData().GetD()[kcnode->Id()];
-        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
+        double D = kcnode->mo_data().get_d()[kcnode->id()];
+        double Dold = kcnode->fri_data().get_d_old()[kcnode->id()];
 
-        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+        for (int dim = 0; dim < kcnode->num_dof(); ++dim)
         {
-          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumptxi -= (kcnode->data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
         }
 
-        std::map<int, double> mmap = kcnode->MoData().GetM();
-        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->mo_data().get_m();
+        std::map<int, double> mmapold = kcnode->fri_data().get_m_old();
 
         std::map<int, double>::iterator colcurr;
         std::set<int> mnodes;
@@ -5213,29 +5213,29 @@ void CONTACT::Interface::FDCheckStickDeriv(
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
-          double mik = mmap[cmnode->Id()];
-          double mikold = mmapold[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
+          double mikold = mmapold[cmnode->id()];
 
           std::map<int, double>::iterator mcurr;
 
-          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+          for (int dim = 0; dim < kcnode->num_dof(); ++dim)
           {
-            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
         // gp-wise slip !!!!!!!
 
         if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
-          jumptxi = kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
+          if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
       }  // if cnode == Slip
 
@@ -5248,15 +5248,15 @@ void CONTACT::Interface::FDCheckStickDeriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
-      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[1], sparselength, sparsenumentries,
           sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
@@ -5272,15 +5272,15 @@ void CONTACT::Interface::FDCheckStickDeriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
-      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[2], sparselength2, sparsenumentries2,
           sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
@@ -5298,8 +5298,8 @@ void CONTACT::Interface::FDCheckStickDeriv(
       // print results (derivatives) to screen
       if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "STICK DIS-Deriv_xi:  " << kcnode->Id()
-                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+        std::cout << "STICK DIS-Deriv_xi:  " << kcnode->id()
+                  << "\t w.r.t Master: " << mnode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
                   << "\t analyt= " << std::setprecision(5) << analyt_txi
                   << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
@@ -5311,8 +5311,8 @@ void CONTACT::Interface::FDCheckStickDeriv(
 
       if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "STICK DIS-Deriv_eta: " << kcnode->Id()
-                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+        std::cout << "STICK DIS-Deriv_eta: " << kcnode->id()
+                  << "\t w.r.t Master: " << mnode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCteta[k] - refCteta[k]) / delta
                   << "\t analyt= " << std::setprecision(5) << analyt_teta
                   << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
@@ -5351,13 +5351,13 @@ void CONTACT::Interface::FDCheckStickDeriv(
  | Not for Wear Lin. or modifications concerning the compl.             |
  | fnc. !!! See flags CONSISTENTSTICK / CONSISTENTSLIP                  |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckSlipDeriv(
+void CONTACT::Interface::fd_check_slip_deriv(
     Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal)
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
@@ -5374,14 +5374,14 @@ void CONTACT::Interface::FDCheckSlipDeriv(
   std::vector<double> newCtxi(nrow);
   std::vector<double> newCteta(nrow);
 
-  int dim = Dim();
+  int dim = n_dim();
 
   // store reference
   // loop over proc's slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -5392,23 +5392,23 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     double znor = 0;
     double euclidean = 0;
 
-    if (cnode->FriData().Slip())
+    if (cnode->fri_data().slip())
     {
       // calculate value of C-function
-      double D = cnode->MoData().GetD()[cnode->Id()];
-      double Dold = cnode->FriData().GetDOld()[cnode->Id()];
+      double D = cnode->mo_data().get_d()[cnode->id()];
+      double Dold = cnode->fri_data().get_d_old()[cnode->id()];
 
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      for (int dim = 0; dim < cnode->num_dof(); ++dim)
       {
-        jumptxi -= (cnode->Data().txi()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
-        jumpteta -= (cnode->Data().teta()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
-        ztxi += (cnode->Data().txi()[dim]) * (cnode->MoData().lm()[dim]);
-        zteta += (cnode->Data().teta()[dim]) * (cnode->MoData().lm()[dim]);
-        znor += (cnode->MoData().n()[dim]) * (cnode->MoData().lm()[dim]);
+        jumptxi -= (cnode->data().txi()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        jumpteta -= (cnode->data().teta()[dim]) * (D - Dold) * (cnode->xspatial()[dim]);
+        ztxi += (cnode->data().txi()[dim]) * (cnode->mo_data().lm()[dim]);
+        zteta += (cnode->data().teta()[dim]) * (cnode->mo_data().lm()[dim]);
+        znor += (cnode->mo_data().n()[dim]) * (cnode->mo_data().lm()[dim]);
       }
 
-      std::map<int, double>& mmap = cnode->MoData().GetM();
-      std::map<int, double>& mmapold = cnode->FriData().GetMOld();
+      std::map<int, double>& mmap = cnode->mo_data().get_m();
+      std::map<int, double>& mmapold = cnode->fri_data().get_m_old();
 
       std::map<int, double>::const_iterator colcurr;
       std::set<int> mnodes;
@@ -5424,37 +5424,37 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
         int gid = *mcurr;
-        Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+        Core::Nodes::Node* mnode = idiscret_->g_node(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
-        double mik = mmap[cmnode->Id()];
-        double mikold = mmapold[cmnode->Id()];
+        double mik = mmap[cmnode->id()];
+        double mikold = mmapold[cmnode->id()];
 
         std::map<int, double>::iterator mcurr;
 
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < cnode->num_dof(); ++dim)
         {
-          jumptxi += (cnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-          jumpteta += (cnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+          jumptxi += (cnode->data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+          jumpteta += (cnode->data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
         }
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
       if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
-        jumptxi = cnode->FriData().jump_var()[0];
+        jumptxi = cnode->fri_data().jump_var()[0];
         jumpteta = 0.0;
 
-        if (Dim() == 3) jumpteta = cnode->FriData().jump_var()[1];
+        if (n_dim() == 3) jumpteta = cnode->fri_data().jump_var()[1];
       }
 
       // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-      std::vector<double> sum1(Dim() - 1, 0);
+      std::vector<double> sum1(n_dim() - 1, 0);
       sum1[0] = ztxi + ct * jumptxi;
-      if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
-      if (Dim() == 2) euclidean = abs(sum1[0]);
-      if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
+      if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
+      if (n_dim() == 2) euclidean = abs(sum1[0]);
+      if (n_dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
     }  // if cnode == Slip
 
     // store C in vector
@@ -5472,9 +5472,9 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
     refCtxi[i] =
-        euclidean * ztxi - (frcoeff * (znor - cn * cnode->Data().Getg())) * (ztxi + ct * jumptxi);
+        euclidean * ztxi - (frcoeff * (znor - cn * cnode->data().getg())) * (ztxi + ct * jumptxi);
     refCteta[i] = euclidean * zteta -
-                  (frcoeff * (znor - cn * cnode->Data().Getg())) * (zteta + ct * jumpteta);
+                  (frcoeff * (znor - cn * cnode->data().getg())) * (zteta + ct * jumpteta);
 
   }  // loop over procs slave nodes
 
@@ -5486,7 +5486,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     FriNode* snode = dynamic_cast<FriNode*>(node);
 
@@ -5494,25 +5494,25 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     double delta = 1e-8;
     if (fd % dim == 0)
     {
-      snode->MoData().lm()[0] += delta;
-      coldof = snode->Dofs()[0];
+      snode->mo_data().lm()[0] += delta;
+      coldof = snode->dofs()[0];
     }
     else if (fd % dim == 1)
     {
-      snode->MoData().lm()[1] += delta;
-      coldof = snode->Dofs()[1];
+      snode->mo_data().lm()[1] += delta;
+      coldof = snode->dofs()[1];
     }
     else
     {
-      snode->MoData().lm()[2] += delta;
-      coldof = snode->Dofs()[2];
+      snode->mo_data().lm()[2] += delta;
+      coldof = snode->dofs()[2];
     }
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
@@ -5523,22 +5523,22 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->FriData().Slip())
+      if (kcnode->fri_data().slip())
       {
         // check two versions of weighted gap
-        double D = kcnode->MoData().GetD()[kcnode->Id()];
-        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
-        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+        double D = kcnode->mo_data().get_d()[kcnode->id()];
+        double Dold = kcnode->fri_data().get_d_old()[kcnode->id()];
+        for (int dim = 0; dim < kcnode->num_dof(); ++dim)
         {
-          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          ztxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
-          znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->data().txi()[dim]) * (kcnode->mo_data().lm()[dim]);
+          zteta += (kcnode->data().teta()[dim]) * (kcnode->mo_data().lm()[dim]);
+          znor += (kcnode->mo_data().n()[dim]) * (kcnode->mo_data().lm()[dim]);
         }
 
-        std::map<int, double> mmap = kcnode->MoData().GetM();
-        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->mo_data().get_m();
+        std::map<int, double> mmapold = kcnode->fri_data().get_m_old();
 
         std::map<int, double>::iterator colcurr;
         std::set<int> mnodes;
@@ -5555,36 +5555,36 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          double mik = mmap[cmnode->Id()];
-          double mikold = mmapold[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
+          double mikold = mmapold[cmnode->id()];
 
           std::map<int, double>::iterator mcurr;
 
-          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+          for (int dim = 0; dim < kcnode->num_dof(); ++dim)
           {
-            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
         if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
-          jumptxi = kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
+          if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1(Dim() - 1, 0);
+        std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
-        if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
-        if (Dim() == 2) euclidean = abs(sum1[0]);
-        if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
+        if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
+        if (n_dim() == 2) euclidean = abs(sum1[0]);
+        if (n_dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
       }  // if cnode == Slip
 
       // store C in vector
@@ -5602,24 +5602,24 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
-                   (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
+                   (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
       newCteta[k] = euclidean * zteta -
-                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (zteta + ct * jumpteta);
+                    (frcoeff * (znor - cn * kcnode->data().getg())) * (zteta + ct * jumpteta);
 
       // ************************************************************************
       // Extract linearizations from sparse matrix !!!
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipLMglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipLMglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
-      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[1], sparselength, sparsenumentries,
           sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
@@ -5635,15 +5635,15 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipLMglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipLMglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
-      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[2], sparselength2, sparsenumentries2,
           sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
@@ -5661,7 +5661,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       // print results (derivatives) to screen
       if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "SLIP LM-Deriv_xi: " << kcnode->Id() << "\t w.r.t: " << snode->Dofs()[fd % dim]
+        std::cout << "SLIP LM-Deriv_xi: " << kcnode->id() << "\t w.r.t: " << snode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
                   << "\t analyt= " << std::setprecision(4) << analyt_txi
                   << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
@@ -5674,8 +5674,8 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       // print results (derivatives) to screen
       if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "SLIP LM-Deriv_eta: " << kcnode->Id()
-                  << "\t w.r.t: " << snode->Dofs()[fd % dim] << "\t FD= " << std::setprecision(4)
+        std::cout << "SLIP LM-Deriv_eta: " << kcnode->id()
+                  << "\t w.r.t: " << snode->dofs()[fd % dim] << "\t FD= " << std::setprecision(4)
                   << (newCteta[k] - refCteta[k]) / delta << "\t analyt= " << std::setprecision(4)
                   << analyt_teta
                   << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
@@ -5688,15 +5688,15 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     // undo finite difference modification
     if (fd % dim == 0)
     {
-      snode->MoData().lm()[0] -= delta;
+      snode->mo_data().lm()[0] -= delta;
     }
     else if (fd % dim == 1)
     {
-      snode->MoData().lm()[1] -= delta;
+      snode->mo_data().lm()[1] -= delta;
     }
     else
     {
-      snode->MoData().lm()[2] -= delta;
+      snode->mo_data().lm()[2] -= delta;
     }
   }  // loop over procs slave nodes
 
@@ -5712,7 +5712,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     FriNode* snode = dynamic_cast<FriNode*>(node);
 
@@ -5721,17 +5721,17 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     if (fd % dim == 0)
     {
       snode->xspatial()[0] += delta;
-      coldof = snode->Dofs()[0];
+      coldof = snode->dofs()[0];
     }
     else if (fd % dim == 1)
     {
       snode->xspatial()[1] += delta;
-      coldof = snode->Dofs()[1];
+      coldof = snode->dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
-      coldof = snode->Dofs()[2];
+      coldof = snode->dofs()[2];
     }
 
     // compute element areas
@@ -5746,7 +5746,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
@@ -5757,23 +5757,23 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->FriData().Slip())
+      if (kcnode->fri_data().slip())
       {
         // check two versions of weighted gap
-        double D = kcnode->MoData().GetD()[kcnode->Id()];
-        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
+        double D = kcnode->mo_data().get_d()[kcnode->id()];
+        double Dold = kcnode->fri_data().get_d_old()[kcnode->id()];
 
-        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+        for (int dim = 0; dim < kcnode->num_dof(); ++dim)
         {
-          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          ztxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
-          znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->data().txi()[dim]) * (kcnode->mo_data().lm()[dim]);
+          zteta += (kcnode->data().teta()[dim]) * (kcnode->mo_data().lm()[dim]);
+          znor += (kcnode->mo_data().n()[dim]) * (kcnode->mo_data().lm()[dim]);
         }
 
-        std::map<int, double> mmap = kcnode->MoData().GetM();
-        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->mo_data().get_m();
+        std::map<int, double> mmapold = kcnode->fri_data().get_m_old();
 
         std::map<int, double>::iterator colcurr;
         std::set<int> mnodes;
@@ -5790,37 +5790,37 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
-          double mik = mmap[cmnode->Id()];
-          double mikold = mmapold[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
+          double mikold = mmapold[cmnode->id()];
 
           std::map<int, double>::iterator mcurr;
 
-          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+          for (int dim = 0; dim < kcnode->num_dof(); ++dim)
           {
-            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
         if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
-          jumptxi = kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
+          if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1(Dim() - 1, 0);
+        std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
-        if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
-        if (Dim() == 2) euclidean = abs(sum1[0]);
-        if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
+        if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
+        if (n_dim() == 2) euclidean = abs(sum1[0]);
+        if (n_dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
 
       }  // if cnode == Slip
 
@@ -5839,9 +5839,9 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
-                   (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
+                   (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
       newCteta[k] = euclidean * zteta -
-                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (zteta + ct * jumpteta);
+                    (frcoeff * (znor - cn * kcnode->data().getg())) * (zteta + ct * jumpteta);
 
 
 
@@ -5850,15 +5850,15 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
-      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[1], sparselength, sparsenumentries,
           sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
@@ -5874,15 +5874,15 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
-      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[2], sparselength2, sparsenumentries2,
           sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
@@ -5900,8 +5900,8 @@ void CONTACT::Interface::FDCheckSlipDeriv(
 
       if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id()
-                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->id()
+                  << "\t w.r.t Slave: " << snode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
                   << "\t analyt= " << std::setprecision(5) << analyt_txi
                   << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
@@ -5914,8 +5914,8 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       // print results (derivatives) to screen
       if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id()
-                  << "\t w.r.t Slave: " << snode->Dofs()[fd % dim]
+        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->id()
+                  << "\t w.r.t Slave: " << snode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCteta[k] - refCteta[k]) / delta
                   << "\t analyt= " << std::setprecision(5) << analyt_teta
                   << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
@@ -5951,7 +5951,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     FriNode* mnode = dynamic_cast<FriNode*>(node);
 
@@ -5960,17 +5960,17 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     if (fd % dim == 0)
     {
       mnode->xspatial()[0] += delta;
-      coldof = mnode->Dofs()[0];
+      coldof = mnode->dofs()[0];
     }
     else if (fd % dim == 1)
     {
       mnode->xspatial()[1] += delta;
-      coldof = mnode->Dofs()[1];
+      coldof = mnode->dofs()[1];
     }
     else
     {
       mnode->xspatial()[2] += delta;
-      coldof = mnode->Dofs()[2];
+      coldof = mnode->dofs()[2];
     }
 
     // compute element areas
@@ -5985,7 +5985,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
@@ -5996,23 +5996,23 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       double znor = 0;
       double euclidean = 0;
 
-      if (kcnode->FriData().Slip())
+      if (kcnode->fri_data().slip())
       {
         // check two versions of weighted gap
-        double D = kcnode->MoData().GetD()[kcnode->Id()];
-        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
+        double D = kcnode->mo_data().get_d()[kcnode->id()];
+        double Dold = kcnode->fri_data().get_d_old()[kcnode->id()];
 
-        for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+        for (int dim = 0; dim < kcnode->num_dof(); ++dim)
         {
-          jumptxi -= (kcnode->Data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          jumpteta -= (kcnode->Data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
-          ztxi += (kcnode->Data().txi()[dim]) * (kcnode->MoData().lm()[dim]);
-          zteta += (kcnode->Data().teta()[dim]) * (kcnode->MoData().lm()[dim]);
-          znor += (kcnode->MoData().n()[dim]) * (kcnode->MoData().lm()[dim]);
+          jumptxi -= (kcnode->data().txi()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          jumpteta -= (kcnode->data().teta()[dim]) * (D - Dold) * (kcnode->xspatial()[dim]);
+          ztxi += (kcnode->data().txi()[dim]) * (kcnode->mo_data().lm()[dim]);
+          zteta += (kcnode->data().teta()[dim]) * (kcnode->mo_data().lm()[dim]);
+          znor += (kcnode->mo_data().n()[dim]) * (kcnode->mo_data().lm()[dim]);
         }
 
-        std::map<int, double> mmap = kcnode->MoData().GetM();
-        std::map<int, double> mmapold = kcnode->FriData().GetMOld();
+        std::map<int, double> mmap = kcnode->mo_data().get_m();
+        std::map<int, double> mmapold = kcnode->fri_data().get_m_old();
 
         std::map<int, double>::iterator colcurr;
         std::set<int> mnodes;
@@ -6029,37 +6029,37 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->g_node(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
-          double mik = mmap[cmnode->Id()];
-          double mikold = mmapold[cmnode->Id()];
+          double mik = mmap[cmnode->id()];
+          double mikold = mmapold[cmnode->id()];
 
           std::map<int, double>::iterator mcurr;
 
-          for (int dim = 0; dim < kcnode->NumDof(); ++dim)
+          for (int dim = 0; dim < kcnode->num_dof(); ++dim)
           {
-            jumptxi += (kcnode->Data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
-            jumpteta += (kcnode->Data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumptxi += (kcnode->data().txi()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
+            jumpteta += (kcnode->data().teta()[dim]) * (mik - mikold) * (cmnode->xspatial()[dim]);
           }
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
         if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
-          jumptxi = kcnode->FriData().jump_var()[0];
+          jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
 
-          if (Dim() == 3) jumpteta = kcnode->FriData().jump_var()[1];
+          if (n_dim() == 3) jumpteta = kcnode->fri_data().jump_var()[1];
         }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
-        std::vector<double> sum1(Dim() - 1, 0);
+        std::vector<double> sum1(n_dim() - 1, 0);
         sum1[0] = ztxi + ct * jumptxi;
-        if (Dim() == 3) sum1[1] = zteta + ct * jumpteta;
-        if (Dim() == 2) euclidean = abs(sum1[0]);
-        if (Dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
+        if (n_dim() == 3) sum1[1] = zteta + ct * jumpteta;
+        if (n_dim() == 2) euclidean = abs(sum1[0]);
+        if (n_dim() == 3) euclidean = sqrt(sum1[0] * sum1[0] + sum1[1] * sum1[1]);
       }  // if cnode == Slip
 
       // store C in vector
@@ -6077,9 +6077,9 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
-                   (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
+                   (frcoeff * (znor - cn * kcnode->data().getg())) * (ztxi + ct * jumptxi);
       newCteta[k] = euclidean * zteta -
-                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (zteta + ct * jumpteta);
+                    (frcoeff * (znor - cn * kcnode->data().getg())) * (zteta + ct * jumpteta);
 
 
 
@@ -6088,15 +6088,15 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
-      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->dofs()[1]);
       std::vector<double> sparsevalues(sparselength);
       std::vector<int> sparseindices(sparselength);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1], sparselength, sparsenumentries,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[1], sparselength, sparsenumentries,
           sparsevalues.data(), sparseindices.data());
 
       for (int h = 0; h < sparselength; ++h)
@@ -6112,15 +6112,15 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.EpetraMatrix();
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
-      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->dofs()[2]);
       std::vector<double> sparsevalues2(sparselength2);
       std::vector<int> sparseindices2(sparselength2);
       // int sparseextractionstatus =
-      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2], sparselength2, sparsenumentries2,
+      sparse_crs->ExtractGlobalRowCopy(kcnode->dofs()[2], sparselength2, sparsenumentries2,
           sparsevalues2.data(), sparseindices2.data());
 
       for (int h = 0; h < sparselength2; ++h)
@@ -6138,8 +6138,8 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       // print results (derivatives) to screen
       if (abs(newCtxi[k] - refCtxi[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id()
-                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->id()
+                  << "\t w.r.t Master: " << mnode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCtxi[k] - refCtxi[k]) / delta
                   << "\t analyt= " << std::setprecision(5) << analyt_txi
                   << "\t Error= " << analyt_txi - ((newCtxi[k] - refCtxi[k]) / delta);
@@ -6151,8 +6151,8 @@ void CONTACT::Interface::FDCheckSlipDeriv(
 
       if (abs(newCteta[k] - refCteta[k]) > 1e-12)
       {
-        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id()
-                  << "\t w.r.t Master: " << mnode->Dofs()[fd % dim]
+        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->id()
+                  << "\t w.r.t Master: " << mnode->dofs()[fd % dim]
                   << "\t FD= " << std::setprecision(4) << (newCteta[k] - refCteta[k]) / delta
                   << "\t analyt= " << std::setprecision(5) << analyt_teta
                   << "\t Error= " << analyt_teta - ((newCteta[k] - refCteta[k]) / delta);
@@ -6194,7 +6194,7 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   std::cout << std::setprecision(14);
 
@@ -6208,32 +6208,32 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    int dim = cnode->NumDof();
+    int dim = cnode->num_dof();
 
     for (int d = 0; d < dim; d++)
     {
-      int dof = cnode->Dofs()[d];
+      int dof = cnode->dofs()[d];
 
-      if ((int)(cnode->Data().GetDerivZ()).size() != 0)
+      if ((int)(cnode->data().get_deriv_z()).size() != 0)
       {
         typedef std::map<int, double>::const_iterator CI;
-        std::map<int, double>& derivzmap = cnode->Data().GetDerivZ()[d];
+        std::map<int, double>& derivzmap = cnode->data().get_deriv_z()[d];
 
         // print derivz-values to screen and store
         for (CI p = derivzmap.begin(); p != derivzmap.end(); ++p)
         {
           // std::cout << " (" << cnode->Dofs()[k] << ", " << p->first << ") : \t " << p->second <<
           // std::endl;
-          (deltastorage[cnode->Dofs()[d]])[p->first] = p->second;
+          (deltastorage[cnode->dofs()[d]])[p->first] = p->second;
         }
       }
 
       // store lm-values into refM
-      reflm[dof] = cnode->MoData().lm()[d];
+      reflm[dof] = cnode->mo_data().lm()[d];
     }
   }
 
@@ -6249,11 +6249,11 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
-    int sdof = snode->Dofs()[fd % 3];
+    int sdof = snode->dofs()[fd % 3];
 
     std::cout << "DEVIATION FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
@@ -6284,20 +6284,20 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      int dim = kcnode->NumDof();
+      int dim = kcnode->num_dof();
 
       double fd;
       double dev;
 
       for (int d = 0; d < dim; d++)
       {
-        int dof = kcnode->Dofs()[d];
+        int dof = kcnode->dofs()[d];
 
-        newlm[dof] = kcnode->MoData().lm()[d];
+        newlm[dof] = kcnode->mo_data().lm()[d];
 
         fd = (newlm[dof] - reflm[dof]) / delta;
 
@@ -6356,11 +6356,11 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
-    int mdof = mnode->Dofs()[fd % 3];
+    int mdof = mnode->dofs()[fd % 3];
 
     std::cout << "DEVIATION FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
@@ -6391,11 +6391,11 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
-      int dim = kcnode->NumDof();
+      int dim = kcnode->num_dof();
 
       double fd;
       double dev;
@@ -6403,9 +6403,9 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
       // calculate derivative and deviation for every dof
       for (int d = 0; d < dim; d++)
       {
-        int dof = kcnode->Dofs()[d];
+        int dof = kcnode->dofs()[d];
 
-        newlm[dof] = kcnode->MoData().lm()[d];
+        newlm[dof] = kcnode->mo_data().lm()[d];
 
         fd = (newlm[dof] - reflm[dof]) / delta;
 
@@ -6480,7 +6480,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
+  if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   double frcoeff = interface_params().get<double>("FRCOEFF");
@@ -6501,15 +6501,15 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
-    double gap = cnode->Data().Getg();
-    int dim = cnode->NumDof();
-    double kappa = cnode->Data().Kappa();
-    double* n = cnode->MoData().n();
+    double gap = cnode->data().getg();
+    int dim = cnode->num_dof();
+    double kappa = cnode->data().kappa();
+    double* n = cnode->mo_data().n();
 
     // evaluate traction
     Core::LinAlg::SerialDenseMatrix jumpvec(dim, 1);
@@ -6521,8 +6521,8 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     // fill vectors and matrices
     for (int j = 0; j < dim; j++)
     {
-      jumpvec(j, 0) = cnode->FriData().jump()[j];
-      tractionold[j] = cnode->FriData().tractionold()[j];
+      jumpvec(j, 0) = cnode->fri_data().jump()[j];
+      tractionold[j] = cnode->fri_data().tractionold()[j];
     }
 
     if (dim == 3)
@@ -6555,11 +6555,12 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
-    for (int j = 0; j < dim; ++j) lmuzawan += cnode->MoData().lmuzawa()[j] * cnode->MoData().n()[j];
+    for (int j = 0; j < dim; ++j)
+      lmuzawan += cnode->mo_data().lmuzawa()[j] * cnode->mo_data().n()[j];
 
     // Lagrange multiplier from Uzawa algorithm
     Core::LinAlg::SerialDenseMatrix lmuzawa(dim, 1);
-    for (int k = 0; k < dim; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
+    for (int k = 0; k < dim; ++k) lmuzawa(k, 0) = cnode->mo_data().lmuzawa()[k];
 
     // Lagrange multiplier in tangential direction
     Core::LinAlg::SerialDenseMatrix lmuzawatan(dim, 1);
@@ -6591,13 +6592,13 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     // evaluate maximal tangential traction
     double maxtantrac = frcoeff * (lmuzawan - kappa * ppnor * gap);
 
-    if (cnode->Active() == true and cnode->FriData().Slip() == false)
+    if (cnode->active() == true and cnode->fri_data().slip() == false)
     {
       reftrac1[i] = n[0] * (lmuzawan - kappa * ppnor * gap) + trailtraction[0];
       reftrac2[i] = n[1] * (lmuzawan - kappa * ppnor * gap) + trailtraction[1];
       reftrac3[i] = n[2] * (lmuzawan - kappa * ppnor * gap) + trailtraction[2];
     }
-    if (cnode->Active() == true and cnode->FriData().Slip() == true)
+    if (cnode->active() == true and cnode->fri_data().slip() == true)
     {
       // compute lagrange multipliers and store into node
       reftrac1[i] =
@@ -6617,15 +6618,15 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
 
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (Comm().MyPID() == snode->Owner())
+    if (get_comm().MyPID() == snode->owner())
     {
-      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd % 3
-                << " Dof: " << snode->Dofs()[fd % 3] << std::endl;
+      std::cout << "\nBuilding FD for Slave Node: " << snode->id() << " Dof: " << fd % 3
+                << " Dof: " << snode->dofs()[fd % 3] << std::endl;
     }
 
     // do step forward (modify nodal displacement)
@@ -6656,15 +6657,15 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // get some informatiom form the node
-      double gap = kcnode->Data().Getg();
-      int dim = kcnode->NumDof();
-      double kappa = kcnode->Data().Kappa();
-      double* n = kcnode->MoData().n();
+      double gap = kcnode->data().getg();
+      int dim = kcnode->num_dof();
+      double kappa = kcnode->data().kappa();
+      double* n = kcnode->mo_data().n();
 
       // evaluate traction
       Core::LinAlg::SerialDenseMatrix jumpvec(dim, 1);
@@ -6676,8 +6677,8 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       // fill vectors and matrices
       for (int j = 0; j < dim; j++)
       {
-        jumpvec(j, 0) = kcnode->FriData().jump()[j];
-        tractionold[j] = kcnode->FriData().tractionold()[j];
+        jumpvec(j, 0) = kcnode->fri_data().jump()[j];
+        tractionold[j] = kcnode->fri_data().tractionold()[j];
       }
 
       if (dim == 3)
@@ -6712,11 +6713,11 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       // Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
       for (int j = 0; j < dim; ++j)
-        lmuzawan += kcnode->MoData().lmuzawa()[j] * kcnode->MoData().n()[j];
+        lmuzawan += kcnode->mo_data().lmuzawa()[j] * kcnode->mo_data().n()[j];
 
       // Lagrange multiplier from Uzawa algorithm
       Core::LinAlg::SerialDenseMatrix lmuzawa(dim, 1);
-      for (int j = 0; j < dim; ++j) lmuzawa(j, 0) = kcnode->MoData().lmuzawa()[j];
+      for (int j = 0; j < dim; ++j) lmuzawa(j, 0) = kcnode->mo_data().lmuzawa()[j];
 
       // Lagrange multiplier in tangential direction
       Core::LinAlg::SerialDenseMatrix lmuzawatan(dim, 1);
@@ -6748,13 +6749,13 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       // evaluate maximal tangential traction
       double maxtantrac = frcoeff * (lmuzawan - kappa * ppnor * gap);
 
-      if (kcnode->Active() == true and kcnode->FriData().Slip() == false)
+      if (kcnode->active() == true and kcnode->fri_data().slip() == false)
       {
         newtrac1[k] = n[0] * (lmuzawan - kappa * ppnor * gap) + trailtraction[0];
         newtrac2[k] = n[1] * (lmuzawan - kappa * ppnor * gap) + trailtraction[1];
         newtrac3[k] = n[2] * (lmuzawan - kappa * ppnor * gap) + trailtraction[2];
       }
-      if (kcnode->Active() == true and kcnode->FriData().Slip() == true)
+      if (kcnode->active() == true and kcnode->fri_data().slip() == true)
       {
         // compute lagrange multipliers and store into node
         newtrac1[k] =
@@ -6771,7 +6772,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
         // std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
         // std::cout << "Ref-G: " << refG[k] << std::endl;
         // std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv0:      " << kcnode->Dofs()[0] << " " << snode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv0:      " << kcnode->dofs()[0] << " " << snode->dofs()[fd % 3] << " "
                   << (newtrac1[k] - reftrac1[k]) / delta << std::endl;
         // std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " <<
         // kcnode->Data().GetDerivG()[snode->Dofs()[fd%3]] << std::endl; if
@@ -6787,7 +6788,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
         // std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
         // std::cout << "Ref-G: " << refG[k] << std::endl;
         // std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv1:      " << kcnode->Dofs()[1] << " " << snode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv1:      " << kcnode->dofs()[1] << " " << snode->dofs()[fd % 3] << " "
                   << (newtrac2[k] - reftrac2[k]) / delta << std::endl;
         // std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " <<
         // kcnode->Data().GetDerivG()[snode->Dofs()[fd%3]] << std::endl; if
@@ -6803,7 +6804,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
         // std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
         // std::cout << "Ref-G: " << refG[k] << std::endl;
         // std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv2:      " << kcnode->Dofs()[2] << " " << snode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv2:      " << kcnode->dofs()[2] << " " << snode->dofs()[fd % 3] << " "
                   << (newtrac3[k] - reftrac3[k]) / delta << std::endl;
         // std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " <<
         // kcnode->Data().GetDerivG()[snode->Dofs()[fd%3]] << std::endl; if
@@ -6836,15 +6837,15 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
 
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
-    Core::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
-    if (Comm().MyPID() == mnode->Owner())
+    if (get_comm().MyPID() == mnode->owner())
     {
-      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd % 3
-                << " Dof: " << mnode->Dofs()[fd % 3] << std::endl;
+      std::cout << "\nBuilding FD for Master Node: " << mnode->id() << " Dof: " << fd % 3
+                << " Dof: " << mnode->dofs()[fd % 3] << std::endl;
     }
 
     // do step forward (modify nodal displacement)
@@ -6875,15 +6876,15 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
     {
       int kgid = snoderowmap_->GID(k);
-      Core::Nodes::Node* knode = idiscret_->gNode(kgid);
+      Core::Nodes::Node* knode = idiscret_->g_node(kgid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // get some informatiom form the node
-      double gap = kcnode->Data().Getg();
-      int dim = kcnode->NumDof();
-      double kappa = kcnode->Data().Kappa();
-      double* n = kcnode->MoData().n();
+      double gap = kcnode->data().getg();
+      int dim = kcnode->num_dof();
+      double kappa = kcnode->data().kappa();
+      double* n = kcnode->mo_data().n();
 
       // evaluate traction
       Core::LinAlg::SerialDenseMatrix jumpvec(dim, 1);
@@ -6895,8 +6896,8 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       // fill vectors and matrices
       for (int j = 0; j < dim; j++)
       {
-        jumpvec(j, 0) = kcnode->FriData().jump()[j];
-        tractionold[j] = kcnode->FriData().tractionold()[j];
+        jumpvec(j, 0) = kcnode->fri_data().jump()[j];
+        tractionold[j] = kcnode->fri_data().tractionold()[j];
       }
 
       if (dim == 3)
@@ -6930,11 +6931,11 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       // Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
       for (int j = 0; j < dim; ++j)
-        lmuzawan += kcnode->MoData().lmuzawa()[j] * kcnode->MoData().n()[j];
+        lmuzawan += kcnode->mo_data().lmuzawa()[j] * kcnode->mo_data().n()[j];
 
       // Lagrange multiplier from Uzawa algorithm
       Core::LinAlg::SerialDenseMatrix lmuzawa(dim, 1);
-      for (int j = 0; j < dim; ++j) lmuzawa(j, 0) = kcnode->MoData().lmuzawa()[j];
+      for (int j = 0; j < dim; ++j) lmuzawa(j, 0) = kcnode->mo_data().lmuzawa()[j];
 
       // Lagrange multiplier in tangential direction
       Core::LinAlg::SerialDenseMatrix lmuzawatan(dim, 1);
@@ -6966,13 +6967,13 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       // evaluate maximal tangential traction
       double maxtantrac = frcoeff * (lmuzawan - kappa * ppnor * gap);
 
-      if (kcnode->Active() == true and kcnode->FriData().Slip() == false)
+      if (kcnode->active() == true and kcnode->fri_data().slip() == false)
       {
         newtrac1[k] = n[0] * (lmuzawan - kappa * ppnor * gap) + trailtraction[0];
         newtrac2[k] = n[1] * (lmuzawan - kappa * ppnor * gap) + trailtraction[1];
         newtrac3[k] = n[2] * (lmuzawan - kappa * ppnor * gap) + trailtraction[2];
       }
-      if (kcnode->Active() == true and kcnode->FriData().Slip() == true)
+      if (kcnode->active() == true and kcnode->fri_data().slip() == true)
       {
         // compute lagrange multipliers and store into node
         newtrac1[k] =
@@ -6989,7 +6990,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
         // std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
         // std::cout << "Ref-G: " << refG[k] << std::endl;
         // std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << kcnode->Dofs()[0] << " " << mnode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv:      " << kcnode->dofs()[0] << " " << mnode->dofs()[fd % 3] << " "
                   << (newtrac1[k] - reftrac1[k]) / delta << std::endl;
         // std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " <<
         // kcnode->Data().GetDerivG()[snode->Dofs()[fd%3]] << std::endl; if
@@ -7005,7 +7006,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
         // std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
         // std::cout << "Ref-G: " << refG[k] << std::endl;
         // std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << kcnode->Dofs()[1] << " " << mnode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv:      " << kcnode->dofs()[1] << " " << mnode->dofs()[fd % 3] << " "
                   << (newtrac2[k] - reftrac2[k]) / delta << std::endl;
         // std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " <<
         // kcnode->Data().GetDerivG()[snode->Dofs()[fd%3]] << std::endl; if
@@ -7021,7 +7022,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
         // std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
         // std::cout << "Ref-G: " << refG[k] << std::endl;
         // std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << kcnode->Dofs()[2] << " " << mnode->Dofs()[fd % 3] << " "
+        std::cout << "Deriv:      " << kcnode->dofs()[2] << " " << mnode->dofs()[fd % 3] << " "
                   << (newtrac3[k] - reftrac3[k]) / delta << std::endl;
         // std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " <<
         // kcnode->Data().GetDerivG()[snode->Dofs()[fd%3]] << std::endl; if
@@ -7060,7 +7061,7 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
     const int interfacel_id, const Epetra_Map& nodal_map, const std::string& full_path) const
 {
   // only processor zero writes header
-  if (Comm().MyPID() == 0 and interfacel_id == 0)
+  if (get_comm().MyPID() == 0 and interfacel_id == 0)
   {
     std::ofstream of(full_path, std::ios_base::out);
     of << std::setw(7) << "ID" << std::setw(24) << "x" << std::setw(24) << "y" << std::setw(24)
@@ -7068,11 +7069,11 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
     of.close();
   }
 
-  Comm().Barrier();
+  get_comm().Barrier();
 
-  for (int p = 0; p < Comm().NumProc(); ++p)
+  for (int p = 0; p < get_comm().NumProc(); ++p)
   {
-    if (p == Comm().MyPID())
+    if (p == get_comm().MyPID())
     {
       // open the output stream again on all procs
       std::ofstream of(full_path, std::ios_base::out | std::ios_base::app);
@@ -7083,21 +7084,21 @@ void CONTACT::Interface::write_nodal_coordinates_to_file(
       {
         const int gid = nodal_map_gids[lid];
 
-        if (not idiscret_->NodeRowMap()->MyGID(gid)) continue;
+        if (not idiscret_->node_row_map()->MyGID(gid)) continue;
 
-        const Node& cnode = dynamic_cast<const Node&>(*idiscret_->gNode(gid));
+        const Node& cnode = dynamic_cast<const Node&>(*idiscret_->g_node(gid));
 
-        of << std::setw(7) << cnode.Id();
+        of << std::setw(7) << cnode.id();
         of << std::setprecision(16);
         of << std::setw(24) << std::scientific << cnode.xspatial()[0] << std::setw(24)
            << std::scientific << cnode.xspatial()[1] << std::setw(24) << std::scientific
-           << cnode.xspatial()[2] << std::setw(24) << std::scientific << cnode.X()[0]
-           << std::setw(24) << std::scientific << cnode.X()[1] << std::setw(24) << std::scientific
-           << cnode.X()[2] << "\n";
+           << cnode.xspatial()[2] << std::setw(24) << std::scientific << cnode.x()[0]
+           << std::setw(24) << std::scientific << cnode.x()[1] << std::setw(24) << std::scientific
+           << cnode.x()[2] << "\n";
       }
       of.close();
     }
-    Comm().Barrier();
+    get_comm().Barrier();
   }
 }
 

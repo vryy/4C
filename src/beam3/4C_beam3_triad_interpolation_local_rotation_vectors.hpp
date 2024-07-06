@@ -51,13 +51,13 @@ namespace LargeRotations
      *
      *  \author grill
      *  \date 01/17 */
-    inline unsigned int NodeI() const { return node_i_; }
+    inline unsigned int node_i() const { return node_i_; }
 
     /** \brief get node J which is part of the definition of the reference triad
      *
      *  \author grill
      *  \date 01/17 */
-    inline unsigned int NodeJ() const { return node_j_; }
+    inline unsigned int node_j() const { return node_j_; }
 
     //@}
 

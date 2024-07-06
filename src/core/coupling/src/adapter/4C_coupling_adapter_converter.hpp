@@ -49,19 +49,19 @@ namespace Core::Adapter
   {
    public:
     virtual ~CouplingConverter() = default;
-    virtual Teuchos::RCP<Epetra_Vector> SrcToDst(Teuchos::RCP<const Epetra_Vector> s) const = 0;
+    virtual Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> DstToSrc(Teuchos::RCP<const Epetra_Vector> d) const = 0;
+    virtual Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> SrcMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> src_map() const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> DstMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dst_map() const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> PermSrcMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> perm_src_map() const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> PermDstMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> perm_dst_map() const = 0;
 
-    virtual void FillSrcToDstMap(std::map<int, int>& rowmap) const = 0;
+    virtual void fill_src_to_dst_map(std::map<int, int>& rowmap) const = 0;
   };
 
   /// master to slave converter
@@ -70,19 +70,19 @@ namespace Core::Adapter
    public:
     explicit CouplingMasterConverter(const Coupling& coup) : coup_(coup) {}
 
-    Teuchos::RCP<Epetra_Vector> SrcToDst(Teuchos::RCP<const Epetra_Vector> s) const override;
+    Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const override;
 
-    Teuchos::RCP<Epetra_Vector> DstToSrc(Teuchos::RCP<const Epetra_Vector> d) const override;
+    Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const override;
 
-    Teuchos::RCP<const Epetra_Map> SrcMap() const override;
+    Teuchos::RCP<const Epetra_Map> src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> DstMap() const override;
+    Teuchos::RCP<const Epetra_Map> dst_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> PermSrcMap() const override;
+    Teuchos::RCP<const Epetra_Map> perm_src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> PermDstMap() const override;
+    Teuchos::RCP<const Epetra_Map> perm_dst_map() const override;
 
-    void FillSrcToDstMap(std::map<int, int>& rowmap) const override;
+    void fill_src_to_dst_map(std::map<int, int>& rowmap) const override;
 
    private:
     const Coupling& coup_;
@@ -94,19 +94,19 @@ namespace Core::Adapter
    public:
     explicit CouplingSlaveConverter(const Coupling& coup) : coup_(coup) {}
 
-    Teuchos::RCP<Epetra_Vector> SrcToDst(Teuchos::RCP<const Epetra_Vector> s) const override;
+    Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const override;
 
-    Teuchos::RCP<Epetra_Vector> DstToSrc(Teuchos::RCP<const Epetra_Vector> d) const override;
+    Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const override;
 
-    Teuchos::RCP<const Epetra_Map> SrcMap() const override;
+    Teuchos::RCP<const Epetra_Map> src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> DstMap() const override;
+    Teuchos::RCP<const Epetra_Map> dst_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> PermSrcMap() const override;
+    Teuchos::RCP<const Epetra_Map> perm_src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> PermDstMap() const override;
+    Teuchos::RCP<const Epetra_Map> perm_dst_map() const override;
 
-    void FillSrcToDstMap(std::map<int, int>& rowmap) const override;
+    void fill_src_to_dst_map(std::map<int, int>& rowmap) const override;
 
    private:
     const Coupling& coup_;

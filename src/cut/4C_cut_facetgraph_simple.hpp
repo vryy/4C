@@ -30,7 +30,7 @@ namespace Core::Geo
       /// constructor
       SimpleFacetGraph1D(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
-      void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
+      void create_volume_cells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
      private:
       void sort_facets(const Element* element, std::map<double, Facet*>& sorted_facets) const;
@@ -47,7 +47,7 @@ namespace Core::Geo
       /// constructor
       SimpleFacetGraph2D(const std::vector<Side*>& sides, const plain_facet_set& facets);
 
-      void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
+      void create_volume_cells(Mesh& mesh, Element* element, plain_volumecell_set& cells) override;
 
     };  // class  SimpleFacetGraph_2D
   }     // namespace Cut

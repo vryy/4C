@@ -24,7 +24,7 @@ int CONSTRAINTS::ConstraintDofSet::assign_degrees_of_freedom(
 
   // Add DofSets in order of assignment to list. Once it is there it has its
   // place and will get its starting id from the previous DofSet.
-  AddDofSettoList();
+  add_dof_setto_list();
 
   // We assume that all dof sets before this one have been set up. Otherwise
   // we'd have to reorder the list.
@@ -42,16 +42,16 @@ int CONSTRAINTS::ConstraintDofSet::assign_degrees_of_freedom(
   // try to understand what you do.
 
   // Get highest GID used so far and add one
-  const int count = MaxGIDinList(dis->Comm()) + 1;
+  const int count = max_gi_din_list(dis->get_comm()) + 1;
 
   // dofrowmap with index base = count, which is undesired
-  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp(new Epetra_Map(ndofs, count, dis->Comm()));
+  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp(new Epetra_Map(ndofs, count, dis->get_comm()));
 
   std::vector<int> gids;
   for (int i = 0; i < dofrowmap->NumMyElements(); i++) gids.push_back(dofrowmap->GID(i));
 
   // dofrowmap with index base = 0
-  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, dis->Comm()));
+  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, dis->get_comm()));
 
   return count;
 }

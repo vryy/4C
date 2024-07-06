@@ -65,7 +65,7 @@ namespace Adapter
 
     /*! \brief Utility function to create the adaptive time integration structure wrapper
      */
-    static Teuchos::RCP<Structure> Create(
+    static Teuchos::RCP<Structure> create(
         const Teuchos::ParameterList& taflags,  //!< adaptive input flags
         Teuchos::RCP<Solid::TimeInt::Base> ti_strategy);
 
@@ -76,16 +76,16 @@ namespace Adapter
     void read_restart(int step) override;
 
     /// actual time loop
-    int Integrate() override;
+    int integrate() override;
 
     /// wrapper for things that should be done before prepare_time_step is called
-    void PrePredict() override{};
+    void pre_predict() override{};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    void PreSolve() override{};
+    void pre_solve() override{};
 
     /// wrapper for things that should be done before updating
-    void PreUpdate() override{};
+    void pre_update() override{};
 
     /// wrapper for things that should be done after solving the update
     void post_update() override{};
@@ -94,13 +94,13 @@ namespace Adapter
     void output(bool forced_writerestart = false) override;
 
     /// wrapper for things that should be done after the output
-    void PostOutput() override{};
+    void post_output() override{};
 
     //! Provide the name
-    virtual enum Inpar::Solid::TimAdaKind MethodName() const = 0;
+    virtual enum Inpar::Solid::TimAdaKind method_name() const = 0;
 
     //! Provide the name as std::string
-    virtual std::string MethodTitle() const = 0;
+    virtual std::string method_title() const = 0;
 
     //! Provide local order of accuracy based upon linear test equation
     //! for displacements
@@ -117,7 +117,7 @@ namespace Adapter
     virtual double method_lin_err_coeff_vel() const = 0;
 
     //! Provide type of algorithm
-    virtual enum AdaEnum MethodAdaptDis() const = 0;
+    virtual enum AdaEnum method_adapt_dis() const = 0;
 
    protected:
     Teuchos::RCP<Solid::TimeInt::Base> stm_;  //!< marching time integrator
@@ -279,7 +279,7 @@ namespace Adapter
     );
 
     /// Perform error action once the nonlinear iteration fails
-    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+    Inpar::Solid::ConvergenceStatus perform_error_action(
         const Inpar::Solid::DivContAct& action, double& stepsizenew);
   };
 

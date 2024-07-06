@@ -42,14 +42,15 @@ int Core::DOFSets::TransparentIndependentDofSet::assign_degrees_of_freedom(
   }
 
   // tell all proxies (again!)
-  NotifyAssigned();
+  notify_assigned();
 
   return count;
 }
 
-int Core::DOFSets::TransparentIndependentDofSet::NumDofPerNode(const Core::Nodes::Node& node) const
+int Core::DOFSets::TransparentIndependentDofSet::num_dof_per_node(
+    const Core::Nodes::Node& node) const
 {
-  return DofSet::NumDofPerNode(node);
+  return DofSet::num_dof_per_node(node);
 }
 
 FOUR_C_NAMESPACE_CLOSE

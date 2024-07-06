@@ -53,7 +53,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::evaluate(Teuchos::ParameterList
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (So3Ele::IsParamsInterface())
+  if (So3Ele::is_params_interface())
   {
     act = So3Ele::params_interface().get_action_type();
   }
@@ -110,7 +110,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
   // ActionType act = none;
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (So3Ele::IsParamsInterface())
+  if (So3Ele::is_params_interface())
   {
     act = So3Ele::params_interface().get_action_type();
   }
@@ -160,9 +160,9 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr2 = nullptr;
       if (elemat2.is_initialized() and (damping == Inpar::Solid::damp_material)) matptr2 = &elemat2;
 
-      if (la.Size() > 1)
+      if (la.size() > 1)
       {
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // need current fluid state,
           // call the fluid discretization: fluid equates 2nd dofset
@@ -171,11 +171,11 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
           Core::LinAlg::Matrix<numnod_, 1> myepreaf(true);
 
-          if (discretization.HasState(0, "velocity"))
+          if (discretization.has_state(0, "velocity"))
             extract_values_from_global_vector(
                 discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
-          if (discretization.HasState(1, "fluidvel"))
+          if (discretization.has_state(1, "fluidvel"))
           {
             // extract local values of the global vectors
             extract_values_from_global_vector(
@@ -186,14 +186,14 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           nonlinear_stiffness_poroelast(
               lm, mydisp, myvel, myfluidvel, myepreaf, matptr, matptr2, &elevec1, params);
         }
-        else if (la.Size() > 2)
+        else if (la.size() > 2)
         {
-          if (discretization.HasState(1, "porofluid"))
+          if (discretization.has_state(1, "porofluid"))
           {
             // get primary variables of multiphase porous medium flow
-            std::vector<double> myephi(la[1].Size());
+            std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
-                discretization.GetState(1, "porofluid");
+                discretization.get_state(1, "porofluid");
             Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
@@ -240,7 +240,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       // this can happen during setup of the time integrator or restart
       // there might be a better way. For instance do not evaluate
       // before the setup of the multiphysics problem is completed.
-      if (la.Size() > 1 and So3Ele::NumMaterial() > 1)
+      if (la.size() > 1 and So3Ele::num_material() > 1)
       {
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset
@@ -249,13 +249,13 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
         Core::LinAlg::Matrix<numnod_, 1> myepreaf(true);
 
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
           extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
         // this is kind of a hack. Find a better way! (e.g. move the pressure based variant
         // into own element)
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // extract local values of the global vectors
           extract_values_from_global_vector(
@@ -265,14 +265,14 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           nonlinear_stiffness_poroelast(
               lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr, &elevec1, params);
         }
-        else if (la.Size() > 2)
+        else if (la.size() > 2)
         {
-          if (discretization.HasState(1, "porofluid"))
+          if (discretization.has_state(1, "porofluid"))
           {
             // get primary variables of multiphase porous medium flow
-            std::vector<double> myephi(la[1].Size());
+            std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
-                discretization.GetState(1, "porofluid");
+                discretization.get_state(1, "porofluid");
             Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
@@ -310,7 +310,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1, "fluidvel"))
+      if (discretization.has_state(1, "fluidvel"))
       {
         Core::LinAlg::Matrix<numdim_, numnod_> myvel(true);
         Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
@@ -320,11 +320,11 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         extract_values_from_global_vector(
             discretization, 0, la[0].lm_, &mydisp, nullptr, "displacement");
 
-        if (discretization.HasState(0, "velocity"))
+        if (discretization.has_state(0, "velocity"))
           extract_values_from_global_vector(
               discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // extract local values of the global vectors
           extract_values_from_global_vector(
@@ -334,13 +334,13 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         coupling_poroelast(
             lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr, nullptr, params);
       }
-      else if (la.Size() > 2)
+      else if (la.size() > 2)
       {
-        if (discretization.HasState(1, "porofluid"))
+        if (discretization.has_state(1, "porofluid"))
         {
           // get primary variables of multiphase porous medium flow
-          std::vector<double> myephi(la[1].Size());
-          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
+          std::vector<double> myephi(la[1].size());
+          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
           Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
           Core::LinAlg::Matrix<numdim_, numnod_> mydisp(true);
@@ -373,7 +373,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1, "fluidvel"))
+      if (discretization.has_state(1, "fluidvel"))
       {
         // extract local values of the global vectors
         Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
@@ -389,13 +389,13 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         nonlinear_stiffness_poroelast(
             lm, mydisp, myvel, myfluidvel, myepreaf, nullptr, nullptr, &elevec1, params);
       }
-      else if (la.Size() > 2)
+      else if (la.size() > 2)
       {
-        if (discretization.HasState(1, "porofluid"))
+        if (discretization.has_state(1, "porofluid"))
         {
           // get primary variables of multiphase porous medium flow
-          std::vector<double> myephi(la[1].Size());
-          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
+          std::vector<double> myephi(la[1].size());
+          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
           Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
 
           // calculate tangent stiffness matrix
@@ -418,7 +418,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
 
       Teuchos::RCP<std::vector<char>> couplingstressdata = Teuchos::null;
       Inpar::Solid::StressType iocouplingstress = Inpar::Solid::stress_none;
-      if (this->IsParamsInterface())
+      if (this->is_params_interface())
       {
         couplingstressdata = this->str_params_interface().coupling_stress_data_ptr();
         iocouplingstress = this->str_params_interface().get_coupling_stress_output_type();
@@ -448,7 +448,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       // disassemble velocities and pressures
       if (iocouplingstress != Inpar::Solid::stress_none)
       {
-        if (discretization.HasState(1, "fluidvel"))
+        if (discretization.has_state(1, "fluidvel"))
         {
           // extract local values of the global vectors
           Core::LinAlg::Matrix<numdim_, numnod_> myfluidvel(true);
@@ -459,9 +459,9 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           coupling_stress_poroelast(
               mydisp, myfluidvel, myepreaf, &couplstress, nullptr, params, iocouplingstress);
         }
-        else if (la.Size() > 2)
+        else if (la.size() > 2)
         {
-          if (discretization.HasState(1, "porofluid"))
+          if (discretization.has_state(1, "porofluid"))
           {
             FOUR_C_THROW("coupl stress poroelast not yet implemented for pressure-based variant");
           }
@@ -507,10 +507,10 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::nonlinear_stiffness_poroelast(
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -556,10 +556,10 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::nonlinear_stiffness_poroelast_
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -674,7 +674,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::gauss_point_loop(Teuchos::Para
         params, press, volchange, gp, shapefct, porosity_dof, dvolchange_dus, porosity, dphi_dus);
 
     // **********************fill stiffness matrix and force vector+++++++++++++++++++++++++
-    if (fluid_mat_->Type() == Mat::PAR::darcy_brinkman)
+    if (fluid_mat_->type() == Mat::PAR::darcy_brinkman)
     {
       fill_matrix_and_vectors_brinkman(gp, J, porosity, fvelder, defgrd_inv, bop, C_inv, dphi_dus,
           dJ_dus, dCinv_dus, dFinvTdus, stiffmatrix, force, fstress);
@@ -698,9 +698,9 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::gauss_point_loop_pressure_base
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
-      weights_(inode) = cp->W();
+      weights_(inode) = cp->w();
     }
   }
 
@@ -719,9 +719,9 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::gauss_point_loop_pressure_base
   Core::LinAlg::Matrix<numdim_, numnod_> deriv;
 
   // Initialize
-  const int totalnumdofpernode = fluidmulti_mat_->NumMat();
-  const int numfluidphases = fluidmulti_mat_->NumFluidPhases();
-  const int numvolfrac = fluidmulti_mat_->NumVolFrac();
+  const int totalnumdofpernode = fluidmulti_mat_->num_mat();
+  const int numfluidphases = fluidmulti_mat_->num_fluid_phases();
+  const int numvolfrac = fluidmulti_mat_->num_vol_frac();
   const bool hasvolfracs = (totalnumdofpernode > numfluidphases);
   std::vector<double> phiAtGP(totalnumdofpernode);
 
@@ -840,10 +840,10 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::coupling_poroelast(
   static Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   static Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -874,10 +874,10 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::coupling_poroelast_pressure_ba
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -979,7 +979,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::gauss_point_loop_od(
     fill_matrix_and_vectors_od(gp, shapefct, N_XYZ, J, porosity, dphi_dp, velint, fvelint,
         defgrd_inv, Gradp, bop, C_inv, stiffmatrix);
 
-    if (fluid_mat_->Type() == Mat::PAR::darcy_brinkman)
+    if (fluid_mat_->type() == Mat::PAR::darcy_brinkman)
     {
       fill_matrix_and_vectors_brinkman_od(
           gp, shapefct, N_XYZ, J, porosity, dphi_dp, fvelder, defgrd_inv, bop, C_inv, stiffmatrix);
@@ -1008,9 +1008,9 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::gauss_point_loop_od_pressure_b
       true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
   // Initialize
-  const int numfluidphases = fluidmulti_mat_->NumFluidPhases();
-  const int totalnumdofpernode = fluidmulti_mat_->NumMat();
-  const int numvolfrac = fluidmulti_mat_->NumVolFrac();
+  const int numfluidphases = fluidmulti_mat_->num_fluid_phases();
+  const int totalnumdofpernode = fluidmulti_mat_->num_mat();
+  const int numvolfrac = fluidmulti_mat_->num_vol_frac();
   const bool hasvolfracs = (totalnumdofpernode - numfluidphases);
   std::vector<double> phiAtGP(totalnumdofpernode);
   std::vector<double> solpressderiv(totalnumdofpernode);
@@ -1082,10 +1082,10 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::coupling_stress_poroelast(
   Core::LinAlg::Matrix<numdim_, numnod_> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<numdim_, numnod_> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < numnod_; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     for (int j = 0; j < numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -1095,7 +1095,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::coupling_stress_poroelast(
 
   // get structure material
   Teuchos::RCP<Mat::StructPoro> structmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
-  if (structmat->MaterialType() != Core::Materials::m_structporo)
+  if (structmat->material_type() != Core::Materials::m_structporo)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
   Core::LinAlg::Matrix<numnod_, 1> shapefct;
@@ -1117,7 +1117,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::coupling_stress_poroelast(
 
     Core::LinAlg::Matrix<numstr_, 1> couplstress(true);
 
-    structmat->CouplStress(defgrd, press, couplstress);
+    structmat->coupl_stress(defgrd, press, couplstress);
 
     // return gp stresses
     switch (iostress)
@@ -1155,17 +1155,15 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::coupling_stress_poroelast(
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::InitElement()
+void Discret::ELEMENTS::So3Poro<So3Ele, distype>::init_element()
 {
   Core::LinAlg::Matrix<numdim_, numnod_> deriv;
   Core::LinAlg::Matrix<numnod_, numdim_> xrefe;
   for (int i = 0; i < numnod_; ++i)
   {
-    Core::Nodes::Node** nodes = Nodes();
-    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
+    xrefe(i, 0) = nodes()[i]->x()[0];
+    xrefe(i, 1) = nodes()[i]->x()[1];
+    xrefe(i, 2) = nodes()[i]->x()[2];
   }
 
   if (distype == Core::FE::CellType::nurbs27) isNurbs_ = true;
@@ -1176,7 +1174,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::InitElement()
 
   for (int gp = 0; gp < numgpt_; ++gp)
   {
-    const double* gpcoord = intpoints_.Point(gp);
+    const double* gpcoord = intpoints_.point(gp);
     for (int idim = 0; idim < numdim_; idim++)
     {
       xsi_[gp](idim) = gpcoord[idim];
@@ -1262,11 +1260,11 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::extract_values_from_global_vec
     Core::LinAlg::Matrix<numnod_, 1>* vectortofill, const std::string& state)
 {
   // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset, state);
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(dofset, state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // ask for the number of dofs of dofset
-  const int numdofpernode = discretization.NumDof(dofset, Nodes()[0]);
+  const int numdofpernode = discretization.num_dof(dofset, nodes()[0]);
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -1337,13 +1335,13 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::compute_sol_pressure_deriv(
   std::vector<double> fluidphi(phiAtGP.data(), phiAtGP.data() + numfluidphases);
 
   // evaluate the pressures
-  fluidmulti_mat_->EvaluateGenPressure(genpress, fluidphi);
+  fluidmulti_mat_->evaluate_gen_pressure(genpress, fluidphi);
 
   // transform generalized pressures to true pressure values
   fluidmulti_mat_->transform_gen_pres_to_true_pres(genpress, press);
 
   // explicit evaluation of saturation
-  fluidmulti_mat_->EvaluateSaturation(sat, fluidphi, press);
+  fluidmulti_mat_->evaluate_saturation(sat, fluidphi, press);
 
   // calculate the derivative of the pressure (actually first its inverse)
   fluidmulti_mat_->evaluate_deriv_of_dof_wrt_pressure(pressderiv, fluidphi);
@@ -1450,13 +1448,13 @@ double Discret::ELEMENTS::So3Poro<So3Ele, distype>::compute_sol_pressure_at_gp(
   std::vector<double> fluidphi(phiAtGP.data(), phiAtGP.data() + numfluidphases);
 
   // evaluate the pressures
-  fluidmulti_mat_->EvaluateGenPressure(genpress, fluidphi);
+  fluidmulti_mat_->evaluate_gen_pressure(genpress, fluidphi);
 
   //! transform generalized pressures to true pressure values
   fluidmulti_mat_->transform_gen_pres_to_true_pres(genpress, press);
 
   // explicit evaluation of saturation
-  fluidmulti_mat_->EvaluateSaturation(sat, fluidphi, press);
+  fluidmulti_mat_->evaluate_saturation(sat, fluidphi, press);
 
   // solid pressure = sum (S_i*p_i)
   const double solidpressure = std::inner_product(sat.begin(), sat.end(), press.begin(), 0.0);
@@ -1519,9 +1517,9 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::get_materials()
   if (struct_mat_ == Teuchos::null)
   {
     struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
-    if (struct_mat_->MaterialType() != Core::Materials::m_structporo and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeaction and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeactionECM)
+    if (struct_mat_->material_type() != Core::Materials::m_structporo and
+        struct_mat_->material_type() != Core::Materials::m_structpororeaction and
+        struct_mat_->material_type() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -1529,10 +1527,10 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::get_materials()
   if (fluid_mat_ == Teuchos::null)
   {
     // access second material in structure element
-    if (So3Ele::NumMaterial() > 1)
+    if (So3Ele::num_material() > 1)
     {
-      fluid_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(So3Ele::Material(1));
-      if (fluid_mat_->MaterialType() != Core::Materials::m_fluidporo)
+      fluid_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(So3Ele::material(1));
+      if (fluid_mat_->material_type() != Core::Materials::m_fluidporo)
         FOUR_C_THROW("invalid fluid material for poroelasticity");
     }
     else
@@ -1549,9 +1547,9 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::get_materials_pressure_based()
     struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != Core::Materials::m_structporo and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeaction and
-        struct_mat_->MaterialType() != Core::Materials::m_structpororeactionECM)
+    if (struct_mat_->material_type() != Core::Materials::m_structporo and
+        struct_mat_->material_type() != Core::Materials::m_structpororeaction and
+        struct_mat_->material_type() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -1559,15 +1557,15 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::get_materials_pressure_based()
   if (fluidmulti_mat_ == Teuchos::null)
   {
     // access second material in structure element
-    if (So3Ele::NumMaterial() > 1)
+    if (So3Ele::num_material() > 1)
     {
-      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(So3Ele::Material(1));
+      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(So3Ele::material(1));
       if (fluidmulti_mat_ == Teuchos::null)
         FOUR_C_THROW("cast to multiphase fluid poro material failed");
-      if (fluidmulti_mat_->MaterialType() != Core::Materials::m_fluidporo_multiphase and
-          fluidmulti_mat_->MaterialType() != Core::Materials::m_fluidporo_multiphase_reactions)
+      if (fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase and
+          fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase_reactions)
         FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
-      if (fluidmulti_mat_->NumFluidPhases() == 0)
+      if (fluidmulti_mat_->num_fluid_phases() == 0)
       {
         FOUR_C_THROW(
             "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE = 0 currently not supported since this requires "
@@ -1589,12 +1587,12 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::compute_porosity(Teuchos::Para
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::ComputeSurfPorosity(
+void Discret::ELEMENTS::So3Poro<So3Ele, distype>::compute_surf_porosity(
     Teuchos::ParameterList& params, double press, double J, int surfnum, int gp, double& porosity,
     double* dphi_dp, double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp,
     bool save)
 {
-  struct_mat_->ComputeSurfPorosity(params, press, J, surfnum, gp, porosity, dphi_dp, dphi_dJ,
+  struct_mat_->compute_surf_porosity(params, press, J, surfnum, gp, porosity, dphi_dp, dphi_dJ,
       dphi_dJdp, dphi_dJJ, dphi_dpp, save);
 }
 
@@ -1621,11 +1619,9 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::compute_shape_functions_and_de
     Core::LinAlg::Matrix<numnod_, numdim_> xrefe;
     for (int i = 0; i < numnod_; ++i)
     {
-      Core::Nodes::Node** nodes = Nodes();
-      if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-      xrefe(i, 0) = Nodes()[i]->X()[0];
-      xrefe(i, 1) = Nodes()[i]->X()[1];
-      xrefe(i, 2) = Nodes()[i]->X()[2];
+      xrefe(i, 0) = nodes()[i]->x()[0];
+      xrefe(i, 1) = nodes()[i]->x()[1];
+      xrefe(i, 2) = nodes()[i]->x()[2];
     }
 
     invJ_[gp].multiply(deriv, xrefe);
@@ -1909,7 +1905,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::fill_matrix_and_vectors(const 
     Core::LinAlg::Matrix<numdof_, numdof_>* stiffmatrix, Core::LinAlg::Matrix<numdof_, 1>* force,
     Core::LinAlg::Matrix<numstr_, 1>& fstress)
 {
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp);
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp);
 
   {
     static Core::LinAlg::Matrix<numdim_, numdim_> matreatensor(true);
@@ -2188,7 +2184,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_pressu
     const Core::LinAlg::Matrix<1, numdof_>& dps_dus,
     Core::LinAlg::Matrix<numdof_, numdof_>* stiffmatrix, Core::LinAlg::Matrix<numdof_, 1>* force)
 {
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp);
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp);
 
   //-----------inverse Right Cauchy-Green tensor as vector in voigt notation
   static Core::LinAlg::Matrix<numstr_, 1> C_inv_vec(true);
@@ -2264,9 +2260,9 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_brinkm
     Core::LinAlg::Matrix<numdof_, numdof_>* stiffmatrix, Core::LinAlg::Matrix<numdof_, 1>* force,
     Core::LinAlg::Matrix<numstr_, 1>& fstress)
 {
-  double detJ_w = detJ_[gp] * intpoints_.Weight(gp);
+  double detJ_w = detJ_[gp] * intpoints_.weight(gp);
 
-  double visc = fluid_mat_->Viscosity();
+  double visc = fluid_mat_->viscosity();
   Core::LinAlg::Matrix<numdim_, numdim_> CinvFvel;
   Core::LinAlg::Matrix<numdim_, numdim_> visctress1;
   CinvFvel.multiply(C_inv, fvelder);
@@ -2402,7 +2398,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_od(con
     const Core::LinAlg::Matrix<numdim_, numdim_>& C_inv,
     Core::LinAlg::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix)
 {
-  double detJ_w = detJ_[gp] * intpoints_.Weight(gp);
+  double detJ_w = detJ_[gp] * intpoints_.weight(gp);
 
   static Core::LinAlg::Matrix<numdim_, numdim_> matreatensor(true);
   static Core::LinAlg::Matrix<numdim_, numdim_> reatensor(true);
@@ -2560,7 +2556,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_od_pre
     const Core::LinAlg::Matrix<numdim_, numdim_>& C_inv, const std::vector<double>& solpressderiv,
     Core::LinAlg::SerialDenseMatrix& couplmat)
 {
-  const double detJ_w = detJ_[gp] * intpoints_.Weight(gp);
+  const double detJ_w = detJ_[gp] * intpoints_.weight(gp);
 
   // inverse Right Cauchy-Green tensor as vector
   static Core::LinAlg::Matrix<numstr_, 1> C_inv_vec;
@@ -2571,7 +2567,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_od_pre
   static Core::LinAlg::Matrix<numdof_, 1> cinvb(true);
   cinvb.multiply_tn(bop, C_inv_vec);
 
-  const int totalnumdofpernode = fluidmulti_mat_->NumMat();
+  const int totalnumdofpernode = fluidmulti_mat_->num_mat();
 
   {
     for (int i = 0; i < numnod_; i++)
@@ -2608,11 +2604,11 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::fill_matrix_and_vectors_brinkm
     const Core::LinAlg::Matrix<numdim_, numdim_>& C_inv,
     Core::LinAlg::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix)
 {
-  double detJ_w = detJ_[gp] * intpoints_.Weight(gp);  // gpweights[gp];
+  double detJ_w = detJ_[gp] * intpoints_.weight(gp);  // gpweights[gp];
 
   static Core::LinAlg::Matrix<numstr_, 1> fstress;
 
-  double visc = fluid_mat_->Viscosity();
+  double visc = fluid_mat_->viscosity();
   static Core::LinAlg::Matrix<numdim_, numdim_> CinvFvel;
   static Core::LinAlg::Matrix<numdim_, numdim_> tmp;
   CinvFvel.multiply(C_inv, fvelder);
@@ -2722,7 +2718,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::get_cauchy_n_dir_and_derivativ
     Core::LinAlg::SerialDenseMatrix* d_cauchyndir_dp, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn,
     Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dxi)
 {
-  if (fluid_mat_->Type() != Mat::PAR::darcy)
+  if (fluid_mat_->type() != Mat::PAR::darcy)
     FOUR_C_THROW("GetCauchyAtXi just implemented for pure Darcy flow!");
 
   if (distype != Core::FE::CellType::hex8)

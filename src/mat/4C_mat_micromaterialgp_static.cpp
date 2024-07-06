@@ -38,8 +38,8 @@ Mat::MicroMaterialGP::MicroMaterialGP(
     const int gp, const int ele_ID, const bool eleowner, const int microdisnum, const double V0)
     : gp_(gp), ele_id_(ele_ID), microdisnum_(microdisnum)
 {
-  Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
-  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis("structure");
+  Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
   dis_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
   disn_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
   lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
@@ -50,11 +50,11 @@ Mat::MicroMaterialGP::MicroMaterialGP(
 
   // data must be consistent between micro and macro input file
   const Teuchos::ParameterList& sdyn_macro =
-      Global::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::instance()->structural_dynamic_params();
   const Teuchos::ParameterList& sdyn_micro = microproblem->structural_dynamic_params();
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
-  microdis->Comm().Broadcast(&dt_, 1, 0);
+  microdis->get_comm().Broadcast(&dt_, 1, 0);
   step_ = 0;
   stepn_ = step_ + 1;
   time_ = 0.;
@@ -74,7 +74,7 @@ Mat::MicroMaterialGP::MicroMaterialGP(
   }
 
   microstaticcounter_[microdisnum] += 1;
-  density_ = (microstaticmap_[microdisnum_])->Density();
+  density_ = (microstaticmap_[microdisnum_])->density();
 
   // create and initialize "empty" EAS history map (if necessary)
   eas_init();
@@ -106,7 +106,7 @@ Mat::MicroMaterialGP::~MicroMaterialGP()
 
 void Mat::MicroMaterialGP::read_restart()
 {
-  step_ = Global::Problem::Instance()->restart();
+  step_ = Global::Problem::instance()->restart();
   microstaticmap_[microdisnum_]->read_restart(step_, dis_, lastalpha_, restartname_);
 
   *oldalpha_ = *lastalpha_;
@@ -127,14 +127,14 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   // OutputControl. In particular we assume that there are always micro and
   // macro control files on restart.
   Teuchos::RCP<Core::IO::OutputControl> macrocontrol =
-      Global::Problem::Instance(0)->OutputControlFile();
+      Global::Problem::instance(0)->output_control_file();
   std::string microprefix = macrocontrol->restart_name();
   std::string micronewprefix = macrocontrol->new_output_file_name();
 
-  Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
-  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis("structure");
+  Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
 
-  if (microdis->Comm().MyPID() == 0)
+  if (microdis->get_comm().MyPID() == 0)
   {
     // figure out prefix of micro-scale restart files
     restartname_ = new_result_file_path(microprefix);
@@ -144,16 +144,16 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
   }
 
   // restart file name and new output file name are sent to supporting procs
-  if (microdis->Comm().NumProc() > 1)
+  if (microdis->get_comm().NumProc() > 1)
   {
     {
       // broadcast restartname_ for micro scale
       int length = restartname_.length();
       std::vector<int> name(restartname_.begin(), restartname_.end());
-      int err = microdis->Comm().Broadcast(&length, 1, 0);
+      int err = microdis->get_comm().Broadcast(&length, 1, 0);
       if (err) FOUR_C_THROW("communication error");
       name.resize(length);
-      err = microdis->Comm().Broadcast(name.data(), length, 0);
+      err = microdis->get_comm().Broadcast(name.data(), length, 0);
       if (err) FOUR_C_THROW("communication error");
       restartname_.assign(name.begin(), name.end());
     }
@@ -162,10 +162,10 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
       // broadcast newfilename for micro scale
       int length = newfilename.length();
       std::vector<int> name(newfilename.begin(), newfilename.end());
-      int err = microdis->Comm().Broadcast(&length, 1, 0);
+      int err = microdis->get_comm().Broadcast(&length, 1, 0);
       if (err) FOUR_C_THROW("communication error");
       name.resize(length);
-      err = microdis->Comm().Broadcast(name.data(), length, 0);
+      err = microdis->get_comm().Broadcast(name.data(), length, 0);
       if (err) FOUR_C_THROW("communication error");
       newfilename.assign(name.begin(), name.end());
     }
@@ -173,17 +173,17 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
 
   if (eleowner)
   {
-    const int ndim = Global::Problem::Instance()->NDim();
-    const int restart = Global::Problem::Instance()->restart();
+    const int ndim = Global::Problem::instance()->n_dim();
+    const int restart = Global::Problem::instance()->restart();
     bool adaptname = true;
     // in case of restart, the new output file name is already adapted
     if (restart) adaptname = false;
 
     Teuchos::RCP<Core::IO::OutputControl> microcontrol =
-        Teuchos::rcp(new Core::IO::OutputControl(microdis->Comm(), "Structure",
+        Teuchos::rcp(new Core::IO::OutputControl(microdis->get_comm(), "Structure",
             microproblem->spatial_approximation_type(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->file_steps(),
-            Core::UTILS::IntegralValue<bool>(microproblem->IOParams(), "OUTPUT_BIN"), adaptname));
+            Core::UTILS::IntegralValue<bool>(microproblem->io_params(), "OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
@@ -229,14 +229,14 @@ std::string Mat::MicroMaterialGP::new_result_file_path(const std::string& newpre
 void Mat::MicroMaterialGP::eas_init()
 {
   Teuchos::RCP<Core::FE::Discretization> discret =
-      (Global::Problem::Instance(microdisnum_))->GetDis("structure");
+      (Global::Problem::instance(microdisnum_))->get_dis("structure");
 
-  for (int lid = 0; lid < discret->ElementRowMap()->NumMyElements(); ++lid)
+  for (int lid = 0; lid < discret->element_row_map()->NumMyElements(); ++lid)
   {
-    Core::Elements::Element* actele = discret->lRowElement(lid);
+    Core::Elements::Element* actele = discret->l_row_element(lid);
 
-    if (actele->ElementType() == Discret::ELEMENTS::SoHex8Type::Instance() or
-        actele->ElementType() == Discret::ELEMENTS::SoShw6Type::Instance())
+    if (actele->element_type() == Discret::ELEMENTS::SoHex8Type::instance() or
+        actele->element_type() == Discret::ELEMENTS::SoShw6Type::instance())
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;
@@ -264,7 +264,7 @@ void Mat::MicroMaterialGP::eas_init()
 
 
 
-void Mat::MicroMaterialGP::ResetTimeAndStep()
+void Mat::MicroMaterialGP::reset_time_and_step()
 {
   time_ = 0.0;
   timen_ = time_ + dt_;
@@ -288,8 +288,8 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
   // set current time, time step size and step number
   microstatic->set_time(time_, timen_, dt_, step_, stepn_);
 
-  microstatic->Predictor(defgrd);
-  microstatic->FullNewton();
+  microstatic->predictor(defgrd);
+  microstatic->full_newton();
   microstatic->static_homogenization(stress, cmat, defgrd, mod_newton_, build_stiff_);
 
   // note that it is not necessary to save displacements and EAS data
@@ -298,7 +298,7 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
   // micromaterialgp_static data!
 
   // clear displacements in MicroStruGenAlpha for next usage
-  microstatic->ClearState();
+  microstatic->clear_state();
 }
 
 
@@ -314,9 +314,9 @@ void Mat::MicroMaterialGP::update()
 
   dis_->Update(1.0, *disn_, 0.0);
 
-  Global::Problem* microproblem = Global::Problem::Instance(microdisnum_);
-  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->GetDis("structure");
-  const Epetra_Map* elemap = microdis->ElementRowMap();
+  Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
+  const Epetra_Map* elemap = microdis->element_row_map();
 
   for (int i = 0; i < elemap->NumMyElements(); ++i) (*lastalpha_)[i] = (*oldalpha_)[i];
 

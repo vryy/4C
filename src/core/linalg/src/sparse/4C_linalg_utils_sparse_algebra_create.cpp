@@ -85,12 +85,12 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(
   std::set<int> conddofset;
   std::set<int> otherdofset;
 
-  int numrownodes = dis.NumMyRowNodes();
+  int numrownodes = dis.num_my_row_nodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    Core::Nodes::Node* node = dis.lRowNode(i);
+    Core::Nodes::Node* node = dis.l_row_node(i);
 
-    std::vector<int> dof = dis.Dof(0, node);
+    std::vector<int> dof = dis.dof(0, node);
     for (unsigned j = 0; j < dof.size(); ++j)
     {
       // test for dof position
@@ -109,16 +109,16 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.Comm()));
+  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
+      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.get_comm()));
   conddofmapvec.clear();
 
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.Comm()));
+  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
+      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.get_comm()));
   otherdofmapvec.clear();
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
@@ -135,12 +135,12 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discreti
   std::set<int> conddofset;
   std::set<int> otherdofset;
 
-  int numrownodes = dis.NumMyRowNodes();
+  int numrownodes = dis.num_my_row_nodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    Core::Nodes::Node* node = dis.lRowNode(i);
+    Core::Nodes::Node* node = dis.l_row_node(i);
 
-    std::vector<int> dof = dofset.Dof(node);
+    std::vector<int> dof = dofset.dof(node);
     for (unsigned j = 0; j < dof.size(); ++j)
     {
       // test for dof position
@@ -159,16 +159,16 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discreti
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.Comm()));
+  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
+      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.get_comm()));
   conddofmapvec.clear();
 
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.Comm()));
+  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
+      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.get_comm()));
   otherdofmapvec.clear();
 
   extractor.setup(*dofset.dof_row_map(), conddofmap, otherdofmap);
@@ -184,12 +184,12 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discreti
   std::set<int> conddofset;
   std::set<int> otherdofset;
 
-  int numrownodes = dis.NumMyRowNodes();
+  int numrownodes = dis.num_my_row_nodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    Core::Nodes::Node* node = dis.lRowNode(i);
+    Core::Nodes::Node* node = dis.l_row_node(i);
 
-    std::vector<int> dof = dis.Dof(0, node);
+    std::vector<int> dof = dis.dof(0, node);
 
     if ((dof.size() % fp_dim) != 0)
       FOUR_C_THROW(
@@ -214,16 +214,16 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discreti
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap =
-      Teuchos::rcp(new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.Comm()));
+  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
+      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.get_comm()));
   conddofmapvec.clear();
 
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.Comm()));
+  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
+      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.get_comm()));
   otherdofmapvec.clear();
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);

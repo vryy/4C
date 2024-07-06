@@ -461,21 +461,21 @@ namespace NOX
              * If the filter rejected the trial point but the inner test would accept it
              * we have an indicator for a blocking filter set. This can happen due to old
              * historic information which is not reliable for the current neighborhood. */
-            void Check(const NOX::Nln::LineSearch::Generic& linesearch,
+            void check(const NOX::Nln::LineSearch::Generic& linesearch,
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 const Point& rejected_fp);
 
             /** add the current iterate to the blocking set if the sufficient
              *  reduction criterion with respect to the user-specified max theta
              *  value is fulfilled. */
-            void AddFilterIterate(const int newton_iter, const Point& rejected_fp);
+            void add_filter_iterate(const int newton_iter, const Point& rejected_fp);
 
             /// initialize a reinitialization of the filter
-            void ReinitializeFilter();
+            void reinitialize_filter();
 
             /** print some information about the blocking scenario and a possible
              *  reinitialization */
-            void PrintInfo(std::ostream& os) const;
+            void print_info(std::ostream& os) const;
 
             // vector containing consecutive blocking filter iteration numbers
             std::vector<std::pair<unsigned, unsigned>> filter_iterates_;
@@ -511,11 +511,11 @@ namespace NOX
             void computef(double* theta_values, const ::NOX::Abstract::Group& grp) const;
 
             /// find the maximal infeasibility measure in a set of theta values
-            unsigned findMaxThetaId(double* theta_values) const;
+            unsigned find_max_theta_id(double* theta_values) const;
 
             /// compute the slope of all infeasibility merit functions
-            void computeSlope(const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp,
-                double* theta_slope_values) const;
+            void compute_slope(const ::NOX::Abstract::Vector& dir,
+                const ::NOX::Abstract::Group& grp, double* theta_slope_values) const;
 
             /// compute mixed 2-nd order terms of all infeasibility merit functions
             void compute_mixed2nd_order_terms(const ::NOX::Abstract::Vector& dir,
@@ -544,21 +544,21 @@ namespace NOX
                 const Infeasibility& infeasibility_func, const ::NOX::Abstract::Group& grp);
 
             /// create a new filter point from an existing point
-            static Teuchos::RCP<Point> makeFilterPoint(const Point& p, const bool do_scaling);
+            static Teuchos::RCP<Point> make_filter_point(const Point& p, const bool do_scaling);
 
             /// (re)set all global point member variables
-            static void resetStaticMembers(const unsigned num_obj_coords,
+            static void reset_static_members(const unsigned num_obj_coords,
                 const unsigned num_theta_coords, const double weight_objective_func,
                 const double weight_infeasibility_func, const double init_max_theta_scale);
 
             /** (re)set global point member variables at the beginning of each new
              *  Newton iteration */
-            static void resetStaticMembers();
+            static void reset_static_members();
 
             /// (re)set the global margin safety factors
             static void set_margin_safety_factors();
 
-            static void reinitFilter(plain_point_set& filter,
+            static void reinit_filter(plain_point_set& filter,
                 const Infeasibility& infeasibility_func, const double& downscale_fac);
 
            private:
@@ -602,17 +602,17 @@ namespace NOX
 
            public:
             /// calculate and set the point norm value
-            void setNorm();
+            void set_norm();
 
             /// scale point coordinates
             void scale();
 
             /// set margin values for each filter coordinate
-            void setMargin();
+            void set_margin();
 
             // return true if the current point is feasible with respect to one
             // infeasibility measure
-            bool IsFeasible(const double tol) const;
+            bool is_feasible(const double tol) const;
 
             //
             bool is_sufficiently_reduced_compared_to_max_theta(const double& red_fac) const;
@@ -634,10 +634,10 @@ namespace NOX
             inline const double* data() const { return coords_.values(); }
 
             /// return the maximal infeasibility measure of this point
-            inline double maxTheta() const { return coords_(num_obj_coords_ + max_theta_id_); }
+            inline double max_theta() const { return coords_(num_obj_coords_ + max_theta_id_); }
 
             /// return the scaling factor of the maximal infeasibility measure of this point
-            inline double scaleOfMaxTheta() const
+            inline double scale_of_max_theta() const
             {
               return scale_(num_obj_coords_ + max_theta_id_);
             }

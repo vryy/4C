@@ -70,7 +70,7 @@ namespace Solid
       //!@{
 
       //! [derived]
-      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_meshtying; }
+      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_meshtying; }
 
       //! [derived]
       void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) override;
@@ -90,7 +90,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override{};
+      void predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! [derived]
       void run_post_compute_x(
@@ -163,7 +163,7 @@ namespace Solid
       //! @name Call-back routines
       //!@{
 
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetJacobianBlock(
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_block(
           const Solid::MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
@@ -177,7 +177,7 @@ namespace Solid
           const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
-      virtual Teuchos::RCP<Core::LinAlg::SparseOperator> GetAuxDisplJacobian() const
+      virtual Teuchos::RCP<Core::LinAlg::SparseOperator> get_aux_displ_jacobian() const
       {
         return Teuchos::null;
       };
@@ -211,11 +211,11 @@ namespace Solid
       //!@{
 
       //! Returns a pointer to the underlying meshtying strategy object
-      const Teuchos::RCP<CONTACT::MtAbstractStrategy>& StrategyPtr();
+      const Teuchos::RCP<CONTACT::MtAbstractStrategy>& strategy_ptr();
 
       //! Returns the underlying meshtying strategy object
-      CONTACT::MtAbstractStrategy& Strategy();
-      const CONTACT::MtAbstractStrategy& Strategy() const;
+      CONTACT::MtAbstractStrategy& strategy();
+      const CONTACT::MtAbstractStrategy& strategy() const;
 
       //!@}
 

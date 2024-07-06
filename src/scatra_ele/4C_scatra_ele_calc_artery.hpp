@@ -44,11 +44,11 @@ namespace Discret
 
 
       //! Singleton access method
-      static ScaTraEleCalcArtery<distype, probdim>* Instance(
+      static ScaTraEleCalcArtery<distype, probdim>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
-      int SetupCalc(
+      int setup_calc(
           Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
      protected:
@@ -67,7 +67,7 @@ namespace Discret
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // scale fac with the area of the artery pi*D^2/4
-        return fac * M_PI * var_manager()->Diam() * var_manager()->Diam() / 4.0;
+        return fac * M_PI * var_manager()->diam() * var_manager()->diam() / 4.0;
       }
 
       //! evaluate shape functions and their derivatives at element center
@@ -173,7 +173,7 @@ namespace Discret
         for (int k = 0; k < my::numscal_; ++k)
         {
           // convective velocity
-          my::convelint_[k].update(-Diam() * Diam() / 32.0 / Visc(), pressuregrad, 0.0);
+          my::convelint_[k].update(-diam() * diam() / 32.0 / visc(), pressuregrad, 0.0);
           // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
           my::conv_[k].multiply_tn(derxy, my::convelint_[k]);
           // overwrite convective term
@@ -183,32 +183,32 @@ namespace Discret
       };
 
       // Set the artery material in the scatra-Varmanager
-      void SetArteryMaterial(Core::Elements::Element* ele)
+      void set_artery_material(Core::Elements::Element* ele)
       {
         // check if we actually have two materials
-        if (ele->NumMaterial() < 2) FOUR_C_THROW("no second material available");
+        if (ele->num_material() < 2) FOUR_C_THROW("no second material available");
         // check for artery material
-        if (ele->Material(1)->MaterialType() != Core::Materials::MaterialType::m_cnst_art)
+        if (ele->material(1)->material_type() != Core::Materials::MaterialType::m_cnst_art)
           FOUR_C_THROW("Secondary material is not of type m_cnst_art, but %d",
-              ele->Material(1)->MaterialType());
+              ele->material(1)->material_type());
 
         // here we rely that the Artery material has been added as second material
-        arterymat_ = Teuchos::rcp_dynamic_cast<Mat::Cnst1dArt>(ele->Material(1));
+        arterymat_ = Teuchos::rcp_dynamic_cast<Mat::Cnst1dArt>(ele->material(1));
 
         materialset_ = true;
       }
 
       // return density
-      double Dens() { return ArteryMat()->Density(); }
+      double dens() { return artery_mat()->Density(); }
 
       // return diameter
-      double Diam() { return ArteryMat()->Diam(); }
+      double diam() { return artery_mat()->diam(); }
 
       // return viscosity
-      double Visc() { return ArteryMat()->Viscosity(); }
+      double visc() { return artery_mat()->viscosity(); }
 
       //! return artery material
-      Teuchos::RCP<Mat::Cnst1dArt> ArteryMat()
+      Teuchos::RCP<Mat::Cnst1dArt> artery_mat()
       {
         if (!materialset_) FOUR_C_THROW("Artery Material has not yet been set in Variablemanager");
 

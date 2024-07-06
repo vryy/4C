@@ -84,13 +84,13 @@ namespace TSI
 
 
     //! outer level time loop (to be implemented by deriving classes)
-    virtual void TimeLoop() = 0;
+    virtual void time_loop() = 0;
 
     /// initialise TSI system
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     /// non-linear solve, i.e. (multiple) corrector
-    virtual void Solve() = 0;
+    virtual void solve() = 0;
 
     //! read restart data
     void read_restart(int step  //!< step number where the calculation is continued
@@ -100,7 +100,7 @@ namespace TSI
     const Teuchos::RCP<Adapter::Structure>& structure_field() { return structure_; }
 
     //! access to thermal field
-    const Teuchos::RCP<Adapter::Thermo>& ThermoField() { return thermo_; }
+    const Teuchos::RCP<Adapter::Thermo>& thermo_field() { return thermo_; }
 
    protected:
     //! @name Time loop building blocks

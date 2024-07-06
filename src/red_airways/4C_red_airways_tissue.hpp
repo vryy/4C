@@ -45,21 +45,21 @@ namespace Airway
 
     void read_restart(const int step) override;
 
-    void SetupRedAirways();
+    void setup_red_airways();
 
     /// time integration of coupled problem
-    void Integrate();
+    void integrate();
 
     void do_structure_step();
 
-    void RelaxPressure(int iter);
+    void relax_pressure(int iter);
 
-    void DoRedAirwayStep();
+    void do_red_airway_step();
 
     /// flag whether iteration between fields should be finished
-    bool NotConverged(int iter);
+    bool not_converged(int iter);
 
-    void OutputIteration(Teuchos::RCP<Epetra_Vector> pres_inc,
+    void output_iteration(Teuchos::RCP<Epetra_Vector> pres_inc,
         Teuchos::RCP<Epetra_Vector> scaled_pres_inc, Teuchos::RCP<Epetra_Vector> flux_inc,
         Teuchos::RCP<Epetra_Vector> scaled_flux_inc, int iter);
 
@@ -69,7 +69,7 @@ namespace Airway
     Teuchos::RCP<Adapter::StructureRedAirway>& structure_field() { return structure_; }
 
     /// access to airway field
-    Teuchos::RCP<RedAirwayImplicitTimeInt>& RedAirwayField() { return redairways_; }
+    Teuchos::RCP<RedAirwayImplicitTimeInt>& red_airway_field() { return redairways_; }
 
 
    private:

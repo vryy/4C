@@ -38,21 +38,21 @@ namespace Discret
     class Vele3Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Vele3Type"; }
+      std::string name() const override { return "Vele3Type"; }
 
-      static Vele3Type& Instance();
+      static Vele3Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -104,21 +104,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Fluid and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override
+      int num_line() const override
       {
         if (num_node() == 8 || num_node() == 20 || num_node() == 27)
           return 12;
@@ -134,7 +134,7 @@ namespace Discret
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override
+      int num_surface() const override
       {
         if (num_node() == 8 || num_node() == 20 || num_node() == 27)
           return 6;
@@ -152,17 +152,17 @@ namespace Discret
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int NumVolume() const override { return 1; }
+      int num_volume() const override { return 1; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
 
       /*!
@@ -171,7 +171,10 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override { return Vele3Type::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return Vele3Type::instance().unique_par_object_id();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -203,7 +206,7 @@ namespace Discret
     number of degrees of freedom per node along the way for each of it's nodes
     separately.
     */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
     \brief Get number of degrees of freedom per element
@@ -220,7 +223,7 @@ namespace Discret
 
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override { return Vele3Type::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return Vele3Type::instance(); }
 
 
       //@}
@@ -241,7 +244,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /// Read input for this element
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
      private:
@@ -296,18 +299,18 @@ namespace Discret
     class Vele3SurfaceType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Vele3SurfaceType"; }
+      std::string name() const override { return "Vele3SurfaceType"; }
 
-      static Vele3SurfaceType& Instance();
+      static Vele3SurfaceType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -343,9 +346,9 @@ namespace Discret
       */
       explicit Vele3Surface(const Vele3Surface& old);
 
-      Core::Elements::Element* Clone() const override;
-      Core::FE::CellType Shape() const override;
-      int NumLine() const override
+      Core::Elements::Element* clone() const override;
+      Core::FE::CellType shape() const override;
+      int num_line() const override
       {
         if (num_node() == 9 || num_node() == 8 || num_node() == 4)
           return 4;
@@ -357,13 +360,13 @@ namespace Discret
           return -1;
         }
       }
-      int NumSurface() const override { return 1; }
-      int NumVolume() const override { return -1; }
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
-      int UniqueParObjectId() const override
+      int num_surface() const override { return 1; }
+      int num_volume() const override { return -1; }
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      int unique_par_object_id() const override
       {
-        return Vele3SurfaceType::Instance().UniqueParObjectId();
+        return Vele3SurfaceType::instance().unique_par_object_id();
       }
       void pack(Core::Communication::PackBuffer& data) const override;
       void unpack(const std::vector<char>& data) override;
@@ -373,12 +376,12 @@ namespace Discret
 
       //! @name Access methods
 
-      int NumDofPerNode(const Core::Nodes::Node&) const override { return 3; }
+      int num_dof_per_node(const Core::Nodes::Node&) const override { return 3; }
       int num_dof_per_element() const override { return 0; }
       void print(std::ostream& os) const override;
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return Vele3SurfaceType::Instance();
+        return Vele3SurfaceType::instance();
       }
 
       //@}
@@ -449,18 +452,18 @@ namespace Discret
     class Vele3LineType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "Vele3LineType"; }
+      std::string name() const override { return "Vele3LineType"; }
 
-      static Vele3LineType& Instance();
+      static Vele3LineType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -504,11 +507,11 @@ namespace Discret
       */
       Vele3Line(const Vele3Line& old);
 
-      Core::Elements::Element* Clone() const override;
-      Core::FE::CellType Shape() const override;
-      int UniqueParObjectId() const override
+      Core::Elements::Element* clone() const override;
+      Core::FE::CellType shape() const override;
+      int unique_par_object_id() const override
       {
-        return Vele3LineType::Instance().UniqueParObjectId();
+        return Vele3LineType::instance().unique_par_object_id();
       }
       void pack(Core::Communication::PackBuffer& data) const override;
       void unpack(const std::vector<char>& data) override;
@@ -525,15 +528,15 @@ namespace Discret
 
       For this 3D boundary element, we have 3 displacements, if needed
       */
-      int NumDofPerNode(const Core::Nodes::Node&) const override { return 3; }
+      int num_dof_per_node(const Core::Nodes::Node&) const override { return 3; }
 
       int num_dof_per_element() const override { return 0; }
 
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return Vele3LineType::Instance();
+        return Vele3LineType::instance();
       }
 
       //@}

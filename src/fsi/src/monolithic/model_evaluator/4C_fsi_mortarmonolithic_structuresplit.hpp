@@ -78,13 +78,13 @@ namespace FSI
 
 
     */
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! Create #lambda_ and #lambdaold_
-    void SetLambda() override;
+    void set_lambda() override;
 
     //! Set #notsetup_ = true after redistribution
-    void SetNotSetup() override
+    void set_not_setup() override
     {
       notsetup_ = true;
       return;
@@ -98,7 +98,7 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
@@ -214,7 +214,7 @@ namespace FSI
     void output() override;
 
     /// Write Lagrange multiplier
-    void OutputLambda() override;
+    void output_lambda() override;
 
     /// setup of NOX convergence tests
     Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(

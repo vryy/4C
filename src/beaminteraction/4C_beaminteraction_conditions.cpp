@@ -40,7 +40,7 @@ BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditionBase::BuildIdSets(
+void BEAMINTERACTION::BeamInteractionConditionBase::build_id_sets(
     const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Set the IDs of the line elements.
@@ -94,7 +94,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
 
       // Get the line conditions from the discretization.
       std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_lines;
-      discret->GetCondition(condition_name, condition_lines);
+      discret->get_condition(condition_name, condition_lines);
 
       // Match the coupling IDs from the input line.
       std::map<int, std::pair<Teuchos::RCP<const Core::Conditions::Condition>,
@@ -152,8 +152,8 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
       // Get the conditions from the discretization.
       std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_line;
       std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_other;
-      discret->GetCondition(condition_names[0], condition_line);
-      discret->GetCondition(condition_names[1], condition_other);
+      discret->get_condition(condition_names[0], condition_line);
+      discret->get_condition(condition_names[1], condition_other);
 
       // There has to be an equal number of sections for lines and surfaces / volumes.
       if (condition_line.size() != condition_other.size())
@@ -213,7 +213,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
 
       // Get the conditions from the discretization.
       std::vector<Teuchos::RCP<Core::Conditions::Condition>> coupling_conditions;
-      discret->GetCondition("PenaltyPointCouplingCondition", coupling_conditions);
+      discret->get_condition("PenaltyPointCouplingCondition", coupling_conditions);
       for (const auto& condition : coupling_conditions)
       {
         // We found the matching conditions, now create the beam-to-beam coupling condition object
@@ -234,11 +234,11 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
 /**
  *
  */
-void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
+void BEAMINTERACTION::BeamInteractionConditions::build_id_sets(
     Teuchos::RCP<Core::FE::Discretization> discretization)
 {
   for (auto const& map_pair : condition_map_)
-    for (auto const& condition : map_pair.second) condition->BuildIdSets(discretization);
+    for (auto const& condition : map_pair.second) condition->build_id_sets(discretization);
 }
 
 /**
@@ -277,7 +277,7 @@ void BEAMINTERACTION::BeamInteractionConditions::clear()
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
+BEAMINTERACTION::BeamInteractionConditions::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> new_pair;
@@ -285,7 +285,7 @@ BEAMINTERACTION::BeamInteractionConditions::CreateContactPair(
   {
     for (auto& condition : map_pair.second)
     {
-      new_pair = condition->CreateContactPair(ele_ptrs);
+      new_pair = condition->create_contact_pair(ele_ptrs);
       if (new_pair != Teuchos::null) return new_pair;
     }
   }
@@ -322,22 +322,22 @@ void BEAMINTERACTION::ConditionToElementIds(
 {
   // Loop over the elements in the condition and get the "real" element by comparing the node IDs.
   element_ids.clear();
-  element_ids.reserve(condition->Geometry().size());
-  for (const auto& item : condition->Geometry())
+  element_ids.reserve(condition->geometry().size());
+  for (const auto& item : condition->geometry())
   {
     int n_nodes = item.second->num_node();
 
     // Create the node sets and store the node IDs from the condition element in it.
     std::set<int> nodes_condition;
     std::set<int> nodes_element;
-    for (int i = 0; i < n_nodes; i++) nodes_condition.insert(item.second->Nodes()[i]->Id());
+    for (int i = 0; i < n_nodes; i++) nodes_condition.insert(item.second->nodes()[i]->id());
 
     // Loop over all elements connected to a node and check if the nodal IDs are the same. Use the
     // last node, since if there are nodes connected to fewer elements, those are usually at the
     // end of the list.
     int local_node_id = n_nodes - 1;
-    Core::Elements::Element** elements = item.second->Nodes()[local_node_id]->Elements();
-    for (int i_element = 0; i_element < item.second->Nodes()[local_node_id]->NumElement();
+    Core::Elements::Element** elements = item.second->nodes()[local_node_id]->elements();
+    for (int i_element = 0; i_element < item.second->nodes()[local_node_id]->num_element();
          i_element++)
     {
       if (elements[i_element]->num_node() != n_nodes) continue;
@@ -345,16 +345,16 @@ void BEAMINTERACTION::ConditionToElementIds(
       // Fill up the node ID map.
       nodes_element.clear();
       for (int i_nodes = 0; i_nodes < n_nodes; i_nodes++)
-        nodes_element.insert(elements[i_element]->Nodes()[i_nodes]->Id());
+        nodes_element.insert(elements[i_element]->nodes()[i_nodes]->id());
 
       // Check if the maps are equal.
       if (std::equal(nodes_condition.begin(), nodes_condition.end(), nodes_element.begin()))
-        element_ids.push_back(elements[i_element]->Id());
+        element_ids.push_back(elements[i_element]->id());
     }
   }
 
   // Check if all elements were found.
-  if (condition->Geometry().size() != element_ids.size())
+  if (condition->geometry().size() != element_ids.size())
     FOUR_C_THROW("Could not find the IDs of all elements!");
 }
 

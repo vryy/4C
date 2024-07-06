@@ -74,7 +74,7 @@ namespace Core::Geo
         return "Unknown PointPosition enum";
       };
 
-      static Point* NewPoint(Mesh& mesh, const double* x, double t, Edge* cut_edge, Side* cut_side,
+      static Point* new_point(Mesh& mesh, const double* x, double t, Edge* cut_edge, Side* cut_side,
           double tolerance = 0.0);
 
       static Point* insert_cut(Edge* cut_edge, Side* cut_side, Node* n);
@@ -85,16 +85,16 @@ namespace Core::Geo
       /// destructor
       virtual ~Point() = default;
 
-      int Id() const { return pid_; }
+      int id() const { return pid_; }
 
-      const double* X() const { return x_; }
+      const double* x() const { return x_; }
 
-      PointPosition Position() const { return position_; }
+      PointPosition position() const { return position_; }
 
-      void Position(PointPosition p);
+      void position(PointPosition p);
 
       /*! \brief Add this edge to the list of edges that are cut by this point */
-      void AddEdge(Edge* e);
+      void add_edge(Edge* e);
 
       /*! \brief Add this side to the list of sides that are cut by this point */
       void add_side(Side* s);
@@ -110,44 +110,44 @@ namespace Core::Geo
 
       /// removing element from the list of elements cut by this point (can be used when position
       /// was determined wrongly)
-      void RemoveElement(Element* e) { cut_elements_.erase(e); }
+      void remove_element(Element* e) { cut_elements_.erase(e); }
 
       /// adding pair of side-edge to container of intersected, does not insert if such pair already
       /// exists
-      void AddPair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& original_pair);
+      void add_pair(Side* side, Edge* edge, const std::pair<Side*, Edge*>& original_pair);
 
       /// default call
-      void AddPair(Side* side, Edge* edge);
+      void add_pair(Side* side, Edge* edge);
 
       /// called during merging
-      void AddPair(const std::pair<Side*, Edge*>& pair,
+      void add_pair(const std::pair<Side*, Edge*>& pair,
           const std::pair<Side*, Edge*>& original_pair, Point* source);
 
       /// Add all topological connections of intersection of this edge and other edge ( all
       /// necessery pairs, etc)
-      void AddEdgeIntersection(Edge* first, Edge* second,
+      void add_edge_intersection(Edge* first, Edge* second,
           const std::pair<Side*, Edge*>& original_cut_pair, const std::string& extra_msg = "");
 
-      void AddEdgeIntersection(Edge* first, Edge* second, Side* original_side, Edge* original_edge,
-          const std::string& extra_msg = "");
+      void add_edge_intersection(Edge* first, Edge* second, Side* original_side,
+          Edge* original_edge, const std::string& extra_msg = "");
 
       /// returns true if this point is created by this pair of side and edge intersection
-      bool IsCut(Side* side, Edge* edge);
+      bool is_cut(Side* side, Edge* edge);
 
       /*! \brief Returns true if the edge is cut by this point */
-      bool IsCut(Edge* e) { return cut_edges_.count(e) > 0; }
+      bool is_cut(Edge* e) { return cut_edges_.count(e) > 0; }
 
       /*! \brief Returns true if the facet is cut by this point */
-      bool IsCut(Facet* f) { return facets_.count(f) > 0; }
+      bool is_cut(Facet* f) { return facets_.count(f) > 0; }
 
       /*! \brief Returns true if the side is cut by this point */
-      bool IsCut(Side* s) { return cut_sides_.count(s) > 0; }
+      bool is_cut(Side* s) { return cut_sides_.count(s) > 0; }
 
       /*! \brief Returns true if this point cuts the element */
-      bool IsCut(Element* s) { return cut_elements_.count(s) > 0; }
+      bool is_cut(Element* s) { return cut_elements_.count(s) > 0; }
 
       /// Checks is this cut point is the result of s1 x s2 by checking cut_pairs
-      bool IsCut(Side* s1, Side* s2);
+      bool is_cut(Side* s1, Side* s2);
 
       /*
        * Return if this point associated with a facet which is either a cut-side or a marked side
@@ -158,7 +158,7 @@ namespace Core::Geo
       bool has_associated_boundary_cell_facet();
 
       /*! \brief Get the coordinates of this point */
-      virtual void Coordinates(double* x) const = 0;
+      virtual void coordinates(double* x) const = 0;
 
       void Register(Line* line) { lines_.insert(line); }
 
@@ -167,38 +167,38 @@ namespace Core::Geo
       /*!
       \brief Identifies the edges that are cut by considered point and given point
       */
-      void CommonEdge(Point* other, plain_edge_set& edges);
+      void common_edge(Point* other, plain_edge_set& edges);
 
       /*!
       \brief Identifies the sides that are cut by considered point and given point
       */
-      void CommonSide(Point* other, plain_side_set& sides);
+      void common_side(Point* other, plain_side_set& sides);
 
-      Line* CommonLine(Point* other);
+      Line* common_line(Point* other);
 
-      Line* CutLine(Side* side, bool unique = true);
+      Line* cut_line(Side* side, bool unique = true);
 
-      Line* CutLine(Line* line, Side* side, Element* element);
+      Line* cut_line(Line* line, Side* side, Element* element);
 
-      Line* CutLine(const Impl::PointLineFilter& filter, bool unique = true);
+      Line* cut_line(const Impl::PointLineFilter& filter, bool unique = true);
 
-      Line* CutLine(Line* line, const Impl::PointLineFilter& filter, bool unique = true);
+      Line* cut_line(Line* line, const Impl::PointLineFilter& filter, bool unique = true);
 
-      void CutLines(const Impl::PointLineFilter& filter, plain_line_set& cut_lines);
+      void cut_lines(const Impl::PointLineFilter& filter, plain_line_set& cut_lines);
 
-      void CutLines(Side* side, plain_line_set& cut_lines);
+      void cut_lines(Side* side, plain_line_set& cut_lines);
 
       // std::vector<Edge*> CutEdges( Point * other );
 
-      const plain_edge_set& CutEdges() { return cut_edges_; }
+      const plain_edge_set& cut_edges() { return cut_edges_; }
 
-      const plain_side_set& CutSides() { return cut_sides_; }
+      const plain_side_set& cut_sides() { return cut_sides_; }
 
-      const std::set<std::pair<Side*, Edge*>>& CutPairs() { return cut_pairs_; }
+      const std::set<std::pair<Side*, Edge*>>& cut_pairs() { return cut_pairs_; }
 
-      Side* CutSide(Side* side, Point* other);
+      Side* cut_side(Side* side, Point* other);
 
-      void CutEdge(Side* side, Line* other_line, std::vector<Edge*>& matches);
+      void cut_edge(Side* side, Line* other_line, std::vector<Edge*>& matches);
 
       void print(std::ostream& stream = std::cout) const
       {
@@ -206,11 +206,11 @@ namespace Core::Geo
                << std::setprecision(16) << x_[1] << "," << std::setprecision(16) << x_[2] << ")";
       }
 
-      void Plot(std::ostream& f, int nid = -50) const
+      void plot(std::ostream& f, int nid = -50) const
       {
         f << std::setprecision(25) << x_[0] << " " << std::setprecision(25) << x_[1] << " "
           << std::setprecision(25) << x_[2] << " # " << pid_ << " " << nid;
-        DumpDoubles(f, X(), 3);
+        DumpDoubles(f, x(), 3);
         f << "\n";
       }
 
@@ -235,14 +235,14 @@ namespace Core::Geo
 
       // void t( Edge* edge, double pos ) { t_[edge] = pos; }
 
-      unsigned Pid() const { return pid_; }
+      unsigned pid() const { return pid_; }
 
-      bool NodalPoint(const std::vector<Node*>& nodes) const;
+      bool nodal_point(const std::vector<Node*>& nodes) const;
 
       // checking if the cut_point is close enough to the nodal point
-      bool AlmostNodalPoint(const std::vector<Node*>& nodes, double tolerance = 1e-10) const;
+      bool almost_nodal_point(const std::vector<Node*>& nodes, double tolerance = 1e-10) const;
 
-      Node* CutNode();
+      Node* cut_node();
 
       void intersection(plain_edge_set& edges);
 
@@ -252,11 +252,11 @@ namespace Core::Geo
 
       void intersection(plain_element_set& elements);
 
-      const plain_element_set& Elements() const { return cut_elements_; }
+      const plain_element_set& elements() const { return cut_elements_; }
 
-      const plain_facet_set& Facets() const { return facets_; }
+      const plain_facet_set& facets() const { return facets_; }
 
-      Edge* CommonCutEdge(Side* side);
+      Edge* common_cut_edge(Side* side);
 
       /// erase all cut pairs containing this side
       void erased_containing_cut_pairs(Side* cutside);
@@ -264,16 +264,16 @@ namespace Core::Geo
       /// erased all cut pairs containing this edge
       void erased_containing_cut_pairs(Edge* cutsideedge);
       /// Erase the cutside from this point because it is deleted in the selfcut
-      void EraseCutSide(Side* cutside) { cut_sides_.erase(cutside); }
+      void erase_cut_side(Side* cutside) { cut_sides_.erase(cutside); }
 
       /// Erase the cutsideedge from this point because it is deleted in the selfcut
-      void EraseCutSideEdge(Edge* cutsideedge) { cut_edges_.erase(cutsideedge); }
+      void erase_cut_side_edge(Edge* cutsideedge) { cut_edges_.erase(cutsideedge); }
 
       /// Return actual point tolerance
-      double Tolerance() { return tol_; }
+      double tolerance() { return tol_; }
 
       /// Set new Tolerance (in case points are merged this is necessary)
-      void EnlargeTolerance(double newtol)
+      void enlarge_tolerance(double newtol)
       {
         if (newtol > tol_)
         {
@@ -286,26 +286,26 @@ namespace Core::Geo
       void remove_connectivity_info();
 
       /// Carefully replace this points by another at the stage before/during creation of cut_lines
-      void Replace(Point* p);
+      void replace(Point* p);
 
-      void RemoveEdge(Edge* edge);
+      void remove_edge(Edge* edge);
 
-      void RemoveSide(Side* side);
+      void remove_side(Side* side);
 
-      void RemovePair(std::pair<Side*, Edge*>& pair) { cut_pairs_.erase(pair); };
+      void remove_pair(std::pair<Side*, Edge*>& pair) { cut_pairs_.erase(pair); };
 
       // move point slighlty (used for merging)
-      virtual void MovePoint(const double* new_coord) = 0;
+      virtual void move_point(const double* new_coord) = 0;
 
       // Merge point into anothe r
-      void Merge(Point* dest);
+      void merge(Point* dest);
 
       /// Dump all information of how this point was created, edges x sides intersections. Useful to
       /// debug reasons crashing
       void dump_connectivity_info();
 
       /// Get the Merged Points
-      std::vector<Point*> GetMergedPoints() { return merged_points_; };
+      std::vector<Point*> get_merged_points() { return merged_points_; };
 
 #if CUT_CREATION_INFO
       // Add merged pair. If the coord = nullptr, it means it was inserted without actual
@@ -437,7 +437,7 @@ namespace Core::Geo
     /* \class ConcretePoint
      *
      * Necessary due to the different problem dimensions. Actually only the
-     * constructor and the Coordinates() function change, since the stored
+     * constructor and the coordinates() function change, since the stored
      * point coordinate stays 3. If probDim is smaller than three, the last
      * coordinates are set to zero.
      *
@@ -460,20 +460,20 @@ namespace Core::Geo
         // The x_ coordinate must be set, before these methods are called!
         if (cut_edge != nullptr)
         {
-          AddEdge(cut_edge);
+          add_edge(cut_edge);
         }
         if (cut_side != nullptr)
         {
           add_side(cut_side);
         }
 
-        if ((cut_side != nullptr) && (cut_edge != nullptr)) this->AddPair(cut_side, cut_edge);
+        if ((cut_side != nullptr) && (cut_edge != nullptr)) this->add_pair(cut_side, cut_edge);
       };
 
       /** \brief Get the coordinates of this point */
-      void Coordinates(double* x) const override { std::copy(this->x_, this->x_ + prob_dim, x); };
+      void coordinates(double* x) const override { std::copy(this->x_, this->x_ + prob_dim, x); };
 
-      void MovePoint(const double* new_coord) override;
+      void move_point(const double* new_coord) override;
 
     };  // class ConcretePoint
 
@@ -516,7 +516,7 @@ namespace Core::Geo
     Teuchos::RCP<Core::Geo::Cut::Point> create_point(
         unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
-    inline int EntityId(const Point& p) { return p.Pid(); }
+    inline int EntityId(const Point& p) { return p.pid(); }
 
     /// id based comparison for sorting and searching
     template <class T>
@@ -543,14 +543,14 @@ namespace Core::Geo
 
       bool operator()(Point& p1, Point& p2) const
       {
-        if (not p1.IsCut(edge_) or not p2.IsCut(edge_))
+        if (not p1.is_cut(edge_) or not p2.is_cut(edge_))
           FOUR_C_THROW("point position compare only on cut edges");
         return p1.t(edge_) < p2.t(edge_);
       }
 
       bool operator()(Point* p1, Point* p2) const
       {
-        if (not p1->IsCut(edge_) or not p2->IsCut(edge_))
+        if (not p1->is_cut(edge_) or not p2->is_cut(edge_))
           FOUR_C_THROW("point position compare only on cut edges");
         return p1->t(edge_) < p2->t(edge_);
       }
@@ -642,7 +642,7 @@ namespace Core::Geo
       std::vector<Point*>::const_iterator is = side.begin();
       // Get the sides this point cuts
       // A cut-side which is a LevelSet-side is empty but is still present.
-      sides = (*is)->CutSides();
+      sides = (*is)->cut_sides();
       for (++is; is != side.end(); ++is)
       {
         Point* p = *is;
@@ -656,14 +656,14 @@ namespace Core::Geo
 
     inline void FindCommonSides(Point* p1, Point* p2, Point* p3, plain_side_set& sides)
     {
-      sides = p1->CutSides();
+      sides = p1->cut_sides();
       p2->intersection(sides);
       p3->intersection(sides);
     }
 
     inline void FindCommonSides(Point* p1, Point* p2, Point* p3, Point* p4, plain_side_set& sides)
     {
-      sides = p1->CutSides();
+      sides = p1->cut_sides();
       p2->intersection(sides);
       p3->intersection(sides);
       p4->intersection(sides);

@@ -39,16 +39,16 @@ namespace ALE
 
    private:
     //! Call the constructor and the setup of the mortar coupling adapter
-    void AdapterMortar(std::vector<int> coupleddof) override;
+    void adapter_mortar(std::vector<int> coupleddof) override;
 
     //! Compare the size of the slave and master dof row map
-    void CompareNumDof() override;
+    void compare_num_dof() override;
 
     //! Get function for the slave and master dof row map
-    void DofRowMaps() override;
+    void dof_row_maps() override;
 
     //! Get function for the P matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixP() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_p() override;
 
     //! Condensation operation for a block matrix
     void condensation_operation_block_matrix(
@@ -72,14 +72,14 @@ namespace ALE
         Teuchos::RCP<const Epetra_Map>& dofrowmap);
 
     //! Compute and update the increments of the slave node (do nothing in the mesh sliding case)
-    void UpdateSlaveDOF(
+    void update_slave_dof(
         Teuchos::RCP<Epetra_Vector>& inc, Teuchos::RCP<Epetra_Vector>& dispnp) override{};
 
     //! Recover method for Lagrange multipliers
-    void Recover(Teuchos::RCP<Epetra_Vector>& inc) override;
+    void recover(Teuchos::RCP<Epetra_Vector>& inc) override;
 
     //! Solve ALE mesh sliding problem
-    int SolveMeshtying(Core::LinAlg::Solver& solver,
+    int solve_meshtying(Core::LinAlg::Solver& solver,
         Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
         Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp) override;
 

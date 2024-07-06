@@ -39,24 +39,24 @@ namespace Core::Geo
       // Alocate memory itself
       ConstMemoryPool(size_t constSize, int n);
 
-      void* Allocate();
+      void* allocate();
 
-      void Free(void* ptr);
+      void free(void* ptr);
 
       ~ConstMemoryPool();
 
       // get size ( in bytes ) of the constant individual chunk
-      size_t GetSize() { return size_; }
+      size_t get_size() { return size_; }
       // returns "true" if every element is allocated after previous ( container is not exhausted )
-      bool IsLinear() { return linear_; }
-      size_t GetOffset() { return offset_; }
-      std::pair<size_t, size_t> GetDataExtend()
+      bool is_linear() { return linear_; }
+      size_t get_offset() { return offset_; }
+      std::pair<size_t, size_t> get_data_extend()
       {
         return std::make_pair(
             reinterpret_cast<size_t>(container_start_), reinterpret_cast<size_t>(data_end_));
       }
       // returns "true" if this pointer was located in memory range of this container
-      bool BelongsHere(void* ptr)
+      bool belongs_here(void* ptr)
       {
         size_t ptrnum = reinterpret_cast<size_t>(ptr);
         if ((ptrnum >= reinterpret_cast<size_t>(container_start_)) and
@@ -66,14 +66,14 @@ namespace Core::Geo
           return false;
       }
       // returns "true" if everything was freed
-      bool IsFree() { return (free_size_ == n_); }
-      bool IsFreeDebug()
+      bool is_free() { return (free_size_ == n_); }
+      bool is_free_debug()
       {
         std::cout << "FOR SIZE " << size_ << "FREE: " << free_size_ << "/" << n_ << std::endl;
         return (free_size_ == n_);
       }
       // used for testing
-      void SetLinear(bool value)
+      void set_linear(bool value)
       {
         if (not value and linear_)
         {
@@ -82,7 +82,7 @@ namespace Core::Geo
           {
             void* ptr = reinterpret_cast<void*>(current_data_);
             // put a ll pointer there
-            Free(ptr);
+            free(ptr);
             current_data_ = current_data_ + size_;
           }
         }
@@ -94,7 +94,7 @@ namespace Core::Geo
       void Delete() { free(static_cast<void*>(container_start_)); }
 
       // reset contaienr to linear allocation, assuming everything inside was freed
-      void ResetContainer();
+      void reset_container();
 
      private:
       // pointer that points to the linked list of freed data
@@ -135,12 +135,12 @@ namespace Core::Geo
      public:
       MemoryAllocator() {}
 
-      virtual void* Allocate(size_t size) = 0;
+      virtual void* allocate(size_t size) = 0;
 
-      virtual void Free(void* ptr) {}
+      virtual void free(void* ptr) {}
 
       virtual ~MemoryAllocator() = default;  // Free free requests, etc
-      virtual void Finalize(){};
+      virtual void finalize(){};
       // Free container
       virtual void Delete(){};
     };
@@ -150,8 +150,8 @@ namespace Core::Geo
     struct NormalMemoryAllocator : public MemoryAllocator
     {
      public:
-      void* Allocate(size_t size) override { return malloc(size); }
-      void Free(void* ptr) override { free(ptr); }
+      void* allocate(size_t size) override { return malloc(size); }
+      void free(void* ptr) override { free(ptr); }
     };
 
     // Generic memory allocator that consist of small memory pools of constant size
@@ -194,27 +194,27 @@ namespace Core::Geo
       GenericMemoryPool(){};
 
       // delete elements from the missing container, that were queued before
-      void DeleteMissing();
+      void delete_missing();
 
       // Set first ConstContainer to lookup allocation in, to be one, that alllocated elements of
       // size "size"
-      void SetCurrent(size_t size);
+      void set_current(size_t size);
 
-      bool CheckFree(bool debug = false);
+      bool check_free(bool debug = false);
 
       GenericMemoryPool(const std::unordered_map<size_t, int>& mem_pattern, bool reusable = true,
           bool allocating_together = false);
 
       // unify allocation of all containers in a single memory chunk
-      void AllInOneAllocation(const std::unordered_map<size_t, int>& mem_pattern);
+      void all_in_one_allocation(const std::unordered_map<size_t, int>& mem_pattern);
 
-      void* Allocate(size_t size) override;
+      void* allocate(size_t size) override;
 
-      void Free(void* ptr) override;
+      void free(void* ptr) override;
 
       // Free all "queueed to free" elements in non-reusable container, or reset alll constainers to
       // point to the their first elements in non reusable container.
-      void Finalize() override;
+      void finalize() override;
 
       // Frees memory of the underlying const memory container
       void Delete() override;
@@ -229,19 +229,19 @@ namespace Core::Geo
       CustomMemoryManager();
 
       // Switch between normal and memory pool allocator
-      void SwitchState();
+      void switch_state();
 
-      inline void Free(void* ptr) { mem_->Free(ptr); }
+      inline void free(void* ptr) { mem_->free(ptr); }
 
-      inline void* Allocate(size_t size) { return mem_->Allocate(size); }
+      inline void* allocate(size_t size) { return mem_->allocate(size); }
 
-      void Finalize();
+      void finalize();
 
       // Delete all memory allocated by it
       void Delete();
 
       // zeroing out all the allocation
-      void ResetAllocated();
+      void reset_allocated();
 
       GenericMemoryPool& get_memory_pool_allocator()
       {
@@ -251,7 +251,7 @@ namespace Core::Geo
           return (*dynamic_cast<GenericMemoryPool*>(mem_));
       }
 
-      bool IsMemoryPool() { return (state_ == pool); }
+      bool is_memory_pool() { return (state_ == pool); }
 
      private:
       // current memory allocator
@@ -285,44 +285,44 @@ namespace Core::Geo
       DebugCustomMemoryManager();
 
       // start recording statistics of allocations
-      void StartRecord();
+      void start_record();
 
       // Switch between normal and memory pool allocator
-      void SwitchState();
+      void switch_state();
 
       // stop recording statistics of allocations
-      void StopRecord();
+      void stop_record();
 
-      bool IsRecording() { return recording_; }
+      bool is_recording() { return recording_; }
 
-      std::string State2String();
+      std::string state2_string();
 
       // Set state for a memory pool allocator, with a memory pattern specified by
       // memory_allocations
       void set_state(int newstate, std::unordered_map<size_t, int>& memory_allocations_);
 
-      inline void Free(void* ptr) { mem_->Free(ptr); }
+      inline void free(void* ptr) { mem_->free(ptr); }
 
-      inline void* Allocate(size_t size)
+      inline void* allocate(size_t size)
       {
         if (recording_)
         {
           memory_allocations_[size] += 1;
         }
-        return mem_->Allocate(size);
+        return mem_->allocate(size);
       }
 
-      void ReportAllocated();
+      void report_allocated();
 
-      void Finalize();
+      void finalize();
 
       // Delete free memory from the memory pool allocator
       void Delete();
 
-      std::unordered_map<size_t, int>& GetMemoryPattern();
+      std::unordered_map<size_t, int>& get_memory_pattern();
 
       // zeroing out all the allocation statics
-      void ResetAllocated();
+      void reset_allocated();
 
       NormalMemoryAllocator& get_normal_memory_allocator()
       {
@@ -345,7 +345,7 @@ namespace Core::Geo
           return (*dynamic_cast<GenericMemoryPool*>(mem_));
       }
 
-      bool IsMemoryPool() { return (state_ == pool); }
+      bool is_memory_pool() { return (state_ == pool); }
 
      private:
       // current memory allocator
@@ -383,7 +383,7 @@ namespace Core::Geo
       void operator=(MemorySingleton const&);
 
      public:
-      static MemoryManager& getInstance()
+      static MemoryManager& get_instance()
       {
         static MemoryManager instance;
 

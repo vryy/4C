@@ -92,7 +92,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyper::create_material()
 Mat::PlasticElastHyperType Mat::PlasticElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::PlasticElastHyperType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticElastHyperType::create(const std::vector<char>& data)
 {
   Mat::PlasticElastHyper* elhy = new Mat::PlasticElastHyper();
   elhy->unpack(data);
@@ -155,10 +155,10 @@ Mat::PlasticElastHyper::PlasticElastHyper(Mat::PAR::PlasticElastHyper* params)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
-  for (m = MatParams()->matids_.begin(); m != MatParams()->matids_.end(); ++m)
+  for (m = mat_params()->matids_.begin(); m != mat_params()->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
@@ -173,11 +173,11 @@ void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
+  if (mat_params() != nullptr) matid = mat_params()->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
   summandProperties_.pack(data);
 
@@ -185,12 +185,12 @@ void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, PlAniso_full_);
   add_to_pack(data, InvPlAniso_full_);
 
-  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
+  if (mat_params() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->PackSummand(data);
+      potsum_[p]->pack_summand(data);
     }
   }
 
@@ -214,7 +214,7 @@ void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
   if (tsi) add_to_pack(data, (int)dHepDissdd_->at(0).numRows());
 
   // dissipation mode
-  add_to_pack(data, (int)DisMode());
+  add_to_pack(data, (int)dis_mode());
 
   add_to_pack(data, cpl());
   add_to_pack(data, s());
@@ -235,23 +235,24 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover MatParams()
   int matid;
   extract_from_pack(position, data, matid);
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const unsigned int probinst =
+          Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::PlasticElastHyper*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -261,14 +262,14 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, PlAniso_full_);
   extract_from_pack(position, data, InvPlAniso_full_);
 
-  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
+  if (mat_params() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = MatParams()->matids_.begin(); m != MatParams()->matids_.end(); ++m)
+    for (m = mat_params()->matids_.begin(); m != mat_params()->matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -276,7 +277,7 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->UnpackSummand(data, position);
+      potsum_[p]->unpack_summand(data, position);
       potsum_[p]->register_anisotropy_extensions(anisotropy_);
     }
   }
@@ -318,11 +319,11 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
 
   // dissipation mode
   Inpar::TSI::DissipationMode mode = (Inpar::TSI::DissipationMode)extract_int(position, data);
-  SetDissipationMode(mode);
+  set_dissipation_mode(mode);
 
   double cpl = extract_double(position, data);
   double s = extract_double(position, data);
-  GetParams(s, cpl);
+  get_params(s, cpl);
 
   anisotropy_.unpack_anisotropy(data, position);
 
@@ -370,7 +371,7 @@ void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
       FOUR_C_THROW("so3 expects no fibers or 3 fiber directions");
 
   // plastic anisotropy
-  SetupHillPlasticity(linedef);
+  setup_hill_plasticity(linedef);
 
   // setup plastic history variables
   Core::LinAlg::Matrix<3, 3> tmp(true);
@@ -386,15 +387,15 @@ void Mat::PlasticElastHyper::setup(int numgp, Input::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelement, const bool eas,
+void Mat::PlasticElastHyper::setup_tsi(const int numgp, const int numdofperelement, const bool eas,
     const Inpar::TSI::DissipationMode mode)
 {
   // dissipation mode
   if (mode == Inpar::TSI::pl_multiplier)
-    if (MatParams()->rY_11_ != 0. || MatParams()->rY_22_ != 0. || MatParams()->rY_33_ != 0. ||
-        MatParams()->rY_12_ != 0. || MatParams()->rY_23_ != 0. || MatParams()->rY_13_ != 0.)
+    if (mat_params()->rY_11_ != 0. || mat_params()->rY_22_ != 0. || mat_params()->rY_33_ != 0. ||
+        mat_params()->rY_12_ != 0. || mat_params()->rY_23_ != 0. || mat_params()->rY_13_ != 0.)
       FOUR_C_THROW("TSI with Hill plasticity not available with DISSIPATION_MODE pl_multiplier");
-  SetDissipationMode(mode);
+  set_dissipation_mode(mode);
 
   // allocate memory
   HepDiss_ = Teuchos::rcp(new std::vector<double>(numgp, 0.0));
@@ -410,19 +411,19 @@ void Mat::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
   // temperature arises, namely via H^k=H^k(T) in the computation of the effective
   // stress eta. Without this term, the only dependency of the NCP function is
   // via the effective yield stress Y^pl=Y^pl(T)
-  if (Kinhard() != 0.) FOUR_C_THROW("no kinematic hardening for TSI (yet)");
+  if (kinhard() != 0.) FOUR_C_THROW("no kinematic hardening for TSI (yet)");
   // no TSI with plastic spin yet
   // besides the kinematic hardening term (see above) there is not much to do
   // just add the derivatives of theating and NCP function in the
   // evaluate_nc_pand_spin(...) function
-  if (PlSpinChi() != 0.) FOUR_C_THROW("no thermo-plasticitiy with plastic spin");
+  if (pl_spin_chi() != 0.) FOUR_C_THROW("no thermo-plasticitiy with plastic spin");
 
   /// Hill TSI only with pl_flow dissipation
-  if (MatParams()->rY_11_ != 0. && mode == Inpar::TSI::pl_multiplier)
+  if (mat_params()->rY_11_ != 0. && mode == Inpar::TSI::pl_multiplier)
     FOUR_C_THROW("hill thermo plasticity not with dissipation mode pl_multiplier");
 
   /// viscoplastic TSI only with  pl_flow dissipation
-  if (Visc() != 0. && mode == Inpar::TSI::pl_multiplier)
+  if (visc() != 0. && mode == Inpar::TSI::pl_multiplier)
     FOUR_C_THROW("thermo-visco-plasticity not with dissipation mode pl_multiplier");
   return;
 }
@@ -430,19 +431,19 @@ void Mat::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
+void Mat::PlasticElastHyper::setup_hill_plasticity(Input::LineDefinition* linedef)
 {
   // check if parameters are valid
-  if (MatParams()->rY_11_ != 0. || MatParams()->rY_22_ != 0. || MatParams()->rY_33_ != 0. ||
-      MatParams()->rY_12_ != 0. || MatParams()->rY_23_ != 0. || MatParams()->rY_13_ != 0.)
-    if (MatParams()->rY_11_ <= 0. || MatParams()->rY_22_ <= 0. || MatParams()->rY_33_ <= 0. ||
-        MatParams()->rY_12_ <= 0. || MatParams()->rY_23_ <= 0. || MatParams()->rY_13_ <= 0.)
+  if (mat_params()->rY_11_ != 0. || mat_params()->rY_22_ != 0. || mat_params()->rY_33_ != 0. ||
+      mat_params()->rY_12_ != 0. || mat_params()->rY_23_ != 0. || mat_params()->rY_13_ != 0.)
+    if (mat_params()->rY_11_ <= 0. || mat_params()->rY_22_ <= 0. || mat_params()->rY_33_ <= 0. ||
+        mat_params()->rY_12_ <= 0. || mat_params()->rY_23_ <= 0. || mat_params()->rY_13_ <= 0.)
       FOUR_C_THROW("Hill parameters all must be positive (incomplete set?)");
 
   // all (optional) Hill parameters are zero (default value)
   // --> we want to do von Mises plasticity
-  if (MatParams()->rY_11_ == 0. && MatParams()->rY_22_ == 0. && MatParams()->rY_33_ == 0. &&
-      MatParams()->rY_12_ == 0. && MatParams()->rY_23_ == 0. && MatParams()->rY_13_ == 0.)
+  if (mat_params()->rY_11_ == 0. && mat_params()->rY_22_ == 0. && mat_params()->rY_33_ == 0. &&
+      mat_params()->rY_12_ == 0. && mat_params()->rY_23_ == 0. && mat_params()->rY_13_ == 0.)
   {
     PlAniso_full_.clear();
     for (int i = 0; i < 3; i++)
@@ -532,12 +533,12 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
     Core::LinAlg::Matrix<3, 3> M2;
     M2.multiply_nt(directions.at(2), directions.at(2));
 
-    double alpha1 = 2. / 3. / MatParams()->rY_11_ / MatParams()->rY_11_;
-    double alpha2 = 2. / 3. / MatParams()->rY_22_ / MatParams()->rY_22_;
-    double alpha3 = 2. / 3. / MatParams()->rY_33_ / MatParams()->rY_33_;
-    double alpha4 = 1. / 3. / MatParams()->rY_12_ / MatParams()->rY_12_;
-    double alpha5 = 1. / 3. / MatParams()->rY_23_ / MatParams()->rY_23_;
-    double alpha6 = 1. / 3. / MatParams()->rY_13_ / MatParams()->rY_13_;
+    double alpha1 = 2. / 3. / mat_params()->rY_11_ / mat_params()->rY_11_;
+    double alpha2 = 2. / 3. / mat_params()->rY_22_ / mat_params()->rY_22_;
+    double alpha3 = 2. / 3. / mat_params()->rY_33_ / mat_params()->rY_33_;
+    double alpha4 = 1. / 3. / mat_params()->rY_12_ / mat_params()->rY_12_;
+    double alpha5 = 1. / 3. / mat_params()->rY_23_ / mat_params()->rY_23_;
+    double alpha6 = 1. / 3. / mat_params()->rY_13_ / mat_params()->rY_13_;
 
     // calculate plastic anisotropy tensor
     PlAniso_full_.clear();
@@ -572,8 +573,8 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
     Core::LinAlg::Matrix<5, 5> tmp55;
     tmp55.multiply_tn(red, tmp);
     Core::LinAlg::FixedSizeSerialDenseSolver<5, 5, 1> solver;
-    solver.SetMatrix(tmp55);
-    int err2 = solver.Factor();
+    solver.set_matrix(tmp55);
+    int err2 = solver.factor();
     int err = solver.invert();
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of plastic anisotropy tensor failed");
     tmp.multiply_nt(red, tmp55);
@@ -586,7 +587,7 @@ void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  |  evaluate elastic stress and stiffness                   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::EvaluateElast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticElastHyper::evaluate_elast(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<3, 3>* deltaLp, Core::LinAlg::Matrix<6, 1>* pk2,
     Core::LinAlg::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
@@ -616,7 +617,7 @@ void Mat::PlasticElastHyper::EvaluateElast(const Core::LinAlg::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate elastic strain energy                          seitz 03/16 |
  *----------------------------------------------------------------------*/
-double Mat::PlasticElastHyper::StrainEnergyTSI(
+double Mat::PlasticElastHyper::strain_energy_tsi(
     const Core::LinAlg::Matrix<3, 3>& defgrd, const int gp, const int eleGID, const double temp)
 {
   double psi = 0.;
@@ -642,12 +643,12 @@ double Mat::PlasticElastHyper::StrainEnergyTSI(
   glstrain.update(0.5, elRCGv, 0.0);
   glstrain.update(-0.5, idv, 1.0);
   for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->AddStrainEnergy(psi, prinv, modinv, glstrain, gp, eleGID);
+    potsum_[p]->add_strain_energy(psi, prinv, modinv, glstrain, gp, eleGID);
 
   double dPj1 = 0.;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->AddCoupDerivVol(sqrt(prinv(0)), &dPj1, nullptr, nullptr, nullptr);
-  psi -= 3. * Cte() * (temp - InitTemp()) * dPj1;
+    potsum_[p]->add_coup_deriv_vol(sqrt(prinv(0)), &dPj1, nullptr, nullptr, nullptr);
+  psi -= 3. * cte() * (temp - init_temp()) * dPj1;
 
 
 
@@ -670,7 +671,7 @@ void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<
         "with isotropic strain energy functions");
 
   // temperature difference
-  double deltaT = temp - InitTemp();
+  double deltaT = temp - init_temp();
 
   // we are only interested in the volumetric response
   // which is for decoupled strain energy functions defined by
@@ -685,8 +686,8 @@ void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
     potsum_[p]->add_derivatives_modified(dPmodI, ddPmodII, modinv, gp, eleGID);
-    potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
+    potsum_[p]->add3rd_vol_deriv(modinv, dddPmodIII);
+    potsum_[p]->add_coup_deriv_vol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
   }
 
   // inverse RCG
@@ -699,13 +700,13 @@ void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<
   icg(4) = invRCG(1, 2);
   icg(5) = invRCG(0, 2);
 
-  pk2->update(-3. * Cte() * deltaT * modinv(2) * ddPmodII(2), icg, 1.);
+  pk2->update(-3. * cte() * deltaT * modinv(2) * ddPmodII(2), icg, 1.);
   add_elasticity_tensor_product(
-      *cmat, -3. * Cte() * deltaT * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
+      *cmat, -3. * cte() * deltaT * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
   add_elasticity_tensor_product(
-      *cmat, -3. * Cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
+      *cmat, -3. * cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
   add_kronecker_tensor_product(
-      *cmat, +6. * Cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
+      *cmat, +6. * cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
 }
@@ -713,7 +714,7 @@ void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<
 /*----------------------------------------------------------------------*
  |  evaluate thermal stress and stiffness                   seitz 06/14 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticElastHyper::evaluate_c_tvol(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 1>* cTvol, Core::LinAlg::Matrix<6, 6>* dCTvoldE, const int gp,
     const int eleGID)
 {
@@ -738,8 +739,8 @@ void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* def
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
     potsum_[p]->add_derivatives_modified(dPmodI, ddPmodII, modinv, gp, eleGID);
-    potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
+    potsum_[p]->add3rd_vol_deriv(modinv, dddPmodIII);
+    potsum_[p]->add_coup_deriv_vol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
   }
 
   // clear
@@ -756,13 +757,13 @@ void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* def
   icg(4) = invRCG(1, 2);
   icg(5) = invRCG(0, 2);
 
-  cTvol->update(-3. * Cte() * modinv(2) * ddPmodII(2), icg, 1.);
+  cTvol->update(-3. * cte() * modinv(2) * ddPmodII(2), icg, 1.);
   add_elasticity_tensor_product(
-      *dCTvoldE, -3. * Cte() * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
+      *dCTvoldE, -3. * cte() * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
   add_elasticity_tensor_product(
-      *dCTvoldE, -3. * Cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
+      *dCTvoldE, -3. * cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
   add_kronecker_tensor_product(
-      *dCTvoldE, +6. * Cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
+      *dCTvoldE, +6. * cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
 }
@@ -771,7 +772,7 @@ void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate Gough Joule Effect                             seitz 10/15 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::EvaluateGoughJoule(
+void Mat::PlasticElastHyper::evaluate_gough_joule(
     const double j, const int gp, const int eleGID, double& he_fac, double& he_fac_deriv)
 {
   // we are only interested in the volumetric response
@@ -787,19 +788,19 @@ void Mat::PlasticElastHyper::EvaluateGoughJoule(
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
     potsum_[p]->add_derivatives_modified(dPmodI, ddPmodII, modinv, gp, eleGID);
-    potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
+    potsum_[p]->add3rd_vol_deriv(modinv, dddPmodIII);
+    potsum_[p]->add_coup_deriv_vol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
   }
 
-  he_fac = -3. * Cte() * ddPmodII(2);
-  he_fac_deriv = -3. * Cte() * dddPmodIII;
+  he_fac = -3. * cte() * ddPmodII(2);
+  he_fac_deriv = -3. * cte() * dddPmodIII;
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate plastic stress and stiffness                   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticElastHyper::evaluate_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<3, 3>* deltaDp, const double* temp, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 6>* dPK2dDp, Core::LinAlg::Matrix<6, 1>* NCP,
     Core::LinAlg::Matrix<6, 6>* dNCPdC, Core::LinAlg::Matrix<6, 6>* dNCPdDp, bool* active,
@@ -849,7 +850,7 @@ void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* def
     FOUR_C_THROW("only isotropic hypereleastic materials");
 
   if (cauchy)
-    EvaluateCauchyPlast(
+    evaluate_cauchy_plast(
         dPI, ddPII, defgrd, *cauchy, d_cauchy_dFpi, *d_cauchy_dC, *d_cauchy_dF, d_cauchy_dT);
 
   evaluate_ncp(&mStr, &dMdC, &dMdFpinv, &dPK2dFpinv, deltaDp, gp, temp, NCP, dNCPdC, dNCPdDp,
@@ -877,7 +878,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
   Core::LinAlg::Matrix<6, 1> tmp61;
   double dT = 0.;
   if (dNCPdT)
-    dT = *temp - InitTemp();
+    dT = *temp - init_temp();
   else
     dT = 0.;
 
@@ -895,8 +896,8 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
   Core::LinAlg::Matrix<3, 3> eta(*mStr);
   for (int i = 0; i < 3; i++)
     eta(i, i) -= 1. / 3. * ((*mStr)(0, 0) + (*mStr)(1, 1) + (*mStr)(2, 2));
-  eta.update(2. / 3. * Kinhard(), last_alpha_kinematic_[gp], 1.);
-  eta.update(-2. / 3. * Kinhard(), *deltaDp, 1.);
+  eta.update(2. / 3. * kinhard(), last_alpha_kinematic_[gp], 1.);
+  eta.update(-2. / 3. * kinhard(), *deltaDp, 1.);
 
   // in stress-like voigt notation
   Core::LinAlg::Matrix<6, 1> eta_v;      // in stress-like voigt notation
@@ -967,38 +968,39 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
   // current yield stress equivalent (yield stress scaled by sqrt(2/3))
   double ypl =
       sq *
-      ((Infyield() * (1. - HardSoft() * dT) - Inityield() * (1. - YieldSoft() * dT)) *
-              (1. - exp(-Expisohard() * aI)) +
-          Isohard() * (1. - HardSoft() * dT) * aI + Inityield() * (1. - YieldSoft() * dT)) *
-      pow(1. + Visc() * (1. - ViscSoft() * dT) * delta_alpha_i_[gp] / dt, ViscRate());
+      ((infyield() * (1. - hard_soft() * dT) - inityield() * (1. - yield_soft() * dT)) *
+              (1. - exp(-expisohard() * aI)) +
+          isohard() * (1. - hard_soft() * dT) * aI + inityield() * (1. - yield_soft() * dT)) *
+      pow(1. + visc() * (1. - visc_soft() * dT) * delta_alpha_i_[gp] / dt, visc_rate());
 
   double dYpldT = sq *
-                  ((Infyield() * (-HardSoft()) - Inityield() * (-YieldSoft())) *
-                          (1. - exp(-Expisohard() * aI)) -
-                      Isohard() * HardSoft() * aI - Inityield() * YieldSoft()) *
-                  pow(1. + Visc() * (1. - ViscSoft() * dT) * delta_alpha_i_[gp] / dt, ViscRate());
+                  ((infyield() * (-hard_soft()) - inityield() * (-yield_soft())) *
+                          (1. - exp(-expisohard() * aI)) -
+                      isohard() * hard_soft() * aI - inityield() * yield_soft()) *
+                  pow(1. + visc() * (1. - visc_soft() * dT) * delta_alpha_i_[gp] / dt, visc_rate());
 
   dYpldT += sq *
-            ((Infyield() * (1. - HardSoft() * dT) - Inityield() * (1. - YieldSoft() * dT)) *
-                    (1. - exp(-Expisohard() * aI)) +
-                Isohard() * (1. - HardSoft() * dT) * aI + Inityield() * (1. - YieldSoft() * dT)) *
-            pow(1. + Visc() * (1. - ViscSoft() * dT) * delta_alpha_i_[gp] / dt, ViscRate() - 1.) *
-            ViscRate() * delta_alpha_i_[gp] / dt * Visc() * (-ViscSoft());
+            ((infyield() * (1. - hard_soft() * dT) - inityield() * (1. - yield_soft() * dT)) *
+                    (1. - exp(-expisohard() * aI)) +
+                isohard() * (1. - hard_soft() * dT) * aI + inityield() * (1. - yield_soft() * dT)) *
+            pow(1. + visc() * (1. - visc_soft() * dT) * delta_alpha_i_[gp] / dt, visc_rate() - 1.) *
+            visc_rate() * delta_alpha_i_[gp] / dt * visc() * (-visc_soft());
 
   // Factor of derivative of Y^pl w.r.t. delta alpha ^i
   // we have added the factor sqrt(2/3) from delta_alpha_i=sq*... here
   double dYplDai =
       2. / 3. *
-      (+Isohard() * (1. - HardSoft() * dT) +
-          (Infyield() * (1. - HardSoft() * dT) - Inityield() * (1. - YieldSoft() * dT)) *
-              Expisohard() * exp(-Expisohard() * aI)) *
-      pow(1. + Visc() * (1. - ViscSoft() * dT) * delta_alpha_i_[gp] / dt, ViscRate());
-  dYplDai += 2. / 3. *
-             ((Infyield() * (1. - HardSoft() * dT) - Inityield() * (1. - YieldSoft() * dT)) *
-                     (1. - exp(-Expisohard() * aI)) +
-                 Isohard() * (1. - HardSoft() * dT) * aI + Inityield() * (1. - YieldSoft() * dT)) *
-             pow(1. + Visc() * (1. - ViscSoft() * dT) * delta_alpha_i_[gp] / dt, ViscRate() - 1) *
-             ViscRate() * Visc() * (1. - ViscSoft() * dT) / dt;
+      (+isohard() * (1. - hard_soft() * dT) +
+          (infyield() * (1. - hard_soft() * dT) - inityield() * (1. - yield_soft() * dT)) *
+              expisohard() * exp(-expisohard() * aI)) *
+      pow(1. + visc() * (1. - visc_soft() * dT) * delta_alpha_i_[gp] / dt, visc_rate());
+  dYplDai +=
+      2. / 3. *
+      ((infyield() * (1. - hard_soft() * dT) - inityield() * (1. - yield_soft() * dT)) *
+              (1. - exp(-expisohard() * aI)) +
+          isohard() * (1. - hard_soft() * dT) * aI + inityield() * (1. - yield_soft() * dT)) *
+      pow(1. + visc() * (1. - visc_soft() * dT) * delta_alpha_i_[gp] / dt, visc_rate() - 1) *
+      visc_rate() * visc() * (1. - visc_soft() * dT) / dt;
 
   // safety check: due to thermal softening, we might get a negative yield stress
   // in that case, no viable solution to the plasticity probleme exists, since we
@@ -1012,8 +1014,8 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
   {
     if (activity_state_[gp] == false)  // gp switches state
     {
-      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * Inityield() ||
-          deltaDp->norm_inf() > AS_CONVERGENCE_TOL * Inityield() / cpl())
+      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * inityield() ||
+          deltaDp->norm_inf() > AS_CONVERGENCE_TOL * inityield() / cpl())
         *as_converged = false;
     }
     activity_state_[gp] = true;
@@ -1023,8 +1025,8 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
   {
     if (activity_state_[gp] == true)  // gp switches state
     {
-      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * Inityield() ||
-          deltaDp->norm_inf() > AS_CONVERGENCE_TOL * Inityield() / cpl())
+      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * inityield() ||
+          deltaDp->norm_inf() > AS_CONVERGENCE_TOL * inityield() / cpl())
         *as_converged = false;
     }
     activity_state_[gp] = false;
@@ -1032,8 +1034,8 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
   }
 
   // check, if gp is at the corner of the root of the NCP function
-  if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * Inityield() ||
-      deltaDp->norm_inf() > AS_CONVERGENCE_TOL * Inityield() / cpl())
+  if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * inityield() ||
+      deltaDp->norm_inf() > AS_CONVERGENCE_TOL * inityield() / cpl())
   { /* gp not at the corner point */
   }
   else
@@ -1088,97 +1090,96 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
     // deviatoric tensors.
     Core::LinAlg::Matrix<6, 6> detaddp;
     detaddp.multiply(*dMdFpinv, dFpiDdeltaDp);
-    detaddp.update(-2. / 3. * Kinhard(), pdev, 1.);
+    detaddp.update(-2. / 3. * kinhard(), pdev, 1.);
     dPK2dDp->multiply(*dPK2dFpinv, dFpiDdeltaDp);
     if (d_cauchy_ddp) d_cauchy_ddp->multiply(*d_cauchy_dFpi, dFpiDdeltaDp);
 
     // TSI
     if (dNCPdT != nullptr)
     {
-      if (DisMode() == Inpar::TSI::Taylor_Quinney)
+      if (dis_mode() == Inpar::TSI::Taylor_Quinney)
       {
-        double plHeating = TaylorQuinney() * eta_v_strainlike.dot(deltaDp_v);
+        double plHeating = taylor_quinney() * eta_v_strainlike.dot(deltaDp_v);
         Core::LinAlg::Matrix<6, 1> dHpDeta(true);
-        dHpDeta.update(TaylorQuinney(), deltaDp_v_strainlike, 1.);
+        dHpDeta.update(taylor_quinney(), deltaDp_v_strainlike, 1.);
         dHdC->multiply_tn(*dMdC, dHpDeta);
         dHdDp->multiply_tn(detaddp, dHpDeta);
-        dHdDp->update(TaylorQuinney(), eta_v_strainlike, 1.);
+        dHdDp->update(taylor_quinney(), eta_v_strainlike, 1.);
         plHeating /= dt;
         dHdC->scale(1. / dt);
         dHdDp->scale(1. / dt);
-        HepDiss(gp) += plHeating;
+        hep_diss(gp) += plHeating;
       }
       else
       {
         // plastic heating
-        double plHeating = (0. - Isohard() * HardSoft() * aI -
-                               (Infyield() * HardSoft() - Inityield() * YieldSoft()) *
-                                   (1. - exp(-Expisohard() * aI))) *
+        double plHeating = (0. - isohard() * hard_soft() * aI -
+                               (infyield() * hard_soft() - inityield() * yield_soft()) *
+                                   (1. - exp(-expisohard() * aI))) *
                            (*temp) * delta_alpha_i_[gp];
-        switch (DisMode())
+        switch (dis_mode())
         {
           case Inpar::TSI::pl_multiplier:
-            plHeating +=
-                delta_alpha_i_[gp] *
-                (0. + Inityield() * (1. - YieldSoft() * dT) +
-                    Isohard() * (1. - HardSoft() * dT) * aI +
-                    (Infyield() * (1. - HardSoft() * dT) - Inityield() * (1. - YieldSoft() * dT)) *
-                        (1. - exp(-Expisohard() * aI)));
+            plHeating += delta_alpha_i_[gp] * (0. + inityield() * (1. - yield_soft() * dT) +
+                                                  isohard() * (1. - hard_soft() * dT) * aI +
+                                                  (infyield() * (1. - hard_soft() * dT) -
+                                                      inityield() * (1. - yield_soft() * dT)) *
+                                                      (1. - exp(-expisohard() * aI)));
             break;
           case Inpar::TSI::pl_flow:
             plHeating += eta_v_strainlike.dot(deltaDp_v);
             break;
           default:
-            FOUR_C_THROW("unknown plastic dissipation mode: %d", DisMode());
+            FOUR_C_THROW("unknown plastic dissipation mode: %d", dis_mode());
             break;
         }
 
         // derivative w.r.t. temperature
-        double dPlHeatingDT = (0. - Isohard() * HardSoft() * aI +
-                                  (Infyield() * (-HardSoft()) - Inityield() * (-YieldSoft())) *
-                                      (1. - exp(-Expisohard() * aI))) *
+        double dPlHeatingDT = (0. - isohard() * hard_soft() * aI +
+                                  (infyield() * (-hard_soft()) - inityield() * (-yield_soft())) *
+                                      (1. - exp(-expisohard() * aI))) *
                               delta_alpha_i_[gp];
-        switch (DisMode())
+        switch (dis_mode())
         {
           case Inpar::TSI::pl_multiplier:
             dPlHeatingDT += -delta_alpha_i_[gp] *
-                            (0. + Inityield() * YieldSoft() + Isohard() * HardSoft() * aI +
-                                (Infyield() * HardSoft() - Inityield() * YieldSoft()) *
-                                    (1. - exp(-Expisohard() * aI)));
+                            (0. + inityield() * yield_soft() + isohard() * hard_soft() * aI +
+                                (infyield() * hard_soft() - inityield() * yield_soft()) *
+                                    (1. - exp(-expisohard() * aI)));
             break;
           case Inpar::TSI::pl_flow:
             // do nothing
             break;
           default:
-            FOUR_C_THROW("unknown plastic dissipation mode: %d", DisMode());
+            FOUR_C_THROW("unknown plastic dissipation mode: %d", dis_mode());
             break;
         }
 
         // derivative w.r.t. Delta alpha i
         double dPlHeatingDdai =
-            (*temp) * (0. - Isohard() * HardSoft() * aI +
-                          (Infyield() * (-HardSoft()) - Inityield() * (-YieldSoft())) *
-                              (1. - exp(-Expisohard() * aI))) +
+            (*temp) * (0. - isohard() * hard_soft() * aI +
+                          (infyield() * (-hard_soft()) - inityield() * (-yield_soft())) *
+                              (1. - exp(-expisohard() * aI))) +
             (*temp) * delta_alpha_i_[gp] *
-                (0. - Isohard() * HardSoft() +
-                    (-Infyield() * HardSoft() + Inityield() * YieldSoft()) * Expisohard() *
-                        exp(-Expisohard() * aI));
-        switch (DisMode())
+                (0. - isohard() * hard_soft() +
+                    (-infyield() * hard_soft() + inityield() * yield_soft()) * expisohard() *
+                        exp(-expisohard() * aI));
+        switch (dis_mode())
         {
           case Inpar::TSI::pl_multiplier:
             dPlHeatingDdai +=
-                +Inityield() * (1. - YieldSoft() * dT) +
-                Isohard() * (1. - HardSoft() * dT) *
+                +inityield() * (1. - yield_soft() * dT) +
+                isohard() * (1. - hard_soft() * dT) *
                     (last_alpha_isotropic_[gp] + 2. * delta_alpha_i_[gp]) +
-                (Infyield() * (1. - HardSoft() * dT) - Inityield() * (1. - YieldSoft() * dT)) *
-                    ((1. - exp(-Expisohard() * aI)) +
-                        delta_alpha_i_[gp] * Expisohard() * exp(-Expisohard() * aI));
+                (infyield() * (1. - hard_soft() * dT) - inityield() * (1. - yield_soft() * dT)) *
+                    ((1. - exp(-expisohard() * aI)) +
+                        delta_alpha_i_[gp] * expisohard() * exp(-expisohard() * aI));
             break;
           case Inpar::TSI::pl_flow:
             // do nothing
             break;
           default:
-            FOUR_C_THROW("unknown plastic dissipation mode: %d", DisMode());
+            FOUR_C_THROW("unknown plastic dissipation mode: %d", dis_mode());
             break;
         }
 
@@ -1196,7 +1197,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
               -2. * dPlHeatingDdai * abseta_H * dDpHeta / (pow(absHeta, 4.)), HetaH_strainlike, 1.);
         }
 
-        if (DisMode() == Inpar::TSI::pl_flow) dHpDeta.update(1., deltaDp_v_strainlike, 1.);
+        if (dis_mode() == Inpar::TSI::pl_flow) dHpDeta.update(1., deltaDp_v_strainlike, 1.);
 
         // derivative w.r.t. C
         dHdC->multiply_tn(*dMdC, dHpDeta);
@@ -1208,7 +1209,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
           tmp61.multiply(PlAniso_full_, eta_v_strainlike);
           dHdDp->update(dPlHeatingDdai * abseta_H / (absHeta * absHeta), tmp61, 1.);
         }
-        if (DisMode() == Inpar::TSI::pl_flow) dHdDp->update(1., eta_v_strainlike, 1.);
+        if (dis_mode() == Inpar::TSI::pl_flow) dHdDp->update(1., eta_v_strainlike, 1.);
 
         // scaling with time step
         plHeating /= dt;
@@ -1217,7 +1218,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
         dHdDp->scale(1. / dt);
 
         // communicate to the element via params (not nice)
-        HepDiss(gp) += plHeating;
+        hep_diss(gp) += plHeating;
         (*dHepDissdT_)[gp] += dPlHeatingDT;
       }
     }  // TSI
@@ -1329,7 +1330,7 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
 /*----------------------------------------------------------------------*
  |  evaluate plastic stress and stiffness (with pl. spin)   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+void Mat::PlasticElastHyper::evaluate_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<3, 3>* deltaLp, const double* temp, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 9>* dPK2dLp, Core::LinAlg::Matrix<9, 1>* NCP,
     Core::LinAlg::Matrix<9, 6>* dNCPdC, Core::LinAlg::Matrix<9, 9>* dNCPdLp, bool* active,
@@ -1381,7 +1382,7 @@ void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* def
     FOUR_C_THROW("only isotropic hypereleastic materials");
 
   if (cauchy)
-    EvaluateCauchyPlast(dPI, ddPII, defgrd, *cauchy, d_cauchy_dFpi, *d_cauchy_dC, *d_cauchy_dF);
+    evaluate_cauchy_plast(dPI, ddPII, defgrd, *cauchy, d_cauchy_dFpi, *d_cauchy_dC, *d_cauchy_dF);
 
   evaluate_nc_pand_spin(&mStr, &dMdC, &dMdFpinv, &dPK2dFpinv, deltaLp, gp, NCP, dNCPdC, dNCPdLp,
       dPK2dLp, active, elast, as_converged, dt, &d_cauchy_dFpi, d_cauchy_ddp);
@@ -1433,9 +1434,9 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
   Core::LinAlg::Matrix<3, 3> eta(*mStr);
   for (int i = 0; i < 3; i++)
     eta(i, i) -= 1. / 3. * ((*mStr)(0, 0) + (*mStr)(1, 1) + (*mStr)(2, 2));
-  eta.update(2. / 3. * Kinhard(), last_alpha_kinematic_[gp], 1.);
-  eta.update(-1. / 3. * Kinhard(), *deltaLp, 1.);
-  eta.update_t(-1. / 3. * Kinhard(), *deltaLp, 1.);
+  eta.update(2. / 3. * kinhard(), last_alpha_kinematic_[gp], 1.);
+  eta.update(-1. / 3. * kinhard(), *deltaLp, 1.);
+  eta.update_t(-1. / 3. * kinhard(), *deltaLp, 1.);
 
   // in stress-like voigt notation
   Core::LinAlg::Matrix<6, 1> eta_v;      // in stress-like voigt notation
@@ -1506,16 +1507,16 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
   // current yield stress equivalent (yield stress scaled by sqrt(2/3))
   double ypl =
       sq *
-      ((Infyield() - Inityield()) * (1. - exp(-Expisohard() * aI)) + Isohard() * aI + Inityield()) *
-      pow(1. + Visc() * delta_alpha_i_[gp] / dt, ViscRate());
+      ((infyield() - inityield()) * (1. - exp(-expisohard() * aI)) + isohard() * aI + inityield()) *
+      pow(1. + visc() * delta_alpha_i_[gp] / dt, visc_rate());
 
   // check activity state
   if (ypl < absetatr_H)
   {
     if (activity_state_[gp] == false)  // gp switches state
     {
-      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * Inityield() ||
-          deltaLp->norm_inf() > AS_CONVERGENCE_TOL * Inityield() / cpl())
+      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * inityield() ||
+          deltaLp->norm_inf() > AS_CONVERGENCE_TOL * inityield() / cpl())
         *as_converged = false;
     }
     activity_state_[gp] = true;
@@ -1525,8 +1526,8 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
   {
     if (activity_state_[gp] == true)  // gp switches state
     {
-      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * Inityield() ||
-          deltaLp->norm_inf() > AS_CONVERGENCE_TOL * Inityield() / cpl())
+      if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * inityield() ||
+          deltaLp->norm_inf() > AS_CONVERGENCE_TOL * inityield() / cpl())
         *as_converged = false;
     }
     activity_state_[gp] = false;
@@ -1534,8 +1535,8 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
   }
 
   // check, if gp is at the corner of the root of the NCP function
-  if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * Inityield() ||
-      deltaLp->norm_inf() > AS_CONVERGENCE_TOL * Inityield() / cpl())
+  if (abs(ypl - absetatr_H) > AS_CONVERGENCE_TOL * inityield() ||
+      deltaLp->norm_inf() > AS_CONVERGENCE_TOL * inityield() / cpl())
   { /* gp not at the corner point */
   }
   else
@@ -1588,7 +1589,7 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     // stress derivative. It is enforced implicitly as the "detadLp" is always contracted with
     // deviatoric tensors.
     Core::LinAlg::Matrix<6, 9> detadLp(dMdLp);
-    detadLp.update(-2. / 3. * Kinhard(), psymdev, 1.);
+    detadLp.update(-2. / 3. * kinhard(), psymdev, 1.);
     dPK2dLp->multiply(*dPK2dFpinv, dFpiDdeltaLp);
     if (d_cauchy_ddp) d_cauchy_ddp->multiply(*d_cauchy_dFpi, dFpiDdeltaLp);
 
@@ -1596,12 +1597,12 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     // we have added the factor sqrt(2/3) from delta_alpha_i=sq*... here
     double dYplDai =
         2. / 3. *
-        (+Isohard() + (Infyield() - Inityield()) * Expisohard() * exp(-Expisohard() * aI)) *
-        pow(1. + Visc() * delta_alpha_i_[gp] / dt, ViscRate());
+        (+isohard() + (infyield() - inityield()) * expisohard() * exp(-expisohard() * aI)) *
+        pow(1. + visc() * delta_alpha_i_[gp] / dt, visc_rate());
     dYplDai += 2. / 3. *
-               ((Infyield() - Inityield()) * (1. - exp(-Expisohard() * aI)) + Isohard() * aI +
-                   Inityield()) *
-               pow(1. + Visc() * delta_alpha_i_[gp] / dt, ViscRate() - 1) * ViscRate() * Visc() /
+               ((infyield() - inityield()) * (1. - exp(-expisohard() * aI)) + isohard() * aI +
+                   inityield()) *
+               pow(1. + visc() * delta_alpha_i_[gp] / dt, visc_rate() - 1) * visc_rate() * visc() /
                dt;
 
     // plastic gp
@@ -1693,17 +1694,17 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     // the tensor product Sigma.Dp is not made for voigt notation so we do it the hard way
     Core::LinAlg::Matrix<3, 1> spEq;
     spEq(0) = .5 * ((*deltaLp)(0, 1) - (*deltaLp)(1, 0)) -
-              PlSpinChi() / Inityield() *
+              pl_spin_chi() / inityield() *
                   ((*mStr)(0, 0) * deltaDp_v(3) + (*mStr)(0, 1) * deltaDp_v(1) +
                       (*mStr)(0, 2) * deltaDp_v(4) - (*mStr)(0, 1) * deltaDp_v(0) -
                       (*mStr)(1, 1) * deltaDp_v(3) - (*mStr)(1, 2) * deltaDp_v(5));
     spEq(1) = .5 * ((*deltaLp)(1, 2) - (*deltaLp)(2, 1)) -
-              PlSpinChi() / Inityield() *
+              pl_spin_chi() / inityield() *
                   ((*mStr)(0, 1) * deltaDp_v(5) + (*mStr)(1, 1) * deltaDp_v(4) +
                       (*mStr)(1, 2) * deltaDp_v(2) - (*mStr)(0, 2) * deltaDp_v(3) -
                       (*mStr)(1, 2) * deltaDp_v(1) - (*mStr)(2, 2) * deltaDp_v(4));
     spEq(2) = .5 * ((*deltaLp)(0, 2) - (*deltaLp)(2, 0)) -
-              PlSpinChi() / Inityield() *
+              pl_spin_chi() / inityield() *
                   ((*mStr)(0, 0) * deltaDp_v(5) + (*mStr)(0, 1) * deltaDp_v(4) +
                       (*mStr)(0, 2) * deltaDp_v(2) - (*mStr)(0, 2) * deltaDp_v(0) -
                       (*mStr)(1, 2) * deltaDp_v(3) - (*mStr)(2, 2) * deltaDp_v(5));
@@ -1728,7 +1729,7 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     dSpdM(2, 3) = deltaDp_v(4);
     dSpdM(2, 4) = -deltaDp_v(3);
     dSpdM(2, 5) = deltaDp_v(2) - deltaDp_v(0);
-    dSpdM.scale(-PlSpinChi() / Inityield());
+    dSpdM.scale(-pl_spin_chi() / inityield());
 
     // derivative of plastic spin equation w.r.t. deltaDp
     Core::LinAlg::Matrix<3, 6> dSpdDp;
@@ -1750,7 +1751,7 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     dSpdDp(2, 3) = -(*mStr)(1, 2);
     dSpdDp(2, 4) = +(*mStr)(0, 1);
     dSpdDp(2, 5) = (*mStr)(0, 0) - (*mStr)(2, 2);
-    dSpdDp.scale(-PlSpinChi() / Inityield());
+    dSpdDp.scale(-pl_spin_chi() / inityield());
 
     // derivative of plastic spin equation w.r.t. RCG
     Core::LinAlg::Matrix<3, 6> dSpdC;
@@ -1790,7 +1791,7 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
   return;
 }
 
-void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1>& dPI,
+void Mat::PlasticElastHyper::evaluate_cauchy_plast(const Core::LinAlg::Matrix<3, 1>& dPI,
     const Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 1>& cauchy, Core::LinAlg::Matrix<6, 9>& d_cauchy_dFpi,
     Core::LinAlg::Matrix<6, 6>& d_cauchy_dC, Core::LinAlg::Matrix<6, 9>& d_cauchy_dF,
@@ -1868,9 +1869,9 @@ void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1
     double d_dPI2_dT = 0.;
     if (summandProperties_.isomod) FOUR_C_THROW("only coupled SEF are supposed to end up here");
     for (unsigned int p = 0; p < potsum_.size(); ++p)
-      potsum_[p]->AddCoupDerivVol(j, nullptr, &d_dPI2_dT, nullptr, nullptr);
+      potsum_[p]->add_coup_deriv_vol(j, nullptr, &d_dPI2_dT, nullptr, nullptr);
 
-    const double fac = -3. * Cte();
+    const double fac = -3. * cte();
     d_dPI2_dT *= fac * .5 / j;
 
     d_cauchy_dT->update(sqrt(prinv_(2)) * d_dPI2_dT, id2V_, 1.);
@@ -1899,7 +1900,7 @@ void Mat::PlasticElastHyper::evaluate_cauchy_derivs(const Core::LinAlg::Matrix<3
           "thermo-elastic Nitsche contact only with strain energies"
           "\ndepending on unmodified invariants");
 
-    const double dT = *temp - InitTemp();
+    const double dT = *temp - init_temp();
 
     const double j = sqrt(prinv(2));
     double dPmodI = 0.;
@@ -1907,9 +1908,9 @@ void Mat::PlasticElastHyper::evaluate_cauchy_derivs(const Core::LinAlg::Matrix<3
     double dddPmodIII = 0.;
     double ddddPmodIIII = 0.;
     for (unsigned int p = 0; p < potsum_.size(); ++p)
-      potsum_[p]->AddCoupDerivVol(j, &dPmodI, &ddPmodII, &dddPmodIII, &ddddPmodIIII);
+      potsum_[p]->add_coup_deriv_vol(j, &dPmodI, &ddPmodII, &dddPmodIII, &ddddPmodIIII);
 
-    const double fac = -3. * Cte() * dT;
+    const double fac = -3. * cte() * dT;
     dPI(2) += fac * .5 / j * ddPmodII;
     ddPII(2) += fac * (.25 / (j * j) * dddPmodIII - .25 / (j * j * j) * ddPmodII);
     dddPIII(2) +=
@@ -1931,7 +1932,7 @@ void Mat::PlasticElastHyper::evaluate_cauchy_temp_deriv(const Core::LinAlg::Matr
   double ddPmodII = 0.0;
   double dddPmodIII = 0.0;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->AddCoupDerivVol(sqI3, &dPmodI, &ddPmodII, &dddPmodIII, nullptr);
+    potsum_[p]->add_coup_deriv_vol(sqI3, &dPmodI, &ddPmodII, &dddPmodIII, nullptr);
 
   // those are actually the temperature derivatives of the coefficients
   // then we plug them into the cauchy stress derivative and voila
@@ -1942,7 +1943,7 @@ void Mat::PlasticElastHyper::evaluate_cauchy_temp_deriv(const Core::LinAlg::Matr
   dPI.clear();
   ddPII.clear();
 
-  const double fac = -3.0 * Cte();
+  const double fac = -3.0 * cte();
   dPI(2) += fac * 0.5 / sqI3 * ddPmodII;
   ddPII(2) += fac * (0.25 / (sqI3 * sqI3) * dddPmodIII - 0.25 / (sqI3 * sqI3 * sqI3) * ddPmodII);
 
@@ -1984,17 +1985,17 @@ void Mat::PlasticElastHyper::add_thermal_expansion_derivs(const Core::LinAlg::Ma
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
     potsum_[p]->add_derivatives_modified(dPmodI, ddPmodII, modinv, gp, eleGID);
-    potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(j, nullptr, &(ddPmodII(2)), &dddPmodIII, nullptr);
+    potsum_[p]->add3rd_vol_deriv(modinv, dddPmodIII);
+    potsum_[p]->add_coup_deriv_vol(j, nullptr, &(ddPmodII(2)), &dddPmodIII, nullptr);
   }
 
-  const double dT = temp - InitTemp();
-  const double fac = -3. * Cte() * dT;
+  const double dT = temp - init_temp();
+  const double fac = -3. * cte() * dT;
   dPI(2) += fac * .5 / j * ddPmodII(2);
   ddPII(2) += fac * (.25 / (j * j) * dddPmodIII - .25 / (j * j * j) * ddPmodII(2));
 }
 
-void Mat::PlasticElastHyper::UpdateGP(const int gp, const Core::LinAlg::Matrix<3, 3>* deltaDp)
+void Mat::PlasticElastHyper::update_gp(const int gp, const Core::LinAlg::Matrix<3, 3>* deltaDp)
 {
   if (activity_state_[gp] == true)
   {
@@ -2322,7 +2323,7 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::VisNames(std::map<std::string, int>& names) const
+void Mat::PlasticElastHyper::vis_names(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -2333,20 +2334,20 @@ void Mat::PlasticElastHyper::VisNames(std::map<std::string, int>& names) const
   std::string kinematic_plastic_strain = "kinematic_plastic_strain";
   names[kinematic_plastic_strain] = 9;  // tensor
 
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool Mat::PlasticElastHyper::VisData(
+bool Mat::PlasticElastHyper::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double tmp = 0.;
-    for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++) tmp += AccumulatedStrain(gp);
+    for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++) tmp += accumulated_strain(gp);
     data[0] = tmp / last_alpha_isotropic_.size();
   }
   else if (name == "plastic_strain_incr")
@@ -2363,8 +2364,8 @@ bool Mat::PlasticElastHyper::VisData(
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++)
     {
-      if (AccumulatedStrain(gp) != 0.) plastic_history = true;
-      if (Active(gp)) curr_active = true;
+      if (accumulated_strain(gp) != 0.) plastic_history = true;
+      if (active(gp)) curr_active = true;
     }
     data[0] = plastic_history + curr_active;
   }
@@ -2388,7 +2389,7 @@ bool Mat::PlasticElastHyper::VisData(
   }
   return true;
 
-}  // VisData()
+}  // vis_data()
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
@@ -2403,7 +2404,7 @@ void Mat::PlasticElastHyper::register_output_data_names(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-bool Mat::PlasticElastHyper::EvaluateOutputData(
+bool Mat::PlasticElastHyper::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")
@@ -2428,8 +2429,8 @@ bool Mat::PlasticElastHyper::EvaluateOutputData(
     bool curr_active = false;
     for (std::size_t gp = 0; gp < last_alpha_isotropic_.size(); ++gp)
     {
-      if (AccumulatedStrain(gp) != 0.) plastic_history = true;
-      if (Active(gp)) curr_active = true;
+      if (accumulated_strain(gp) != 0.) plastic_history = true;
+      if (active(gp)) curr_active = true;
       data(gp, 0) = plastic_history + curr_active;
     }
     return true;

@@ -49,10 +49,10 @@ namespace FSI
       /*!
         Results in a new control file
        */
-      void NewTimeStep(int step, std::string name = "");
+      void new_time_step(int step, std::string name = "");
 
       /// announce new interface iteration step
-      void NewIteration();
+      void new_iteration();
 
       /// write interface vector
       /*!
@@ -91,10 +91,10 @@ namespace FSI
       /*!
         Results in a new control file
        */
-      virtual void NewLinearSystem(int step, std::string name = "");
+      virtual void new_linear_system(int step, std::string name = "");
 
       /// announce new interface iteration step
-      virtual void NewIteration();
+      virtual void new_iteration();
 
       /// write interface vector
       /*!
@@ -132,10 +132,10 @@ namespace FSI
       /*!
         Results in a new control file
        */
-      virtual void NewLinearSystem();
+      virtual void new_linear_system();
 
       /// announce new interface iteration step
-      virtual void NewIteration();
+      virtual void new_iteration();
 
       /// write interface vector
       /*!

@@ -39,7 +39,7 @@ Mat::PAR::ElchSingleMat::ElchSingleMat(const Core::Mat::PAR::Parameter::Data& ma
           matdata.parameters.get<int>("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
       conductivity_temp_scale_funct_params_(
           matdata.parameters.get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
-      R_(Global::Problem::Instance()->ELCHControlParams().get<double>("GAS_CONSTANT"))
+      R_(Global::Problem::instance()->elch_control_params().get<double>("GAS_CONSTANT"))
 {
   // safety checks
   if (number_diffusion_coefficent_params_ != static_cast<int>(diffusion_coefficent_params_.size()))
@@ -261,8 +261,8 @@ double Mat::ElchSingleMat::compute_diffusion_coefficient_concentration_dependent
   // diffusion coefficient is a function of the concentration as defined in the input file
   else
   {
-    diffusionCoefficient = Global::Problem::Instance()
-                               ->FunctionById<Core::UTILS::FunctionOfTime>(
+    diffusionCoefficient = Global::Problem::instance()
+                               ->function_by_id<Core::UTILS::FunctionOfTime>(
                                    diffusion_coefficient_concentration_dependence_funct_num() - 1)
                                .evaluate(concentration);
   }
@@ -289,8 +289,8 @@ double Mat::ElchSingleMat::compute_temperature_dependent_scale_factor(const doub
   else if (functionNumber > 0)
   {
     temperatureDependentScaleFactor =
-        Global::Problem::Instance()
-            ->FunctionById<Core::UTILS::FunctionOfTime>(functionNumber - 1)
+        Global::Problem::instance()
+            ->function_by_id<Core::UTILS::FunctionOfTime>(functionNumber - 1)
             .evaluate(temperature);
   }
   else
@@ -332,10 +332,10 @@ double Mat::ElchSingleMat::compute_concentration_derivative_of_diffusion_coeffic
   else
   {
     diffusion_coeff_conc_deriv =
-        (Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfTime>(
+        (Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfTime>(
                     diffusion_coefficient_concentration_dependence_funct_num() - 1)
-                .EvaluateDerivative(concentration));
+                .evaluate_derivative(concentration));
   }
 
   // do the temperature dependent scaling
@@ -383,9 +383,9 @@ double Mat::ElchSingleMat::compute_temperature_dependent_scale_factor_deriv(
   else if (functionNumber > 0)
   {
     temperatureDependentScaleFactorDeriv =
-        Global::Problem::Instance()
-            ->FunctionById<Core::UTILS::FunctionOfTime>(functionNumber - 1)
-            .EvaluateDerivative(temperature);
+        Global::Problem::instance()
+            ->function_by_id<Core::UTILS::FunctionOfTime>(functionNumber - 1)
+            .evaluate_derivative(temperature);
   }
   else
   {
@@ -434,8 +434,8 @@ double Mat::ElchSingleMat::compute_conductivity_concentration_dependent(
   // conductivity is a function of the concentration as defined in the input file
   else
   {
-    conductivity = Global::Problem::Instance()
-                       ->FunctionById<Core::UTILS::FunctionOfTime>(
+    conductivity = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfTime>(
                            conductivity_concentration_dependence_funct_num() - 1)
                        .evaluate(concentration);
   }
@@ -468,10 +468,10 @@ double Mat::ElchSingleMat::compute_concentration_derivative_of_conductivity(
   // concentration as defined in the input file
   else
   {
-    conductivity_conc_deriv = (Global::Problem::Instance()
-                                   ->FunctionById<Core::UTILS::FunctionOfTime>(
+    conductivity_conc_deriv = (Global::Problem::instance()
+                                   ->function_by_id<Core::UTILS::FunctionOfTime>(
                                        conductivity_concentration_dependence_funct_num() - 1)
-                                   .EvaluateDerivative(concentration));
+                                   .evaluate_derivative(concentration));
   }
 
   // do the temperature dependent scaling
@@ -627,7 +627,7 @@ double Mat::ElchSingleMat::eval_pre_defined_funct(
       // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T:temperature, D0: max
       // diffusion coefficient D0 is provided by DIFF PARA
       // functval = exp(-a0/(R * T)
-      const double R = static_cast<Mat::PAR::ElchSingleMat*>(Parameter())->R_;
+      const double R = static_cast<Mat::PAR::ElchSingleMat*>(parameter())->R_;
       functval = std::exp(-functparams[0] / (R * scalar));
       break;
     }
@@ -799,7 +799,7 @@ double Mat::ElchSingleMat::eval_first_deriv_pre_defined_funct(
       // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
       // exp(-Q/(R*T)) Q: activation energy, R: universal gasconstant, T:temperature, D0: max
       // diffusioncoefficient D0 is provided by DIFF PARA
-      const double R = static_cast<Mat::PAR::ElchSingleMat*>(Parameter())->R_;
+      const double R = static_cast<Mat::PAR::ElchSingleMat*>(parameter())->R_;
       firstderivfunctval = std::exp(-functparams[0] / (R * scalar)) * functparams[0] / R * 1.0 /
                            std::pow(scalar, 2.0);
       break;

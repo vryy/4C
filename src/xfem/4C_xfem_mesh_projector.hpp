@@ -61,7 +61,7 @@ namespace XFEM
     }
 
     //! main projection routine (pass a map of the target node ids)
-    void Project(std::map<int, std::set<int>>&
+    void project(std::map<int, std::set<int>>&
                      projection_nodeToDof,  //< node-to-dof map of target nodes demanding projection
         std::vector<Teuchos::RCP<Epetra_Vector>>
             target_statevecs,  //< state vectors of target discretization
@@ -73,7 +73,7 @@ namespace XFEM
         Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
 
     //! write gmsh output for projection details
-    void GmshOutput(int step = 0, Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
+    void gmsh_output(int step = 0, Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
 
    private:
     /// determine the search radius for the search tree

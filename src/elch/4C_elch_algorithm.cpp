@@ -29,13 +29,13 @@ ElCh::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList
 void ElCh::Algorithm::prepare_time_loop()
 {
   // provide information about initial field (do not do for restarts!)
-  if (Step() == 0)
+  if (step() == 0)
   {
-    ScaTraField()->output_problem_specific();
-    ScaTraField()->output_total_and_mean_scalars();
+    sca_tra_field()->output_problem_specific();
+    sca_tra_field()->output_total_and_mean_scalars();
 
     // compute error for problems with analytical solution (initial field!)
-    ScaTraField()->evaluate_error_compared_to_analytical_sol();
+    sca_tra_field()->evaluate_error_compared_to_analytical_sol();
   }
 }
 
@@ -44,7 +44,7 @@ void ElCh::Algorithm::prepare_time_loop()
  *----------------------------------------------------------------------*/
 void ElCh::Algorithm::print_sca_tra_solver()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
     std::cout
         << "\n****************************\n      ELCH SOLVER\n****************************\n";
 }
@@ -63,7 +63,7 @@ bool ElCh::Algorithm::convergence_check(
   //     | concentration_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<Core::LinAlg::MapExtractor> conpotsplitter = ScaTraField()->Splitter();
+  Teuchos::RCP<Core::LinAlg::MapExtractor> conpotsplitter = sca_tra_field()->splitter();
   // Variables to save different L2 - Norms
 
   double potincnorm_L2 = 0.0;
@@ -76,22 +76,22 @@ bool ElCh::Algorithm::convergence_check(
   // Calculate velocity increment and velocity L2 - Norm
   // velincnp_ = 1.0 * convelnp_ - 1.0 * conveln_
 
-  velincnp_->Update(1.0, *fluid_field()->ExtractVelocityPart(fluid_field()->Velnp()), -1.0);
+  velincnp_->Update(1.0, *fluid_field()->extract_velocity_part(fluid_field()->velnp()), -1.0);
   velincnp_->Norm2(&velincnorm_L2);  // Estimation of the L2 - norm save values to both variables
                                      // (velincnorm_L2 and velnorm_L2)
-  fluid_field()->ExtractVelocityPart(fluid_field()->Velnp())->Norm2(&velnorm_L2);
+  fluid_field()->extract_velocity_part(fluid_field()->velnp())->Norm2(&velnorm_L2);
 
   // Calculate concentration increment and concentration L2 - Norm
-  phiincnp_->Update(1.0, *ScaTraField()->Phinp(), -1.0);
+  phiincnp_->Update(1.0, *sca_tra_field()->phinp(), -1.0);
   auto onlycon = conpotsplitter->extract_other_vector(phiincnp_);
   onlycon->Norm2(&conincnorm_L2);
-  conpotsplitter->extract_other_vector(ScaTraField()->Phinp(), onlycon);
+  conpotsplitter->extract_other_vector(sca_tra_field()->phinp(), onlycon);
   onlycon->Norm2(&connorm_L2);
 
   // Calculate potential increment and potential L2 - Norm
   auto onlypot = conpotsplitter->extract_cond_vector(phiincnp_);
   onlypot->Norm2(&potincnorm_L2);
-  conpotsplitter->extract_cond_vector(ScaTraField()->Phinp(), onlypot);
+  conpotsplitter->extract_cond_vector(sca_tra_field()->phinp(), onlypot);
   onlypot->Norm2(&potnorm_L2);
 
   // care for the case that there is (almost) zero temperature or velocity
@@ -103,7 +103,7 @@ bool ElCh::Algorithm::convergence_check(
   // Print the incremental based convergence check to the screen
   if (natconvitnum != 1)
   {
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       std::cout << "\n";
       std::cout
@@ -127,7 +127,7 @@ bool ElCh::Algorithm::convergence_check(
     // if ((incconnorm_L2/connorm_L2 <= natconvittol))
     {
       stopnonliniter = true;
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         printf("| Outer Iteration loop converged after iteration %3d/%3d                    |\n",
             natconvitnum, natconvitmax);
@@ -138,7 +138,7 @@ bool ElCh::Algorithm::convergence_check(
     }
     else
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         printf("| Outer Iteration loop is not converged after iteration %3d/%3d             |\n",
             natconvitnum, natconvitmax);
@@ -153,7 +153,7 @@ bool ElCh::Algorithm::convergence_check(
     // first outer iteration loop: fluid solver has not got the new density yet
     // => minimum two outer iteration loops
     stopnonliniter = false;
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       std::cout << "\n";
       std::cout
@@ -180,7 +180,7 @@ bool ElCh::Algorithm::convergence_check(
         (natconvitmax == 1))
     {
       stopnonliniter = true;
-      if ((Comm().MyPID() == 0))
+      if ((get_comm().MyPID() == 0))
       {
         printf("|     >>>>>> not converged in itemax steps!     |\n");
         printf("+-----------------------------------------------+\n");

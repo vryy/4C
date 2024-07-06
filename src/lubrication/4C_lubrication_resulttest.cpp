@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
     : Core::UTILS::ResultTest("LUBRICATION"),
       dis_(lubrication->discretization()),
-      mysol_(lubrication->Prenp()),
-      mynumiter_(lubrication->IterNum())
+      mysol_(lubrication->prenp()),
+      mynumiter_(lubrication->iter_num())
 {
   return;
 }
@@ -39,28 +39,28 @@ void LUBRICATION::ResultTest::test_node(Input::LineDefinition& res, int& nerr, i
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.extract_string("DIS", dis);
-  if (dis != dis_->Name()) return;
+  if (dis != dis_->name()) return;
 
   int node;
   res.extract_int("NODE", node);
   node -= 1;
 
-  int havenode(dis_->HaveGlobalNode(node));
+  int havenode(dis_->have_global_node(node));
   int isnodeofanybody(0);
-  dis_->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  dis_->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
-    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->name().c_str());
   }
   else
   {
-    if (dis_->HaveGlobalNode(node))
+    if (dis_->have_global_node(node))
     {
-      Core::Nodes::Node* actnode = dis_->gNode(node);
+      Core::Nodes::Node* actnode = dis_->g_node(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != dis_->Comm().MyPID()) return;
+      if (actnode->owner() != dis_->get_comm().MyPID()) return;
 
       // extract name of quantity to be tested
       std::string quantity;
@@ -93,7 +93,7 @@ double LUBRICATION::ResultTest::result_node(
   const Epetra_BlockMap& prenpmap = mysol_->Map();
 
   // test result value of pressure field
-  if (quantity == "pre") result = (*mysol_)[prenpmap.LID(dis_->Dof(0, node, 0))];
+  if (quantity == "pre") result = (*mysol_)[prenpmap.LID(dis_->dof(0, node, 0))];
 
   // catch unknown quantity strings
   else
@@ -106,10 +106,10 @@ double LUBRICATION::ResultTest::result_node(
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node  wirtz 11/15 |
  *-------------------------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
+void LUBRICATION::ResultTest::test_special(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
-  if (dis_->Comm().MyPID() == 0)
+  if (dis_->get_comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;

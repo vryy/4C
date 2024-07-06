@@ -34,11 +34,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->Material());
+  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
+      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
+      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.0);
@@ -50,7 +50,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -92,17 +92,17 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->Material());
+  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
+      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
+      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  if (intpoints.IP().nquad != nen_)
+  if (intpoints.ip().nquad != nen_)
     FOUR_C_THROW(
         "number of element nodes must equal number of Gauss points for reasonable projection");
 
@@ -113,7 +113,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   Core::LinAlg::SerialDenseMatrix conc_gp(nen_, 1);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -145,11 +145,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::c
   my::calculate_scalars(ele, scalars, inverting, calc_grad_phi);
 
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->Material());
+  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
+      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
+      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.0);
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::c
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -183,11 +183,11 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
     Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // extract multi-scale material
-  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->Material());
+  auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
   auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
+      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
+      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // determine and evaluate action
   switch (action)
@@ -198,9 +198,9 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         // initialize micro scale in multi-scale simulations
-        newmanmultiscale->initialize(ele->Id(), iquad, my::scatrapara_->IsAle());
+        newmanmultiscale->initialize(ele->id(), iquad, my::scatrapara_->is_ale());
 
       break;
     }
@@ -210,13 +210,13 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
     {
       // extract state variables at element nodes
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
-          *discretization.GetState("phinp"), my::ephinp_, la[0].lm_);
+          *discretization.get_state("phinp"), my::ephinp_, la[0].lm_);
 
       const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
       {
         // evaluate shape functions at Gauss point
         this->eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
 
         // initialize vector with macro-scale state variables
         std::vector<double> phinp(3, 0.);
-        phinp[0] = my::scatravarmanager_->Phinp(0);
+        phinp[0] = my::scatravarmanager_->phinp(0);
         phinp[1] = my::funct_.dot(my::ephinp_[1]);
         phinp[2] = my::funct_.dot(my::ephinp_[2]);
 
@@ -253,7 +253,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         // update multi-scale scalar transport material
         newmanmultiscale->update(iquad);
 
@@ -266,7 +266,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         // create output on micro scale
         newmanmultiscale->output(iquad);
 
@@ -279,7 +279,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over all Gauss points
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
         // read restart on micro scale
         newmanmultiscale->read_restart(iquad);
 
@@ -289,8 +289,8 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
     {
       const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
           ScaTra::DisTypeToOptGaussRule<distype>::rule);
-      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
-        newmanmultiscale->SetTimeStepping(
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
+        newmanmultiscale->set_time_stepping(
             iquad, params.get<double>("dt"), params.get<double>("time"), params.get<int>("step"));
       [[fallthrough]];
     }

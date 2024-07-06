@@ -46,13 +46,13 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
     {
-      return fluid_->Interface();
+      return fluid_->interface();
     }
 
     /// communication object at the struct interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface();
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& struct_interface();
 
     //@}
 
@@ -81,7 +81,7 @@ namespace Adapter
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
     //@}
 
@@ -112,10 +112,10 @@ namespace Adapter
     /// number of Newton steps inside the fluid solver
 
     /// get the maximum number of iterations from the fluid field
-    int Itemax() const override { return fluid_->Itemax(); }
+    int itemax() const override { return fluid_->itemax(); }
 
     /// set the maximum number of iterations for the fluid field
-    void SetItemax(int itemax) override { fluid_->SetItemax(itemax); }
+    void set_itemax(int itemax) override { fluid_->set_itemax(itemax); }
 
     //@}
 
@@ -127,7 +127,7 @@ namespace Adapter
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
 
 

@@ -58,7 +58,7 @@ namespace Core::Geo::Cut::Kernel
     void double_intersection_counter() { double_int_++; };
     void double_distance_counter() { double_dist_++; };
     void cln_intersection_counter() { cln_int_++; };
-    void ClnDistanceCounter() { cln_dist_++; };
+    void cln_distance_counter() { cln_dist_++; };
     ~CutKernelStatistics()
     {
       std::cout << "\n\n =====================INTERSECTION "
@@ -87,9 +87,9 @@ namespace Core::Geo::Cut::Kernel
     {
     }
 
-    bool WithinSide() { return within_side_; }
+    bool within_side() { return within_side_; }
 
-    bool OnSide() { return on_side_; }
+    bool on_side() { return on_side_; }
 
    private:
     bool within_side_;
@@ -756,7 +756,7 @@ namespace Core::Geo::Cut::Kernel
     // cln does not have built it pow function and using double will cause floating point
     // overflow, so we using manual cln conversion
     std::stringstream string_buffer;
-    int nsize = Core::CLN::ClnWrapper::GetPrecision();
+    int nsize = Core::CLN::ClnWrapper::get_precision();
     string_buffer << nsize;
     // construct string that represent 1e^-(current_cln_precision - 2) explicitely
     // otherwise cln might thinkg it too close to zero, and convert to short float zero and mess
@@ -765,7 +765,7 @@ namespace Core::Geo::Cut::Kernel
     cln::cl_F cln_tol = clnumstr.c_str();
     // in order to make sure that we maintain proper precision
     Core::CLN::ClnWrapper cln_tol_cln =
-        cln::cl_float(cln_tol, cln::float_format(Core::CLN::ClnWrapper::GetPrecision()));
+        cln::cl_float(cln_tol, cln::float_format(Core::CLN::ClnWrapper::get_precision()));
     Core::CLN::ClnWrapper cln_linsolvetol =
         cln_tol_cln /
         Core::MathOperations<Core::CLN::ClnWrapper>::sqrt(Core::CLN::ClnWrapper(3.0)) *
@@ -825,15 +825,15 @@ namespace Core::Geo::Cut::Kernel
     }
 #endif
 
-    bool Solve()
+    bool solve()
     {
-      this->SetupSolve();
+      this->setup_solve();
 
       for (unsigned iter = 0; iter < maxiter; ++iter)
       {
-        this->SetupStep(iter);
+        this->setup_step(iter);
 
-        switch (this->TestConverged(iter))
+        switch (this->test_converged(iter))
         {
           // Newton iteration was successful
           case converged:
@@ -848,7 +848,7 @@ namespace Core::Geo::Cut::Kernel
           // Newton failed, thus we can stop here
           case failed:
           {
-            return this->NewtonFailed();
+            return this->newton_failed();
           }
         }
 
@@ -863,7 +863,7 @@ namespace Core::Geo::Cut::Kernel
         }
       }
 
-      return this->NewtonFailed();
+      return this->newton_failed();
     }
 
   };  // class class NewtonSolve
@@ -873,33 +873,25 @@ namespace Core::Geo::Cut::Kernel
   class EmptyNewtonStrategy
   {
    public:
-    void SetupSolve() {}
+    void setup_solve() {}
 
-    void SetupStep(int iter) {}
+    void setup_step(int iter) {}
 
-    enum NewtonStatus TestConverged(int iter) { return unconverged; }
+    enum NewtonStatus test_converged(int iter) { return unconverged; }
 
     bool linear_solve(int iter) { return true; }
 
     bool update(int iter) { return true; }
 
-    bool NewtonFailed() { return false; }
+    bool newton_failed() { return false; }
 
-    double GetTolerance()
-    {
-      FOUR_C_THROW("Try to get tolerance from EmptyNewtonStrategy!");
-      return 0.0;  // just to make compiler happy!
-    }
+    double get_tolerance() { FOUR_C_THROW("Try to get tolerance from EmptyNewtonStrategy!"); }
 
-    bool ZeroArea()
-    {
-      FOUR_C_THROW("Try to get ZeroArea Information from EmptyNewtonStrategy!");
-      return false;  // just to make compiler happy!
-    }
+    bool zero_area() { FOUR_C_THROW("Try to get zero_area Information from EmptyNewtonStrategy!"); }
 
-    void WritetoGmsh(std::ofstream& file)
+    void write_to_gmsh(std::ofstream& file)
     {
-      FOUR_C_THROW("Try WritetoGmsh() from EmptyNewtonStrategy!");
+      FOUR_C_THROW("Try write_to_gmsh() from EmptyNewtonStrategy!");
     }
   };  // class EmptyNewtonStrategy
 
@@ -915,21 +907,21 @@ namespace Core::Geo::Cut::Kernel
     {
     }
 
-    void SetupSolve()
+    void setup_solve()
     {
       std::cout << "SetupSolve()\n";
-      Strategy::SetupSolve();
+      Strategy::setup_solve();
     }
 
-    void SetupStep(int iter)
+    void setup_step(int iter)
     {
       std::cout << "SetupStep( iter = " << std::setw(2) << iter << " )\n";
-      Strategy::SetupStep(iter);
+      Strategy::setup_step(iter);
     }
 
-    enum NewtonStatus TestConverged(int iter)
+    enum NewtonStatus test_converged(int iter)
     {
-      enum NewtonStatus status = Strategy::TestConverged(iter);
+      enum NewtonStatus status = Strategy::test_converged(iter);
       std::cout << "TestConverged( iter = " << std::setw(2) << iter
                 << " ) = " << NewtonStatus2String(status) << "\n"
                 << std::flush;
@@ -954,9 +946,9 @@ namespace Core::Geo::Cut::Kernel
       return res;
     }
 
-    bool NewtonFailed()
+    bool newton_failed()
     {
-      bool res = Strategy::NewtonFailed();
+      bool res = Strategy::newton_failed();
       std::cout << "NewtonFailed() = " << (res ? "SUCCESS" : "FAILED") << "\n" << std::flush;
       return res;
     }
@@ -1066,11 +1058,11 @@ namespace Core::Geo::Cut::Kernel
     const Core::LinAlg::Matrix<dim, 1, FloatType>& local_coordinates() { return xsi_; }
     /// get the solution coordaintes in the CLN format
     /// initialize the solution variable to zero
-    void SetupSolve()
+    void setup_solve()
     {
       xsi_ = 0.0;
       b_ = 0.0;
-      PositionRHS(*xyze_, *px_, b_);
+      position_rhs(*xyze_, *px_, b_);
       tol_ = AdaptiveCombinedNewtonTolerance(*xyze_, *px_, b_, xsi_(0, 0));
     }
 
@@ -1079,16 +1071,16 @@ namespace Core::Geo::Cut::Kernel
      *  \f[
      *      b_ = - (px_ - x(xsi_))
      *  \f] */
-    void SetupStep(int iter)
+    void setup_step(int iter)
     {
       if (iter > 0)
       {
-        PositionRHS(*xyze_, *px_, b_);
+        position_rhs(*xyze_, *px_, b_);
       }
     }
 
     /// calculate the position rhs
-    void PositionRHS(const Core::LinAlg::Matrix<prob_dim, num_nodes_element, FloatType>& xyze,
+    void position_rhs(const Core::LinAlg::Matrix<prob_dim, num_nodes_element, FloatType>& xyze,
         const Core::LinAlg::Matrix<prob_dim, 1, FloatType>& px,
         Core::LinAlg::Matrix<prob_dim, 1, FloatType>& b)
     {
@@ -1098,7 +1090,7 @@ namespace Core::Geo::Cut::Kernel
     }
 
     /// check for convergence
-    enum NewtonStatus TestConverged(int iter)
+    enum NewtonStatus test_converged(int iter)
     {
       FloatType residual = b_.norm2();
 
@@ -1171,9 +1163,9 @@ namespace Core::Geo::Cut::Kernel
       return true;
     }
 
-    bool NewtonFailed() { return false; }
+    bool newton_failed() { return false; }
 
-    std::pair<bool, FloatType> ConditionNumber()
+    std::pair<bool, FloatType> condition_number()
     {
       Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType> A_inv;
       FloatType det = A_.determinant();
@@ -1191,9 +1183,9 @@ namespace Core::Geo::Cut::Kernel
       return std::make_pair(true, cond);
     }
     /// get the Newton tolerance
-    FloatType GetTolerance() const { return tol_; }
+    FloatType get_tolerance() const { return tol_; }
 
-    FloatType GetLocalTolerance(const FloatType& real_tolerance)
+    FloatType get_local_tolerance(const FloatType& real_tolerance)
     {
       FOUR_C_THROW(
           "Not impelemented! Have a look at  GetLocalTolerance for compute_distance strategy to "
@@ -1430,25 +1422,25 @@ namespace Core::Geo::Cut::Kernel
       if (all_distance_done_once_ and all_intersections_done_once_ and all_position_done_once_ and
           (!custom_allocator_run_))
       {
-        Core::Geo::Cut::MemorySingleton::getInstance().ReportAllocated();
+        Core::Geo::Cut::MemorySingleton::getinstance().ReportAllocated();
         report_intersection_allocated();
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
-        Core::Geo::Cut::MemorySingleton::getInstance().set_state(1, memory_allocations_);
+        Core::Geo::Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
         custom_allocator_run_ = true;
       }
       if (first_run_) std::cout << "In cut position statistics is" << std::endl;
 #endif
       do
       {
-        Core::CLN::ClnWrapper::SetPrecision(prec);
+        Core::CLN::ClnWrapper::set_precision(prec);
 #ifdef CUSTOM_MEMORY_ALLOCATOR
 #if DEBUG_MEMORY_ALLOCATION
         // set current constainer for most frequenty byte size allocation for this iteration
         if (custom_allocator_run_)
 #endif
-          Core::Geo::Cut::MemorySingleton::getInstance().get_memory_pool_allocator().SetCurrent(
+          Core::Geo::Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 
@@ -1456,13 +1448,13 @@ namespace Core::Geo::Cut::Kernel
         // Report memory allocation of the class if doing this for the first time
         if (first_run_)
         {
-          if (Core::Geo::Cut::MemorySingleton::getInstance().IsRecording())
+          if (Core::Geo::Cut::MemorySingleton::getinstance().IsRecording())
           {
             update_memory_allocations(
-                Core::Geo::Cut::MemorySingleton::getInstance().GetMemoryPattern());
-            Core::Geo::Cut::MemorySingleton::getInstance().StopRecord();
+                Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern());
+            Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
           }
-          Core::Geo::Cut::MemorySingleton::getInstance().StartRecord();
+          Core::Geo::Cut::MemorySingleton::getinstance().StartRecord();
         }
 #endif
         // convertion to correspondent precison
@@ -1470,7 +1462,7 @@ namespace Core::Geo::Cut::Kernel
         Core::CLN::ConvDoubleCLN(px, clnpx_, prec);
 
         this->setup(clnxyze_, clnpx_);
-        conv = this->Solve();
+        conv = this->solve();
 
         // safety check of precision loss
         cln::float_format_t prec_beg = cln::float_format(clnxyze_(0, 0).Value());
@@ -1485,7 +1477,7 @@ namespace Core::Geo::Cut::Kernel
           }
         }
 
-        std::pair<bool, Core::CLN::ClnWrapper> cond_pair = this->ConditionNumber();
+        std::pair<bool, Core::CLN::ClnWrapper> cond_pair = this->condition_number();
         cond_number = cond_pair.second;
         if (not cond_pair.first)
         {
@@ -1537,11 +1529,14 @@ namespace Core::Geo::Cut::Kernel
       return Strategy::local_coordinates();
     }
 
-    std::pair<bool, Core::CLN::ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
+    std::pair<bool, Core::CLN::ClnWrapper> condition_number()
+    {
+      return Strategy::condition_number();
+    }
 
-    Core::CLN::ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
+    Core::CLN::ClnWrapper get_tolerance() const { return Strategy::get_tolerance(); }
 
-    PointOnSurfaceLoc GetSideLocation() { return location_; }
+    PointOnSurfaceLoc get_side_location() { return location_; }
 
    private:
     // Evaluate difference between inital global coordinates passed to ComputePosition and
@@ -1552,8 +1547,8 @@ namespace Core::Geo::Cut::Kernel
         const Core::LinAlg::Matrix<prob_dim, 1>& glob_init,
         const Core::LinAlg::Matrix<dim, 1, Core::CLN::ClnWrapper>& loc_calc, int prec)
     {
-      unsigned int prev_prec = Core::CLN::ClnWrapper::GetPrecision();
-      Core::CLN::ClnWrapper::SetPrecision(prec);
+      unsigned int prev_prec = Core::CLN::ClnWrapper::get_precision();
+      Core::CLN::ClnWrapper::set_precision(prec);
       // Converting input data into higher precision floating point format
       Core::LinAlg::Matrix<prob_dim, Core::FE::num_nodes<element_type>, Core::CLN::ClnWrapper>
           cln_ref_shape_xyz;
@@ -1579,7 +1574,7 @@ namespace Core::Geo::Cut::Kernel
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> diff_vec;
       for (unsigned int i = 0; i < prob_dim; ++i) diff_vec(i) = cln_glob_calc(i) - cln_glob_init(i);
       // resetting precision to previous
-      Core::CLN::ClnWrapper::SetPrecision(prev_prec);
+      Core::CLN::ClnWrapper::set_precision(prev_prec);
       return diff_vec.norm2();
     }
 
@@ -1592,10 +1587,10 @@ namespace Core::Geo::Cut::Kernel
 #if DEBUG_MEMORY_ALLOCATION
       if (first_run_)
       {
-        Core::Geo::Cut::MemorySingleton::getInstance().StopRecord();
+        Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
 
         std::unordered_map<size_t, int>& allocation_map =
-            Core::Geo::Cut::MemorySingleton::getInstance().GetMemoryPattern();
+            Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern();
 
         // update the global number of allocations to the maximum
         int max_num = 0;
@@ -1624,7 +1619,7 @@ namespace Core::Geo::Cut::Kernel
         else
           FOUR_C_THROW("This should not be possible!");
 
-        Core::Geo::Cut::MemorySingleton::getInstance().ResetAllocated();
+        Core::Geo::Cut::MemorySingleton::getinstance().ResetAllocated();
       }
 #endif
     }
@@ -1683,7 +1678,7 @@ namespace Core::Geo::Cut::Kernel
     {
       bool conv;
       this->setup(xyze, px);
-      conv = this->Solve();
+      conv = this->solve();
 #ifdef CUT_CLN_CALC
       if (compute_cln)  // this is not used up to now!
       {
@@ -1697,11 +1692,11 @@ namespace Core::Geo::Cut::Kernel
 
           bool clnsolver = clncalc(xyze, px);
           conv = clnsolver;
-          location_ = clncalc.GetSideLocation();
-          Core::CLN::ClnWrapper::ResetPrecision();
+          location_ = clncalc.get_side_location();
+          Core::CLN::ClnWrapper::reset_precision();
         }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-        Core::Geo::Cut::MemorySingleton::getInstance().Finalize();
+        Core::Geo::Cut::MemorySingleton::getinstance().Finalize();
 #endif
       }
 #endif
@@ -1713,12 +1708,12 @@ namespace Core::Geo::Cut::Kernel
       return Strategy::local_coordinates();
     }
 
-    std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
+    std::pair<bool, double> condition_number() { return Strategy::condition_number(); }
 
-    double GetTolerance() const { return Strategy::GetTolerance(); }
+    double get_tolerance() const { return Strategy::get_tolerance(); }
 #ifdef CUT_CLN_CALC
 
-    PointOnSurfaceLoc GetSideLocation() { return location_; }
+    PointOnSurfaceLoc get_side_location() { return location_; }
 
    private:
     PointOnSurfaceLoc location_;
@@ -1902,7 +1897,7 @@ namespace Core::Geo::Cut::Kernel
       }
     }
     /// return the absolute value of the distance of the point \c px_ to the given side
-    FloatType Distance() const
+    FloatType distance() const
     {
       switch (prob_dim - dim_side)
       {
@@ -1919,13 +1914,13 @@ namespace Core::Geo::Cut::Kernel
     }
 
     /// return the signed distance of the point px_ to the given side
-    const FloatType* SignedDistance() const { return distance_; }
+    const FloatType* signed_distance() const { return distance_; }
 
     /// return the local solution vector (parameter space coordinates + distance)
     const Core::LinAlg::Matrix<prob_dim, 1, FloatType>& local_coordinates() const { return xsi_; }
 
     /// transform tolerance from global to local coordinates
-    bool GetLocalTolerance(const FloatType& global_tolerance,
+    bool get_local_tolerance(const FloatType& global_tolerance,
         Core::LinAlg::Matrix<dim_side, 1, FloatType>& scaled_tolerance)
 
     {
@@ -1957,7 +1952,7 @@ namespace Core::Geo::Cut::Kernel
     }
 
     /// return isInfinite and possibly floatType
-    std::pair<bool, FloatType> ConditionNumber()
+    std::pair<bool, FloatType> condition_number()
     {
       Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType> A_inv;
       FloatType det = A_.determinant();
@@ -1976,23 +1971,23 @@ namespace Core::Geo::Cut::Kernel
     }
 
     /// set the initial solution vector to zero
-    void SetupSolve()
+    void setup_solve()
     {
       xsi_ = 0.0;
       distance_ = xsi_.data() + dim_side;
       // evaluate initial rhs value (w/o distance contribution)
-      DistanceRHS(*xyze_side_, *px_, b_);
+      distance_rhs(*xyze_side_, *px_, b_);
       tol_ = AdaptiveCombinedNewtonTolerance(*xyze_side_, *px_, b_, xsi_(0, 0));
     }
 
     /** \brief Setup routine for a new Newton step
      *
      *  Setup the system of equations. */
-    void SetupStep(int iter)
+    void setup_step(int iter)
     {
       if (iter > 0)
       {
-        DistanceRHS(*xyze_side_, *px_, b_);
+        distance_rhs(*xyze_side_, *px_, b_);
       }
 
       // build the linear system of equations
@@ -2000,7 +1995,7 @@ namespace Core::Geo::Cut::Kernel
       distance_system(*xyze_side_, *px_, distance_, A_, B_, C_, N_, b_);
     }
     /// compute the rhs value ( w/o distance contributions )
-    void DistanceRHS(const Core::LinAlg::Matrix<prob_dim, num_nodes_side, FloatType>& xyze_side,
+    void distance_rhs(const Core::LinAlg::Matrix<prob_dim, num_nodes_side, FloatType>& xyze_side,
         const Core::LinAlg::Matrix<prob_dim, 1, FloatType>& px,
         Core::LinAlg::Matrix<prob_dim, 1, FloatType>& b)
     {
@@ -2011,7 +2006,7 @@ namespace Core::Geo::Cut::Kernel
     }
 
     /// Test the stop / convergence criterion of the Newton scheme
-    enum NewtonStatus TestConverged(int iter)
+    enum NewtonStatus test_converged(int iter)
     {
       if (debug)
       {
@@ -2082,7 +2077,7 @@ namespace Core::Geo::Cut::Kernel
     }
 
     /// fall back routine, if the Newton failed
-    bool NewtonFailed()
+    bool newton_failed()
     {
       tol_ = b_.norm2();
 #ifdef DEBUG_CUTKERNEL_OUTPUT
@@ -2092,14 +2087,14 @@ namespace Core::Geo::Cut::Kernel
 
       std::string filename = Output::GenerateGmshOutputFilename(".NewtonFailed_distance.pos");
       std::ofstream file(filename.c_str());
-      WritetoGmsh(file);
+      write_to_gmsh(file);
       file.close();
 #endif
       return false;
     }
 
     /// Gmsh debug output
-    void WritetoGmsh(std::ofstream& file)
+    void write_to_gmsh(std::ofstream& file)
     {
       file.precision(32);  // higher precision!
       char elementType;
@@ -2166,16 +2161,16 @@ namespace Core::Geo::Cut::Kernel
     }
 
     /// get normal vectors
-    const Core::LinAlg::Matrix<prob_dim, 2, FloatType>& GetNormalVector() { return nvec_; }
+    const Core::LinAlg::Matrix<prob_dim, 2, FloatType>& get_normal_vector() { return nvec_; }
 
     /// get the adapted Newton tolerance
-    FloatType GetTolerance() const { return tol_; }
+    FloatType get_tolerance() const { return tol_; }
 
     /// get actual reached residual
-    FloatType GetResidualL2Norm() const { return b_.norm2(); }
+    FloatType get_residual_l2_norm() const { return b_.norm2(); }
 
     /// return \TRUE if the side metric vectors is zero
-    bool ZeroArea() const { return zeroarea_; }
+    bool zero_area() const { return zeroarea_; }
 
    private:
     enum NormalPlane
@@ -2290,7 +2285,7 @@ namespace Core::Geo::Cut::Kernel
         for (unsigned r = 0; r < prob_dim; ++r) nvec_(r, 1) = n2(r);
 
         // the normal linearization can be skipped for this case
-        if (Distance() == 0.0) return true;
+        if (ComputeDistanceStrategy::distance() == 0.0) return true;
 
         // add extra term to the right hand side
         b.update(-distance[1] * n2norm_inv, n2, 1.0);
@@ -2354,7 +2349,7 @@ namespace Core::Geo::Cut::Kernel
       else if (prob_dim == 3 and dim_side == 2)
       {
         // the normal linearization can be skipped for this case
-        if (Distance() == 0.0) return true;
+        if (ComputeDistanceStrategy::distance() == 0.0) return true;
 
         // linearization of the unscaled normal vector
         // d(n_0) / dr
@@ -2389,7 +2384,7 @@ namespace Core::Geo::Cut::Kernel
       else if (prob_dim == 2 and dim_side == 1)
       {
         // the normal linearization can be skipped for this case
-        if (Distance() == 0.0) return true;
+        if (ComputeDistanceStrategy::distance() == 0.0) return true;
 
         // linearization of the unscaled normal vector
         B(0, 0) = C(1, 0);
@@ -2507,15 +2502,15 @@ namespace Core::Geo::Cut::Kernel
           (!custom_allocator_run_))
       {
 #if DEBUG_MEMORY_ALLOCATION
-        Core::Geo::Cut::MemorySingleton::getInstance().ReportAllocated();
+        Core::Geo::Cut::MemorySingleton::getinstance().ReportAllocated();
         report_intersection_allocated();
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
         // start setting up the memory container
-        Core::Geo::Cut::MemorySingleton::getInstance().set_state(1, memory_allocations_);
+        Core::Geo::Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
 #else
-        Core::Geo::Cut::MemorySingleton::getInstance().SwitchState();
+        Core::Geo::Cut::MemorySingleton::getinstance().SwitchState();
 #endif
         custom_allocator_run_ = true;
       }
@@ -2525,25 +2520,25 @@ namespace Core::Geo::Cut::Kernel
 #endif
       do
       {
-        Core::CLN::ClnWrapper::SetPrecision(prec);
+        Core::CLN::ClnWrapper::set_precision(prec);
 #ifdef CUSTOM_MEMORY_ALLOCATOR
 #if DEBUG_MEMORY_ALLOCATION
         if (custom_allocator_run_)
 #endif
-          Core::Geo::Cut::MemorySingleton::getInstance().get_memory_pool_allocator().SetCurrent(
+          Core::Geo::Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
 
         if (first_run_)
         {
-          if (Core::Geo::Cut::MemorySingleton::getInstance().IsRecording())
+          if (Core::Geo::Cut::MemorySingleton::getinstance().IsRecording())
           {
             update_memory_allocations(
-                Core::Geo::Cut::MemorySingleton::getInstance().GetMemoryPattern());
-            Core::Geo::Cut::MemorySingleton::getInstance().StopRecord();
+                Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern());
+            Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
           }
-          Core::Geo::Cut::MemorySingleton::getInstance().StartRecord();
+          Core::Geo::Cut::MemorySingleton::getinstance().StartRecord();
         }
 
 #endif
@@ -2553,7 +2548,7 @@ namespace Core::Geo::Cut::Kernel
         // clndistance_ = cln::cl_float(distance, cln::float_format(prec));
         this->setup(clnxyze_side_, clnpx_, false);
 
-        conv = this->Solve();
+        conv = this->solve();
 
 #if CUT_DEVELOP
         // safety check for precision loss across the array
@@ -2570,20 +2565,20 @@ namespace Core::Geo::Cut::Kernel
         }
 #endif
         if (not signeddistance)
-          clndistance_ = this->Distance();
+          clndistance_ = this->distance();
         else
         {
           switch (prob_dim - dim_side)
           {
             case 1:
-              clndistance_ = this->SignedDistance()[0];
+              clndistance_ = this->signed_distance()[0];
               break;
             default:
               FOUR_C_THROW("A scalar signed distance value is not available!");
               exit(EXIT_FAILURE);
           }
         }
-        std::pair<bool, Core::CLN::ClnWrapper> cond_pair = this->ConditionNumber();
+        std::pair<bool, Core::CLN::ClnWrapper> cond_pair = this->condition_number();
         cond_number = cond_pair.second;
 
         if (not cond_pair.first)
@@ -2592,10 +2587,10 @@ namespace Core::Geo::Cut::Kernel
         }
         // if side is zerorea-ed, we should' not divide by vector norm in the error calculation,
         // but just continue increase in the precision
-        zero_area = this->ZeroArea();
+        zero_area = this->zero_area();
         if (not zero_area)
-          err = compute_error(xyze_side, px, this->local_coordinates(), this->GetNormalVector(),
-                    this->SignedDistance(), CLN_REFERENCE_PREC) *
+          err = compute_error(xyze_side, px, this->local_coordinates(), this->get_normal_vector(),
+                    this->signed_distance(), CLN_REFERENCE_PREC) *
                 cond_number;
 #if DEBUG_MEMORY_ALLOCATION
         update_memory_usage(prec, iter);
@@ -2646,27 +2641,30 @@ namespace Core::Geo::Cut::Kernel
       return Strategy::local_coordinates();
     }
 
-    const Core::CLN::ClnWrapper* SignedDistance() const { return Strategy::SignedDistance(); }
+    const Core::CLN::ClnWrapper* signed_distance() const { return Strategy::signed_distance(); }
 
-    Core::CLN::ClnWrapper Distance() const { return Strategy::Distance(); }
+    Core::CLN::ClnWrapper distance() const { return Strategy::distance(); }
 
-    std::pair<bool, Core::CLN::ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
-
-    Core::LinAlg::Matrix<prob_dim, 2, Core::CLN::ClnWrapper> GetNormalVector()
+    std::pair<bool, Core::CLN::ClnWrapper> condition_number()
     {
-      return Strategy::GetNormalVector();
+      return Strategy::condition_number();
+    }
+
+    Core::LinAlg::Matrix<prob_dim, 2, Core::CLN::ClnWrapper> get_normal_vector()
+    {
+      return Strategy::get_normal_vector();
     }
 
     /// access the Newton tolerance
-    Core::CLN::ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
-    PointOnSurfaceLoc GetSideLocation() { return location_; }
-    const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
+    Core::CLN::ClnWrapper get_tolerance() const { return Strategy::get_tolerance(); }
+    PointOnSurfaceLoc get_side_location() { return location_; }
+    const std::vector<int>& get_touched_side_edges() { return touched_edges_ids_; }
 
-    const std::vector<int>& GetTouchedNodes() { return touched_nodes_ids_; }
+    const std::vector<int>& get_touched_nodes() { return touched_nodes_ids_; }
 
-    void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
+    void write_to_gmsh(std::ofstream& file) { Strategy::write_to_gmsh(file); }
 
-    bool IsConditionInfinity() { return cond_infinity_; }
+    bool is_condition_infinity() { return cond_infinity_; }
 
    private:
     // Evaluate difference between inital global coordinates passed to compute_distance and
@@ -2684,8 +2682,8 @@ namespace Core::Geo::Cut::Kernel
         int prec       // precision for calculation
     )
     {
-      unsigned int prev_prec = Core::CLN::ClnWrapper::GetPrecision();
-      Core::CLN::ClnWrapper::SetPrecision(prec);
+      unsigned int prev_prec = Core::CLN::ClnWrapper::get_precision();
+      Core::CLN::ClnWrapper::set_precision(prec);
       // Converting input arrays  to higher precision floating points
       Core::CLN::ClnWrapper clndistance;
       Core::LinAlg::Matrix<prob_dim, Core::FE::num_nodes<side_type>, Core::CLN::ClnWrapper>
@@ -2728,7 +2726,7 @@ namespace Core::Geo::Cut::Kernel
       }
       Core::CLN::ClnWrapper res = b.norm2();
       // resetting precision to previous
-      Core::CLN::ClnWrapper::SetPrecision(prev_prec);
+      Core::CLN::ClnWrapper::set_precision(prev_prec);
       return res;
     }
 
@@ -2744,7 +2742,7 @@ namespace Core::Geo::Cut::Kernel
     void get_topology_information()
     {
       Core::LinAlg::Matrix<dim_side, 1, Core::CLN::ClnWrapper> scaled_tolerance_side_touched_edges;
-      this->GetLocalTolerance(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
+      this->get_local_tolerance(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
       Core::LinAlg::Matrix<dim_side, 1, Core::CLN::ClnWrapper> zero_tolerance_side;
       bool is_inside = within_limits<side_type>(clnxsi_, zero_tolerance_side);
       PointOnSurfacePlane point_on_surface = get_location(SIDE_DETECTION_TOLERANCE);
@@ -2753,7 +2751,7 @@ namespace Core::Geo::Cut::Kernel
       touched_edges_ids_.clear();
       touched_nodes_ids_.clear();
       // remove edges, that are too far away
-      if (location_.OnSide())
+      if (location_.on_side())
       {
         GetEdgesAt<side_type>(clnxsi_, touched_edges_ids_, scaled_tolerance_side_touched_edges);
         GetNodesAt<side_type>(clnxsi_, touched_nodes_ids_, scaled_tolerance_side_touched_edges);
@@ -2768,7 +2766,7 @@ namespace Core::Geo::Cut::Kernel
       if (touched_edges_ids_.size() >= 2)
       {
         // if we are inside the "tolerance wrapper" around the side
-        if (location_.WithinSide())
+        if (location_.within_side())
         {
           Core::LinAlg::Matrix<dim_side, 1, Core::CLN::ClnWrapper> zero_tolerance_side;
           // this means we are on the outer boundary of the tolerance
@@ -2802,7 +2800,7 @@ namespace Core::Geo::Cut::Kernel
               // topological connection and change location of the point to outisde
               touched_edges_ids_.clear();
               // toggle the bit off,
-              location_ = PointOnSurfaceLoc(false, location_.OnSide());
+              location_ = PointOnSurfaceLoc(false, location_.on_side());
             }
           }
         }
@@ -2818,10 +2816,10 @@ namespace Core::Geo::Cut::Kernel
 
       if (first_run_)
       {
-        Core::Geo::Cut::MemorySingleton::getInstance().StopRecord();
+        Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
 
         std::unordered_map<size_t, int>& allocation_map =
-            Core::Geo::Cut::MemorySingleton::getInstance().GetMemoryPattern();
+            Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern();
         int max_num = 0;
         int size_max_num = 0;
         // update the global number of allocations to the maximum
@@ -2849,7 +2847,7 @@ namespace Core::Geo::Cut::Kernel
         else
           FOUR_C_THROW("This should not be possible");
 
-        Core::Geo::Cut::MemorySingleton::getInstance().ResetAllocated();
+        Core::Geo::Cut::MemorySingleton::getinstance().ResetAllocated();
       }
 #endif
     }
@@ -2862,7 +2860,7 @@ namespace Core::Geo::Cut::Kernel
         case 1:
         {
           PointOnSurfacePlane result;
-          const Core::CLN::ClnWrapper* signed_distance = Strategy::SignedDistance();
+          const Core::CLN::ClnWrapper* signed_distance = Strategy::signed_distance();
 
           if ((signed_distance[0] + err < 0.0) && (signed_distance[0] - err < 0.0))
           {
@@ -2885,7 +2883,7 @@ namespace Core::Geo::Cut::Kernel
         default:
         {
           // we cat only get signed distance for edge edge intersection
-          const Core::CLN::ClnWrapper distance = Strategy::Distance();
+          const Core::CLN::ClnWrapper distance = Strategy::distance();
           // some safety checks
           if (distance < 0.0) FOUR_C_THROW("Not possible");
           if (err <= 0.0) FOUR_C_THROW("Error should be equal to basic tolerance!");
@@ -2964,16 +2962,16 @@ namespace Core::Geo::Cut::Kernel
       // now we are doing basic iteration on double precision
       bool conv;
       this->setup(xyze_side, px, false);
-      conv = this->Solve();
+      conv = this->solve();
 
       if (not signeddistance)
-        distance = this->Distance();
+        distance = this->distance();
       else
       {
         switch (prob_dim - dim_side)
         {
           case 1:
-            distance = this->SignedDistance()[0];
+            distance = this->signed_distance()[0];
             break;
           default:
             FOUR_C_THROW("A scalar signed distance value is not available!");
@@ -2987,7 +2985,7 @@ namespace Core::Geo::Cut::Kernel
 #if DOUBLE_PLUS_CLN_COMPUTE
         bool result_fail = false;
         bool major_fail =
-            this->ZeroArea() or (not conv) or (cond_infinity_) or (!got_topology_info);
+            this->zero_area() or (not conv) or (cond_infinity_) or (!got_topology_info);
         // otherwise computation will run into error for the
         // case of zero area
         if (!major_fail) result_fail = compute_error(xyze_side, px) > DOUBLE_LIMIT_ERROR;
@@ -3008,20 +3006,20 @@ namespace Core::Geo::Cut::Kernel
 
             bool distanceworked = cln_calc(xyze_side, px, distance, signeddistance);
             conv = distanceworked;
-            location_ = cln_calc.GetSideLocation();
+            location_ = cln_calc.get_side_location();
             // assign other location
             touched_edges_ids_.clear();
             touched_nodes_ids_.clear();
-            const std::vector<int>& touched_edges_ids_cln = cln_calc.GetTouchedSideEdges();
-            const std::vector<int>& touched_nodes_ids_cln = cln_calc.GetTouchedNodes();
+            const std::vector<int>& touched_edges_ids_cln = cln_calc.get_touched_side_edges();
+            const std::vector<int>& touched_nodes_ids_cln = cln_calc.get_touched_nodes();
             touched_edges_ids_ = touched_edges_ids_cln;
             touched_nodes_ids_ = touched_nodes_ids_cln;
-            cond_infinity_ = cln_calc.IsConditionInfinity();
-            Core::CLN::ClnWrapper::ResetPrecision();
+            cond_infinity_ = cln_calc.is_condition_infinity();
+            Core::CLN::ClnWrapper::reset_precision();
           }
           // finalize memory allocator
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-          Core::Geo::Cut::MemorySingleton::getInstance().Finalize();
+          Core::Geo::Cut::MemorySingleton::getinstance().Finalize();
 #endif
 #if DOUBLE_PLUS_CLN_COMPUTE
         }
@@ -3040,37 +3038,37 @@ namespace Core::Geo::Cut::Kernel
       return Strategy::local_coordinates();
     }
 
-    const double* SignedDistance() const { return Strategy::SignedDistance(); }
+    const double* signed_distance() const { return Strategy::signed_distance(); }
 
-    double Distance() const { return Strategy::Distance(); }
+    double distance() const { return Strategy::distance(); }
 
-    std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
+    std::pair<bool, double> condition_number() { return Strategy::condition_number(); }
 
-    Core::LinAlg::Matrix<prob_dim, 2> GetNormalVector() { return Strategy::GetNormalVector(); }
+    Core::LinAlg::Matrix<prob_dim, 2> get_normal_vector() { return Strategy::get_normal_vector(); }
 
-    bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
+    bool surface_within_limits(double tolerance = REFERENCETOL) const
     {
       return Core::Geo::Cut::Kernel::within_limits<side_type>(local_coordinates(), tolerance);
     }
 
     /// access the Newton tolerance
-    double GetTolerance() const { return Strategy::GetTolerance(); }
+    double get_tolerance() const { return Strategy::get_tolerance(); }
 
     /// access the l2 norm of the reached residual
-    double GetResidualL2Norm() const { return Strategy::GetResidualL2Norm(); }
+    double get_residual_l2_norm() const { return Strategy::get_residual_l2_norm(); }
 
-    bool ZeroArea() const { return Strategy::ZeroArea(); }
-    const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
+    bool zero_area() const { return Strategy::zero_area(); }
+    const std::vector<int>& get_touched_side_edges() { return touched_edges_ids_; }
 
-    const std::vector<int>& GetTouchedNodes() { return touched_nodes_ids_; }
+    const std::vector<int>& get_touched_nodes() { return touched_nodes_ids_; }
 
-    void GetTouchedSideEdges(std::vector<int>& inout)
+    void get_touched_side_edges(std::vector<int>& inout)
     {
       inout.clear();
       inout = touched_edges_ids_;
     }
 
-    bool IsConditionInfinity() { return cond_infinity_; }
+    bool is_condition_infinity() { return cond_infinity_; }
 
 
     // Get location of the point, based on the extended tolerance of 1e-14 for the diagonal
@@ -3086,7 +3084,7 @@ namespace Core::Geo::Cut::Kernel
       Core::LinAlg::Matrix<dim_side, 1> scaled_tolerance;
       double distance_tolerance = TOPOLOGICAL_TOLERANCE;
       // get tolerance with 1e-14 around the triangle
-      this->GetLocalTolerance(distance_tolerance, scaled_tolerance);
+      this->get_local_tolerance(distance_tolerance, scaled_tolerance);
       // Diagonal one, corresponds to the middle one, tolerance there should be original
       Core::LinAlg::Matrix<3, 1> real_tolerance;
       real_tolerance(0) = 0.0;
@@ -3099,7 +3097,7 @@ namespace Core::Geo::Cut::Kernel
       return side_location_triangle_split_;
     }
 
-    PointOnSurfaceLoc GetSideLocation() { return location_; }
+    PointOnSurfaceLoc get_side_location() { return location_; }
 
     //  Converts tolerance in the local coordinates and computes topological information, such
     //  as touched_edges and  location on the surface. In the case we cannot produce a valid
@@ -3110,7 +3108,7 @@ namespace Core::Geo::Cut::Kernel
       // set up required tolerances
       Core::LinAlg::Matrix<dim_side, 1> scaled_tolerance;
       double distance_tolerance = SIDE_DETECTION_TOLERANCE;
-      bool success = this->GetLocalTolerance(distance_tolerance, scaled_tolerance);
+      bool success = this->get_local_tolerance(distance_tolerance, scaled_tolerance);
       if (not success) return false;
       Core::LinAlg::Matrix<dim_side, 1> zero_tolerance_side;
       zero_tolerance_side = 0.0;
@@ -3122,7 +3120,7 @@ namespace Core::Geo::Cut::Kernel
       touched_edges_ids_.clear();
       touched_nodes_ids_.clear();
       // if on side, get neigboring edges
-      if (location_.OnSide())
+      if (location_.on_side())
       {
         GetEdgesAt<side_type>(xsi, touched_edges_ids_, scaled_tolerance);
         GetNodesAt<side_type>(xsi, touched_nodes_ids_, scaled_tolerance);
@@ -3130,7 +3128,7 @@ namespace Core::Geo::Cut::Kernel
       return true;
     }
 
-    void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
+    void write_to_gmsh(std::ofstream& file) { Strategy::write_to_gmsh(file); }
 
     // Evaluate difference between inital global coordinates passed to compute_distance and
     // and global coordinates based on loc coordinates and distance  calculated in the
@@ -3140,8 +3138,8 @@ namespace Core::Geo::Cut::Kernel
         const Core::LinAlg::Matrix<prob_dim, 1>& px)
     {
       const Core::LinAlg::Matrix<prob_dim, 1>& xsi = this->local_coordinates();
-      const Core::LinAlg::Matrix<prob_dim, 2>& n_vec = this->GetNormalVector();
-      const double* distance = this->SignedDistance();
+      const Core::LinAlg::Matrix<prob_dim, 2>& n_vec = this->get_normal_vector();
+      const double* distance = this->signed_distance();
       Core::LinAlg::Matrix<Core::FE::num_nodes<side_type>, 1> surfaceFunct;
       Core::LinAlg::Matrix<prob_dim, 1> b;
       Core::LinAlg::Matrix<prob_dim, 1> n1(n_vec.data(), true);
@@ -3162,7 +3160,7 @@ namespace Core::Geo::Cut::Kernel
       }
       double res = b.norm2();
       if (res == 0) res = MINIMUM_DOUBLE_ERROR;
-      std::pair<bool, double> cond_pair = this->ConditionNumber();
+      std::pair<bool, double> cond_pair = this->condition_number();
       if (not cond_pair.first)
       {
         cond_infinity_ = true;
@@ -3187,7 +3185,7 @@ namespace Core::Geo::Cut::Kernel
         {
           PointOnSurfacePlane result;
           // use it anywhere for now.
-          const double* signed_distance = Strategy::SignedDistance();
+          const double* signed_distance = Strategy::signed_distance();
 
           if ((signed_distance[0] + err < 0.0) && (signed_distance[0] - err < 0.0))
           {
@@ -3210,7 +3208,7 @@ namespace Core::Geo::Cut::Kernel
         default:
         {
           // we cat only get signed distance for edge edge intersection
-          const double distance = Strategy::Distance();
+          const double distance = Strategy::distance();
           // some safety checks
           if (distance < 0.0) FOUR_C_THROW("Not possible");
           if (err <= 0.0) FOUR_C_THROW("Error should be equal to basic tolerance!");
@@ -3390,7 +3388,7 @@ namespace Core::Geo::Cut::Kernel
       }
     }
 
-    std::pair<bool, FloatType> ConditionNumber()
+    std::pair<bool, FloatType> condition_number()
     {
       Core::LinAlg::Matrix<dim_edge + dim_side, dim_edge + dim_side, FloatType> A_inv;
       FloatType det = A_.determinant();
@@ -3482,9 +3480,9 @@ namespace Core::Geo::Cut::Kernel
       return xsi_;
     }
 
-    FloatType DistanceBetween() const { return c_.norm2(); }
+    FloatType distance_between() const { return c_.norm2(); }
 
-    void SetupSolve()
+    void setup_solve()
     {
       xsi_ = 0.0;
       dx_ = 0.0;
@@ -3497,24 +3495,24 @@ namespace Core::Geo::Cut::Kernel
       // evaluate initial rhs value
       const Core::LinAlg::Matrix<dim_side, 1, FloatType> xsi_side(xsi_.data(), true);
       const Core::LinAlg::Matrix<dim_edge, 1, FloatType> xsi_edge(xsi_.data() + dim_side, true);
-      IntersectionRHS(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
+      intersection_rhs(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
       tol_ = AdaptiveCombinedNewtonTolerance(*xyze_side_, *xyze_edge_, c_, xsi_(0, 0));
     }
 
-    void SetupStep(int iter)
+    void setup_step(int iter)
     {
       // build linear system of equations
       const Core::LinAlg::Matrix<dim_side, 1, FloatType> xsi_side(xsi_.data(), true);
       const Core::LinAlg::Matrix<dim_edge, 1, FloatType> xsi_edge(xsi_.data() + dim_side, true);
       if (iter > 0)
       {
-        IntersectionRHS(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
+        intersection_rhs(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
       }
       intersection_system(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_, A_, B_, b_);
     }
 
     /// compute the right-hand-side
-    void IntersectionRHS(const Core::LinAlg::Matrix<dim_edge, 1, FloatType>& xsi_edge,
+    void intersection_rhs(const Core::LinAlg::Matrix<dim_edge, 1, FloatType>& xsi_edge,
         const Core::LinAlg::Matrix<dim_side, 1, FloatType>& xsi_side,
         const Core::LinAlg::Matrix<prob_dim, num_nodes_edge, FloatType>& xyze_edge,
         const Core::LinAlg::Matrix<prob_dim, num_nodes_side, FloatType>& xyze_side,
@@ -3528,7 +3526,7 @@ namespace Core::Geo::Cut::Kernel
     }
 
 
-    enum NewtonStatus TestConverged(int iter)
+    enum NewtonStatus test_converged(int iter)
     {
       residual_ = b_.norm2();
 
@@ -3617,7 +3615,7 @@ namespace Core::Geo::Cut::Kernel
       return true;
     }
 
-    bool NewtonFailed()
+    bool newton_failed()
     {
 #ifdef DEBUG_CUTKERNEL_OUTPUT
       // If it is not edge-edge interseciton we explicitely notify, that Newton's method failed
@@ -3655,15 +3653,15 @@ namespace Core::Geo::Cut::Kernel
         f_str << ".NewtonFailed_intersection.pos";
         std::string filename(Core::Geo::Cut::Output::GenerateGmshOutputFilename(f_str.str()));
         std::ofstream file(filename.c_str());
-        WritetoGmsh(file);
+        write_to_gmsh(file);
       }
 #endif
       return false;
     }
 
-    FloatType GetTolerance() const { return tol_; }
+    FloatType get_tolerance() const { return tol_; }
 
-    void WritetoGmsh(std::ofstream& file)
+    void write_to_gmsh(std::ofstream& file)
     {
       file.precision(32);  // higher precision!
       char elementType = '\0';
@@ -3677,7 +3675,7 @@ namespace Core::Geo::Cut::Kernel
           break;
         default:
           FOUR_C_THROW(
-              "unsupported element type ( % s ) in WritetoGmsh."
+              "unsupported element type ( % s ) in write_to_gmsh."
               " Please feel free to extend the functionality if necessary.",
               Core::FE::CellTypeToString(side_type).c_str());
       }
@@ -3947,14 +3945,14 @@ namespace Core::Geo::Cut::Kernel
           (!custom_allocator_run_))
       {
 #if DEBUG_MEMORY_ALLOCATION
-        Core::Geo::Cut::MemorySingleton::getInstance().ReportAllocated();
+        Core::Geo::Cut::MemorySingleton::getinstance().ReportAllocated();
         report_intersection_allocated();
         report_position_allocated();
         report_distance_allocated();
         report_total_allocated();
-        Core::Geo::Cut::MemorySingleton::getInstance().set_state(1, memory_allocations_);
+        Core::Geo::Cut::MemorySingleton::getinstance().set_state(1, memory_allocations_);
 #else
-        Core::Geo::Cut::MemorySingleton::getInstance().SwitchState();
+        Core::Geo::Cut::MemorySingleton::getinstance().SwitchState();
 #endif
         custom_allocator_run_ = true;
       }
@@ -3965,25 +3963,25 @@ namespace Core::Geo::Cut::Kernel
 
       do
       {
-        Core::CLN::ClnWrapper::SetPrecision(prec);
+        Core::CLN::ClnWrapper::set_precision(prec);
 #ifdef CUSTOM_MEMORY_ALLOCATOR
 #if DEBUG_MEMORY_ALLOCATION
         if (custom_allocator_run_)
 #endif
-          Core::Geo::Cut::MemorySingleton::getInstance().get_memory_pool_allocator().SetCurrent(
+          Core::Geo::Cut::MemorySingleton::getinstance().get_memory_pool_allocator().SetCurrent(
               cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
 
         if (first_run_)
         {
-          if (Core::Geo::Cut::MemorySingleton::getInstance().IsRecording())
+          if (Core::Geo::Cut::MemorySingleton::getinstance().IsRecording())
           {
             update_memory_allocations(
-                Core::Geo::Cut::MemorySingleton::getInstance().GetMemoryPattern());
-            Core::Geo::Cut::MemorySingleton::getInstance().StopRecord();
+                Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern());
+            Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
           }
-          Core::Geo::Cut::MemorySingleton::getInstance().StartRecord();
+          Core::Geo::Cut::MemorySingleton::getinstance().StartRecord();
         }
 
 #endif
@@ -3991,7 +3989,7 @@ namespace Core::Geo::Cut::Kernel
         Core::CLN::ConvDoubleCLN(xyze_edge, clnxyze_edge_, prec);
         this->setup(clnxyze_side_, clnxyze_edge_);
 
-        conv = this->Solve();
+        conv = this->solve();
 
 #if CUT_DEVELOP
         // safety check for precision loss
@@ -4008,7 +4006,7 @@ namespace Core::Geo::Cut::Kernel
         }
 #endif
 
-        std::pair<bool, Core::CLN::ClnWrapper> cond_pair = this->ConditionNumber();
+        std::pair<bool, Core::CLN::ClnWrapper> cond_pair = this->condition_number();
         cond_number = cond_pair.second;
         if (not cond_pair.first)
         {
@@ -4078,32 +4076,35 @@ namespace Core::Geo::Cut::Kernel
       return Strategy::local_coordinates();
     }
 
-    std::pair<bool, Core::CLN::ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
+    std::pair<bool, Core::CLN::ClnWrapper> condition_number()
+    {
+      return Strategy::condition_number();
+    }
 
-    bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
+    bool surface_within_limits(double tolerance = REFERENCETOL) const
     {
       return within_limits<side_type>(local_coordinates(), tolerance);
     }
 
-    bool LineWithinLimits(double tolerance = REFERENCETOL) const
+    bool line_within_limits(double tolerance = REFERENCETOL) const
     {
       const Core::LinAlg::Matrix<dim_edge, 1> xsi_line(local_coordinates().data() + dim_side, true);
       return within_limits<edge_type>(xsi_line, tolerance);
     }
 
-    Core::CLN::ClnWrapper GetTolerance() const { return Strategy::GetTolerance(); }
+    Core::CLN::ClnWrapper get_tolerance() const { return Strategy::get_tolerance(); }
 
-    void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
+    void write_to_gmsh(std::ofstream& file) { Strategy::write_to_gmsh(file); }
 
-    bool IsConditionInfinity() { return cond_infinity_; }
+    bool is_condition_infinity() { return cond_infinity_; }
 
-    PointOnSurfaceLoc GetSideLocation() { return side_location_; }
+    PointOnSurfaceLoc get_side_location() { return side_location_; }
 
-    PointOnSurfaceLoc GetEdgeLocation() { return edge_location_; }
+    PointOnSurfaceLoc get_edge_location() { return edge_location_; }
 
-    const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
+    const std::vector<int>& get_touched_side_edges() { return touched_edges_ids_; }
 
-    Core::CLN::ClnWrapper DistanceBetween() const { return Strategy::DistanceBetween(); }
+    Core::CLN::ClnWrapper distance_between() const { return Strategy::distance_between(); }
 
    private:
     //  Converts tolerance in the local coordinates and computes topological information, such
@@ -4133,7 +4134,7 @@ namespace Core::Geo::Cut::Kernel
       // NOTE: In compute intersection we don't actually use touched_edges now. left for the
       // future
       touched_edges_ids_.clear();
-      if (side_location_.WithinSide())
+      if (side_location_.within_side())
       {
         GetEdgesAt<side_type>(clnxsi_, touched_edges_ids_, scaled_tolerance_side_touched_edges);
       }
@@ -4147,8 +4148,8 @@ namespace Core::Geo::Cut::Kernel
         const Core::LinAlg::Matrix<dim_edge + dim_side, 1, Core::CLN::ClnWrapper>& loc_calc,
         int prec)
     {
-      unsigned int prev_prec = Core::CLN::ClnWrapper::GetPrecision();
-      Core::CLN::ClnWrapper::SetPrecision(prec);
+      unsigned int prev_prec = Core::CLN::ClnWrapper::get_precision();
+      Core::CLN::ClnWrapper::set_precision(prec);
 
       // Converting input arrays  to higher precision floating points
       Core::LinAlg::Matrix<prob_dim, Core::FE::num_nodes<side_type>, Core::CLN::ClnWrapper>
@@ -4198,7 +4199,7 @@ namespace Core::Geo::Cut::Kernel
         diff_vec(i) = cln_glob_calc_edge(i) - cln_glob_calc_side(i);
 
       // resetting precision to previous
-      Core::CLN::ClnWrapper::SetPrecision(prev_prec);
+      Core::CLN::ClnWrapper::set_precision(prev_prec);
       return diff_vec.norm2();
     }
 
@@ -4210,7 +4211,7 @@ namespace Core::Geo::Cut::Kernel
       // if touches more than one edge
       if (touched_edges_ids_.size() >= 2)
       {
-        if (side_location_.WithinSide())
+        if (side_location_.within_side())
         {
           Core::LinAlg::Matrix<dim_side, 1, Core::CLN::ClnWrapper> zero_tolerance_side;
           // this means we are on the outer boundary of the tolerance
@@ -4270,10 +4271,10 @@ namespace Core::Geo::Cut::Kernel
       // if first run need also to run until the end
       if (first_run_)
       {
-        Core::Geo::Cut::MemorySingleton::getInstance().StopRecord();
+        Core::Geo::Cut::MemorySingleton::getinstance().StopRecord();
 
         std::unordered_map<size_t, int>& allocation_map =
-            Core::Geo::Cut::MemorySingleton::getInstance().GetMemoryPattern();
+            Core::Geo::Cut::MemorySingleton::getinstance().GetMemoryPattern();
 
         int max_num = 0;
         int size_max_num = 0;
@@ -4302,7 +4303,7 @@ namespace Core::Geo::Cut::Kernel
         else
           FOUR_C_THROW("This should not be possible!");
 
-        Core::Geo::Cut::MemorySingleton::getInstance().ResetAllocated();
+        Core::Geo::Cut::MemorySingleton::getinstance().ResetAllocated();
       }
 #endif
     }
@@ -4369,7 +4370,7 @@ namespace Core::Geo::Cut::Kernel
     {
       bool conv;
       this->setup(xyze_side, xyze_edge);
-      conv = this->Solve();
+      conv = this->solve();
       bool got_topology_info = get_topology_information();
 
 #ifdef CUT_CLN_CALC
@@ -4393,20 +4394,20 @@ namespace Core::Geo::Cut::Kernel
                 clncalc(xsi_, checklimits_);
             bool clnsolved = clncalc(xyze_side, xyze_edge);
             conv = clnsolved;
-            edge_location_ = clncalc.GetEdgeLocation();
-            side_location_ = clncalc.GetSideLocation();
-            cond_infinity_ = clncalc.IsConditionInfinity();
+            edge_location_ = clncalc.get_edge_location();
+            side_location_ = clncalc.get_side_location();
+            cond_infinity_ = clncalc.is_condition_infinity();
             touched_edges_ids_.clear();
-            const std::vector<int>& touched_edges_ids_cln = clncalc.GetTouchedSideEdges();
+            const std::vector<int>& touched_edges_ids_cln = clncalc.get_touched_side_edges();
             touched_edges_ids_ = touched_edges_ids_cln;
 
             if (prob_dim > dim_edge + dim_side)
-              distance_between_ = cln::double_approx(clncalc.DistanceBetween().Value());
+              distance_between_ = cln::double_approx(clncalc.distance_between().Value());
 
-            Core::CLN::ClnWrapper::ResetPrecision();
+            Core::CLN::ClnWrapper::reset_precision();
           }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-          Core::Geo::Cut::MemorySingleton::getInstance().Finalize();
+          Core::Geo::Cut::MemorySingleton::getinstance().Finalize();
 #endif
 #if DOUBLE_PLUS_CLN_COMPUTE
         }
@@ -4425,32 +4426,32 @@ namespace Core::Geo::Cut::Kernel
       return Strategy::local_coordinates();
     }
 
-    std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
+    std::pair<bool, double> condition_number() { return Strategy::condition_number(); }
 
-    bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
+    bool surface_within_limits(double tolerance = REFERENCETOL) const
     {
       return within_limits<side_type>(local_coordinates(), tolerance);
     }
 
-    bool LineWithinLimits(double tolerance = REFERENCETOL) const
+    bool line_within_limits(double tolerance = REFERENCETOL) const
     {
       const Core::LinAlg::Matrix<dim_edge, 1> xsi_line(local_coordinates().data() + dim_side, true);
       return within_limits<edge_type>(xsi_line, tolerance);
     }
 
-    double GetTolerance() const { return Strategy::GetTolerance(); }
+    double get_tolerance() const { return Strategy::get_tolerance(); }
 
-    void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
+    void write_to_gmsh(std::ofstream& file) { Strategy::write_to_gmsh(file); }
 
-    PointOnSurfaceLoc GetSideLocation() { return side_location_; }
+    PointOnSurfaceLoc get_side_location() { return side_location_; }
 
-    PointOnSurfaceLoc GetEdgeLocation() { return edge_location_; }
+    PointOnSurfaceLoc get_edge_location() { return edge_location_; }
 
-    bool IsConditionInfinity() { return cond_infinity_; }
+    bool is_condition_infinity() { return cond_infinity_; }
 
-    const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
+    const std::vector<int>& get_touched_side_edges() { return touched_edges_ids_; }
 
-    void GetTouchedSideEdges(std::vector<int>& inout)
+    void get_touched_side_edges(std::vector<int>& inout)
     {
       inout.clear();
       inout = touched_edges_ids_;
@@ -4484,7 +4485,7 @@ namespace Core::Geo::Cut::Kernel
     }
 
     // Distance between edges in edge-edge intersection
-    double DistanceBetween() const
+    double distance_between() const
     {
       if (prob_dim > dim_edge + dim_side)
         return distance_between_;
@@ -4521,10 +4522,10 @@ namespace Core::Geo::Cut::Kernel
         edge_location_ = PointOnSurfaceLoc(true, true);
       else
         edge_location_ = PointOnSurfaceLoc(false, true);
-      if (prob_dim > dim_edge + dim_side) distance_between_ = Strategy::DistanceBetween();
+      if (prob_dim > dim_edge + dim_side) distance_between_ = Strategy::distance_between();
 
       touched_edges_ids_.clear();
-      if (side_location_.WithinSide())
+      if (side_location_.within_side())
       {
         GetEdgesAt<side_type>(xsi, touched_edges_ids_, scaled_tolerance_side_touched_edges);
       }
@@ -4572,7 +4573,7 @@ namespace Core::Geo::Cut::Kernel
         diffVec(i) = globxyz_edge(i) - globxyz_side(i);
       double error = diffVec.norm2();
       if (error == 0) error = MINIMUM_DOUBLE_ERROR;
-      std::pair<bool, double> cond_pair = this->ConditionNumber();
+      std::pair<bool, double> cond_pair = this->condition_number();
       if (not cond_pair.first)
       {
         cond_infinity_ = true;

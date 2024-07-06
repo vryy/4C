@@ -21,27 +21,27 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
-  if (la.Size() > 2)
+  if (la.size() > 2)
   {
-    if (discretization.HasState(2, "scalar"))
+    if (discretization.has_state(2, "scalar"))
     {
       // check if you can get the scalar state
-      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(2, "scalar");
+      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(2, "scalar");
 
       // extract local values of the global vectors
       std::vector<double> myscalar(la[2].lm_.size());
       Core::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
 
-      if (So3Ele::NumMaterial() < 2)
+      if (So3Ele::num_material() < 2)
         FOUR_C_THROW("no second material defined for Wall poro element!");
-      Teuchos::RCP<Core::Mat::Material> scatramat = So3Ele::Material(2);
+      Teuchos::RCP<Core::Mat::Material> scatramat = So3Ele::material(2);
 
       int numscal = 1;
-      if (scatramat->MaterialType() == Core::Materials::m_matlist or
-          scatramat->MaterialType() == Core::Materials::m_matlist_reactions)
+      if (scatramat->material_type() == Core::Materials::m_matlist or
+          scatramat->material_type() == Core::Materials::m_matlist_reactions)
       {
         Teuchos::RCP<Mat::MatList> matlist = Teuchos::rcp_dynamic_cast<Mat::MatList>(scatramat);
-        numscal = matlist->NumMat();
+        numscal = matlist->num_mat();
       }
 
       Teuchos::RCP<std::vector<double>> scalar =
@@ -61,19 +61,19 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
     int num = 0;  // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
     std::vector<double> xrefe;
     xrefe.resize(3);
-    Core::Nodes::Node** nodes = my::Nodes();
+    Core::Nodes::Node** nodes = my::nodes();
     // get displacements of this element
     //  Core::FE::ExtractMyValues(*disp,mydisp,lm);
     for (int i = 0; i < numnod_; ++i)
     {
-      const auto& x = nodes[i]->X();
+      const auto& x = nodes[i]->x();
       xrefe[0] += x[0] / numnod_;
       xrefe[1] += x[1] / numnod_;
       xrefe[2] += x[2] / numnod_;
     }
     const double* coordgpref = xrefe.data();
     double functfac =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(num).evaluate(
+        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(num).evaluate(
             coordgpref, time, 0);
     params.set<double>("scalar", functfac);
   }
@@ -96,7 +96,7 @@ int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::evaluate(Teuchos::Paramet
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (So3Ele::IsParamsInterface())
+  if (So3Ele::is_params_interface())
   {
     act = So3Ele::params_interface().get_action_type();
   }

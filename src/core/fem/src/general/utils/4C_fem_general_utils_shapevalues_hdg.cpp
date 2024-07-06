@@ -22,13 +22,13 @@ template <Core::FE::CellType distype>
 Core::FE::ShapeValues<distype>::ShapeValues(
     const unsigned int degree, const bool completepoly, const unsigned int quadratureDegree)
     : degree_(degree),
-      quadrature_(Core::FE::GaussPointCache::Instance().Create(distype, quadratureDegree)),
+      quadrature_(Core::FE::GaussPointCache::instance().create(distype, quadratureDegree)),
       usescompletepoly_(completepoly),
-      nqpoints_(quadrature_->NumPoints())
+      nqpoints_(quadrature_->num_points())
 {
   PolynomialSpaceParams params(distype, degree, completepoly);
-  polySpace_ = Core::FE::PolynomialSpaceCache<nsd_>::Instance().Create(params);
-  ndofs_ = polySpace_->Size();
+  polySpace_ = Core::FE::PolynomialSpaceCache<nsd_>::instance().create(params);
+  ndofs_ = polySpace_->size();
 
   Core::LinAlg::SerialDenseVector values(ndofs_);
   Core::LinAlg::SerialDenseMatrix derivs(nsd_, ndofs_);
@@ -47,11 +47,11 @@ Core::FE::ShapeValues<distype>::ShapeValues(
   for (unsigned int q = 0; q < nqpoints_; ++q)
   {
     // gauss point in real coordinates
-    const double* gpcoord = quadrature_->Point(q);
+    const double* gpcoord = quadrature_->point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
 
     polySpace_->evaluate(xsi, values);
-    polySpace_->Evaluate_deriv1(xsi, derivs);
+    polySpace_->evaluate_deriv1(xsi, derivs);
 
     for (unsigned int i = 0; i < ndofs_; ++i)
     {
@@ -65,7 +65,7 @@ Core::FE::ShapeValues<distype>::ShapeValues(
 
   // Fill support points
   nodexyzreal.shape(nsd_, ndofs_);
-  polySpace_->FillUnitNodePoints(nodexyzunit);
+  polySpace_->fill_unit_node_points(nodexyzunit);
   FOUR_C_ASSERT(nodexyzreal.numRows() == nodexyzunit.numRows() &&
                     nodexyzreal.numCols() == nodexyzunit.numCols(),
       "Dimension mismatch");
@@ -80,7 +80,7 @@ template <Core::FE::CellType distype>
 void Core::FE::ShapeValues<distype>::evaluate(
     const Core::Elements::Element& ele, const std::vector<double>& aleDis)
 {
-  FOUR_C_ASSERT(ele.Shape() == distype, "Internal error");
+  FOUR_C_ASSERT(ele.shape() == distype, "Internal error");
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(&ele, xyze);
 
   // update nodal coordinates
@@ -94,12 +94,12 @@ void Core::FE::ShapeValues<distype>::evaluate(
   // evaluate geometry
   for (unsigned int q = 0; q < nqpoints_; ++q)
   {
-    const double* gpcoord = quadrature_->Point(q);
+    const double* gpcoord = quadrature_->point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
 
     Core::FE::shape_function_deriv1<distype>(xsi, deriv);
     xjm.multiply_nt(deriv, xyze);
-    jfac(q) = xji.invert(xjm) * quadrature_->Weight(q);
+    jfac(q) = xji.invert(xjm) * quadrature_->weight(q);
 
     Core::LinAlg::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
     Core::LinAlg::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
@@ -157,12 +157,12 @@ Core::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
 
   PolynomialSpaceParams polyparams(
       Core::FE::DisTypeToFaceShapeType<distype>::shape, degree_, params.completepoly_);
-  polySpace_ = Core::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
+  polySpace_ = Core::FE::PolynomialSpaceCache<nsd_ - 1>::instance().create(polyparams);
 
-  nfdofs_ = polySpace_->Size();
-  quadrature_ = Core::FE::GaussPointCache::Instance().Create(
+  nfdofs_ = polySpace_->size();
+  quadrature_ = Core::FE::GaussPointCache::instance().create(
       Core::FE::DisTypeToFaceShapeType<distype>::shape, params.quadraturedegree_);
-  nqpoints_ = quadrature_->NumPoints();
+  nqpoints_ = quadrature_->num_points();
 
   face_values_.size(nfdofs_);
   xyzreal.shape(nsd_, nqpoints_);
@@ -173,11 +173,11 @@ Core::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
   normals.shape(nsd_, nqpoints_);
   jfac.resize(nqpoints_);
 
-  shfunctI.Shape(nfdofs_, nqpoints_);
+  shfunctI.shape(nfdofs_, nqpoints_);
 
   for (unsigned int q = 0; q < nqpoints_; ++q)
   {
-    const double* gpcoord = quadrature_->Point(q);
+    const double* gpcoord = quadrature_->point(q);
 
     const unsigned int codim = nsd_ - 1;
     for (unsigned int idim = 0; idim < codim; idim++) xsi(idim) = gpcoord[idim];
@@ -194,7 +194,7 @@ Core::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
  |  Evaluate face-dependent shape data (public)       kronbichler 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
+void Core::FE::ShapeValuesFace<distype>::evaluate_face(
     const Core::Elements::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
   const Core::FE::CellType facedis = Core::FE::DisTypeToFaceShapeType<distype>::shape;
@@ -216,7 +216,7 @@ void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
 
   // Fill face support points
   nodexyzreal.shape(nsd_, nfdofs_);
-  polySpace_->FillUnitNodePoints(nodexyzunit);
+  polySpace_->fill_unit_node_points(nodexyzunit);
   FOUR_C_ASSERT(nodexyzreal.numRows() == nodexyzunit.numRows() + 1 &&
                     nodexyzreal.numCols() == nodexyzunit.numCols(),
       "Dimension mismatch");
@@ -233,7 +233,7 @@ void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
   // evaluate geometry
   for (unsigned int q = 0; q < nqpoints_; ++q)
   {
-    const double* gpcoord = quadrature_->Point(q);
+    const double* gpcoord = quadrature_->point(q);
     for (unsigned int idim = 0; idim < nsd_ - 1; idim++) xsi(idim) = gpcoord[idim];
 
     Core::FE::shape_function_deriv1<facedis>(xsi, deriv);
@@ -241,7 +241,7 @@ void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
     Core::FE::ComputeMetricTensorForBoundaryEle<facedis>(
         xyze, deriv, metricTensor, jacdet, &normal);
     for (unsigned int d = 0; d < nsd_; ++d) normals(d, q) = normal(d);
-    jfac(q) = jacdet * quadrature_->Weight(q);
+    jfac(q) = jacdet * quadrature_->weight(q);
 
     Core::LinAlg::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
     Core::LinAlg::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
@@ -252,9 +252,9 @@ void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
   compute_face_reference_system(ele, face);
 
   Core::FE::ShapeValuesFaceParams interiorparams = params_;
-  interiorparams.degree_ = ele.Degree();
+  interiorparams.degree_ = ele.degree();
   interiorparams.face_ = face;
-  shfunctI = *(ShapeValuesInteriorOnFaceCache<distype>::Instance().Create(interiorparams));
+  shfunctI = *(ShapeValuesInteriorOnFaceCache<distype>::instance().create(interiorparams));
 }
 
 
@@ -271,7 +271,7 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
   // it. The local trafo map of the face element holds that information for the slave
   // side, whereas the master side always uses the correct mapping. Thus, we need not
   // do anything in that case.
-  if (ele.Faces()[face]->ParentMasterElement() == &ele)
+  if (ele.faces()[face]->parent_master_element() == &ele)
   {
     for (unsigned int q = 0; q < nqpoints_; ++q)
       for (unsigned int i = 0; i < nfdofs_; ++i) shfunct(i, q) = shfunctNoPermute(i, q);
@@ -281,7 +281,7 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
   // For the adjusted slave slide, we need to change the order of quadrature
   // points in the shape functions of the trace to match the orientation in the
   // transformation.
-  const std::vector<int>& trafomap = ele.Faces()[face]->GetLocalTrafoMap();
+  const std::vector<int>& trafomap = ele.faces()[face]->get_local_trafo_map();
   FOUR_C_ASSERT(trafomap.size() == nfn_,
       "Transformation map from slave face coordinate system to master coordinates has not been "
       "filled.");
@@ -392,12 +392,12 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
             // but it does not seem worth it)
             for (unsigned int q = 0; q < nqpoints_; ++q)
             {
-              std::array<double, 2> point = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
+              std::array<double, 2> point = {quadrature_->point(q)[0], quadrature_->point(q)[1]};
               point[0] = 1. - point[1] - point[0];
               unsigned int r = 0;
               for (; r < nqpoints_; ++r)
-                if (std::abs(quadrature_->Point(r)[0] - point[0]) < 1e-14 &&
-                    std::abs(quadrature_->Point(r)[1] - point[1]) < 1e-14)
+                if (std::abs(quadrature_->point(r)[0] - point[0]) < 1e-14 &&
+                    std::abs(quadrature_->point(r)[1] - point[1]) < 1e-14)
                   break;
               if (r < nqpoints_)
                 for (unsigned int i = 0; i < nfdofs_; ++i) shfunct(i, q) = shfunctNoPermute(i, r);
@@ -415,12 +415,12 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
             // zeroth and second node permuted
             for (unsigned int q = 0; q < nqpoints_; ++q)
             {
-              std::array<double, 2> point = {quadrature_->Point(q)[0], quadrature_->Point(q)[1]};
+              std::array<double, 2> point = {quadrature_->point(q)[0], quadrature_->point(q)[1]};
               point[1] = 1. - point[1] - point[0];
               unsigned int r = 0;
               for (; r < nqpoints_; ++r)
-                if (std::abs(quadrature_->Point(r)[0] - point[0]) < 1e-14 &&
-                    std::abs(quadrature_->Point(r)[1] - point[1]) < 1e-14)
+                if (std::abs(quadrature_->point(r)[0] - point[0]) < 1e-14 &&
+                    std::abs(quadrature_->point(r)[1] - point[1]) < 1e-14)
                   break;
               if (r < nqpoints_)
                 for (unsigned int i = 0; i < nfdofs_; ++i) shfunct(i, q) = shfunctNoPermute(i, r);
@@ -438,11 +438,11 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
             // first and second node permuted
             for (unsigned int q = 0; q < nqpoints_; ++q)
             {
-              std::array<double, 2> point = {quadrature_->Point(q)[1], quadrature_->Point(q)[0]};
+              std::array<double, 2> point = {quadrature_->point(q)[1], quadrature_->point(q)[0]};
               unsigned int r = 0;
               for (; r < nqpoints_; ++r)
-                if (std::abs(quadrature_->Point(r)[0] - point[0]) < 1e-14 &&
-                    std::abs(quadrature_->Point(r)[1] - point[1]) < 1e-14)
+                if (std::abs(quadrature_->point(r)[0] - point[0]) < 1e-14 &&
+                    std::abs(quadrature_->point(r)[1] - point[1]) < 1e-14)
                   break;
               if (r < nqpoints_)
                 for (unsigned int i = 0; i < nfdofs_; ++i) shfunct(i, q) = shfunctNoPermute(i, r);
@@ -487,12 +487,12 @@ void Core::FE::ShapeValuesFace<distype>::compute_face_reference_system(
 
   Core::LinAlg::SerialDenseVector norm(nsd_ - 1);
 
-  if (ele.Faces()[face]->ParentMasterElement() != &ele)
+  if (ele.faces()[face]->parent_master_element() != &ele)
   {
     // This is the same that is done before for the face element but we do it from the master side
     // get face position array from element position array
     FOUR_C_ASSERT(faceNodeOrder[face].size() == nfn_, "Internal error");
-    const std::vector<int>& trafomap = ele.Faces()[face]->GetLocalTrafoMap();
+    const std::vector<int>& trafomap = ele.faces()[face]->get_local_trafo_map();
 
     // Core::LinAlg::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
     Core::LinAlg::Matrix<nsd_, nen_> xyzeMasterElement;
@@ -535,22 +535,22 @@ void Core::FE::ShapeValuesFace<distype>::compute_face_reference_system(
 
 
 template <Core::FE::CellType distype>
-Core::FE::ShapeValuesFaceCache<distype>& Core::FE::ShapeValuesFaceCache<distype>::Instance()
+Core::FE::ShapeValuesFaceCache<distype>& Core::FE::ShapeValuesFaceCache<distype>::instance()
 {
   static Core::UTILS::SingletonOwner<Core::FE::ShapeValuesFaceCache<distype>> owner(
       []() {
         return std::unique_ptr<ShapeValuesFaceCache<distype>>(new ShapeValuesFaceCache<distype>);
       });
 
-  return *owner.Instance(Core::UTILS::SingletonAction::create);
+  return *owner.instance(Core::UTILS::SingletonAction::create);
 }
 
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<distype>::Create(
+Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<distype>::create(
     ShapeValuesFaceParams params)
 {
   typename std::map<std::size_t, Teuchos::RCP<Core::FE::ShapeValuesFace<distype>>>::iterator i =
-      svf_cache_.find(params.ToInt());
+      svf_cache_.find(params.to_int());
   if (i != svf_cache_.end())
   {
     return i->second;
@@ -560,7 +560,7 @@ Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<
   Teuchos::RCP<ShapeValuesFace<distype>> svf;
   svf = Teuchos::rcp(new ShapeValuesFace<distype>(params));
 
-  svf_cache_[params.ToInt()] = svf;
+  svf_cache_[params.to_int()] = svf;
 
   return svf;
 }
@@ -569,7 +569,7 @@ Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<
 
 template <Core::FE::CellType distype>
 Core::FE::ShapeValuesInteriorOnFaceCache<distype>&
-Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Instance()
+Core::FE::ShapeValuesInteriorOnFaceCache<distype>::instance()
 {
   static Core::UTILS::SingletonOwner<Core::FE::ShapeValuesInteriorOnFaceCache<distype>> owner(
       []()
@@ -578,16 +578,16 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Instance()
             new ShapeValuesInteriorOnFaceCache<distype>);
       });
 
-  return *owner.Instance(Core::UTILS::SingletonAction::create);
+  return *owner.instance(Core::UTILS::SingletonAction::create);
 }
 
 
 template <Core::FE::CellType distype>
 Teuchos::RCP<Core::FE::ShapeValuesInteriorOnFace>
-Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
+Core::FE::ShapeValuesInteriorOnFaceCache<distype>::create(ShapeValuesFaceParams params)
 {
   typename std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>>::iterator i =
-      cache_.find(params.ToInt());
+      cache_.find(params.to_int());
   if (i != cache_.end())
   {
     return i->second;
@@ -598,21 +598,21 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams 
 
   PolynomialSpaceParams polyparams(distype, params.degree_, params.completepoly_);
   Teuchos::RCP<PolynomialSpace<nsd>> polySpace =
-      Core::FE::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
-  Core::LinAlg::SerialDenseVector(polySpace->Size());
-  Teuchos::RCP<Core::FE::GaussPoints> quadrature = Core::FE::GaussPointCache::Instance().Create(
+      Core::FE::PolynomialSpaceCache<nsd>::instance().create(polyparams);
+  Core::LinAlg::SerialDenseVector(polySpace->size());
+  Teuchos::RCP<Core::FE::GaussPoints> quadrature = Core::FE::GaussPointCache::instance().create(
       Core::FE::getEleFaceShapeType(distype, params.face_), params.quadraturedegree_);
 
   Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::rcp(new ShapeValuesInteriorOnFace());
-  container->Shape(polySpace->Size(), quadrature->NumPoints());
+  container->shape(polySpace->size(), quadrature->num_points());
 
   Core::LinAlg::Matrix<nsd, nsd> trafo;
   Core::LinAlg::Matrix<nsd, 1> xsi;
   Core::LinAlg::SerialDenseMatrix faceQPoints;
   Core::FE::BoundaryGPToParentGP<nsd>(faceQPoints, trafo, *quadrature, distype,
       Core::FE::getEleFaceShapeType(distype, params.face_), params.face_);
-  Core::LinAlg::SerialDenseVector faceValues(polySpace->Size());
-  for (int q = 0; q < quadrature->NumPoints(); ++q)
+  Core::LinAlg::SerialDenseVector faceValues(polySpace->size());
+  for (int q = 0; q < quadrature->num_points(); ++q)
   {
     for (int d = 0; d < nsd; ++d) xsi(d) = faceQPoints(q, d);
     polySpace->evaluate(xsi, faceValues);
@@ -622,7 +622,7 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams 
       if (std::abs(faceValues(i)) > 1e-14) container->isNonzero_[i] = true;
     }
   }
-  cache_[params.ToInt()] = container;
+  cache_[params.to_int()] = container;
 
   return container;
 }

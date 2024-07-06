@@ -46,11 +46,11 @@ namespace FSI
       2.) create combined map
       3.) create block system matrix
     */
-    void SetupSystem() override = 0;
+    void setup_system() override = 0;
 
     /// some general setup stuff necessary for both fluid and
     /// structure split
-    void GeneralSetup();
+    void general_setup();
 
     /// setup composed system matrix from field solvers
     void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override = 0;
@@ -64,7 +64,7 @@ namespace FSI
     void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override = 0;
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override
     {
       return systemmatrix_;
     }

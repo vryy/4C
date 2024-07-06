@@ -67,7 +67,7 @@ namespace
       // We need to make sure the Global::Problem instance created in SetUp is deleted again. If
       // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      Global::Problem::Done();
+      Global::Problem::done();
     }
 
     // note: requirement of the generation of an object of the multiplicative split material is that
@@ -77,29 +77,29 @@ namespace
     {
       // do problem instance specific stuff
       const int problemid(0);
-      Global::Problem& problem = (*Global::Problem::Instance());
-      problem.Materials()->SetReadFromProblem(problemid);
+      Global::Problem& problem = (*Global::Problem::instance());
+      problem.materials()->set_read_from_problem(problemid);
 
       // set up elastic material to be added to problem instance
       const int matid_elastic(1);
       Core::IO::InputParameterContainer mat_elastic_neo_hooke_data;
-      mat_elastic_neo_hooke_data.Add("YOUNG", 1.5e2);
-      mat_elastic_neo_hooke_data.Add("NUE", 0.3);
+      mat_elastic_neo_hooke_data.add("YOUNG", 1.5e2);
+      mat_elastic_neo_hooke_data.add("NUE", 0.3);
 
       // add elastic material to problem instance
-      problem.Materials()->insert(
+      problem.materials()->insert(
           matid_elastic, Mat::make_parameter(1, Core::Materials::MaterialType::mes_coupneohooke,
                              mat_elastic_neo_hooke_data));
 
       // set up inelastic material to be added to problem instance
       const int inelastic_defgrad_id(2);
       Core::IO::InputParameterContainer mat_inelastic_data;
-      mat_inelastic_data.Add("SCALAR1", 1);
-      mat_inelastic_data.Add("SCALAR1_MolarGrowthFac", 1.1);
-      mat_inelastic_data.Add("SCALAR1_RefConc", 1.2);
+      mat_inelastic_data.add("SCALAR1", 1);
+      mat_inelastic_data.add("SCALAR1_MolarGrowthFac", 1.1);
+      mat_inelastic_data.add("SCALAR1_RefConc", 1.2);
 
       // add inelastic material to problem instance
-      problem.Materials()->insert(inelastic_defgrad_id,
+      problem.materials()->insert(inelastic_defgrad_id,
           Mat::make_parameter(
               1, Core::Materials::MaterialType::mfi_lin_scalar_iso, mat_inelastic_data));
 
@@ -110,19 +110,19 @@ namespace
       structural_dynamic_params.set("MASSLIN", "No");
 
       // set the parameter list in the global problem
-      problem.setParameterList(parameter_list_pointer);
+      problem.set_parameter_list(parameter_list_pointer);
 
       // create MultiplicativeSplitDefgrad_ElastHyper object;
       // initialize container for material parameters first
       Core::IO::InputParameterContainer multiplicativeSplitDefgradData;
 
-      multiplicativeSplitDefgradData.Add("NUMMATEL", 1);
+      multiplicativeSplitDefgradData.add("NUMMATEL", 1);
       std::vector<int> matids_elastic = {matid_elastic};
-      multiplicativeSplitDefgradData.Add("MATIDSEL", matids_elastic);
-      multiplicativeSplitDefgradData.Add("NUMFACINEL", 1);
+      multiplicativeSplitDefgradData.add("MATIDSEL", matids_elastic);
+      multiplicativeSplitDefgradData.add("NUMFACINEL", 1);
       std::vector<int> inelastic_defgrad_factor_ids = {inelastic_defgrad_id};
-      multiplicativeSplitDefgradData.Add("INELDEFGRADFACIDS", inelastic_defgrad_factor_ids);
-      multiplicativeSplitDefgradData.Add("DENS", 1.32e1);
+      multiplicativeSplitDefgradData.add("INELDEFGRADFACIDS", inelastic_defgrad_factor_ids);
+      multiplicativeSplitDefgradData.add("DENS", 1.32e1);
 
       // get pointer to parameter class
       parameters_multiplicative_split_defgrad_ =
@@ -428,7 +428,7 @@ namespace
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluatedSdiFin)
   {
     Core::LinAlg::Matrix<6, 9> dSdiFin(true);
-    multiplicative_split_defgrad_->EvaluatedSdiFin(gamma_ref_, delta_ref_, iFinM_, iCinCM_ref_,
+    multiplicative_split_defgrad_->evaluated_sdi_fin(gamma_ref_, delta_ref_, iFinM_, iCinCM_ref_,
         iCinV_ref_, CiFin9x1_ref_, CiFinCe9x1_ref_, iCinCiCinV_ref_, CiFiniCe9x1_ref_, iCV_ref_,
         iFinCeM_ref_, detFin_, dSdiFin);
 
@@ -520,7 +520,7 @@ namespace
     dSdx_ref(4) = 1.08343997650926e-06;
     dSdx_ref(5) = 1.949130554546719e-06;
 
-    multiplicative_split_defgrad_->EvaluateODStiffMat(source, &FM_, dSdiFin_ref_, dSdx);
+    multiplicative_split_defgrad_->evaluate_od_stiff_mat(source, &FM_, dSdiFin_ref_, dSdx);
 
     FOUR_C_EXPECT_NEAR(dSdx, dSdx_ref, 1.0e-10);
   }

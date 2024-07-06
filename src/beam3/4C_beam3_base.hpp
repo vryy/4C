@@ -117,13 +117,13 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
       virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> brownian_dyn_params_interface_ptr() const;
 
       //! computes the number of different random numbers required in each time step for generation
@@ -135,7 +135,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 05/16 */
-      virtual double RefLength() const = 0;
+      virtual double ref_length() const = 0;
 
       /** \brief get the radius of the element which is used for interactions (contact, viscous,
        *         potential-based, ...)
@@ -151,33 +151,33 @@ namespace Discret
        *
        *  \author grill
        *  \date 05/16 */
-      virtual int NumCenterlineNodes() const = 0;
+      virtual int num_centerline_nodes() const = 0;
 
       /** \brief find out whether given node is used for centerline interpolation
        *
        *  \author grill
        *  \date 10/16 */
-      virtual bool IsCenterlineNode(const Core::Nodes::Node& node) const = 0;
+      virtual bool is_centerline_node(const Core::Nodes::Node& node) const = 0;
 
       /** \brief return GIDs of all additive DoFs for a given node
        *
        *  \author grill
        *  \date 07/16 */
-      std::vector<int> GetAdditiveDofGIDs(
+      std::vector<int> get_additive_dof_gi_ds(
           const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given node
        *
        *  \author grill
        *  \date 07/16 */
-      std::vector<int> GetRotVecDofGIDs(
+      std::vector<int> get_rot_vec_dof_gi_ds(
           const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief add indices of those DOFs of a given node that are positions
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void PositionDofIndices(
+      virtual void position_dof_indices(
           std::vector<int>& posdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are tangents (in the case of Hermite
@@ -185,7 +185,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void TangentDofIndices(
+      virtual void tangent_dof_indices(
           std::vector<int>& tangdofs, const Core::Nodes::Node& node) const = 0;
 
       /** \brief add indices of those DOFs of a given node that are rotation DOFs (non-additive
@@ -224,7 +224,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 06/16 */
-      virtual double GetJacobiFacAtXi(const double& xi) const = 0;
+      virtual double get_jacobi_fac_at_xi(const double& xi) const = 0;
 
       /** \brief Get material cross-section deformation measures, i.e. strain resultants
        *
@@ -293,7 +293,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 08/16 */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         FOUR_C_THROW("not implemented");
         return -1;
@@ -304,28 +304,29 @@ namespace Discret
        *
        *  \author grill
        *  \date 06/16 */
-      void GetRefPosAtXi(Core::LinAlg::Matrix<3, 1>& refpos, const double& xi) const;
+      void get_ref_pos_at_xi(Core::LinAlg::Matrix<3, 1>& refpos, const double& xi) const;
 
       /** \brief get unit tangent vector in reference configuration at i-th node of beam element
        * (element-internal numbering)
        *
        *  \author grill
        *  \date 06/16 */
-      virtual void GetRefTangentAtNode(Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const = 0;
+      virtual void get_ref_tangent_at_node(
+          Core::LinAlg::Matrix<3, 1>& Tref_i, const int& i) const = 0;
 
       /** \brief get centerline position at xi \in [-1,1] (element parameter space) from
        * displacement state vector
        *
        *  \author grill
        *  \date 06/16 */
-      virtual void GetPosAtXi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
+      virtual void get_pos_at_xi(Core::LinAlg::Matrix<3, 1>& pos, const double& xi,
           const std::vector<double>& disp) const = 0;
 
       /** \brief get triad at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
        *  \date 07/16 */
-      virtual void GetTriadAtXi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
+      virtual void get_triad_at_xi(Core::LinAlg::Matrix<3, 3>& triad, const double& xi,
           const std::vector<double>& disp) const
       {
         // ToDo make pure virtual and add/generalize implementations in beam eles
@@ -371,14 +372,14 @@ namespace Discret
       }
 
       //! get internal (elastic) energy of element
-      virtual double GetInternalEnergy() const = 0;
+      virtual double get_internal_energy() const = 0;
 
       //! get kinetic energy of element
-      virtual double GetKineticEnergy() const = 0;
+      virtual double get_kinetic_energy() const = 0;
 
       //! shifts nodes so that proper evaluation is possible even in case of periodic boundary
       //! conditions
-      virtual void UnShiftNodePosition(std::vector<double>& disp,  //!< element disp vector
+      virtual void un_shift_node_position(std::vector<double>& disp,  //!< element disp vector
           Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const;
 
       //! get directions in which element might be cut by a periodic boundary
@@ -413,7 +414,7 @@ namespace Discret
        *  \date 04/16 */
       inline Solid::ELEMENTS::ParamsInterface& params_interface() const
       {
-        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+        if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 
@@ -436,7 +437,7 @@ namespace Discret
         for (unsigned int dim = 0; dim < 3; ++dim)
           for (unsigned int node = 0; node < nnodecl; ++node)
           {
-            pos_ref_centerline(3 * vpernode * node + dim) += Nodes()[node]->X()[dim];
+            pos_ref_centerline(3 * vpernode * node + dim) += nodes()[node]->x()[dim];
             if (hermite_centerline_interpolation())
               pos_ref_centerline(3 * vpernode * node + 3 + dim) += Tref_[node](dim);
           }
@@ -468,7 +469,7 @@ namespace Discret
         {
           const auto gausspoints =
               Core::FE::IntegrationPoints1D(Core::FE::GaussRule1D::line_10point);
-          const auto distype = this->Shape();
+          const auto distype = this->shape();
 
           auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](
                                                  double reflength)
@@ -502,7 +503,7 @@ namespace Discret
         Core::LinAlg::Matrix<1, vpernode * nnode, T> N_i;
 
         Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnode, vpernode>(
-            xi, N_i, Shape(), RefLength());
+            xi, N_i, shape(), ref_length());
         calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
       }
 
@@ -610,7 +611,7 @@ namespace Discret
      public:
       //! get centerline pos at binding spot with locn x stored in element parameter space
       //! coordinates \in [-1,1] from displacement state vector
-      void GetPosOfBindingSpot(Core::LinAlg::Matrix<3, 1>& pos, std::vector<double>& disp,
+      void get_pos_of_binding_spot(Core::LinAlg::Matrix<3, 1>& pos, std::vector<double>& disp,
           Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
           Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const;
 
@@ -624,7 +625,7 @@ namespace Discret
        *  \author eichinger
        *  \date 06/17 */
       std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> const&
-      GetBindingSpots() const
+      get_binding_spots() const
       {
         return bspotposxi_;
       }
@@ -649,7 +650,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 03/17 */
-      double GetBindingSpotXi(
+      double get_binding_spot_xi(
           Inpar::BEAMINTERACTION::CrosslinkerType linkertype, unsigned int bspotlocn) const
       {
         if (bspotlocn > bspotposxi_.at(linkertype).size())
@@ -662,7 +663,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 03/17 */
-      void SetBindingSpots(
+      void set_binding_spots(
           std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::vector<double>> bspotposxi)
       {
         bspotposxi_.clear();
@@ -683,12 +684,12 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 03/17 */
-      void SetFilamentType(Inpar::BEAMINTERACTION::FilamentType filamenttype)
+      void set_filament_type(Inpar::BEAMINTERACTION::FilamentType filamenttype)
       {
         filamenttype_ = filamenttype;
       }
 
-      Inpar::BEAMINTERACTION::FilamentType GetFilamentType() const { return filamenttype_; }
+      Inpar::BEAMINTERACTION::FilamentType get_filament_type() const { return filamenttype_; }
 
       /**
        * \brief Get the bounding volume of the element for geometric search
@@ -697,7 +698,7 @@ namespace Discret
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      Core::GeometricSearch::BoundingVolume GetBoundingVolume(
+      Core::GeometricSearch::BoundingVolume get_bounding_volume(
           const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
           const Core::GeometricSearch::GeometricSearchParams& params) const override;
 

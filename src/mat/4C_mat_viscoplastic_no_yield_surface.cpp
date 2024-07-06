@@ -62,7 +62,7 @@ Mat::ViscoPlasticNoYieldSurfaceType Mat::ViscoPlasticNoYieldSurfaceType::instanc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::ViscoPlasticNoYieldSurfaceType::Create(
+Core::Communication::ParObject* Mat::ViscoPlasticNoYieldSurfaceType::create(
     const std::vector<char>& data)
 {
   auto* visco_plastic_no_yield_surface = new Mat::ViscoPlasticNoYieldSurface();
@@ -94,13 +94,13 @@ void Mat::ViscoPlasticNoYieldSurface::pack(Core::Communication::PackBuffer& data
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
-  if (Parameter() != nullptr) matid = Parameter()->Id();
+  if (parameter() != nullptr) matid = parameter()->id();
   add_to_pack(data, matid);
 
   // pack history data
@@ -114,24 +114,24 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = dynamic_cast<Mat::PAR::ViscoPlasticNoYieldSurface*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -152,7 +152,7 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
 void Mat::ViscoPlasticNoYieldSurface::setup(const int numgp, Input::LineDefinition* linedef)
 {
   // read initial flow resistance from line definition
-  last_flowres_isotropic_.resize(numgp, params_->InitFlowRes());
+  last_flowres_isotropic_.resize(numgp, params_->init_flow_res());
 
   // initialize last inverse plastic deformation gradient as identity
   Core::LinAlg::Matrix<3, 3> id2(true);
@@ -366,8 +366,8 @@ Mat::ViscoPlasticNoYieldSurface::calculate_elastic_stiffness(
   const double eps(1.0e-12);
 
   // elastic parameters
-  const double E = params_->Young();
-  const double nue = params_->Nue();
+  const double E = params_->young();
+  const double nue = params_->nue();
   const double G = E / (2.0 * (1.0 + nue));
   const double K = E / (3.0 * (1.0 - 2.0 * nue));
 
@@ -587,7 +587,7 @@ Core::LinAlg::Matrix<2, 1>& Mat::ViscoPlasticNoYieldSurface::calculate_residual(
 {
   // viscosity parameters
   const double m = params_->strain_rate_sensitivity();
-  const double a = params_->FlowResExp();
+  const double a = params_->flow_res_exp();
 
   static Core::LinAlg::Matrix<2, 1> residual;
   residual(0) =
@@ -614,9 +614,9 @@ Core::LinAlg::Matrix<2, 2>& Mat::ViscoPlasticNoYieldSurface::calculate_lineariza
 
   // viscosity parameters
   const double m = params_->strain_rate_sensitivity();
-  const double a = params_->FlowResExp();
-  const double b = params_->FlowResSatExp();
-  const double flow_res_sat_fac = params_->FlowResSatFac();
+  const double a = params_->flow_res_exp();
+  const double b = params_->flow_res_sat_exp();
+  const double flow_res_sat_fac = params_->flow_res_sat_fac();
 
   J(0, 0) = 1.0 + terms.equ_tens_stress_const / (m * equ_tens_stress_np) *
                       std::pow(terms.equ_tens_stress_flow_res_ratio, 1.0 / m);
@@ -654,19 +654,19 @@ Mat::PreCalculatedTerms Mat::ViscoPlasticNoYieldSurface::pre_calculate_terms(
   Mat::PreCalculatedTerms terms;
 
   // Elasticity parameters
-  const double E = params_->Young();
-  const double nu = params_->Nue();
+  const double E = params_->young();
+  const double nu = params_->nue();
   const double G = E / (2.0 * (1.0 + nu));
 
   // viscosity parameters
-  const double T = params_->Temperature();
-  const double A = params_->PreExpFac();
-  const double Q = params_->ActivationEnergy();
-  const double R = params_->GasConstant();
+  const double T = params_->temperature();
+  const double A = params_->pre_exp_fac();
+  const double Q = params_->activation_energy();
+  const double R = params_->gas_constant();
   const double m = params_->strain_rate_sensitivity();
-  const double H_0 = params_->FlowResPreFac();
-  const double flow_res_sat_fac = params_->FlowResSatFac();
-  const double b = params_->FlowResSatExp();
+  const double H_0 = params_->flow_res_pre_fac();
+  const double flow_res_sat_fac = params_->flow_res_sat_fac();
+  const double b = params_->flow_res_sat_exp();
 
   const double expterm = std::exp(-Q / (R * T));
   terms.equ_tens_stress_const = 3.0 * G * dt * A * expterm;
@@ -686,9 +686,9 @@ void Mat::ViscoPlasticNoYieldSurface::setup_cmat(
 {
   // get material parameters
   // Young's modulus
-  const double youngs_mod = params_->Young();
+  const double youngs_mod = params_->young();
   // Poisson's ratio
-  const double nue = params_->Nue();
+  const double nue = params_->nue();
 
   // isotropic elasticity tensor C in Voigt matrix notation
   //                       [ 1-nu     nu     nu |          0    0    0 ]

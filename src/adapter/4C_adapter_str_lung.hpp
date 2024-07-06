@@ -46,35 +46,35 @@ namespace Adapter
     StructureLung(Teuchos::RCP<Structure> stru);
 
     /// List of fluid-structure volume constraints
-    void ListLungVolCons(std::set<int>& LungVolConIDs, int& MinLungVolConID);
+    void list_lung_vol_cons(std::set<int>& LungVolConIDs, int& MinLungVolConID);
 
     /// Initialize structural part of lung volume constraint
-    void InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvol,  ///< vector of initial volumes
+    void initialize_vol_con(Teuchos::RCP<Epetra_Vector> initvol,  ///< vector of initial volumes
         Teuchos::RCP<Epetra_Vector> signvol,  ///< vector of signs of initial volumes
         const int offsetID);                  ///< ID of first volume constraint -> offset
 
     /// Evaluate structural part of lung volume constraint
-    void EvaluateVolCon(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> StructMatrix,
+    void evaluate_vol_con(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> StructMatrix,
         Teuchos::RCP<Epetra_Vector> StructRHS, Teuchos::RCP<Epetra_Vector> CurrVols,
         Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
         const int offsetID);
 
     /// Write additional forces due to volume constraint
-    void OutputForces(Teuchos::RCP<Epetra_Vector> Forces);
+    void output_forces(Teuchos::RCP<Epetra_Vector> Forces);
 
     /// Write additional volume constraint stuff
-    void WriteVolConRestart(Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
+    void write_vol_con_restart(Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
         Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
 
     /// Read additional volume constraint stuff
-    void ReadVolConRestart(const int step, Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
+    void read_vol_con_restart(const int step, Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
         Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
 
     /// Get MapExtractor for fsi <-> full map
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> FSIInterface() { return fsiinterface_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> fsi_interface() { return fsiinterface_; }
 
     /// Get map of volume coupling dofs
-    Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
+    Teuchos::RCP<const Epetra_Map> lung_constr_map() { return lungconstraintmap_; }
 
    private:
     /// conditions that define the lung volume constraints

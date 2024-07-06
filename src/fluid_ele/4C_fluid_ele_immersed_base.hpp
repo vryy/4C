@@ -28,19 +28,19 @@ namespace Discret
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override = 0;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override = 0;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
 
       */
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override = 0;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override = 0;
 
       /*!
       \brief Setup the definition line for this element
@@ -77,11 +77,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of fluid and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override
+      Core::Elements::Element* clone() const override
       {
         FOUR_C_THROW("not implemented in base class");
         return nullptr;
@@ -93,7 +93,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
         FOUR_C_THROW("not implemented in base class");
         return -1234;
@@ -102,7 +102,10 @@ namespace Discret
       /*!
       \brief Each element whose nodes are all covered by an immersed dis. are set IsImmersed
       */
-      virtual void SetIsImmersed(int isimmersed) { FOUR_C_THROW("not implemented in base class"); };
+      virtual void set_is_immersed(int isimmersed)
+      {
+        FOUR_C_THROW("not implemented in base class");
+      };
 
       /*!
       \brief Each element which has nodes covered by the immersed dis. but at least one node that is
@@ -147,7 +150,7 @@ namespace Discret
       /*!
       \brief returns true if element was set IsImmersed
       */
-      virtual int IsImmersed()
+      virtual int is_immersed()
       {
         FOUR_C_THROW("not implemented in base class");
         return -1234;
@@ -156,7 +159,7 @@ namespace Discret
       /*!
       \brief returns true if element was set IsBundaryImmersed
       */
-      virtual int IsBoundaryImmersed()
+      virtual int is_boundary_immersed()
       {
         FOUR_C_THROW("not implemented in base class");
         return -1234;
@@ -211,7 +214,7 @@ namespace Discret
       /*!
       \brief construct rcp to vector for divergence projection handling
       */
-      virtual void ConstructElementRCP(int size)
+      virtual void construct_element_rcp(int size)
       {
         FOUR_C_THROW("not implemented in base class");
         return;
@@ -220,7 +223,7 @@ namespace Discret
       /*!
       \brief Clean up the element rcp
       */
-      virtual void DestroyElementRCP()
+      virtual void destroy_element_rcp()
       {
         FOUR_C_THROW("not implemented in base class");
         return;
@@ -241,7 +244,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if it recognizes the name
       */
-      bool VisData(const std::string& name, std::vector<double>& data) override
+      bool vis_data(const std::string& name, std::vector<double>& data) override
       {
         FOUR_C_THROW("not implemented in base class");
         return false;

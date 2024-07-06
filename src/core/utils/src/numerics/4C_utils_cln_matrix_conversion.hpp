@@ -30,7 +30,7 @@ namespace Core::CLN
   void ConvClnDouble(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
       LinAlg::Matrix<num_row, num_col, double>& out)
   {
-    for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
+    for (unsigned int idx = 0; idx < in.num_rows() * in.num_cols(); ++idx)
     {
       out.data()[idx] = cln::double_approx(in.data()[idx].Value());
     }
@@ -41,7 +41,7 @@ namespace Core::CLN
   void ConvDoubleCLN(const LinAlg::Matrix<num_row, num_col, double>& in,
       LinAlg::Matrix<num_row, num_col, ClnWrapper>& out, const int precision = 20)
   {
-    for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
+    for (unsigned int idx = 0; idx < in.num_rows() * in.num_cols(); ++idx)
     {
       ClnWrapper clnnum;
       // zeros do not convert properly to CLN (loss of precision)
@@ -62,7 +62,7 @@ namespace Core::CLN
   void UpdatePresicion(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
       LinAlg::Matrix<num_row, num_col, ClnWrapper>& out, const int precision = 20)
   {
-    for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
+    for (unsigned int idx = 0; idx < in.num_rows() * in.num_cols(); ++idx)
     {
       ClnWrapper clnnum;
       // zeros do not convert properly to CLN (loss of precision)

@@ -56,13 +56,13 @@ namespace CONTACT
     integration includes the Mortar matrices D/M and the gap g.
 
     */
-    bool IntegrateOverlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    bool integrate_overlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief Return type of wear surface definition
 
     */
-    Inpar::Wear::WearSide WearSide()
+    Inpar::Wear::WearSide wear_side()
     {
       return Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(imortar_, "BOTH_SIDED_WEAR");
     }
@@ -71,7 +71,7 @@ namespace CONTACT
     \brief Return type of wear surface definition
 
     */
-    Inpar::Wear::WearType WearType()
+    Inpar::Wear::WearType wear_type()
     {
       return Core::UTILS::IntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
     }
@@ -115,19 +115,19 @@ namespace CONTACT
     \brief Get communicator
 
     */
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& get_comm() const;
 
     /*!
     \brief Get problem dimension
 
     */
-    virtual const int& Dim() const { return dim_; }
+    virtual const int& n_dim() const { return dim_; }
 
     /*!
     \brief Return the LM shape fcn type
 
     */
-    Inpar::Mortar::ShapeFcn ShapeFcn()
+    Inpar::Mortar::ShapeFcn shape_fcn()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }

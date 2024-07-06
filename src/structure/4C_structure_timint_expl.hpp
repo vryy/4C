@@ -111,19 +111,19 @@ namespace Solid
     //@{
 
     //! Resize \p TimIntMStep<T> multi-step quantities
-    void ResizeMStep() override = 0;
+    void resize_m_step() override = 0;
 
     //! Do time integration of single step
-    int IntegrateStep() override = 0;
+    int integrate_step() override = 0;
 
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awaiting the next time step.
-    void UpdateStepState() override = 0;
+    void update_step_state() override = 0;
 
     //! Update Element
-    void UpdateStepElement() override = 0;
+    void update_step_element() override = 0;
     /*
         //! Update configuration and time after time step
         void UpdateStepAndTime()
@@ -158,14 +158,14 @@ namespace Solid
     //@{
 
     //! Return time integrator name
-    enum Inpar::Solid::DynamicType MethodName() const override = 0;
+    enum Inpar::Solid::DynamicType method_name() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
-    bool MethodImplicit() override { return false; }
+    bool method_implicit() override { return false; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() const override = 0;
+    int method_steps() const override = 0;
 
     //! Give local order of accuracy of displacement part
     int method_order_of_accuracy_dis() const override = 0;
@@ -180,7 +180,7 @@ namespace Solid
     double method_lin_err_coeff_vel() const override = 0;
 
     //! return time integration factor
-    double TimIntParam() const override { return 0.0; }
+    double tim_int_param() const override { return 0.0; }
 
     //@}
 
@@ -188,7 +188,7 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override = 0;
+    Teuchos::RCP<Epetra_Vector> fext() override = 0;
 
     //! Return reaction forces
     Teuchos::RCP<Epetra_Vector> freact() override
@@ -198,10 +198,10 @@ namespace Solid
     };
 
     //! Read and set external forces from file
-    void ReadRestartForce() override = 0;
+    void read_restart_force() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! initial_guess is not available for explicit time integrators
     Teuchos::RCP<const Epetra_Vector> initial_guess() override
@@ -211,7 +211,7 @@ namespace Solid
     }
 
     //! RHS() is not available for explicit time integrators
-    Teuchos::RCP<const Epetra_Vector> RHS() override
+    Teuchos::RCP<const Epetra_Vector> rhs() override
     {
       FOUR_C_THROW("RHS() is not available for explicit time integrators");
       return Teuchos::null;
@@ -225,13 +225,13 @@ namespace Solid
       check_is_setup();
 
       // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
-      SetTimen((*time_)[0] + (*dt_)[0]);
+      set_timen((*time_)[0] + (*dt_)[0]);
 
       // things that need to be done before Predict
-      PrePredict();
+      pre_predict();
 
       // prepare contact for new time step
-      PrepareStepContact();
+      prepare_step_contact();
 
       return;
     }
@@ -265,7 +265,7 @@ namespace Solid
     /// has to be renamed either here or print_step()
     void output(bool forced_writerestart) override
     {
-      OutputStep(forced_writerestart);
+      output_step(forced_writerestart);
       // write Gmsh output
       write_gmsh_struc_output_step();
       return;
@@ -274,16 +274,16 @@ namespace Solid
     /// has to be renamed either here or update_step_state() /UpdateStepStateElement()
     void update() override
     {
-      PreUpdate();
-      UpdateStepState();
-      UpdateStepTime();
-      UpdateStepElement();
+      pre_update();
+      update_step_state();
+      update_step_time();
+      update_step_element();
       post_update();
       return;
     }
 
     //! Update routine for coupled problems with monolithic approach with time adaptivity
-    void Update(const double endtime) override
+    void update(const double endtime) override
     {
       FOUR_C_THROW("Not implemented. No time adaptivity available for explicit time integration.");
     }
@@ -297,7 +297,7 @@ namespace Solid
     }
 
     /// are there any algebraic constraints?
-    bool HaveConstraint() override
+    bool have_constraint() override
     {
       FOUR_C_THROW("HaveConstraint() has not been tested for explicit time integrators");
       return false;
@@ -311,7 +311,7 @@ namespace Solid
     };
 
     /// are there any spring dashpot BCs?
-    bool HaveSpringDashpot() override
+    bool have_spring_dashpot() override
     {
       FOUR_C_THROW("HaveSpringDashpot() has not been tested for explicit time integrators");
       return false;
@@ -374,9 +374,9 @@ namespace Solid
     /// Do the nonlinear solve, i.e. (multiple) corrector,
     /// for the time step. All boundary conditions have
     /// been set.
-    Inpar::Solid::ConvergenceStatus Solve() final
+    Inpar::Solid::ConvergenceStatus solve() final
     {
-      IntegrateStep();
+      integrate_step();
       return Inpar::Solid::conv_success;
     }
 

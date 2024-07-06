@@ -47,36 +47,36 @@ void FS3I::PartFS3I1Wc::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I1Wc::Timeloop()
+void FS3I::PartFS3I1Wc::timeloop()
 {
   check_is_init();
   check_is_setup();
 
   // prepare time loop
-  fsi_->PrepareTimeloop();
-  SetFSISolution();
+  fsi_->prepare_timeloop();
+  set_fsi_solution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (Global::Problem::Instance()->restart() and
+  if (Global::Problem::instance()->restart() and
       Core::UTILS::IntegralValue<int>(
-          Global::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
+          Global::Problem::instance()->f_s3_i_dynamic_params(), "RESTART_FROM_PART_FSI"))
   {
-    scatravec_[0]->ScaTraField()->prepare_first_time_step();
-    scatravec_[1]->ScaTraField()->prepare_first_time_step();
+    scatravec_[0]->sca_tra_field()->prepare_first_time_step();
+    scatravec_[1]->sca_tra_field()->prepare_first_time_step();
   }
 
   // output of initial state
   constexpr bool force_prepare = true;
   fsi_->prepare_output(force_prepare);
   fsi_->output();
-  ScatraOutput();
+  scatra_output();
 
-  while (NotFinished())
+  while (not_finished())
   {
     increment_time_and_step();
     set_struct_scatra_solution();
-    DoFSIStep();
-    SetFSISolution();
+    do_fsi_step();
+    set_fsi_solution();
     do_scatra_step();
   }
 }
@@ -84,10 +84,10 @@ void FS3I::PartFS3I1Wc::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I1Wc::DoFSIStep()
+void FS3I::PartFS3I1Wc::do_fsi_step()
 {
   fsi_->prepare_time_step();
-  fsi_->TimeStep(fsi_);
+  fsi_->time_step(fsi_);
   constexpr bool force_prepare = false;
   fsi_->prepare_output(force_prepare);
   fsi_->update();
@@ -99,7 +99,7 @@ void FS3I::PartFS3I1Wc::DoFSIStep()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I1Wc::do_scatra_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n***********************\n GAS TRANSPORT SOLVER \n***********************\n"
               << std::endl;
@@ -123,8 +123,8 @@ void FS3I::PartFS3I1Wc::do_scatra_step()
     if (scatra_convergence_check(itnum)) break;
   }
 
-  UpdateScatraFields();
-  ScatraOutput();
+  update_scatra_fields();
+  scatra_output();
 }
 
 
@@ -146,7 +146,7 @@ void FS3I::PartFS3I1Wc::prepare_time_step()
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->prepare_time_step();
+    scatra->sca_tra_field()->prepare_time_step();
   }
 }
 
@@ -155,7 +155,7 @@ void FS3I::PartFS3I1Wc::prepare_time_step()
 /*----------------------------------------------------------------------*/
 bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
 {
-  const Teuchos::ParameterList& fs3idyn = Global::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
   Inpar::ScaTra::SolverType scatra_solvtype =
       Core::UTILS::IntegralValue<Inpar::ScaTra::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
 
@@ -169,7 +169,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
     case Inpar::ScaTra::solvertype_linear_incremental:
     {
       // print the screen info
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         printf("\n+-------------------+-------------------+\n");
         printf("| norm of residual  | norm of increment |\n");
@@ -184,7 +184,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
     {
       // some input parameters for the scatra fields
       const Teuchos::ParameterList& scatradyn =
-          Global::Problem::Instance()->scalar_transport_dynamic_params();
+          Global::Problem::instance()->scalar_transport_dynamic_params();
       const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
       const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
       const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -192,8 +192,8 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       double connorm(0.0);
       // set up vector of absolute concentrations
       Teuchos::RCP<Epetra_Vector> con = Teuchos::rcp(new Epetra_Vector(scatraincrement_->Map()));
-      Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField()->Phinp();
-      Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField()->Phinp();
+      Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->sca_tra_field()->phinp();
+      Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->sca_tra_field()->phinp();
       setup_coupled_scatra_vector(con, scatra1, scatra2);
       con->Norm2(&connorm);
 
@@ -201,7 +201,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       if (connorm < 1e-5) connorm = 1.0;
 
       // print the screen info
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
       {
         printf("|  %3d/%3d   |   %10.3E [L_2 ]  | %10.3E   |   %10.3E [L_2 ]  | %10.3E   |\n",
             itnum, itemax, abstolres, conresnorm, ittol, incconnorm / connorm);
@@ -212,7 +212,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       // current residual. Norm of residual is just printed for information
       if (conresnorm <= abstolres and incconnorm / connorm <= ittol)
       {
-        if (Comm().MyPID() == 0)
+        if (get_comm().MyPID() == 0)
         {
           // print 'finish line'
           printf(
@@ -225,7 +225,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       // next timestep...
       else if (itnum == itemax)
       {
-        if (Comm().MyPID() == 0)
+        if (get_comm().MyPID() == 0)
         {
           printf("+---------------------------------------------------------------+\n");
           printf("|            >>>>>> not converged in itemax steps!              |\n");

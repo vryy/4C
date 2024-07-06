@@ -28,10 +28,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface*
-Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
+Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface::impl(
     Discret::ELEMENTS::RedAirBloodScatraLine3* red_acinus)
 {
-  switch (red_acinus->Shape())
+  switch (red_acinus->shape())
   {
     case Core::FE::CellType::line3:
     {
@@ -44,7 +44,7 @@ Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
     }
     default:
       FOUR_C_THROW(
-          "shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->num_node());
+          "shape %d (%d nodes) not supported", red_acinus->shape(), red_acinus->num_node());
   }
   return nullptr;
 }
@@ -79,7 +79,7 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::evaluate(RedAirBlood
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScatraLine3* ele,
+void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::initial(RedAirBloodScatraLine3* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
@@ -90,7 +90,7 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBlood
   //--------------------------------------------------------------------
   //  if(myrank == ele->Owner())
   {
-    int gid = ele->Id();
+    int gid = ele->id();
     double val = -2.0;
     evaluation_data.generations->ReplaceGlobalValues(1, &val, &gid);
   }
@@ -102,7 +102,7 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBlood
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
+void Discret::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::get_coupled_values(
     RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)

@@ -87,7 +87,7 @@ int CONTACT::UTILS::GetContactConditionGroups(
 {
   // vector that contains solid-to-solid and beam-to-solid contact pairs
   std::vector<Core::Conditions::Condition*> beamandsolidcontactconditions(0);
-  discret.GetCondition("Contact", beamandsolidcontactconditions);
+  discret.get_condition("Contact", beamandsolidcontactconditions);
 
   std::vector<Core::Conditions::Condition*> cconds(0);
   int err =
@@ -280,9 +280,9 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
   // SAFETY CHECKS
   // read parameter list and problem type
-  const Core::ProblemType problemtype = Global::Problem::Instance()->GetProblemType();
-  const Teuchos::ParameterList& contact = Global::Problem::Instance()->contact_dynamic_params();
-  const Teuchos::ParameterList& mortar = Global::Problem::Instance()->mortar_coupling_params();
+  const Core::ProblemType problemtype = Global::Problem::instance()->get_problem_type();
+  const Teuchos::ParameterList& contact = Global::Problem::instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mortar = Global::Problem::instance()->mortar_coupling_params();
 
   // XFSI is the only reason why you want this option (as the xfluid redistribution is different)
   if (problemtype == Core::ProblemType::fsi_xfem || problemtype == Core::ProblemType::fpsi_xfem)
@@ -378,7 +378,7 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
   const std::string path(Core::IO::ExtractPath(ofile_path));
   const std::string dir_name(
       Core::IO::RemoveRestartStepFromFileName(
-          Core::IO::ExtractFileName(ofile_path), Global::Problem::Instance()->restart()) +
+          Core::IO::ExtractFileName(ofile_path), Global::Problem::instance()->restart()) +
       "_conservation");
 
   std::string full_filepath(path + dir_name);
@@ -490,15 +490,15 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
     const std::vector<const Core::Conditions::Condition*>& sl_conds)
 {
   std::vector<Core::Conditions::Condition*> dconds;
-  str_discret.GetCondition("Dirichlet", dconds);
+  str_discret.get_condition("Dirichlet", dconds);
 
   // collect all slave node ids
   std::vector<std::pair<int, int>> slnodeids;
   for (const auto& sl_cond : sl_conds)
   {
-    const auto* sl_nids = sl_cond->GetNodes();
+    const auto* sl_nids = sl_cond->get_nodes();
     slnodeids.reserve(slnodeids.size() + sl_nids->size());
-    for (int sl_nid : *sl_nids) slnodeids.emplace_back(sl_nid, sl_cond->Id());
+    for (int sl_nid : *sl_nids) slnodeids.emplace_back(sl_nid, sl_cond->id());
   }
 
   for (std::pair<int, int> slpair : slnodeids)
@@ -509,7 +509,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
 
     for (Core::Conditions::Condition* dcond : dconds)
     {
-      const auto* dnids = dcond->GetNodes();
+      const auto* dnids = dcond->get_nodes();
       for (int dnid : *dnids)
       {
         if (snid == dnid)
@@ -525,9 +525,9 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
     if (not found) continue;
 
     // skip nullptr ptrs
-    if (str_discret.HaveGlobalNode(snid))
+    if (str_discret.have_global_node(snid))
     {
-      const Core::Nodes::Node* node = str_discret.gNode(snid);
+      const Core::Nodes::Node* node = str_discret.g_node(snid);
       dbc_slave_node_map.insert(std::make_pair(node, slpair.second));
     }
   }
@@ -542,24 +542,24 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
 {
   for (const auto& dbc_sl_node : dbc_slave_nodes)
   {
-    const int slnid = dbc_sl_node.first->Id();
+    const int slnid = dbc_sl_node.first->id();
     const int slcond_id = dbc_sl_node.second;
 
     auto sl_citer = sl_conds.cbegin();
     while (sl_citer != sl_conds.cend())
     {
-      if ((*sl_citer)->Id() == slcond_id) break;
+      if ((*sl_citer)->id() == slcond_id) break;
 
       ++sl_citer;
     }
     const Core::Conditions::Condition& slcond = **sl_citer;
 
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry = slcond.Geometry();
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry = slcond.geometry();
     for (const auto& iele_pair : geometry)
     {
       const Core::Elements::Element* ele = iele_pair.second.get();
 
-      const int* ele_nids = ele->NodeIds();
+      const int* ele_nids = ele->node_ids();
       for (int i = 0; i < ele->num_node(); ++i)
       {
         const int ele_nid = ele_nids[i];

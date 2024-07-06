@@ -251,7 +251,7 @@ void Core::LinAlg::MultiMapExtractor::put_scalar(
     Epetra_Vector& full, int block, double scalar) const
 {
   const Epetra_Map& bm = *Map(block);
-  const Epetra_Map& fm = *FullMap();
+  const Epetra_Map& fm = *full_map();
 
   int numv = bm.NumMyElements();
   int* v = bm.MyGlobalElements();
@@ -270,7 +270,7 @@ void Core::LinAlg::MultiMapExtractor::put_scalar(
 double Core::LinAlg::MultiMapExtractor::norm2(const Epetra_Vector& full, int block) const
 {
   const Epetra_Map& bm = *Map(block);
-  const Epetra_Map& fm = *FullMap();
+  const Epetra_Map& fm = *full_map();
 
   int numv = bm.NumMyElements();
   int* v = bm.MyGlobalElements();
@@ -297,7 +297,7 @@ double Core::LinAlg::MultiMapExtractor::norm2(const Epetra_Vector& full, int blo
 void Core::LinAlg::MultiMapExtractor::scale(Epetra_Vector& full, int block, double scalar) const
 {
   const Epetra_Map& bm = *Map(block);
-  const Epetra_Map& fm = *FullMap();
+  const Epetra_Map& fm = *full_map();
 
   int numv = bm.NumMyElements();
   int* v = bm.MyGlobalElements();

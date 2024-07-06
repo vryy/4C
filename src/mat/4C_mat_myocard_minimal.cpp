@@ -289,45 +289,46 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
   mechanical_activation_ = 0.0;  // to store the variable for activation (phi in this case=)
 }
 
-double MyocardMinimal::ReaCoeff(const double phi, const double dt)
+double MyocardMinimal::rea_coeff(const double phi, const double dt)
 {
-  return MyocardMinimal::ReaCoeff(phi, dt, 0);
+  return MyocardMinimal::rea_coeff(phi, dt, 0);
 }
 
-double MyocardMinimal::ReaCoeff(const double phi, const double dt, int gp)
+double MyocardMinimal::rea_coeff(const double phi, const double dt, int gp)
 {
   double reacoeff = 0.0;
   const double p = 1000.0;
 
   // calculate voltage dependent time constants ([7] page 545)
-  double Tau_vm = tools_.GatingFunction(tau_v1m_, tau_v2m_, p, phi, theta_vm_);
-  double Tau_wm = tools_.GatingFunction(tau_w1m_, tau_w2m_, k_wm_, phi, u_wm_);
-  double Tau_so = tools_.GatingFunction(tau_so1_, tau_so2_, k_so_, phi, u_so_);
-  double Tau_s = tools_.GatingFunction(tau_s1_, tau_s2_, p, phi, theta_w_);
-  double Tau_o = tools_.GatingFunction(tau_o1_, tau_o2_, p, phi, theta_o_);
+  double Tau_vm = tools_.gating_function(tau_v1m_, tau_v2m_, p, phi, theta_vm_);
+  double Tau_wm = tools_.gating_function(tau_w1m_, tau_w2m_, k_wm_, phi, u_wm_);
+  double Tau_so = tools_.gating_function(tau_so1_, tau_so2_, k_so_, phi, u_so_);
+  double Tau_s = tools_.gating_function(tau_s1_, tau_s2_, p, phi, theta_w_);
+  double Tau_o = tools_.gating_function(tau_o1_, tau_o2_, p, phi, theta_o_);
 
   // calculate infinity values ([7] page 545)
-  double v_inf = tools_.GatingFunction(1.0, 0.0, p, phi, theta_vm_);
-  double w_inf = tools_.GatingFunction(1.0 - phi / tau_winf_, w_infs_, p, phi, theta_o_);
+  double v_inf = tools_.gating_function(1.0, 0.0, p, phi, theta_vm_);
+  double w_inf = tools_.gating_function(1.0 - phi / tau_winf_, w_infs_, p, phi, theta_o_);
 
   // calculate gating variables according to [8]
-  double Tau_v = tools_.GatingFunction(Tau_vm, tau_vp_, p, phi, theta_v_);
-  double v_inf_GF = tools_.GatingFunction(v_inf, 0.0, p, phi, theta_v_);
-  v_[gp] = tools_.GatingVarCalc(dt, v0_[gp], v_inf_GF, Tau_v);
+  double Tau_v = tools_.gating_function(Tau_vm, tau_vp_, p, phi, theta_v_);
+  double v_inf_GF = tools_.gating_function(v_inf, 0.0, p, phi, theta_v_);
+  v_[gp] = tools_.gating_var_calc(dt, v0_[gp], v_inf_GF, Tau_v);
 
-  double Tau_w = tools_.GatingFunction(Tau_wm, tau_wp_, p, phi, theta_w_);
-  double w_inf_GF = tools_.GatingFunction(w_inf, 0.0, p, phi, theta_w_);
-  w_[gp] = tools_.GatingVarCalc(dt, w0_[gp], w_inf_GF, Tau_w);
+  double Tau_w = tools_.gating_function(Tau_wm, tau_wp_, p, phi, theta_w_);
+  double w_inf_GF = tools_.gating_function(w_inf, 0.0, p, phi, theta_w_);
+  w_[gp] = tools_.gating_var_calc(dt, w0_[gp], w_inf_GF, Tau_w);
 
-  const double s_inf = tools_.GatingFunction(0.0, 1.0, k_s_, phi, u_s_);
-  s_[gp] = tools_.GatingVarCalc(dt, s0_[gp], s_inf, Tau_s);
+  const double s_inf = tools_.gating_function(0.0, 1.0, k_s_, phi, u_s_);
+  s_[gp] = tools_.gating_var_calc(dt, s0_[gp], s_inf, Tau_s);
 
   // calculate currents J_fi, J_so and J_si ([7] page 545)
-  jfi_[gp] = -tools_.GatingFunction(0.0, v_[gp] * (phi - theta_v_) * (u_u_ - phi) / tau_fi_, p, phi,
-      theta_v_);  // fast inward current
-  jso_[gp] = tools_.GatingFunction(
+  jfi_[gp] =
+      -tools_.gating_function(0.0, v_[gp] * (phi - theta_v_) * (u_u_ - phi) / tau_fi_, p, phi,
+          theta_v_);  // fast inward current
+  jso_[gp] = tools_.gating_function(
       (phi - u_o_) / Tau_o, 1.0 / Tau_so, p, phi, theta_w_);  // slow outward current
-  jsi_[gp] = -tools_.GatingFunction(
+  jsi_[gp] = -tools_.gating_function(
       0.0, w_[gp] * s_[gp] / tau_si_, p, phi, theta_w_);  // slow inward current
 
   reacoeff = (jfi_[gp] + jso_[gp] + jsi_[gp]);
@@ -340,22 +341,22 @@ double MyocardMinimal::ReaCoeff(const double phi, const double dt, int gp)
 }
 
 
-double MyocardMinimal::ReaCoeffN(const double phi, const double dt, int gp)
+double MyocardMinimal::rea_coeff_n(const double phi, const double dt, int gp)
 {
   double reacoeff = 0.0;
   const double p = 1000.0;
 
   // calculate voltage dependent time constants ([7] page 545)
 
-  double Tau_so = tools_.GatingFunction(tau_so1_, tau_so2_, k_so_, phi, u_so_);
-  double Tau_o = tools_.GatingFunction(tau_o1_, tau_o2_, p, phi, theta_o_);
+  double Tau_so = tools_.gating_function(tau_so1_, tau_so2_, k_so_, phi, u_so_);
+  double Tau_o = tools_.gating_function(tau_o1_, tau_o2_, p, phi, theta_o_);
 
   // calculate currents J_fi, J_so and J_si ([7] page 545)
-  jfi_[gp] = -tools_.GatingFunction(0.0, v0_[gp] * (phi - theta_v_) * (u_u_ - phi) / tau_fi_, p,
+  jfi_[gp] = -tools_.gating_function(0.0, v0_[gp] * (phi - theta_v_) * (u_u_ - phi) / tau_fi_, p,
       phi, theta_v_);  // fast inward current
-  jso_[gp] = tools_.GatingFunction(
+  jso_[gp] = tools_.gating_function(
       (phi - u_o_) / Tau_o, 1.0 / Tau_so, p, phi, theta_w_);  // slow outward current
-  jsi_[gp] = -tools_.GatingFunction(
+  jsi_[gp] = -tools_.gating_function(
       0.0, w0_[gp] * s0_[gp] / tau_si_, p, phi, theta_w_);  // slow inward current
 
   reacoeff = (jfi_[gp] + jso_[gp] + jsi_[gp]);
@@ -375,13 +376,13 @@ int MyocardMinimal::get_number_of_internal_state_variables() const { return 3; }
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardMinimal::GetInternalState(const int k) const { return GetInternalState(k, 0); }
+double MyocardMinimal::get_internal_state(const int k) const { return get_internal_state(k, 0); }
 
 /*----------------------------------------------------------------------*
  |  returns current internal state of the material       hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double MyocardMinimal::GetInternalState(const int k, int gp) const
+double MyocardMinimal::get_internal_state(const int k, int gp) const
 {
   double val = 0.0;
   switch (k)
@@ -413,9 +414,9 @@ double MyocardMinimal::GetInternalState(const int k, int gp) const
 /*----------------------------------------------------------------------*
  |  set  internal state of the material                     cbert 08/13 |
  *----------------------------------------------------------------------*/
-void MyocardMinimal::SetInternalState(const int k, const double val)
+void MyocardMinimal::set_internal_state(const int k, const double val)
 {
-  SetInternalState(k, val, 0);
+  set_internal_state(k, val, 0);
   return;
 }
 
@@ -423,7 +424,7 @@ void MyocardMinimal::SetInternalState(const int k, const double val)
  |  set  internal state of the material                  hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-void MyocardMinimal::SetInternalState(const int k, const double val, int gp)
+void MyocardMinimal::set_internal_state(const int k, const double val, int gp)
 {
   if (v0_.size() < (unsigned)gp) FOUR_C_THROW("Number of gp does not match");
   switch (k)
@@ -468,13 +469,13 @@ int MyocardMinimal::get_number_of_ionic_currents() const { return 3; }
 /*----------------------------------------------------------------------*
  |  returns current internal currents          cbert 08/13 |
  *----------------------------------------------------------------------*/
-double MyocardMinimal::GetIonicCurrents(const int k) const { return GetIonicCurrents(k, 0); }
+double MyocardMinimal::get_ionic_currents(const int k) const { return get_ionic_currents(k, 0); }
 
 /*----------------------------------------------------------------------*
  |  returns current internal currents                    hoermann 09/15 |
  |  for multiple points per element                                     |
  *----------------------------------------------------------------------*/
-double MyocardMinimal::GetIonicCurrents(const int k, int gp) const
+double MyocardMinimal::get_ionic_currents(const int k, int gp) const
 {
   double val = 0.0;
   switch (k)
@@ -531,6 +532,6 @@ void MyocardMinimal::resize_internal_state_variables(int gp)
 /*----------------------------------------------------------------------*
  |  get number of Gauss points                           hoermann 12/16 |
  *----------------------------------------------------------------------*/
-int MyocardMinimal::GetNumberOfGP() const { return v_.size(); };
+int MyocardMinimal::get_number_of_gp() const { return v_.size(); };
 
 FOUR_C_NAMESPACE_CLOSE

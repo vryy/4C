@@ -79,8 +79,9 @@ namespace XFEM
 
     \note Sets Filled()=true
     */
-    virtual int InitialFillComplete(const std::vector<int>& nds, bool assigndegreesoffreedom = true,
-        bool initelements = true, bool doboundaryconditions = true);
+    virtual int initial_fill_complete(const std::vector<int>& nds,
+        bool assigndegreesoffreedom = true, bool initelements = true,
+        bool doboundaryconditions = true);
 
     /// Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector with all active
     /// dofs
@@ -102,11 +103,11 @@ namespace XFEM
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     */
-    virtual std::vector<int> InitialDof(unsigned nds, const Core::Nodes::Node* node) const
+    virtual std::vector<int> initial_dof(unsigned nds, const Core::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
-      return initialdofsets_[nds]->Dof(node);
+      return initialdofsets_[nds]->dof(node);
     }
 
     /*!
@@ -118,11 +119,11 @@ namespace XFEM
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     */
-    virtual std::vector<int> InitialDof(const Core::Nodes::Node* node) const
+    virtual std::vector<int> initial_dof(const Core::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(initialdofsets_.size() == 1, "expect just one dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
-      return InitialDof(0, node);
+      return initial_dof(0, node);
     }
 
     /*!
@@ -137,11 +138,12 @@ namespace XFEM
     \param lm (in/out)    : lm vector the dofs are appended to
     */
 
-    virtual void InitialDof(unsigned nds, const Core::Nodes::Node* node, std::vector<int>& lm) const
+    virtual void initial_dof(
+        unsigned nds, const Core::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
-      initialdofsets_[nds]->Dof(node, lm);
+      initialdofsets_[nds]->dof(node, lm);
     }
 
     /*!
@@ -154,18 +156,18 @@ namespace XFEM
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void InitialDof(const Core::Nodes::Node* node, std::vector<int>& lm) const
+    virtual void initial_dof(const Core::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(initialdofsets_.size() == 1, "expect just one dof set");
       FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
-      InitialDof((unsigned)0, node, lm);
+      initial_dof((unsigned)0, node, lm);
     }
 
 
     /// Access to initial dofset
-    const Core::DOFSets::DofSetInterface& InitialDofSet(unsigned int nds = 0) const
+    const Core::DOFSets::DofSetInterface& initial_dof_set(unsigned int nds = 0) const
     {
-      Initialized();
+      initialized();
       return *initialdofsets_[nds];
     }
 
@@ -185,7 +187,7 @@ namespace XFEM
     - Initialized()==true prerequisite
 
     */
-    virtual const Epetra_Map* InitialDofRowMap(unsigned nds = 0) const;
+    virtual const Epetra_Map* initial_dof_row_map(unsigned nds = 0) const;
 
     /*!
     \brief Get initial degree of freedom column map (Initialized()==true prerequisite)
@@ -196,10 +198,10 @@ namespace XFEM
     - Initialized()==true prerequisite
 
     */
-    virtual const Epetra_Map* InitialDofColMap(unsigned nds = 0) const;
+    virtual const Epetra_Map* initial_dof_col_map(unsigned nds = 0) const;
 
     /// checks if discretization is initialized
-    bool Initialized() const;
+    bool initialized() const;
 
 
     /*!
@@ -221,7 +223,7 @@ namespace XFEM
 
     \note This class will not take ownership or in any way modify the solution vector.
     */
-    virtual void SetInitialState(
+    virtual void set_initial_state(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
 
     /** \brief Get number of standard (w/o enrichment) dofs for given node.
@@ -233,15 +235,15 @@ namespace XFEM
      *  \param node (in) : the node those number of dofs are requested
      *
      *  \author hiermeier \date 10/16 */
-    int NumStandardDof(const unsigned& nds, const Core::Nodes::Node* node) const override
+    int num_standard_dof(const unsigned& nds, const Core::Nodes::Node* node) const override
     {
       std::vector<int> dofs(0);
       // get the first dofs of the node (not enriched)
-      Dof(dofs, node, nds, 0, nullptr);
+      dof(dofs, node, nds, 0, nullptr);
       return static_cast<int>(dofs.size());
     }
 
-    bool IsEqualXDofSet(int nds, const XFEM::XFEMDofSet& xdofset_new) const;
+    bool is_equal_x_dof_set(int nds, const XFEM::XFEMDofSet& xdofset_new) const;
 
    private:
     /// Store Initial Dofs

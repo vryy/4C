@@ -83,7 +83,7 @@ namespace CONTACT
      and assembled into the slave element nodes.
 
      */
-    bool IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
+    bool integrate_cells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
 
     //@}
 
@@ -99,7 +99,7 @@ namespace CONTACT
      slave element paramater space. NOT implemented for AuxPlane case!
 
      */
-    bool VertexLinearization(
+    bool vertex_linearization(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
         std::map<int, double>& projpar, bool printderiv = false) override;
 
@@ -146,7 +146,7 @@ namespace CONTACT
      for AuxPlane case!
 
      */
-    bool CenterLinearization(
+    bool center_linearization(
         const std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
         std::vector<Core::Gen::Pairedvector<int, double>>& lincenter) override;
 
@@ -154,7 +154,7 @@ namespace CONTACT
      \brief Return type of wear surface definition
 
      */
-    Inpar::Wear::WearType WearType()
+    Inpar::Wear::WearType wear_type()
     {
       return Core::UTILS::IntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
     }
@@ -216,19 +216,19 @@ namespace CONTACT
      \brief Get coupling slave integration element
 
      */
-    Mortar::IntElement& SlaveIntElement() const override { return sintele_; }
+    Mortar::IntElement& slave_int_element() const override { return sintele_; }
 
     /*!
      \brief Get coupling master integration element
 
      */
-    Mortar::IntElement& MasterIntElement() const override { return mintele_; }
+    Mortar::IntElement& master_int_element() const override { return mintele_; }
 
     /*!
      \brief Return the Lagrange multiplier interpolation and testing type
 
      */
-    Inpar::Mortar::LagMultQuad LagMultQuad() override
+    Inpar::Mortar::LagMultQuad lag_mult_quad() override
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -280,37 +280,37 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Mortar::Element& SlaveElement() const { return *sele_; }
+    virtual Mortar::Element& slave_element() const { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    virtual Mortar::Element& MasterElement(int k) const { return *(mele_[k]); }
+    virtual Mortar::Element& master_element(int k) const { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    virtual std::vector<Mortar::Element*> MasterElements() const { return mele_; }
+    virtual std::vector<Mortar::Element*> master_elements() const { return mele_; }
 
     /*!
      \brief Get coupling pairs
 
      */
-    virtual std::vector<Teuchos::RCP<CONTACT::Coupling3d>>& Coupling() { return coup_; }
+    virtual std::vector<Teuchos::RCP<CONTACT::Coupling3d>>& coupling() { return coup_; }
 
     /*!
      \brief Get number of integration cells
 
      */
-    virtual const int& IntegrationCells() { return ncells_; }
+    virtual const int& integration_cells() { return ncells_; }
 
     /*!
      \brief Get integration type
 
      */
-    Inpar::Mortar::IntType IntType()
+    Inpar::Mortar::IntType int_type()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
     };
@@ -319,13 +319,13 @@ namespace CONTACT
      \brief Get coupling type
 
      */
-    virtual const bool& Quad() { return quad_; };
+    virtual const bool& quad() { return quad_; };
 
     /*!
      \brief Return the Lagrange multiplier interpolation and testing type
 
      */
-    Inpar::Mortar::LagMultQuad LagMultQuad()
+    Inpar::Mortar::LagMultQuad lag_mult_quad()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -334,7 +334,7 @@ namespace CONTACT
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& Comm() const;
+    virtual const Epetra_Comm& get_comm() const;
 
     /*!
      \brief Evaluate coupling pairs
@@ -352,7 +352,7 @@ namespace CONTACT
      \brief Return the LM shape fcn type
 
      */
-    Inpar::Mortar::ShapeFcn ShapeFcn()
+    Inpar::Mortar::ShapeFcn shape_fcn()
     {
       return Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
@@ -399,13 +399,13 @@ namespace CONTACT
   {
     // resolve ambiguity of multiple inheritance
     using CONTACT::Coupling3dManager::consist_dual_shape;
-    using CONTACT::Coupling3dManager::Coupling;
-    using Mortar::Coupling3dQuadManager::Comm;
-    using Mortar::Coupling3dQuadManager::IntType;
-    using Mortar::Coupling3dQuadManager::LagMultQuad;
-    using Mortar::Coupling3dQuadManager::MasterElements;
-    using Mortar::Coupling3dQuadManager::ShapeFcn;
-    using Mortar::Coupling3dQuadManager::SlaveElement;
+    using CONTACT::Coupling3dManager::coupling;
+    using Mortar::Coupling3dQuadManager::get_comm;
+    using Mortar::Coupling3dQuadManager::int_type;
+    using Mortar::Coupling3dQuadManager::lag_mult_quad;
+    using Mortar::Coupling3dQuadManager::master_elements;
+    using Mortar::Coupling3dQuadManager::shape_fcn;
+    using Mortar::Coupling3dQuadManager::slave_element;
 
 
 
@@ -422,13 +422,13 @@ namespace CONTACT
      \brief Get number of slave / master integration pairs of this interface (proc local)
 
      */
-    virtual const int& SlaveMasterIntPairs() { return smintpairs_; }
+    virtual const int& slave_master_int_pairs() { return smintpairs_; }
 
     /*!
      \brief Get number of integration cells of this interface (proc local)
 
      */
-    const int& IntegrationCells() override { return intcells_; }
+    const int& integration_cells() override { return intcells_; }
 
     /*!
      \brief Evaluate coupling pairs
@@ -446,13 +446,13 @@ namespace CONTACT
      \brief spatial dimension
 
      */
-    virtual int Dim() { return Mortar::Coupling3dQuadManager::dim_; };
+    virtual int n_dim() { return Mortar::Coupling3dQuadManager::dim_; };
 
     /*!
      \brief contact discretization
 
      */
-    virtual Core::FE::Discretization& Discret()
+    virtual Core::FE::Discretization& discret()
     {
       return Mortar::Coupling3dQuadManager::idiscret_;
     };
@@ -461,7 +461,7 @@ namespace CONTACT
      \brief input params
 
      */
-    virtual Teuchos::ParameterList& Params() { return Mortar::Coupling3dQuadManager::imortar_; };
+    virtual Teuchos::ParameterList& params() { return Mortar::Coupling3dQuadManager::imortar_; };
 
 
 

@@ -42,7 +42,7 @@ namespace Discret
       typedef ScaTraEleCalc<distype, probdim> my;
 
       //! singleton access method
-      static ScaTraEleCalcNoPhysics<distype, probdim>* Instance(
+      static ScaTraEleCalcNoPhysics<distype, probdim>* instance(
           int numdofpernode, int numscal, const std::string& disname);
 
       //! evaluate the element

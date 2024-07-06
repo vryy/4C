@@ -23,14 +23,14 @@ Discret::ELEMENTS::Truss3ScatraType Discret::ELEMENTS::Truss3ScatraType::instanc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Truss3ScatraType& Discret::ELEMENTS::Truss3ScatraType::Instance()
+Discret::ELEMENTS::Truss3ScatraType& Discret::ELEMENTS::Truss3ScatraType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Truss3ScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::Truss3ScatraType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Truss3Scatra(-1, -1);
@@ -40,7 +40,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Truss3ScatraType::Create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3SCATRA")
@@ -51,12 +51,12 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::Creat
   }
   // return base class
   else
-    return Discret::ELEMENTS::Truss3Type::Create(eletype, eledistype, id, owner);
+    return Discret::ELEMENTS::Truss3Type::create(eletype, eledistype, id, owner);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -96,7 +96,7 @@ Discret::ELEMENTS::Truss3Scatra::Truss3Scatra(const Discret::ELEMENTS::Truss3Sca
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Truss3Scatra::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Truss3Scatra::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::Truss3Scatra(*this);
   return newelement;
@@ -109,7 +109,7 @@ void Discret::ELEMENTS::Truss3Scatra::pack(Core::Communication::PackBuffer& data
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Truss3::pack(data);
@@ -122,7 +122,7 @@ void Discret::ELEMENTS::Truss3Scatra::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -137,11 +137,11 @@ void Discret::ELEMENTS::Truss3Scatra::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Truss3Scatra::ReadElement(
+bool Discret::ELEMENTS::Truss3Scatra::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read base element
-  Truss3::ReadElement(eletype, distype, linedef);
+  Truss3::read_element(eletype, distype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;
@@ -166,11 +166,11 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
     Core::LinAlg::SerialDenseVector& forcevec, Core::LinAlg::SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != Core::Materials::m_linelast1D_growth and
-      Material()->MaterialType() != Core::Materials::m_linelast1D)
+  if (material()->material_type() != Core::Materials::m_linelast1D_growth and
+      material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
-  switch (Material()->MaterialType())
+  switch (material()->material_type())
   {
     case Core::Materials::m_linelast1D:
     {
@@ -189,7 +189,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
-      const auto* growth_mat = static_cast<const Mat::LinElast1DGrowth*>(Material().get());
+      const auto* growth_mat = static_cast<const Mat::LinElast1DGrowth*>(material().get());
 
       // get Gauss rule
       auto intpoints = Core::FE::IntegrationPoints1D(gaussrule_);
@@ -207,9 +207,10 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
             project_scalar_to_gauss_point(intpoints.qxg[gp][0], nodal_concentration);
 
         // calculate stress
-        const double PK2_1D = growth_mat->EvaluatePK2(CurrLength(curr_nodal_coords) / lrefe_, c_GP);
+        const double PK2_1D =
+            growth_mat->evaluate_p_k2(curr_length(curr_nodal_coords) / lrefe_, c_GP);
         const double stiffness =
-            growth_mat->EvaluateStiffness(CurrLength(curr_nodal_coords) / lrefe_, c_GP);
+            growth_mat->evaluate_stiffness(curr_length(curr_nodal_coords) / lrefe_, c_GP);
 
         // calculate residual (force.vec) and linearisation (stiffmat)
         for (int row = 0; row < ndof; ++row)
@@ -222,7 +223,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
             const double ddef_grad_du = dtruss_disp_du(row, col) / lrefe_;
             const double sign = (col < 3 ? 1.0 : -1.0);
             const double dPK2_1D_du =
-                2.0 * stiffness * dCurrLengthdu(curr_nodal_coords, col) / lrefe_ * sign;
+                2.0 * stiffness * d_curr_lengthdu(curr_nodal_coords, col) / lrefe_ * sign;
             const double first_part = dN_dx(row) * ddef_grad_du * PK2_1D;
             const double second_part = dN_dx(row) * def_grad * dPK2_1D_du;
             stiffmat(row, col) += (first_part + second_part) * int_fac;
@@ -241,26 +242,26 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::CalcGPStresses(
+void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != Core::Materials::m_linelast1D_growth and
-      Material()->MaterialType() != Core::Materials::m_linelast1D)
+  if (material()->material_type() != Core::Materials::m_linelast1D_growth and
+      material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
-  switch (Material()->MaterialType())
+  switch (material()->material_type())
   {
     case Core::Materials::m_linelast1D:
     {
-      Truss3::CalcGPStresses(params, ele_state);
+      Truss3::calc_gp_stresses(params, ele_state);
       break;
     }
     case Core::Materials::m_linelast1D_growth:
     {
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Inpar::Solid::StressType iostress;
-      if (IsParamsInterface())
+      if (is_params_interface())
       {
         stressdata = params_interface().stress_data_ptr();
         iostress = params_interface().get_stress_output_type();
@@ -285,16 +286,16 @@ void Discret::ELEMENTS::Truss3Scatra::CalcGPStresses(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
-      const auto* growth_mat = static_cast<const Mat::LinElast1DGrowth*>(Material().get());
+      const auto* growth_mat = static_cast<const Mat::LinElast1DGrowth*>(material().get());
 
-      const double def_grad = CurrLength(curr_nodal_coords) / lrefe_;
+      const double def_grad = curr_length(curr_nodal_coords) / lrefe_;
       for (int gp = 0; gp < intpoints.nquad; ++gp)
       {
         // get concentration at Gauss point
         const double c_GP =
             project_scalar_to_gauss_point(intpoints.qxg[gp][0], nodal_concentration);
 
-        const double PK2 = growth_mat->EvaluatePK2(def_grad, c_GP);
+        const double PK2 = growth_mat->evaluate_p_k2(def_grad, c_GP);
 
         switch (iostress)
         {
@@ -350,20 +351,20 @@ void Discret::ELEMENTS::Truss3Scatra::extract_elemental_variables(LocationArray&
   // first: check, if micro state is set; if not -> take macro state
   // get nodal phi from micro state
   std::vector<double> phi_ele;
-  if (discretization.NumDofSets() == 3 and discretization.HasState(2, "MicroCon"))
+  if (discretization.num_dof_sets() == 3 and discretization.has_state(2, "MicroCon"))
   {
     phi_ele.resize(la[2].lm_.size());
     phi_ele.clear();
-    auto phi = discretization.GetState(2, "MicroCon");
+    auto phi = discretization.get_state(2, "MicroCon");
     if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MicroCon'");
     Core::FE::ExtractMyValues(*phi, phi_ele, la[2].lm_);
   }
   // get nodal phi from micro state
-  else if (discretization.HasState(1, "scalarfield"))
+  else if (discretization.has_state(1, "scalarfield"))
   {
     phi_ele.resize(la[1].lm_.size());
     phi_ele.clear();
-    auto phi = discretization.GetState(1, "scalarfield");
+    auto phi = discretization.get_state(1, "scalarfield");
     if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'scalar'");
     Core::FE::ExtractMyValues(*phi, phi_ele, la[1].lm_);
   }
@@ -414,11 +415,11 @@ void Discret::ELEMENTS::Truss3Scatra::energy(
     Core::LinAlg::SerialDenseVector& intenergy)
 {
   // safety check
-  if (Material()->MaterialType() != Core::Materials::m_linelast1D_growth and
-      Material()->MaterialType() != Core::Materials::m_linelast1D)
+  if (material()->material_type() != Core::Materials::m_linelast1D_growth and
+      material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
-  switch (Material()->MaterialType())
+  switch (material()->material_type())
   {
     case Core::Materials::m_linelast1D:
     {
@@ -436,7 +437,7 @@ void Discret::ELEMENTS::Truss3Scatra::energy(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
 
       // get data from input
-      const auto* growth_mat = static_cast<const Mat::LinElast1DGrowth*>(Material().get());
+      const auto* growth_mat = static_cast<const Mat::LinElast1DGrowth*>(material().get());
 
       // get Gauss rule
       auto gauss_points = Core::FE::IntegrationPoints1D(my_gauss_rule(2, gaussexactintegration));
@@ -450,7 +451,7 @@ void Discret::ELEMENTS::Truss3Scatra::energy(
         const double c_GP =
             project_scalar_to_gauss_point(gauss_points.qxg[j][0], nodal_concentration);
 
-        eint_ = growth_mat->evaluate_elastic_energy(CurrLength(curr_nodal_coords) / lrefe_, c_GP) *
+        eint_ = growth_mat->evaluate_elastic_energy(curr_length(curr_nodal_coords) / lrefe_, c_GP) *
                 int_fac;
       }
       break;

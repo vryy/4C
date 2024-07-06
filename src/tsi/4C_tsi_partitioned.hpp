@@ -56,22 +56,22 @@ namespace TSI
 
 
     //! outer level time loop (to be implemented by deriving classes)
-    void TimeLoop() override;
+    void time_loop() override;
 
     //! non-linear solve, i.e. (multiple) corrector
-    void Solve() override;
+    void solve() override;
 
     //! initialise internal variables needed as guess for the partitioned TSI algorithm
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! time loop for TSI algorithm with one-way coupling
-    void TimeLoopSequStagg();
+    void time_loop_sequ_stagg();
 
     //! time loop for TSI algorithm with one-way coupling
     void time_loop_one_way();
 
     //! time loop for TSI algorithm with iteration between fields (full coupling)
-    void TimeLoopFull();
+    void time_loop_full();
 
     //! read restart data
     void read_restart(int step  //!< step number where the calculation is continued

@@ -45,7 +45,7 @@ namespace
   void solve_for_inverse_ignoring_errors(Core::LinAlg::Matrix<dim, dim>& matrix)
   {
     Core::LinAlg::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
-    solve_for_inverse.SetMatrix(matrix);
+    solve_for_inverse.set_matrix(matrix);
 
     solve_for_inverse.invert();
   }
@@ -60,7 +60,7 @@ namespace
   void solve_for_inverse(Core::LinAlg::Matrix<dim, dim>& matrix)
   {
     Core::LinAlg::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
-    solve_for_inverse.SetMatrix(matrix);
+    solve_for_inverse.set_matrix(matrix);
 
     int err_inv = solve_for_inverse.invert();
     if (err_inv != 0) FOUR_C_THROW("Inversion of matrix failed with LAPACK error code %d", err_inv);
@@ -180,7 +180,7 @@ namespace
   Core::LinAlg::Matrix<Discret::ELEMENTS::num_dof_per_ele<celltype>, 1> get_displacement_increment(
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
-    auto residual_from_dis = discretization.GetState("residual displacement");
+    auto residual_from_dis = discretization.get_state("residual displacement");
     std::vector<double> residual(lm.size());
     Core::FE::ExtractMyValues(*residual_from_dis, residual, lm);
     Core::LinAlg::Matrix<Discret::ELEMENTS::num_dof_per_ele<celltype>, 1> displ_inc(false);
@@ -757,7 +757,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
   CentroidTransformation<celltype> centroid_transformation =
       evaluate_centroid_transformation<celltype>(nodal_coordinates);
 
-  if (!ele.IsParamsInterface())
+  if (!ele.is_params_interface())
   {
     // Update alpha only in old time integration scheme
     update_alpha<celltype, eastype>(eas_iteration_data_, discretization, lm);
@@ -786,7 +786,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
 
         const Stress<celltype> stress = evaluate_material_stress<celltype>(solid_material,
             kinematic_quantitites.enhanced_deformation_gradient, kinematic_quantitites.enhanced_gl,
-            params, gp, ele.Id());
+            params, gp, ele.id());
 
         integrate_eas<celltype, eastype>(stress, kinematic_quantitites.m_tilde,
             kinematic_quantitites.b_op, integration_factor, eas_iteration_data_);
@@ -808,11 +808,11 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
         {
           if (equal_integration_mass_stiffness)
           {
-            add_mass_matrix(shape_functions, integration_factor, solid_material.Density(gp), *mass);
+            add_mass_matrix(shape_functions, integration_factor, solid_material.density(gp), *mass);
           }
           else
           {
-            element_mass += solid_material.Density(gp) * integration_factor;
+            element_mass += solid_material.density(gp) * integration_factor;
             element_volume += integration_factor;
           }
         }
@@ -852,12 +852,13 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
     Inpar::Solid::KinemType kinematic_type>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::Recover(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::recover(
     Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   FourC::Solid::ELEMENTS::ParamsInterface& params_interface =
-      *Teuchos::rcp_dynamic_cast<FourC::Solid::ELEMENTS::ParamsInterface>(ele.ParamsInterfacePtr());
+      *Teuchos::rcp_dynamic_cast<FourC::Solid::ELEMENTS::ParamsInterface>(
+          ele.params_interface_ptr());
 
   const double step_length = params_interface.get_step_length();
 
@@ -865,7 +866,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::Reco
   {
     params_interface.sum_into_my_previous_sol_norm(NOX::Nln::StatusTest::quantity_eas,
         FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
-        &eas_iteration_data_.alpha_(0, 0), ele.Owner());
+        &eas_iteration_data_.alpha_(0, 0), ele.owner());
 
     // Update alpha
     update_alpha(eas_iteration_data_, discretization, lm, step_length);
@@ -881,12 +882,12 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::Reco
   params_interface.sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas,
       FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
       &eas_iteration_data_.alpha_inc_(0, 0), &eas_iteration_data_.alpha_(0, 0), step_length,
-      ele.Owner());
+      ele.owner());
 }
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
     Inpar::Solid::KinemType kinematic_type>
-void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::Update(
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::update(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -915,7 +916,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::Upda
             nodal_coordinates, shape_functions, params);
 
         solid_material.update(
-            kinematic_quantitites.enhanced_deformation_gradient, gp, params, ele.Id());
+            kinematic_quantitites.enhanced_deformation_gradient, gp, params, ele.id());
       });
 
   solid_material.update();
@@ -931,8 +932,8 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::calc
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  Core::LinAlg::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
-  Core::LinAlg::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
+  Core::LinAlg::SerialDenseMatrix stress_data(stiffness_matrix_integration_.num_points(), num_str_);
+  Core::LinAlg::SerialDenseMatrix strain_data(stiffness_matrix_integration_.num_points(), num_str_);
 
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, lm);
@@ -956,7 +957,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::calc
 
         const Stress<celltype> stress = evaluate_material_stress<celltype>(solid_material,
             kinematic_quantitites.enhanced_deformation_gradient, kinematic_quantitites.enhanced_gl,
-            params, gp, ele.Id());
+            params, gp, ele.id());
 
         assemble_strain_type_to_matrix_row<celltype>(kinematic_quantitites.enhanced_gl,
             kinematic_quantitites.enhanced_deformation_gradient, strainIO.type, strain_data, gp);
@@ -993,7 +994,7 @@ Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::calculate
                 centroid_transformation, xi, jacobian_mapping, eas_iteration_data_);
 
         double psi = 0.0;
-        solid_material.StrainEnergy(kinematic_quantitites.enhanced_gl, psi, gp, ele.Id());
+        solid_material.strain_energy(kinematic_quantitites.enhanced_gl, psi, gp, ele.id());
 
         intenergy += psi * integration_factor;
       });
@@ -1006,7 +1007,7 @@ template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::setup(
     Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
-  solid_material.setup(stiffness_matrix_integration_.NumPoints(), linedef);
+  solid_material.setup(stiffness_matrix_integration_.num_points(), linedef);
 }
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
@@ -1021,7 +1022,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::mate
       stiffness_matrix_integration_, ele, params);
 
   // Call post_setup of material
-  solid_material.post_setup(params, ele.Id());
+  solid_material.post_setup(params, ele.id());
 }
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
@@ -1031,11 +1032,11 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
     const Mat::So3Material& solid_material,
     FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  FOUR_C_ASSERT(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
 
   ask_and_add_quantities_to_gauss_point_data_output(
-      stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
+      stiffness_matrix_integration_.num_points(), solid_material, gp_data_output_manager);
 }
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
@@ -1045,7 +1046,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
     const Mat::So3Material& solid_material,
     FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  FOUR_C_ASSERT(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.is_params_interface(),
       "This action type should only be called from the new time integration framework!");
 
   collect_and_assemble_gauss_point_data_output<celltype>(

@@ -56,8 +56,8 @@ void Core::FE::UTILS::Dbc::operator()(const Core::FE::Discretization& discret,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
     const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const
 {
-  if (!discret.Filled()) FOUR_C_THROW("fill_complete() was not called");
-  if (!discret.HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!discret.filled()) FOUR_C_THROW("fill_complete() was not called");
+  if (!discret.have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // get the current time
   double time = -1.0;
@@ -146,7 +146,7 @@ void Core::FE::UTILS::Dbc::evaluate(const Teuchos::ParameterList& params,
   // loop through Dirichlet conditions and evaluate them
   // --------------------------------------------------------------------------
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> conds(0);
-  discret.GetCondition("Dirichlet", conds);
+  discret.get_condition("Dirichlet", conds);
   read_dirichlet_condition(params, discret, conds, time, info, dbcgids);
   // --------------------------------------------------------------------------
   // Now, as we know from the toggle vector which dofs actually have
@@ -209,7 +209,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
   for (const auto& cond : conds)
   {
     // skip conditions of different type
-    if (cond->Type() != type) continue;
+    if (cond->type() != type) continue;
 
     read_dirichlet_condition(params, discret, *cond, time, info, dbcgids, hierarchical_order);
   }
@@ -222,7 +222,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
     DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.GetNodes();
+  const std::vector<int>* nodeids = cond.get_nodes();
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
@@ -239,7 +239,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
     // do only nodes in my row map
     Core::Nodes::Node* actnode = nullptr;
     bool isrow = true;
-    int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
+    int nlid = discret.node_row_map()->LID((*nodeids)[i]);
     if (nlid < 0)
     {
       // just skip this node, if we are not interested in column information
@@ -255,19 +255,19 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
             "Sorry! The given discretization is of wrong type. There is "
             "probably no column information available!");
 
-      nlid = dis_ptr->NodeColMap()->LID((*nodeids)[i]);
+      nlid = dis_ptr->node_col_map()->LID((*nodeids)[i]);
 
       // node not on this processor -> next node
       if (nlid < 0) continue;
 
-      actnode = dis_ptr->lColNode(nlid);
+      actnode = dis_ptr->l_col_node(nlid);
       isrow = false;
     }
     else
-      actnode = discret.lRowNode(nlid);
+      actnode = discret.l_row_node(nlid);
 
     // call explicitly the main dofset, i.e. the first column
-    std::vector<int> dofs = discret.Dof(0, actnode);
+    std::vector<int> dofs = discret.dof(0, actnode);
     const unsigned total_numdf = dofs.size();
 
     // only continue if there are node dofs
@@ -277,19 +277,19 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
     // nodal dof-sets (in xfem cases), thus the size of the dofs vector might
     // be a multiple of this value. Otherwise you get the same number of dofs
     // as total_numdf
-    int numdf = discret.NumStandardDof(0, actnode);
+    int numdf = discret.num_standard_dof(0, actnode);
 
     if ((total_numdf % numdf) != 0)
       FOUR_C_THROW(
           "Illegal number of DoF's at this node! (nGID=%d)\n"
           "%d is not a multiple of %d",
-          actnode->Id(), total_numdf, numdf);
+          actnode->id(), total_numdf, numdf);
 
     // is the number of degrees of freedom given in the constraint definition sufficient?
     const int num_dbc_dofs = static_cast<int>((*onoff).size());
     if (num_dbc_dofs < numdf)
       FOUR_C_THROW("%d DOFs given but %d expected in %s", num_dbc_dofs, numdf,
-          Core::Conditions::to_string(cond.Type()).data());
+          Core::Conditions::to_string(cond.type()).data());
 
     // loop over dofs of current nnode
     for (unsigned j = 0; j < total_numdf; ++j)
@@ -300,8 +300,8 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
       // get corresponding lid
       const int lid = info.toggle.Map().LID(gid);
       if (lid < 0)
-        FOUR_C_THROW(
-            "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
+        FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
+            discret.get_comm().MyPID());
 
       // get position of label for this dof in condition line ( e.g. for XFEM )
       int onesetj = j % numdf;
@@ -340,8 +340,8 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
           funct_num = (*funct)[onesetj];
           if (funct_num > 0)
             functfac = params.get<const Core::UTILS::FunctionManager*>("function_manager")
-                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                           .evaluate(actnode->X().data(), time, onesetj);
+                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                           .evaluate(actnode->x().data(), time, onesetj);
         }
 
         const double value = (*val)[onesetj] * functfac;
@@ -376,8 +376,8 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
             else if (hierarchical_order == 3)
               geom_name = "VOL";
             std::stringstream ss;
-            ss << "Error!!! Inconsistency is detected at " << geom_name << " DBC " << cond.Id() + 1
-               << " (node " << actnode->Id() + 1 << ", dof " << j
+            ss << "Error!!! Inconsistency is detected at " << geom_name << " DBC " << cond.id() + 1
+               << " (node " << actnode->id() + 1 << ", dof " << j
                << ").\nIt tried to override the previous fixed value of " << current_val
                << " prescribed by " << geom_name << " DBC " << current_cond + 1
                << " with new value of " << value << " at time " << time << ".\nThe difference is "
@@ -410,7 +410,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
         info.values[lid] = value;
 
         // record the condition that assign the value
-        info.condition[lid] = cond.Id();
+        info.condition[lid] = cond.id();
       }
     }  // loop over nodal DOFs
   }    // loop over nodes
@@ -448,7 +448,7 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
   for (const auto& cond : conds)
   {
     // skip conditions of different type
-    if (cond->Type() != type) continue;
+    if (cond->type() != type) continue;
 
     do_dirichlet_condition(params, discret, *cond, time, systemvectors, toggle, dbcgids);
   }
@@ -467,7 +467,7 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
         "calling this method makes no sense.");
 
   // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.GetNodes();
+  const std::vector<int>* nodeids = cond.get_nodes();
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
@@ -490,12 +490,12 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
   for (unsigned i = 0; i < nnode; ++i)
   {
     // do only nodes in my row map
-    const int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
+    const int nlid = discret.node_row_map()->LID((*nodeids)[i]);
     if (nlid < 0) continue;
-    Core::Nodes::Node* actnode = discret.lRowNode(nlid);
+    Core::Nodes::Node* actnode = discret.l_row_node(nlid);
 
     // call explicitly the main dofset, i.e. the first column
-    std::vector<int> dofs = discret.Dof(0, actnode);
+    std::vector<int> dofs = discret.dof(0, actnode);
     const unsigned total_numdf = dofs.size();
 
     // only continue if there are node dofs
@@ -505,13 +505,13 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
     // nodal dof-sets (in xfem cases), thus the size of the dofs vector might
     // be a multiple of this value. Otherwise you get the same number of dofs
     // as total_numdf
-    const int numdf = discret.NumStandardDof(0, actnode);
+    const int numdf = discret.num_standard_dof(0, actnode);
 
     if ((total_numdf % numdf) != 0)
       FOUR_C_THROW(
           "Illegal number of DoF's at this node! (nGID=%d)\n"
           "%d is not a multiple of %d",
-          actnode->Id(), total_numdf, numdf);
+          actnode->id(), total_numdf, numdf);
 
     // loop over dofs of current nnode
     for (unsigned j = 0; j < total_numdf; ++j)
@@ -521,8 +521,8 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
       // get corresponding lid
       const int lid = toggle.Map().LID(gid);
       if (lid < 0)
-        FOUR_C_THROW(
-            "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
+        FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
+            discret.get_comm().MyPID());
       // get position of label for this dof in condition line
       const int onesetj = j % numdf;
 
@@ -547,8 +547,8 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
         if (funct_num > 0)
         {
           functimederivfac = params.get<const Core::UTILS::FunctionManager*>("function_manager")
-                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                 .evaluate_time_derivative(actnode->X().data(), time, deg, onesetj);
+                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                                 .evaluate_time_derivative(actnode->x().data(), time, deg, onesetj);
         }
       }
 

@@ -100,7 +100,7 @@ namespace Discret
         \param surfele (in):   fluid internal surface element
 
       */
-      static FluidIntFaceStab* Impl(Discret::ELEMENTS::FluidIntFace* surfele);
+      static FluidIntFaceStab* impl(Discret::ELEMENTS::FluidIntFace* surfele);
     };
 
 
@@ -125,7 +125,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static FluidInternalSurfaceStab<distype, pdistype, ndistype>* Instance(
+      static FluidInternalSurfaceStab<distype, pdistype, ndistype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor with number of nodes

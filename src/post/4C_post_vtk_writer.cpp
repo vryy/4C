@@ -146,7 +146,7 @@ void PostVtkWriter::write_vtk_footer()
 
 
 
-void PostVtkWriter::WriteSpecialField(SpecialFieldInterface &special,
+void PostVtkWriter::write_special_field(SpecialFieldInterface &special,
     PostResult &result,  ///< result group in the control file
     const ResultType restype, const std::string &groupname,
     const std::vector<std::string> &fieldnames, const std::string &outinfo)
@@ -229,7 +229,7 @@ void PostVtkWriter::write_solution_vector(const std::vector<double> &solution,
 }
 
 
-void PostVtkWriter::WriteResult(const std::string groupname, const std::string name,
+void PostVtkWriter::write_result(const std::string groupname, const std::string name,
     const ResultType restype, const int numdf, const int from, const bool fillzeros)
 {
   using namespace FourC;
@@ -304,7 +304,7 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
 
 
 
-void PostVtkWriter::WriteFiles(PostFilterBase &filter)
+void PostVtkWriter::write_files(PostFilterBase &filter)
 {
   using namespace FourC;
 
@@ -313,7 +313,7 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
   // timesteps when the solution is written
   const std::vector<double> soltime = result.get_result_times(field_->name());
   ntdigits_ = LibB64::ndigits(soltime.size());
-  npdigits_ = LibB64::ndigits(field_->discretization()->Comm().NumProc());
+  npdigits_ = LibB64::ndigits(field_->discretization()->get_comm().NumProc());
   std::vector<std::pair<double, std::string>> filenames;
 
   const std::string dirname = filename_ + "-files";
@@ -351,7 +351,7 @@ void PostVtkWriter::WriteFiles(PostFilterBase &filter)
 
     write_geo();
 
-    filter.WriteAllResults(field_);
+    filter.write_all_results(field_);
 
     write_vtk_footer();
   }

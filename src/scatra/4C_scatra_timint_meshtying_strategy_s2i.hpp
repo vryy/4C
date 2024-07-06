@@ -105,29 +105,29 @@ namespace ScaTra
     void compute_time_step_size(double& dt) override;
 
     //! return map extractor associated with blocks of auxiliary system matrix for master side
-    const Core::LinAlg::MultiMapExtractor& BlockMapsMaster() const { return *blockmaps_master_; };
+    const Core::LinAlg::MultiMapExtractor& block_maps_master() const { return *blockmaps_master_; };
 
     //! return map extractor associated with blocks of auxiliary system matrix for slave side
-    const Core::LinAlg::MultiMapExtractor& BlockMapsSlave() const { return *blockmaps_slave_; };
+    const Core::LinAlg::MultiMapExtractor& block_maps_slave() const { return *blockmaps_slave_; };
 
     //! compute time derivatives of discrete state variables
     void compute_time_derivative() const override;
 
-    void CondenseMatAndRHS(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
+    void condense_mat_and_rhs(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual,
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
-    Teuchos::RCP<const Core::Adapter::Coupling> CouplingAdapter() const { return icoup_; };
+    Teuchos::RCP<const Core::Adapter::Coupling> coupling_adapter() const { return icoup_; };
 
     //! return flag for meshtying method
-    const Inpar::S2I::CouplingType& CouplingType() const { return couplingtype_; }
+    const Inpar::S2I::CouplingType& coupling_type() const { return couplingtype_; }
 
     //! return global map of degrees of freedom
     const Epetra_Map& dof_row_map() const override;
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying() override;
+    void evaluate_meshtying() override;
 
     /*!
      * @brief  evaluate mortar integration cells
@@ -143,9 +143,9 @@ namespace ScaTra
     void explicit_predictor() const override;
 
     //! extract selected rows from a sparse matrix
-    static void ExtractMatrixRows(const Core::LinAlg::SparseMatrix& matrix,  //!< source matrix
-        Core::LinAlg::SparseMatrix& rows,                                    //!< destination matrix
-        const Epetra_Map& rowmap  //!< map of matrix rows to be extracted
+    static void extract_matrix_rows(const Core::LinAlg::SparseMatrix& matrix,  //!< source matrix
+        Core::LinAlg::SparseMatrix& rows,  //!< destination matrix
+        const Epetra_Map& rowmap           //!< map of matrix rows to be extracted
     );
 
     /*!
@@ -159,13 +159,13 @@ namespace ScaTra
         const Teuchos::RCP<Epetra_Vector>& extendedresidual) const;
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n
-    const Teuchos::RCP<Epetra_Vector>& GrowthVarN() const { return growthn_; };
+    const Teuchos::RCP<Epetra_Vector>& growth_var_n() const { return growthn_; };
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n+1
-    const Teuchos::RCP<Epetra_Vector>& GrowthVarNp() const { return growthnp_; };
+    const Teuchos::RCP<Epetra_Vector>& growth_var_np() const { return growthnp_; };
 
     //! perform initialization of scatra-scatra interface coupling
-    void InitMeshtying() override;
+    void init_meshtying() override;
 
     bool system_matrix_initialization_needed() const override { return false; }
 
@@ -180,7 +180,7 @@ namespace ScaTra
     }
 
     //! return interface map extractor
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const override
     {
       return interfacemaps_;
     }
@@ -201,25 +201,28 @@ namespace ScaTra
     }
 
     //! corresponding master conditions to kinetics condiditions
-    std::map<const int, Core::Conditions::Condition* const>& MasterConditions()
+    std::map<const int, Core::Conditions::Condition* const>& master_conditions()
     {
       return master_conditions_;
     }
 
     //! return vector of Lagrange multiplier dofs
-    Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
+    Teuchos::RCP<const Epetra_Vector> lm() const { return lm_; };
 
     //! return constraint residual vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<const Epetra_Vector> LMResidual() const { return lmresidual_; };
+    Teuchos::RCP<const Epetra_Vector> lm_residual() const { return lmresidual_; };
 
     //! return constraint increment vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<const Epetra_Vector> LMIncrement() const { return lmincrement_; };
+    Teuchos::RCP<const Epetra_Vector> lm_increment() const { return lmincrement_; };
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& MasterMatrix() const { return imastermatrix_; };
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& master_matrix() const
+    {
+      return imastermatrix_;
+    };
 
     //! return type of global system matrix in global system of equations
-    const Core::LinAlg::MatrixType& MatrixType() const { return matrixtype_; };
+    const Core::LinAlg::MatrixType& matrix_type() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
     Core::FE::Discretization& mortar_discretization(const int& condid) const;
@@ -230,7 +233,7 @@ namespace ScaTra
     void write_restart() const override;
 
     //! return mortar projector P
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& P() const { return P_; };
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p() const { return P_; };
 
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) const override;
@@ -264,29 +267,29 @@ namespace ScaTra
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
-    void SetOldPartOfRHS() const override;
+    void set_old_part_of_rhs() const override;
 
     //! perform setup of scatra-scatra interface coupling
     void setup_meshtying() override;
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs
     //! (non-mortar case) or slave and master dofs (mortar case)
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& SlaveMatrix() const { return islavematrix_; };
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& slave_matrix() const { return islavematrix_; };
 
-    void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
+    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const override;
 
     //! return linear solver for global system of linear equations
-    const Core::LinAlg::Solver& Solver() const override;
+    const Core::LinAlg::Solver& solver() const override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     void update() const override;
 
     //! write integrated interface flux on slave side of s2i kintetics condition to csv file
-    void OutputInterfaceFlux() const;
+    void output_interface_flux() const;
 
    protected:
     void equip_extended_solver_with_null_space_info() const override;
@@ -807,7 +810,7 @@ namespace ScaTra
   {
    public:
     //! singleton access method
-    static MortarCellCalc<distype_s, distype_m>* Instance(
+    static MortarCellCalc<distype_s, distype_m>* instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -1132,40 +1135,40 @@ namespace ScaTra
         Core::Elements::Element::LocationArray& la_master, const int assembler_pid_master) const;
 
     //! bool flag for assembly of system matrix 1
-    bool AssembleMatrix1() const { return systemmatrix1_ != Teuchos::null; };
+    bool assemble_matrix1() const { return systemmatrix1_ != Teuchos::null; };
 
     //! bool flag for assembly of system matrix 2
-    bool AssembleMatrix2() const { return systemmatrix2_ != Teuchos::null; };
+    bool assemble_matrix2() const { return systemmatrix2_ != Teuchos::null; };
 
     //! bool flag for assembly of system matrix 3
-    bool AssembleMatrix3() const { return systemmatrix3_ != Teuchos::null; };
+    bool assemble_matrix3() const { return systemmatrix3_ != Teuchos::null; };
 
     //! bool flag for assembly of system matrix 4
-    bool AssembleMatrix4() const { return systemmatrix4_ != Teuchos::null; };
+    bool assemble_matrix4() const { return systemmatrix4_ != Teuchos::null; };
 
     //! bool flag for assembly of system vector 1
-    bool AssembleVector1() const { return systemvector1_ != Teuchos::null; };
+    bool assemble_vector1() const { return systemvector1_ != Teuchos::null; };
 
     //! bool flag for assembly of system vector 2
-    bool AssembleVector2() const { return systemvector2_ != Teuchos::null; };
+    bool assemble_vector2() const { return systemvector2_ != Teuchos::null; };
 
     //! return cell matrix 1
-    Core::LinAlg::SerialDenseMatrix& CellMatrix1() { return cellmatrix1_; };
+    Core::LinAlg::SerialDenseMatrix& cell_matrix1() { return cellmatrix1_; };
 
     //! return cell matrix 2
-    Core::LinAlg::SerialDenseMatrix& CellMatrix2() { return cellmatrix2_; };
+    Core::LinAlg::SerialDenseMatrix& cell_matrix2() { return cellmatrix2_; };
 
     //! return cell matrix 3
-    Core::LinAlg::SerialDenseMatrix& CellMatrix3() { return cellmatrix3_; };
+    Core::LinAlg::SerialDenseMatrix& cell_matrix3() { return cellmatrix3_; };
 
     //! return cell matrix 4
-    Core::LinAlg::SerialDenseMatrix& CellMatrix4() { return cellmatrix4_; };
+    Core::LinAlg::SerialDenseMatrix& cell_matrix4() { return cellmatrix4_; };
 
     //! return cell vector 1
-    Core::LinAlg::SerialDenseVector& CellVector1() { return cellvector1_; };
+    Core::LinAlg::SerialDenseVector& cell_vector1() { return cellvector1_; };
 
     //! return cell vector 2
-    Core::LinAlg::SerialDenseVector& CellVector2() { return cellvector2_; };
+    Core::LinAlg::SerialDenseVector& cell_vector2() { return cellvector2_; };
 
     //! initialize cell matrices and vectors
     void init_cell_matrices_and_vectors(

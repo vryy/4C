@@ -114,13 +114,13 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
     // by the knotvector size
 
     // get nurbs dis' knotvector sizes
-    std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
+    std::vector<int> n_x_m_x_l(nurbsdis->return_n_x_m_x_l(0));
 
     // get nurbs dis' element numbers
     std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
     // resize and initialise to 0
     {
@@ -146,20 +146,20 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
     std::vector<int> shellcoordinates_numnodes((*shellcoordinates_).size(), 0);
 
     // get element map
-    const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
+    const Epetra_Map* elementmap = nurbsdis->element_row_map();
 
     // loop all available elements
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
       // get element pointer
-      Core::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      Core::Elements::Element* const actele = nurbsdis->g_element(elementmap->GID(iele));
 
       // want to loop all control points of the element,
       // so get the number of points
       const int numnp = actele->num_node();
 
       // get the elements control points/nodes
-      Core::Nodes::Node** nodes = actele->Nodes();
+      Core::Nodes::Node** nodes = actele->nodes();
 
       // acquire weights from nodes
       Core::LinAlg::SerialDenseVector weights(numnp);
@@ -169,11 +169,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
         Core::FE::Nurbs::ControlPoint* cp =
             dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
-        weights(inode) = cp->W();
+        weights(inode) = cp->w();
       }
 
       // get gid, location in the patch
-      int gid = actele->Id();
+      int gid = actele->id();
 
       int patchid = 0;
 
@@ -182,7 +182,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
 
       // access elements knot span
       std::vector<Core::LinAlg::SerialDenseVector> knots(3);
-      bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
+      bool zero_size = (*((*nurbsdis).get_knot_vector())).get_ele_knots(knots, actele->id());
 
       // zero sized elements have to be skipped
       if (zero_size)
@@ -193,7 +193,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
       // get shapefunctions, compute all visualisation point positions
       Core::LinAlg::SerialDenseVector nurbs_shape_funct(numnp);
 
-      switch (actele->Shape())
+      switch (actele->shape())
       {
         case Core::FE::CellType::nurbs8:
         case Core::FE::CellType::nurbs27:
@@ -228,13 +228,13 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
             uv(1) = -1.0;
             uv(2) = -1.0;
             Core::FE::Nurbs::nurbs_get_3D_funct(
-                nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
               double val = 0;
               for (int inode = 0; inode < numnp; ++inode)
               {
-                val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
               }
               x[isd] = val;
             }
@@ -252,13 +252,13 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
               uv(1) += 2.0 / (numsubdivisions - 1);
 
               Core::FE::Nurbs::nurbs_get_3D_funct(
-                  nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                  nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
                 double val = 0;
                 for (int inode = 0; inode < numnp; ++inode)
                 {
-                  val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                  val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
                 }
                 x[isd] = val;
               }
@@ -276,13 +276,13 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
               uv(1) = 1.0;
               uv(2) = -1.0;
               Core::FE::Nurbs::nurbs_get_3D_funct(
-                  nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                  nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
                 double val = 0;
                 for (int inode = 0; inode < numnp; ++inode)
                 {
-                  val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                  val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
                 }
                 x[isd] = val;
               }
@@ -312,13 +312,13 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
     std::vector<int> lnodeshells_numnodes(nodeshells_numnodes);
     std::vector<int> lshellcoordinates_numnodes(shellcoordinates_numnodes);
 
-    discret_->Comm().SumAll(lnodeplanes.data(), nodeshells_->data(), nodeshells_->size());
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(lnodeplanes.data(), nodeshells_->data(), nodeshells_->size());
+    discret_->get_comm().SumAll(
         lplanecoordinates.data(), shellcoordinates_->data(), shellcoordinates_->size());
 
-    discret_->Comm().SumAll(
+    discret_->get_comm().SumAll(
         lnodeshells_numnodes.data(), nodeshells_numnodes.data(), nodeshells_numnodes.size());
-    discret_->Comm().SumAll(lshellcoordinates_numnodes.data(), shellcoordinates_numnodes.data(),
+    discret_->get_comm().SumAll(lshellcoordinates_numnodes.data(), shellcoordinates_numnodes.data(),
         shellcoordinates_numnodes.size());
 
     {
@@ -446,7 +446,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
 
   Teuchos::RCP<std::ofstream> log;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -459,7 +459,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   }
 
   // clear statistics
-  this->ClearStatistics();
+  this->clear_statistics();
 
   return;
 }  // TurbulenceStatisticsCcy::TurbulenceStatisticsCcy
@@ -472,7 +472,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
                             'sum' vectors.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
+void FLD::TurbulenceStatisticsCcy::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp,
     Teuchos::RCP<Epetra_Vector> scanp, Teuchos::RCP<Epetra_Vector> fullphinp)
 {
   // we have an additional sample
@@ -601,29 +601,29 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   }
 
   // get nurbs dis' knotvector sizes
-  std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
+  std::vector<int> n_x_m_x_l(nurbsdis->return_n_x_m_x_l(0));
 
   // get nurbs dis' element numbers
   std::vector<int> nele_x_mele_x_lele(nurbsdis->return_nele_x_mele_x_lele(0));
 
   // get the knotvector itself
-  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
+  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
   // get element map
-  const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
+  const Epetra_Map* elementmap = nurbsdis->element_row_map();
 
   // loop all available elements
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     // get element pointer
-    Core::Elements::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+    Core::Elements::Element* const actele = nurbsdis->g_element(elementmap->GID(iele));
 
     // want to loop all control points of the element,
     // so get the number of points
     const int numnp = actele->num_node();
 
     // get the elements control points/nodes
-    Core::Nodes::Node** nodes = actele->Nodes();
+    Core::Nodes::Node** nodes = actele->nodes();
 
     // acquire weights from nodes
     Core::LinAlg::SerialDenseVector weights(numnp);
@@ -633,10 +633,10 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       Core::FE::Nurbs::ControlPoint* cp =
           dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes[inode]);
 
-      weights(inode) = cp->W();
+      weights(inode) = cp->w();
     }
     // get gid, location in the patch
-    int gid = actele->Id();
+    int gid = actele->id();
 
     int patchid = 0;
 
@@ -645,7 +645,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
     // access elements knot span
     std::vector<Core::LinAlg::SerialDenseVector> knots(3);
-    bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
+    bool zero_size = (*((*nurbsdis).get_knot_vector())).get_ele_knots(knots, actele->id());
 
     // zero sized elements have to be skipped
     if (zero_size)
@@ -661,11 +661,11 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     std::vector<int> lmowner;
     std::vector<int> lmstride;
 
-    actele->LocationVector(*nurbsdis, lm, lmowner, lmstride);
+    actele->location_vector(*nurbsdis, lm, lmowner, lmstride);
 
     // extract local values from global vector
     std::vector<double> myvelnp(lm.size());
-    Core::FE::ExtractMyValues(*(nurbsdis->GetState("velnp")), myvelnp, lm);
+    Core::FE::ExtractMyValues(*(nurbsdis->get_state("velnp")), myvelnp, lm);
 
     // create Matrix objects
     Core::LinAlg::Matrix<3, 27> evelnp;
@@ -693,7 +693,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     {
       // extract local values from global vector
       std::vector<double> myscanp(lm.size());
-      Core::FE::ExtractMyValues(*(nurbsdis->GetState("scanp")), myscanp, lm);
+      Core::FE::ExtractMyValues(*(nurbsdis->get_state("scanp")), myscanp, lm);
 
       // insert data into element array (scalar field is stored at pressure dofs)
       for (int i = 0; i < 27; ++i)
@@ -703,7 +703,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       }
 
       // get pointer to corresponding scatra element with identical global id
-      Core::Elements::Element* const actscatraele = scatranurbsdis->gElement(gid);
+      Core::Elements::Element* const actscatraele = scatranurbsdis->g_element(gid);
       if (actscatraele == nullptr)
         FOUR_C_THROW("could not access transport element with gid %d", gid);
 
@@ -712,9 +712,9 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       std::vector<int> scatralmowner;
       std::vector<int> scatralmstride;
 
-      actscatraele->LocationVector(*scatranurbsdis, scatralm, scatralmowner, scatralmstride);
+      actscatraele->location_vector(*scatranurbsdis, scatralm, scatralmowner, scatralmstride);
 
-      Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
+      Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->get_state("phinp_for_statistics");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
       Core::FE::ExtractMyValues(*phinp, myphinp, scatralm);
@@ -730,7 +730,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       }  // for i
     }
 
-    switch (actele->Shape())
+    switch (actele->shape())
     {
       case Core::FE::CellType::nurbs27:
       {
@@ -766,13 +766,13 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
           uv(1) = -1.0;
           uv(2) = -1.0;
           Core::FE::Nurbs::nurbs_get_3D_funct(
-              nurbs_shape_funct, uv, knots, weights, actele->Shape());
+              nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
             double val = 0;
             for (int inode = 0; inode < numnp; ++inode)
             {
-              val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+              val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
             }
             x[isd] = val;
           }
@@ -862,13 +862,13 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
             uv(1) += 2.0 / (numsubdivisions - 1);
 
             Core::FE::Nurbs::nurbs_get_3D_funct(
-                nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
               double val = 0;
               for (int inode = 0; inode < numnp; ++inode)
               {
-                val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
               }
               x[isd] = val;
             }
@@ -962,13 +962,13 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
             uv(1) = 1.0;
             uv(2) = -1.0;
             Core::FE::Nurbs::nurbs_get_3D_funct(
-                nurbs_shape_funct, uv, knots, weights, actele->Shape());
+                nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
               double val = 0;
               for (int inode = 0; inode < numnp; ++inode)
               {
-                val += (((nodes[inode])->X())[isd]) * nurbs_shape_funct(inode);
+                val += (((nodes[inode])->x())[isd]) * nurbs_shape_funct(inode);
               }
               x[isd] = val;
             }
@@ -1065,10 +1065,10 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   }  // end element loop
 
   // clean up
-  nurbsdis->ClearState();
+  nurbsdis->clear_state();
   if (scatranurbsdis != nullptr)
   {
-    scatranurbsdis->ClearState();
+    scatranurbsdis->clear_state();
   }
 
   // communicate results among processors
@@ -1084,7 +1084,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
   {
     lpointcount.push_back(shell->second);
   }
-  discret_->Comm().SumAll(lpointcount.data(), pointcount.data(), size);
+  discret_->get_comm().SumAll(lpointcount.data(), pointcount.data(), size);
 
   // collect number of samples
   std::vector<double> lmeanu;
@@ -1139,7 +1139,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanu.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanu.data(), gmeanu.data(), size);
+  discret_->get_comm().SumAll(lmeanu.data(), gmeanu.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanv.begin();
@@ -1148,7 +1148,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanv.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanv.data(), gmeanv.data(), size);
+  discret_->get_comm().SumAll(lmeanv.data(), gmeanv.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanw.begin();
@@ -1157,7 +1157,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanw.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanw.data(), gmeanw.data(), size);
+  discret_->get_comm().SumAll(lmeanw.data(), gmeanw.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanp.begin();
@@ -1166,7 +1166,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanp.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanp.data(), gmeanp.data(), size);
+  discret_->get_comm().SumAll(lmeanp.data(), gmeanp.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuu.begin();
@@ -1175,7 +1175,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanuu.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanuu.data(), gmeanuu.data(), size);
+  discret_->get_comm().SumAll(lmeanuu.data(), gmeanuu.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanvv.begin();
@@ -1184,7 +1184,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanvv.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanvv.data(), gmeanvv.data(), size);
+  discret_->get_comm().SumAll(lmeanvv.data(), gmeanvv.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanww.begin();
@@ -1193,7 +1193,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanww.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanww.data(), gmeanww.data(), size);
+  discret_->get_comm().SumAll(lmeanww.data(), gmeanww.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanpp.begin();
@@ -1202,7 +1202,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanpp.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanpp.data(), gmeanpp.data(), size);
+  discret_->get_comm().SumAll(lmeanpp.data(), gmeanpp.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuv.begin();
@@ -1211,7 +1211,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanuv.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanuv.data(), gmeanuv.data(), size);
+  discret_->get_comm().SumAll(lmeanuv.data(), gmeanuv.data(), size);
 
   rr = 0;
   for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanuw.begin();
@@ -1220,7 +1220,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanuw.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanuw.data(), gmeanuw.data(), size);
+  discret_->get_comm().SumAll(lmeanuw.data(), gmeanuw.data(), size);
 
 
   rr = 0;
@@ -1230,7 +1230,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     lmeanvw.push_back(shell->second / pointcount[rr]);
     ++rr;
   }
-  discret_->Comm().SumAll(lmeanvw.data(), gmeanvw.data(), size);
+  discret_->get_comm().SumAll(lmeanvw.data(), gmeanvw.data(), size);
 
   for (int mm = 0; mm < size; ++mm)
   {
@@ -1258,7 +1258,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       lmeanc.push_back(shell->second / pointcount[rr]);
       ++rr;
     }
-    discret_->Comm().SumAll(lmeanc.data(), gmeanc.data(), size);
+    discret_->get_comm().SumAll(lmeanc.data(), gmeanc.data(), size);
 
     rr = 0;
     for (std::map<double, double, PlaneSortCriterion>::iterator shell = meancc.begin();
@@ -1267,7 +1267,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       lmeancc.push_back(shell->second / pointcount[rr]);
       ++rr;
     }
-    discret_->Comm().SumAll(lmeancc.data(), gmeancc.data(), size);
+    discret_->get_comm().SumAll(lmeancc.data(), gmeancc.data(), size);
 
     for (int mm = 0; mm < size; ++mm)
     {
@@ -1298,7 +1298,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
         gmeanphi[rr] = 0.0;  // initialize due to sequential reuse of this vector
         ++rr;
       }
-      discret_->Comm().SumAll(lmeanphi.data(), gmeanphi.data(), size);
+      discret_->get_comm().SumAll(lmeanphi.data(), gmeanphi.data(), size);
 
       rr = 0;
       for (std::map<double, double, PlaneSortCriterion>::iterator shell = meanphiphi[k].begin();
@@ -1308,7 +1308,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
         gmeanphiphi[rr] = 0.0;  // initialize due to sequential reuse of this vector
         ++rr;
       }
-      discret_->Comm().SumAll(lmeanphiphi.data(), gmeanphiphi.data(), size);
+      discret_->get_comm().SumAll(lmeanphiphi.data(), gmeanphiphi.data(), size);
 
       // insert values for scalar field k
       for (int mm = 0; mm < size; ++mm)
@@ -1342,7 +1342,7 @@ void FLD::TurbulenceStatisticsCcy::time_average_means_and_output_of_statistics(i
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
@@ -1432,7 +1432,7 @@ void FLD::TurbulenceStatisticsCcy::time_average_means_and_output_of_statistics(i
                   Reset sums and number of samples to 0
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::ClearStatistics()
+void FLD::TurbulenceStatisticsCcy::clear_statistics()
 {
   // reset the number of samples
   numsamp_ = 0;
@@ -1491,7 +1491,7 @@ void FLD::TurbulenceStatisticsCcy::ClearStatistics()
 Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
+void FLD::TurbulenceStatisticsCcy::add_sca_tra_results(
     Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   if (withscatra_)
@@ -1503,14 +1503,14 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
 
     // we do not have to cast to a NURBSDiscretization here!
     meanfullphinp_ = Core::LinAlg::CreateVector(*(scatradis_->dof_row_map()), true);
-    numscatradofpernode_ = scatradis_->NumDof(scatradis_->lRowNode(0));
+    numscatradofpernode_ = scatradis_->num_dof(scatradis_->l_row_node(0));
 
     // now we know about the number of scatra dofs and can allocate:
     int size = shellcoordinates_->size();
     pointsumphi_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(size, numscatradofpernode_));
     pointsumphiphi_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(size, numscatradofpernode_));
 
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::cout << std::endl
                 << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
@@ -1525,7 +1525,7 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
   }
   else
   {
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
     {
       std::cout << "------------------------------------------------------------" << std::endl;
       std::cout << "TurbulenceStatisticsCcy: NO access to ScaTra results !" << std::endl;

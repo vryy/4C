@@ -39,10 +39,10 @@ int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Element
   // determine and evaluate action
   if (action == ScaTra::Action::calc_dissipation or action == ScaTra::Action::calc_mean_Cai)
   {
-    if (my::scatraparatimint_->IsGenAlpha())
+    if (my::scatraparatimint_->is_gen_alpha())
     {
       // extract additional local values from global vector
-      Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
+      Teuchos::RCP<const Epetra_Vector> phiam = discretization.get_state("phiam");
       if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
     }
@@ -53,7 +53,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Element
     // get thermodynamic pressure (for calc_dissipation)
     thermpressnp_ = params.get<double>("thermodynamic pressure");
     thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
-    if (my::scatraparatimint_->IsGenAlpha())
+    if (my::scatraparatimint_->is_gen_alpha())
       thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
   }
 
@@ -62,7 +62,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Element
     case ScaTra::Action::calc_domain_and_bodyforce:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
-      if (ele->Owner() == discretization.Comm().MyPID())
+      if (ele->owner() == discretization.get_comm().MyPID())
         // calculate domain and bodyforce integral
         calculate_domain_and_bodyforce(elevec1_epetra, ele);
 
@@ -97,7 +97,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyfor
   const Core::FE::IntPointsAndWeights<nsd_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -126,10 +126,10 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_val
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // add loma-specific values
-  if (my::scatraparatimint_->IsGenAlpha())
+  if (my::scatraparatimint_->is_gen_alpha())
   {
     // extract local values from global vector
-    Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
+    Teuchos::RCP<const Epetra_Vector> phiam = discretization.get_state("phiam");
     if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
     Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
   }
@@ -137,7 +137,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_val
   // get thermodynamic pressure
   thermpressnp_ = params.get<double>("thermodynamic pressure");
   thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
-  if (my::scatraparatimint_->IsGenAlpha())
+  if (my::scatraparatimint_->is_gen_alpha())
     thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
 
   // call base class routine
@@ -162,12 +162,12 @@ double Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(
   if (tempnp < 0.0)
     FOUR_C_THROW("Negative temperature in ScaTra low-Mach-number routine 'GetDensity'!");
 
-  if (material->MaterialType() == Core::Materials::m_sutherland)
+  if (material->material_type() == Core::Materials::m_sutherland)
   {
     // get thermodynamic pressure
     const double thermpress = params.get<double>("thermpress");
 
-    density = Teuchos::rcp_dynamic_cast<const Mat::Sutherland>(material)->ComputeDensity(
+    density = Teuchos::rcp_dynamic_cast<const Mat::Sutherland>(material)->compute_density(
         tempnp, thermpress);
   }
   else

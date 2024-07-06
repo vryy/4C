@@ -35,7 +35,7 @@ namespace Discret
     {
      public:
       //! Singleton access method
-      static FluidEleParameterIntFace* Instance(
+      static FluidEleParameterIntFace* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       virtual ~FluidEleParameterIntFace() = default;
@@ -46,7 +46,7 @@ namespace Discret
       /*========================================================================*/
 
       //! set the EOS pressure stabilization flag
-      void Set_Face_EOS_Pres(const bool is_face_EOS_Pres) { is_face_EOS_Pres_ = is_face_EOS_Pres; };
+      void set_face_eos_pres(const bool is_face_EOS_Pres) { is_face_EOS_Pres_ = is_face_EOS_Pres; };
 
       //! set the EOS convective streamline stabilization flag
       void set_face_eos_conv_stream(const bool is_face_EOS_Conv_Stream)
@@ -73,13 +73,13 @@ namespace Discret
       };
 
       //! set the viscous ghost-penalty stabilization flag
-      void Set_Face_GP_visc(const bool is_face_GP_visc) { is_face_GP_visc_ = is_face_GP_visc; };
+      void set_face_gp_visc(const bool is_face_GP_visc) { is_face_GP_visc_ = is_face_GP_visc; };
 
       //! set the transient ghost-penalty stabilization flag
-      void Set_Face_GP_trans(const bool is_face_GP_trans) { is_face_GP_trans_ = is_face_GP_trans; };
+      void set_face_gp_trans(const bool is_face_GP_trans) { is_face_GP_trans_ = is_face_GP_trans; };
 
       //! set the 2nd order derivatives ghost-penalty stabilization flag
-      void Set_Face_GP_u_p_2nd(const bool is_face_GP_u_p_2nd)
+      void set_face_gp_u_p_2nd(const bool is_face_GP_u_p_2nd)
       {
         is_face_GP_u_p_2nd_ = is_face_GP_u_p_2nd;
       };
@@ -124,10 +124,10 @@ namespace Discret
 
       //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
       //! Boussinesq, poro)
-      Inpar::FLUID::PhysicalType PhysicalType() const { return physicaltype_; };
+      Inpar::FLUID::PhysicalType physical_type() const { return physicaltype_; };
 
       //! Return function number of Oseen advective field
-      int OseenFieldFuncNo() const { return oseenfieldfuncno_; };
+      int oseen_field_func_no() const { return oseenfieldfuncno_; };
 
 
       /*----------------------------------------------------*/
@@ -136,33 +136,33 @@ namespace Discret
 
       /// parameter for edge-based (EOS,CIP) stabilizations
       //! Flag to (de)activate pressure stabilization
-      Inpar::FLUID::EosPres EOS_Pres() const { return EOS_pres_; };
+      Inpar::FLUID::EosPres eos_pres() const { return EOS_pres_; };
       //! Flag to (de)activate convective streamline stabilization
-      Inpar::FLUID::EosConvStream EOS_Conv_Stream() const { return EOS_conv_stream_; };
+      Inpar::FLUID::EosConvStream eos_conv_stream() const { return EOS_conv_stream_; };
       //! Flag to (de)activate convective crosswind stabilization
-      Inpar::FLUID::EosConvCross EOS_Conv_Cross() const { return EOS_conv_cross_; };
+      Inpar::FLUID::EosConvCross eos_conv_cross() const { return EOS_conv_cross_; };
       //! Flag to (de)activate divergence stabilization
-      Inpar::FLUID::EosDiv EOS_Div() const { return EOS_div_; };
+      Inpar::FLUID::EosDiv eos_div() const { return EOS_div_; };
       //! Flag to define element length
-      Inpar::FLUID::EosElementLength EOS_element_length() const { return EOS_element_length_; };
+      Inpar::FLUID::EosElementLength eos_element_length() const { return EOS_element_length_; };
       //! Flag to define tau for edge-based stabilization
-      Inpar::FLUID::EosTauType EOS_WhichTau() const { return EOS_whichtau_actual_; };
+      Inpar::FLUID::EosTauType eos_which_tau() const { return EOS_whichtau_actual_; };
 
-      bool Is_EOS_Pres() const { return EOS_pres_ != Inpar::FLUID::EOS_PRES_none; };
+      bool is_eos_pres() const { return EOS_pres_ != Inpar::FLUID::EOS_PRES_none; };
       //! Flag to (de)activate convective streamline stabilization
-      bool Is_Conv_Stream() const { return EOS_conv_stream_; };
+      bool is_conv_stream() const { return EOS_conv_stream_; };
       //! Flag to (de)activate convective crosswind stabilization
-      bool Is_Conv_Cross() const { return EOS_conv_cross_; };
+      bool is_conv_cross() const { return EOS_conv_cross_; };
       //! Flag to (de)activate divergence stabilization
-      bool Is_Div() const { return EOS_div_; };
+      bool is_div() const { return EOS_div_; };
       //! Flag to define element length
-      bool Is_element_length() const { return EOS_element_length_; };
+      bool is_element_length() const { return EOS_element_length_; };
       //! Flag to define tau for edge-based stabilization
-      bool Is_WhichTau() const { return EOS_whichtau_actual_; };
+      bool is_which_tau() const { return EOS_whichtau_actual_; };
 
       //! Flag to activate special least-squares condition for pseudo 2D examples where pressure
       //! level is determined via Krylov-projection
-      bool presKrylov2Dz() const { return presKrylov2Dz_; };
+      bool pres_krylov2_dz() const { return presKrylov2Dz_; };
 
       //! get the viscous ghost-penalty stabilization flag
       bool is_general_ghost_penalty_visc() { return ghost_penalty_visc_; };
@@ -194,13 +194,13 @@ namespace Discret
       /*----------------------------------------------------*/
 
       //! get the EOS pressure stabilization flag
-      bool Face_EOS_Pres() { return is_face_EOS_Pres_; };
+      bool face_eos_pres() { return is_face_EOS_Pres_; };
 
       //! get the EOS convective streamline stabilization flag
       bool face_eos_conv_stream() { return is_face_EOS_Conv_Stream_; };
 
       //! get the EOS convective cross wind stabilization flag
-      bool Face_EOS_Conv_Cross() { return is_face_EOS_Conv_Cross_; };
+      bool face_eos_conv_cross() { return is_face_EOS_Conv_Cross_; };
 
       //! get the EOS divergence vel-jump  flag
       bool face_eos_div_vel_jump() { return is_face_EOS_Div_vel_jump_; };
@@ -209,16 +209,16 @@ namespace Discret
       bool face_eos_div_div_jump() { return is_face_EOS_Div_div_jump_; };
 
       //! get the viscous ghost-penalty stabilization flag
-      bool Face_GP_visc() { return is_face_GP_visc_; };
+      bool face_gp_visc() { return is_face_GP_visc_; };
 
       //! get the transient ghost-penalty stabilization flag
-      bool Face_GP_trans() { return is_face_GP_trans_; };
+      bool face_gp_trans() { return is_face_GP_trans_; };
 
       //! get the 2nd order derivatives ghost-penalty stabilization flag
-      bool Face_GP_u_p_2nd() { return is_face_GP_u_p_2nd_; };
+      bool face_gp_u_p_2nd() { return is_face_GP_u_p_2nd_; };
 
       //! get the EOS pattern for the assembly of the current face
-      Inpar::FLUID::EosGpPattern Face_EOS_GP_Pattern() { return face_eos_gp_pattern_; };
+      Inpar::FLUID::EosGpPattern face_eos_gp_pattern() { return face_eos_gp_pattern_; };
 
       //! get flag if step is a ghost-penalty reconstruction step for xfluid time integration
       bool is_ghost_penalty_reconstruction() { return is_ghost_penalty_reconstruction_step_; };

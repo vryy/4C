@@ -104,11 +104,11 @@ namespace Mat
   class MuscleGiantesioType : public Core::Communication::ParObjectType
   {
    public:
-    [[nodiscard]] std::string Name() const override { return "Muscle_GiantesioType"; }
+    [[nodiscard]] std::string name() const override { return "Muscle_GiantesioType"; }
 
-    static MuscleGiantesioType& Instance() { return instance_; };
+    static MuscleGiantesioType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static MuscleGiantesioType instance_;
@@ -140,30 +140,30 @@ namespace Mat
     // Constructor for the material given the material parameters
     explicit MuscleGiantesio(Mat::PAR::MuscleGiantesio* params);
 
-    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new MuscleGiantesio(*this));
     }
 
-    [[nodiscard]] Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
-    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_muscle_giantesio;
     };
 
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (kinem != Inpar::Solid::KinemType::linear &&
           kinem != Inpar::Solid::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    [[nodiscard]] double Density() const override { return params_->density_; }
+    [[nodiscard]] double density() const override { return params_->density_; }
 
-    [[nodiscard]] int UniqueParObjectId() const override
+    [[nodiscard]] int unique_par_object_id() const override
     {
-      return MuscleGiantesioType::Instance().UniqueParObjectId();
+      return MuscleGiantesioType::instance().unique_par_object_id();
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -172,7 +172,7 @@ namespace Mat
 
     void setup(int numgp, Input::LineDefinition* linedef) override;
 
-    bool UsesExtendedUpdate() override { return true; };
+    bool uses_extended_update() override { return true; };
 
     void update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID) override;

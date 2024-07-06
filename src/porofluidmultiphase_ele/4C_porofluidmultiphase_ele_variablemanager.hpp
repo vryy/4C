@@ -71,8 +71,8 @@ namespace Discret
         //! destructor
         virtual ~VariableManagerMinAccess() = default;
 
-        virtual const std::vector<double>* Phinp() const = 0;
-        virtual const std::vector<double>* Scalarnp() const = 0;
+        virtual const std::vector<double>* phinp() const = 0;
+        virtual const std::vector<double>* scalarnp() const = 0;
       };
 
 
@@ -84,9 +84,9 @@ namespace Discret
       \brief general interface to variable manager (template)
 
       The idea is, that there are the methods extract_element_and_node_values(...)
-      and EvaluateGPVariables(..), which need to be called before evaluation.
+      and evaluate_gp_variables(..), which need to be called before evaluation.
       extract_element_and_node_values(...) reads the node values associated with the element
-      from the global state vector and EvaluateGPVariables(..) performs the interpolation
+      from the global state vector and evaluate_gp_variables(..) performs the interpolation
       to the gauss points.
       All other methods are (more or less) constant access methods.
 
@@ -123,33 +123,33 @@ namespace Discret
             const int dofsetnum = 0) = 0;
 
         //! evaluate variables at gauss point
-        virtual void EvaluateGPVariables(
+        virtual void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) = 0;
 
-        //! check if EvaluateGPVariables was called
-        virtual void CheckIsEvaluated() const = 0;
+        //! check if evaluate_gp_variables was called
+        virtual void check_is_evaluated() const = 0;
         //! check if extract_element_and_node_values was called
-        virtual void CheckIsExtracted() const = 0;
+        virtual void check_is_extracted() const = 0;
         //! return number of DOFs pre node
-        virtual int NumDofPerNode() const = 0;
+        virtual int num_dof_per_node() const = 0;
 
         //! @name Access methods
-        const std::vector<double>* Phinp() const override = 0;
-        virtual const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const = 0;
+        const std::vector<double>* phinp() const override = 0;
+        virtual const Core::LinAlg::Matrix<nen, 1>* element_phinp(const int k) const = 0;
         virtual bool element_has_valid_vol_frac_pressure(const int ivolfrac) const = 0;
         virtual bool element_has_valid_vol_frac_species(const int ivolfrac) const = 0;
-        virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const = 0;
-        virtual const std::vector<double>* Phidtnp() const = 0;
-        virtual const std::vector<double>* Hist() const = 0;
-        virtual const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const = 0;
-        virtual double DivConVelnp() const = 0;
-        virtual const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const = 0;
-        virtual const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const = 0;
-        const std::vector<double>* Scalarnp() const override = 0;
-        virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const = 0;
+        virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_phinp() const = 0;
+        virtual const std::vector<double>* phidtnp() const = 0;
+        virtual const std::vector<double>* hist() const = 0;
+        virtual const Core::LinAlg::Matrix<nsd, 1>* con_velnp() const = 0;
+        virtual double div_con_velnp() const = 0;
+        virtual const Core::LinAlg::Matrix<nsd, nen>* e_con_velnp() const = 0;
+        virtual const Core::LinAlg::Matrix<nsd, 1>* dispnp() const = 0;
+        const std::vector<double>* scalarnp() const override = 0;
+        virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_scalarnp() const = 0;
         //@}
       };
 
@@ -176,15 +176,15 @@ namespace Discret
               isextracted_(false),
               isevaluated_(false){};
 
-        //! check if EvaluateGPVariables has been called
-        void CheckIsEvaluated() const override
+        //! check if evaluate_gp_variables has been called
+        void check_is_evaluated() const override
         {
           if (not isevaluated_)
-            FOUR_C_THROW("EvaluateGPVariables has not been called on variable manager!");
+            FOUR_C_THROW("evaluate_gp_variables has not been called on variable manager!");
         };
 
         //! check if extract_element_and_node_values has been called
-        void CheckIsExtracted() const override
+        void check_is_extracted() const override
         {
           if (not isextracted_)
             FOUR_C_THROW(
@@ -192,15 +192,15 @@ namespace Discret
         };
 
         //! return number of DOFs per node
-        int NumDofPerNode() const override { return numdofpernode_; }
+        int num_dof_per_node() const override { return numdofpernode_; }
 
         //! @name Access methods (throw error by default)
-        const std::vector<double>* Phinp() const override
+        const std::vector<double>* phinp() const override
         {
           FOUR_C_THROW("Access method Phinp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const override
+        const Core::LinAlg::Matrix<nen, 1>* element_phinp(const int k) const override
         {
           FOUR_C_THROW("Access method ElementPhinp() not implemented! Wrong VariableManager?");
           return nullptr;
@@ -219,48 +219,48 @@ namespace Discret
               "VariableManager?");
           return 0.0;
         };
-        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_phinp() const override
         {
           FOUR_C_THROW("Access method GradPhinp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const std::vector<double>* Phidtnp() const override
+        const std::vector<double>* phidtnp() const override
         {
           FOUR_C_THROW("Access method Phidtnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
 
-        const std::vector<double>* Hist() const override
+        const std::vector<double>* hist() const override
         {
           FOUR_C_THROW("Access method Hist() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* con_velnp() const override
         {
           FOUR_C_THROW("Access method ConVelnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        double DivConVelnp() const override
+        double div_con_velnp() const override
         {
           FOUR_C_THROW("Access method DivConVelnp() not implemented! Wrong VariableManager?");
           return 0.0;
         };
-        const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, nen>* e_con_velnp() const override
         {
           FOUR_C_THROW("Access method EConVelnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* dispnp() const override
         {
           FOUR_C_THROW("Access method Dispnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const std::vector<double>* Scalarnp() const override
+        const std::vector<double>* scalarnp() const override
         {
           FOUR_C_THROW("Access method Salarnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
-        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_scalarnp() const override
         {
           FOUR_C_THROW("Access method GradScalarnp() not implemented! Wrong VariableManager?");
           return nullptr;
@@ -273,7 +273,7 @@ namespace Discret
         const int numdofpernode_;
         //! flag if ExtracElementAndNodeValues was called
         bool isextracted_;
-        //! flag if EvaluateGPVariables was called
+        //! flag if evaluate_gp_variables was called
         bool isevaluated_;
       };
 
@@ -311,23 +311,23 @@ namespace Discret
             const int dofsetnum = 0) override;
 
         //! evaluate state vector at gauss point
-        void EvaluateGPVariables(
+        void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
         //! access method
-        const std::vector<double>* Phinp() const override
+        const std::vector<double>* phinp() const override
         {
-          this->CheckIsEvaluated();
+          this->check_is_evaluated();
           return &phinp_;
         }
 
        protected:
-        const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const override
+        const Core::LinAlg::Matrix<nen, 1>* element_phinp(const int k) const override
         {
-          this->CheckIsExtracted();
+          this->check_is_extracted();
           return &ephinp_[k];
         }
 
@@ -359,16 +359,16 @@ namespace Discret
             : VariableManagerPhi<nsd, nen>(numdofpernode), gradphi_(numdofpernode){};
 
         //! evaluate phi and its gradient at gauss point
-        void EvaluateGPVariables(
+        void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
         //! access method
-        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_phinp() const override
         {
-          this->CheckIsEvaluated();
+          this->check_is_evaluated();
           return &gradphi_;
         }
 
@@ -401,22 +401,22 @@ namespace Discret
             : VariableManagerInterface<nsd, nen>(), varmanager_(varmanager){};
 
         //! @name Access methods
-        const std::vector<double>* Phinp() const override { return varmanager_->Phinp(); };
-        const Core::LinAlg::Matrix<nen, 1>* ElementPhinp(const int k) const override
+        const std::vector<double>* phinp() const override { return varmanager_->phinp(); };
+        const Core::LinAlg::Matrix<nen, 1>* element_phinp(const int k) const override
         {
-          return varmanager_->ElementPhinp(k);
+          return varmanager_->element_phinp(k);
         };
-        double DivConVelnp() const override { return varmanager_->DivConVelnp(); };
-        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradPhinp() const override
+        double div_con_velnp() const override { return varmanager_->div_con_velnp(); };
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_phinp() const override
         {
-          return varmanager_->GradPhinp();
+          return varmanager_->grad_phinp();
         };
-        const std::vector<double>* Phidtnp() const override { return varmanager_->Phidtnp(); };
+        const std::vector<double>* phidtnp() const override { return varmanager_->phidtnp(); };
 
-        const std::vector<double>* Hist() const override { return varmanager_->Hist(); };
-        const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const override
+        const std::vector<double>* hist() const override { return varmanager_->hist(); };
+        const Core::LinAlg::Matrix<nsd, 1>* con_velnp() const override
         {
-          return varmanager_->ConVelnp();
+          return varmanager_->con_velnp();
         };
         bool element_has_valid_vol_frac_pressure(const int ivolfrac) const override
         {
@@ -426,30 +426,30 @@ namespace Discret
         {
           return varmanager_->element_has_valid_vol_frac_species(ivolfrac);
         };
-        const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, nen>* e_con_velnp() const override
         {
-          return varmanager_->EConVelnp();
+          return varmanager_->e_con_velnp();
         };
-        const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* dispnp() const override
         {
-          return varmanager_->Dispnp();
+          return varmanager_->dispnp();
         };
-        const std::vector<double>* Scalarnp() const override { return varmanager_->Scalarnp(); };
-        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const override
+        const std::vector<double>* scalarnp() const override { return varmanager_->scalarnp(); };
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_scalarnp() const override
         {
-          return varmanager_->GradScalarnp();
+          return varmanager_->grad_scalarnp();
         };
 
         //@}
 
-        //! check if EvaluateGPVariables was called
-        void CheckIsEvaluated() const override { varmanager_->CheckIsEvaluated(); }
+        //! check if evaluate_gp_variables was called
+        void check_is_evaluated() const override { varmanager_->check_is_evaluated(); }
 
         //! check if extract_element_and_node_values was called
-        void CheckIsExtracted() const override { varmanager_->CheckIsExtracted(); }
+        void check_is_extracted() const override { varmanager_->check_is_extracted(); }
 
         //! return number of DOFs per node
-        int NumDofPerNode() const override { return varmanager_->NumDofPerNode(); }
+        int num_dof_per_node() const override { return varmanager_->num_dof_per_node(); }
 
        protected:
         //! wrapped variable manager
@@ -476,10 +476,10 @@ namespace Discret
         //! constructor
         VariableManagerInstat(Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager)
             : VariableManagerDecorator<nsd, nen>(varmanager),
-              ephidtnp_(varmanager->NumDofPerNode()),
-              ehist_(varmanager->NumDofPerNode()),
-              phidtnp_(varmanager->NumDofPerNode(), 0.0),
-              hist_(varmanager->NumDofPerNode(), 0.0){};
+              ephidtnp_(varmanager->num_dof_per_node()),
+              ehist_(varmanager->num_dof_per_node()),
+              phidtnp_(varmanager->num_dof_per_node(), 0.0),
+              hist_(varmanager->num_dof_per_node(), 0.0){};
 
         //! extract node values related to time derivatives
         //! dofsetnum is the number of the porofluid-dofset on the current element
@@ -491,7 +491,7 @@ namespace Discret
             const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
-        void EvaluateGPVariables(
+        void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -500,15 +500,15 @@ namespace Discret
         //! @name Access methods
 
         //! get time derivative of state phi
-        const std::vector<double>* Phidtnp() const override
+        const std::vector<double>* phidtnp() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return &phidtnp_;
         }
         //! get history vector
-        const std::vector<double>* Hist() const override
+        const std::vector<double>* hist() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return &hist_;
         }
         //@}
@@ -564,31 +564,31 @@ namespace Discret
             const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
-        void EvaluateGPVariables(
+        void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
         //! @name Access methods
-        const Core::LinAlg::Matrix<nsd, 1>* ConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* con_velnp() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return &convelint_;
         }
-        const Core::LinAlg::Matrix<nsd, 1>* Dispnp() const override
+        const Core::LinAlg::Matrix<nsd, 1>* dispnp() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return &dispint_;
         }
-        double DivConVelnp() const override
+        double div_con_velnp() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return divconvelint_;
         }
-        const Core::LinAlg::Matrix<nsd, nen>* EConVelnp() const override
+        const Core::LinAlg::Matrix<nsd, nen>* e_con_velnp() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return &econvelnp_;
         }
 
@@ -650,23 +650,23 @@ namespace Discret
             Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
             const int dofsetnum = 0) override;
 
-        void EvaluateGPVariables(
+        void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) override;
 
         //! access method
-        const std::vector<double>* Scalarnp() const override
+        const std::vector<double>* scalarnp() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return &scalarnp_;
         };
 
         //! access method
-        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* GradScalarnp() const override
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>* grad_scalarnp() const override
         {
-          this->varmanager_->CheckIsEvaluated();
+          this->varmanager_->check_is_evaluated();
           return &gradscalarnp_;
         }
 
@@ -723,7 +723,7 @@ namespace Discret
             const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
-        void EvaluateGPVariables(
+        void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
             const Core::LinAlg::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -732,7 +732,7 @@ namespace Discret
         //! @name Access methods
         bool element_has_valid_vol_frac_pressure(const int ivolfrac) const override
         {
-          this->varmanager_->CheckIsExtracted();
+          this->varmanager_->check_is_extracted();
           if (ivolfrac >= numvolfrac_)
             FOUR_C_THROW(
                 "%i is bigger than the number of volume fractions %i in the VariableManager",
@@ -743,7 +743,7 @@ namespace Discret
 
         bool element_has_valid_vol_frac_species(const int ivolfrac) const override
         {
-          this->varmanager_->CheckIsExtracted();
+          this->varmanager_->check_is_extracted();
           if (ivolfrac >= numvolfrac_)
             FOUR_C_THROW(
                 "%i is bigger than the number of volume fractions %i in the VariableManager",

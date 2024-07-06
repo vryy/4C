@@ -49,19 +49,19 @@ namespace ScaTra
     const Epetra_Map& dof_row_map() const override;
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying() override;
+    void evaluate_meshtying() override;
 
     //! include Dirichlet conditions into condensation
     void include_dirichlet_in_condensation() const override;
 
     //! initialize meshtying objects
-    void InitMeshtying() override;
+    void init_meshtying() override;
 
     bool system_matrix_initialization_needed() const override { return true; }
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override;
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const override
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const override
     {
       FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyFluid.");
       return Teuchos::null;
@@ -71,7 +71,7 @@ namespace ScaTra
     void setup_meshtying() override;
 
     //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
+    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
         const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
@@ -80,7 +80,7 @@ namespace ScaTra
         Core::LinAlg::SolverParams& solver_params) const override;
 
     //! return linear solver for global system of linear equations
-    const Core::LinAlg::Solver& Solver() const override;
+    const Core::LinAlg::Solver& solver() const override;
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check

@@ -82,13 +82,13 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
   /*
   Here one must add the steps for evaluating an element
   */
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   switch (act)
   {
     case calc_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->evaluate(
+      return Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->evaluate(
           this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
@@ -98,49 +98,49 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
     break;
     case get_initial_state:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->Initial(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->initial(
           this, params, discretization, lm, mat);
     }
     break;
     case set_bc:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->EvaluateTerminalBC(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->evaluate_terminal_bc(
           this, params, discretization, lm, elevec1, mat);
     }
     break;
     case calc_flow_rates:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->CalcFlowRates(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->calc_flow_rates(
           this, params, discretization, lm, mat);
     }
     break;
     case calc_elem_volumes:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->CalcElemVolume(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->calc_elem_volume(
           this, params, discretization, lm, mat);
     }
     break;
     case get_coupled_values:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->GetCoupledValues(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->get_coupled_values(
           this, params, discretization, lm, mat);
     }
     break;
     case get_junction_volume_mix:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->get_junction_volume_mix(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->get_junction_volume_mix(
           this, params, discretization, elevec1, lm, mat);
     }
     break;
     case update_scatra:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->update_scatra(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->update_scatra(
           this, params, discretization, lm, mat);
     }
     break;
     case update_elem12_scatra:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->UpdateElem12Scatra(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->update_elem12_scatra(
           this, params, discretization, lm, mat);
     }
     break;
@@ -156,7 +156,7 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
     break;
     case eval_nodal_ess_vals:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::Impl(this)->eval_nodal_essential_values(
+      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->eval_nodal_essential_values(
           this, params, discretization, elevec1, elevec2, elevec3, lm, mat);
     }
     break;

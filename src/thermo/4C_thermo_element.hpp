@@ -44,21 +44,21 @@ namespace Discret
     class ThermoType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "ThermoType"; }
+      std::string name() const override { return "ThermoType"; }
 
-      static ThermoType& Instance();
+      static ThermoType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -94,25 +94,25 @@ namespace Discret
 
       //! \brief Deep copy this instance of Thermo and return pointer to the copy
       //!
-      //! The Clone() method is used from the virtual base class Element in cases
+      //! The clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       //! \brief Get shape type of element
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       //! \brief set discretization type of element
-      virtual void SetDisType(Core::FE::CellType shape)
+      virtual void set_dis_type(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
       };
 
       //! \brief Return number of lines of this element
-      int NumLine() const override { return Core::FE::getNumberOfElementLines(distype_); }
+      int num_line() const override { return Core::FE::getNumberOfElementLines(distype_); }
 
       //! \brief Return number of surfaces of this element
-      int NumSurface() const override
+      int num_surface() const override
       {
         switch (distype_)
         {
@@ -152,7 +152,7 @@ namespace Discret
       }
 
       //! \brief Return number of volumes of this element
-      int NumVolume() const override
+      int num_volume() const override
       {
         switch (distype_)
         {
@@ -185,16 +185,19 @@ namespace Discret
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //! \brief Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the
       //! top of this file.
-      int UniqueParObjectId() const override { return ThermoType::Instance().UniqueParObjectId(); }
+      int unique_par_object_id() const override
+      {
+        return ThermoType::instance().unique_par_object_id();
+      }
 
       //! \brief Pack this class so it can be communicated
       //! \ref pack and \ref unpack are used to communicate this element
@@ -217,7 +220,7 @@ namespace Discret
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return numdofpernode_; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return numdofpernode_; }
 
       //!
       //! \brief Get number of degrees of freedom per element
@@ -234,7 +237,7 @@ namespace Discret
       //! \brief Print this element
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override { return ThermoType::Instance(); }
+      Core::Elements::ElementType& element_type() const override { return ThermoType::instance(); }
 
       //! \brief Query names of element data to be visualized using BINIO
       //!
@@ -255,7 +258,7 @@ namespace Discret
       //! \param names (out): On return, the derived class has filled names with
       //!                     key names of data it wants to visualize and with int
       //!                     dimensions of that data.
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
       //! \brief Query data to be visualized using BINIO of a given name
       //!
@@ -269,14 +272,14 @@ namespace Discret
       //!
       //! \param name (in):   Name of data that is currently processed for visualization
       //! \param data (out):  data to be filled by element if element recognizes the name
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
       //@}
 
       //! @name Input and Creation
 
       //! \brief Read input for this element
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -338,7 +341,7 @@ namespace Discret
       //@}
 
       //! kinematic type passed from structural element
-      virtual void SetKinematicType(Inpar::Solid::KinemType kintype)
+      virtual void set_kinematic_type(Inpar::Solid::KinemType kintype)
       {
         kintype_ = kintype;
         return;
@@ -346,7 +349,7 @@ namespace Discret
       //! kinematic type
       Inpar::Solid::KinemType kintype_;
 
-      Inpar::Solid::KinemType KinType() const { return kintype_; }
+      Inpar::Solid::KinemType kin_type() const { return kintype_; }
 
      private:
       //! number of dofs per node (for systems of thermo equations)
@@ -368,18 +371,18 @@ namespace Discret
     class ThermoBoundaryType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "ThermoBoundaryType"; }
+      std::string name() const override { return "ThermoBoundaryType"; }
 
-      static ThermoBoundaryType& Instance();
+      static ThermoBoundaryType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -420,18 +423,18 @@ namespace Discret
 
       //! \brief Deep copy this instance of an element and return pointer to the copy
       //!
-      //! The Clone() method is used from the virtual base class Element in cases
+      //! The clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-constructor is needed
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       //! \brief Get shape type of element
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       //! \brief Return number of lines of boundary element
-      int NumLine() const override
+      int num_line() const override
       {
         // get spatial dimension of boundary
-        const int nsd = Core::FE::getDimension(parent_element()->Shape()) - 1;
+        const int nsd = Core::FE::getDimension(parent_element()->shape()) - 1;
 
         if ((num_node() == 4) or (num_node() == 8) or (num_node() == 9))
           return 4;
@@ -451,10 +454,10 @@ namespace Discret
       }
 
       //! \brief Return number of surfaces of boundary element
-      int NumSurface() const override
+      int num_surface() const override
       {
         // get spatial dimension of parent element
-        const int nsd = Core::FE::getDimension(parent_element()->Shape());
+        const int nsd = Core::FE::getDimension(parent_element()->shape());
 
         if (nsd == 3)
           return 1;
@@ -463,18 +466,18 @@ namespace Discret
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //! \brief Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the
       //! top of the parobject.H file.
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return ThermoBoundaryType::Instance().UniqueParObjectId();
+        return ThermoBoundaryType::instance().unique_par_object_id();
       }
 
       //! \brief Pack this class so it can be communicated
@@ -499,9 +502,9 @@ namespace Discret
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return parent_element()->NumDofPerNode(node);
+        return parent_element()->num_dof_per_node(node);
       }
 
       /*
@@ -526,9 +529,9 @@ namespace Discret
       //! \brief Print this element
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return ThermoBoundaryType::Instance();
+        return ThermoBoundaryType::instance();
       }
 
       //@}

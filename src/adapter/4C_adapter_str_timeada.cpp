@@ -40,7 +40,7 @@ Adapter::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::Create(
+Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::create(
     const Teuchos::ParameterList& taflags,  //!< adaptive input flags
     Teuchos::RCP<Solid::TimeInt::Base> ti_strategy)
 {
@@ -79,7 +79,7 @@ void Adapter::StructureTimeAda::setup()
 void Adapter::StructureTimeAda::setup_time_ada()
 {
   const Teuchos::ParameterList& sdynparams =
-      Global::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::instance()->structural_dynamic_params();
 
   // initialize the local variables
   timeinitial_ = 0.0;
@@ -128,15 +128,15 @@ void Adapter::StructureTimeAda::setup_time_ada()
   locerrdisn_ = Core::LinAlg::CreateVector(*(stm_->dof_row_map()), true);
 
   // enable restart for adaptive timestepping
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
     stm_->read_restart(restart);
-    timeinitial_ = stm_->TimeOld();
-    timestepinitial_ = stm_->StepOld();
-    Core::IO::DiscretizationReader ioreader(
-        stm_->discretization(), Global::Problem::Instance()->InputControlFile(), timestepinitial_);
+    timeinitial_ = stm_->time_old();
+    timestepinitial_ = stm_->step_old();
+    Core::IO::DiscretizationReader ioreader(stm_->discretization(),
+        Global::Problem::instance()->input_control_file(), timestepinitial_);
     stepsizepre_ = ioreader.read_double("next_delta_time");
     time_ = timeinitial_;
 
@@ -159,12 +159,12 @@ void Adapter::StructureTimeAda::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Adapter::StructureTimeAda::Integrate()
+int Adapter::StructureTimeAda::integrate()
 {
   // error checking variables
   Inpar::Solid::ConvergenceStatus convergencestatus = Inpar::Solid::conv_success;
 
-  int myrank = stm_->discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->get_comm().MyPID();
 
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
@@ -172,7 +172,7 @@ int Adapter::StructureTimeAda::Integrate()
   // stm_->init();
 
   // Richardson extrapolation to no avail
-  if (MethodAdaptDis() == ada_ident)
+  if (method_adapt_dis() == ada_ident)
     FOUR_C_THROW(
         "This combination is not implemented ... Richardson's extrapolation ... Yoshida technique "
         "...");
@@ -196,8 +196,8 @@ int Adapter::StructureTimeAda::Integrate()
       size_for_output();
 
       // set current step size
-      stm_->SetDeltaTime(stepsize_);
-      stm_->SetTimeNp(time_ + stepsize_);
+      stm_->set_delta_time(stepsize_);
+      stm_->set_time_np(time_ + stepsize_);
 
       // integrate system with auxiliary TIS
       // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
@@ -205,13 +205,13 @@ int Adapter::StructureTimeAda::Integrate()
       integrate_step_auxiliar();
 
       // call the predictor
-      PrePredict();
+      pre_predict();
       prepare_time_step();
 
       // integrate system with marching TIS and
       // stm_->IntegrateStep();
-      PreSolve();
-      convergencestatus = Solve();
+      pre_solve();
+      convergencestatus = solve();
 
       if (convergencestatus != Inpar::Solid::conv_success)
       {
@@ -221,7 +221,7 @@ int Adapter::StructureTimeAda::Integrate()
         // get the divergence action
         enum Inpar::Solid::DivContAct div_action = stm_->data_sdyn().get_divergence_action();
 
-        convergencestatus = PerformErrorAction(div_action, stpsiznew);
+        convergencestatus = perform_error_action(div_action, stpsiznew);
       }
 
       if (convergencestatus == Inpar::Solid::conv_success)
@@ -276,7 +276,7 @@ int Adapter::StructureTimeAda::Integrate()
     // after this call we will have disn_==dis_, etc
     // update time and step
     // update everything on the element level
-    PreUpdate();
+    pre_update();
 
     update();
 
@@ -287,7 +287,7 @@ int Adapter::StructureTimeAda::Integrate()
 
     // write output
     output();
-    PostOutput();
+    post_output();
 
     // print info about finished time step
     print_step();
@@ -295,10 +295,10 @@ int Adapter::StructureTimeAda::Integrate()
     // update
     timestep_ += 1;
     time_ += stepsizepre_;
-    stm_->SetStepN(timestep_);
-    stm_->SetTimeN(time_);
-    stm_->SetDeltaTime(stepsize_);
-    stm_->SetTimeNp(time_ + stepsize_);
+    stm_->set_step_n(timestep_);
+    stm_->set_time_n(time_);
+    stm_->set_delta_time(stepsize_);
+    stm_->set_time_np(time_ + stepsize_);
 
     update_period();
     outrest_ = outsys_ = outstr_ = outene_ = false;
@@ -380,7 +380,7 @@ void Adapter::StructureTimeAda::evaluate_local_error_dis()
   const Solid::TimeInt::Base& sti = *stm_;
   const auto& gstate = sti.data_global_state();
 
-  if (MethodAdaptDis() == ada_orderequal)
+  if (method_adapt_dis() == ada_orderequal)
   {
     const double coeffmarch = sti.method_lin_err_coeff_dis();
     const double coeffaux = method_lin_err_coeff_dis();
@@ -409,7 +409,7 @@ void Adapter::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
   accepted = (norm < errtol_);
 
   // debug
-  int myrank = stm_->discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->get_comm().MyPID();
   if (myrank == 0)
   {
     std::cout << "LocErrNorm " << std::scientific << norm << ", LocErrTol " << errtol_
@@ -425,8 +425,8 @@ void Adapter::StructureTimeAda::reset_step()
 {
   outrest_ = outsys_ = outstr_ = outene_ = false;
   // set current step size
-  stm_->SetDeltaTime(stepsize_);
-  stm_->SetTimeNp(time_ + stepsize_);
+  stm_->set_delta_time(stepsize_);
+  stm_->set_time_np(time_ + stepsize_);
   // reset the integrator
   stm_->reset_step();
 }
@@ -436,7 +436,7 @@ void Adapter::StructureTimeAda::reset_step()
 double Adapter::StructureTimeAda::calculate_dt(const double norm)
 {
   // get error order
-  if (MethodAdaptDis() == ada_upward)
+  if (method_adapt_dis() == ada_upward)
     errorder_ = stm_->method_order_of_accuracy_dis();
   else
     errorder_ = method_order_of_accuracy_dis();
@@ -449,7 +449,7 @@ double Adapter::StructureTimeAda::calculate_dt(const double norm)
     sizrat = sizeratiomax_ / sizeratioscale_;
 
   // debug
-  int myrank = stm_->discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->get_comm().MyPID();
   if (myrank == 0)
   {
     printf("sizrat %g, stepsize %g, stepsizepre %g\n", sizrat, stepsize_, stepsizepre_);
@@ -540,10 +540,10 @@ void Adapter::StructureTimeAda::update_period()
 }
 
 /*----------------------------------------------------------------------*/
-Inpar::Solid::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
+Inpar::Solid::ConvergenceStatus Adapter::StructureTimeAda::perform_error_action(
     const Inpar::Solid::DivContAct& action, double& stepsizenew)
 {
-  int myrank = stm_->discretization()->Comm().MyPID();
+  int myrank = stm_->discretization()->get_comm().MyPID();
 
   // here we handle how we deal with a failed Newton-Raphson, basically:
   // + stop -> error
@@ -569,7 +569,7 @@ Inpar::Solid::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
     case Inpar::Solid::divcont_halve_step:
       if (myrank == 0)
       {
-        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->GetTimeNp()
+        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->get_time_np()
                        << ". Divide timestep in half. "
                        << "Old time step: " << stepsize_ << Core::IO::endl
                        << "New time step: " << 0.5 * stepsize_ << Core::IO::endl

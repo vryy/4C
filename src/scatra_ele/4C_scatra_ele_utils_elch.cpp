@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleUtilsElch<distype>*
-Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::instance(
     const int numdofpernode,    ///< number of degrees of freedom per node
     const int numscal,          ///< number of transported scalars per node
     const std::string& disname  ///< name of discretization
@@ -33,7 +33,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(
             new ScaTraEleUtilsElch<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -82,7 +82,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
 ) const
 {
   // for pre-multiplication of i0 with 1/(F z_k)
-  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
 
   // concentration of active species at integration point
   std::vector<double> conint(numscal_, 0.0);
@@ -697,7 +697,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
 ) const
 {
   // get Faraday constant
-  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
 
   // get variables with their current values
   // current integrals: (i = epsilon i^E ) is calculated in case of porous media
@@ -1256,7 +1256,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
  | evaluate ion material                                     fang 07/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
+void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::mat_ion(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
     const int k,                                             //!< ID of ion material
     const Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
@@ -1267,10 +1267,10 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
   const Teuchos::RCP<const Mat::Ion> mation = Teuchos::rcp_static_cast<const Mat::Ion>(material);
 
   // valence of ionic species
-  diffmanager->SetValence(mation->Valence(), k);
+  diffmanager->set_valence(mation->valence(), k);
 
   // concentration depending diffusion coefficient
-  diffmanager->SetIsotropicDiff(mation->Diffusivity(), k);
+  diffmanager->set_isotropic_diff(mation->diffusivity(), k);
 
   // Loop over materials is finished - now all material parameter are set
   if (k == numscal_ - 1)
@@ -1282,10 +1282,10 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
       diffmanager->increase_length_vector(k, numscal_);
 
       // valence of ionic species
-      diffmanager->SetValence(mation->ElimValence(), numscal_);
+      diffmanager->set_valence(mation->elim_valence(), numscal_);
 
       // concentration depending diffusion coefficient
-      diffmanager->SetIsotropicDiff(mation->ElimDiffusivity(), numscal_);
+      diffmanager->set_isotropic_diff(mation->elim_diffusivity(), numscal_);
     }
   }
 }

@@ -48,7 +48,7 @@ namespace Discret
 
      public:
       //! singleton access method
-      static ScaTraEleBoundaryCalcElchElectrode<distype, probdim>* Instance(
+      static ScaTraEleBoundaryCalcElchElectrode<distype, probdim>* instance(
           int numdofpernode, int numscal, const std::string& disname);
 
 

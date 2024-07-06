@@ -40,20 +40,20 @@ namespace CONTACT
       virtual Inpar::CONTACT::ConstitutiveLawType get_constitutive_law_type() const = 0;
 
       /// Return quick accessible Contact Constitutive Law parameter data
-      virtual CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const = 0;
+      virtual CONTACT::CONSTITUTIVELAW::Parameter* parameter() const = 0;
 
       virtual double evaluate(double gap, CONTACT::Node* cnode) = 0;
-      virtual double EvaluateDeriv(double gap, CONTACT::Node* cnode) = 0;
+      virtual double evaluate_deriv(double gap, CONTACT::Node* cnode) = 0;
 
       /* \brief create Contact ConstitutiveLaw object given the id of the constitutive law in the
        * input file
        */
-      static Teuchos::RCP<ConstitutiveLaw> Factory(const int id);
+      static Teuchos::RCP<ConstitutiveLaw> factory(const int id);
 
       /* \brief create Contact Constitutivelaw object given input information for the constitutive
        * law \param[in] Container holding the Coefficients for the Contact ConstitutiveLaw
        */
-      static Teuchos::RCP<ConstitutiveLaw> Factory(
+      static Teuchos::RCP<ConstitutiveLaw> factory(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);
 
       virtual ~ConstitutiveLaw() = default;

@@ -51,22 +51,22 @@ namespace Discret::ELEMENTS
     void setup_element_definition(
         std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+    Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
         const std::string elecelltype, const int id, const int owner) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-    [[nodiscard]] std::string Name() const override { return "SolidPoroType"; }
+    [[nodiscard]] std::string name() const override { return "SolidPoroType"; }
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-    static SolidPoroType& Instance();
+    static SolidPoroType& instance();
 
    private:
     static SolidPoroType instance_;
@@ -92,24 +92,24 @@ namespace Discret::ELEMENTS
 
     //!@}
 
-    [[nodiscard]] Core::Elements::Element* Clone() const override;
+    [[nodiscard]] Core::Elements::Element* clone() const override;
 
-    [[nodiscard]] int UniqueParObjectId() const override
+    [[nodiscard]] int unique_par_object_id() const override
     {
-      return SolidPoroType::Instance().UniqueParObjectId();
+      return SolidPoroType::instance().unique_par_object_id();
     };
 
-    [[nodiscard]] int NumLine() const override;
+    [[nodiscard]] int num_line() const override;
 
-    [[nodiscard]] int NumSurface() const override;
+    [[nodiscard]] int num_surface() const override;
 
-    [[nodiscard]] int NumVolume() const override;
+    [[nodiscard]] int num_volume() const override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
-    [[nodiscard]] int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
@@ -117,14 +117,14 @@ namespace Discret::ELEMENTS
 
     void unpack(const std::vector<char>& data) override;
 
-    [[nodiscard]] Core::FE::CellType Shape() const override { return celltype_; };
+    [[nodiscard]] Core::FE::CellType shape() const override { return celltype_; };
 
-    [[nodiscard]] Core::Elements::ElementType& ElementType() const override
+    [[nodiscard]] Core::Elements::ElementType& element_type() const override
     {
-      return SolidPoroType::Instance();
+      return SolidPoroType::instance();
     }
 
-    bool ReadElement(const std::string& eletype, const std::string& celltype,
+    bool read_element(const std::string& eletype, const std::string& celltype,
         Input::LineDefinition* linedef) override;
 
     int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
@@ -140,43 +140,43 @@ namespace Discret::ELEMENTS
 
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
-    Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override
+    Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override
     {
       return interface_ptr_;
     }
 
-    [[nodiscard]] inline bool IsParamsInterface() const override
+    [[nodiscard]] inline bool is_params_interface() const override
     {
       return (not interface_ptr_.is_null());
     }
 
     [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface() const
     {
-      if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+      if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
     }
 
-    [[nodiscard]] Mat::StructPoro& StructPoroMaterial(int nummat = 0) const;
+    [[nodiscard]] Mat::StructPoro& struct_poro_material(int nummat = 0) const;
 
     [[nodiscard]] Mat::FluidPoroMultiPhase& fluid_poro_multi_material(int nummat = 1) const;
 
-    [[nodiscard]] Mat::So3Material& SolidPoroMaterial(int nummat = 0) const;
+    [[nodiscard]] Mat::So3Material& solid_poro_material(int nummat = 0) const;
 
-    Inpar::Poro::PoroType GetElePoroType() { return poro_ele_property_.porotype; }
+    Inpar::Poro::PoroType get_ele_poro_type() { return poro_ele_property_.porotype; }
 
-    [[nodiscard]] bool HaveEAS() const
+    [[nodiscard]] bool have_eas() const
     {
       return solid_ele_property_.element_technology == ElementTechnology::eas_full ||
              solid_ele_property_.element_technology == ElementTechnology::eas_mild;
     }
 
-    Inpar::Solid::KinemType GetEleKinematicType() { return solid_ele_property_.kintype; }
+    Inpar::Solid::KinemType get_ele_kinematic_type() { return solid_ele_property_.kintype; }
 
-    Inpar::ScaTra::ImplType GetImplType() { return poro_ele_property_.impltype; }
+    Inpar::ScaTra::ImplType get_impl_type() { return poro_ele_property_.impltype; }
 
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
-    bool VisData(const std::string& name, std::vector<double>& data) override;
+    bool vis_data(const std::string& name, std::vector<double>& data) override;
 
    private:
     //! cell type

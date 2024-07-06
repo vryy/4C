@@ -79,14 +79,14 @@ namespace Solid
       virtual void post_setup();
 
       /// print welcome to biopolymer network simulation
-      virtual void Logo() const;
+      virtual void logo() const;
 
       //! @name Derived public Solid::MODELEVALUATOR::Generic methods
       //! @{
       //! derived
 
       //! derived
-      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_beaminteraction; }
+      Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_beaminteraction; }
 
       //! derived
       bool evaluate_force() override;
@@ -118,7 +118,7 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
+      void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -180,7 +180,7 @@ namespace Solid
 
      public:
       /// check if the given model type is active.
-      bool HaveSubModelType(Inpar::BEAMINTERACTION::SubModelType const& submodeltype) const;
+      bool have_sub_model_type(Inpar::BEAMINTERACTION::SubModelType const& submodeltype) const;
 
      private:
       void partition_problem();

@@ -55,21 +55,21 @@ namespace Solid
       };
 
       /// precision for file output
-      int FilePrecision() const
+      int file_precision() const
       {
         check_init_setup();
         return of_precision_;
       };
 
       /// precision for screen output
-      int ScreenPrecision() const
+      int screen_precision() const
       {
         check_init_setup();
         return os_precision_;
       };
 
       /// file tpye ending
-      std::string const& FileType() const
+      std::string const& file_type() const
       {
         check_init_setup();
         return file_type_;

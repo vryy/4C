@@ -49,7 +49,7 @@ int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
     case FLD::traction_velocity_component:
     case FLD::traction_Uv_integral_component:
     {
-      Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
+      Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), "std")
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -60,45 +60,45 @@ int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
       // implemented there.
       // Todo: One could think about splitting this method in pure fluid and poro fluid part...
       // vuong 11/13
-      Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "poro")
+      Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), "poro")
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case FLD::enforce_weak_dbc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EvaluateWeakDBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->evaluate_weak_dbc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::estimate_Nitsche_trace_maxeigenvalue_:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)
+      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)
           ->estimate_nitsche_trace_max_eigenvalue(
               this, params, discretization, lm, elemat1, elemat2);
       break;
     }
     case FLD::mixed_hybrid_dbc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->MixHybDirichlet(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->mix_hyb_dirichlet(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::flow_dep_pressure_bc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->FlowDepPressureBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->flow_dep_pressure_bc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::slip_supp_bc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->SlipSuppBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->slip_supp_bc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::navier_slip_bc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->NavierSlipBC(
+      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->navier_slip_bc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
@@ -120,14 +120,14 @@ int Discret::ELEMENTS::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& p
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
-  return Discret::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(), "std")
+  return Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), "std")
       ->evaluate_neumann(this, params, discretization, condition, lm, elevec1, elemat1);
 }
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::LocationVector(const Core::FE::Discretization& dis,
+void Discret::ELEMENTS::FluidBoundary::location_vector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
@@ -146,14 +146,14 @@ void Discret::ELEMENTS::FluidBoundary::LocationVector(const Core::FE::Discretiza
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
       //       as input in the respective evaluate routines
-      parent_element()->LocationVector(dis, la, doDirichlet);
+      parent_element()->location_vector(dis, la, doDirichlet);
       break;
     case FLD::ba_none:
       FOUR_C_THROW("No action supplied");
       break;
     default:
       // standard case: element assembles into its own dofs only
-      Core::Elements::Element::LocationVector(dis, la, doDirichlet);
+      Core::Elements::Element::location_vector(dis, la, doDirichlet);
       break;
   }
   return;

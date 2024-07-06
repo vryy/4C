@@ -21,7 +21,7 @@ Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(
     const Epetra_Comm& comm, bool create_side)
     : ParentIntersection(comm.MyPID()), side_(Teuchos::null), comm_(&comm)
 {
-  if (create_side) AddCutSide(1);
+  if (create_side) add_cut_side(1);
 }
 
 /*----------------------------------------------------------------------------*
@@ -29,17 +29,17 @@ Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(
 Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
     : ParentIntersection(myrank), side_(Teuchos::null), comm_(nullptr)
 {
-  if (create_side) AddCutSide(1);
+  if (create_side) add_cut_side(1);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::LevelSetIntersection::AddCutSide(int levelset_sid)
+void Core::Geo::Cut::LevelSetIntersection::add_cut_side(int levelset_sid)
 {
   if (!side_.is_null()) FOUR_C_THROW("currently only one levelset-side is supported");
 
   // create the levelset-side
-  side_ = Teuchos::rcp(Side::CreateLevelSetSide(levelset_sid));
+  side_ = Teuchos::rcp(Side::create_level_set_side(levelset_sid));
 }
 
 /*----------------------------------------------------------------------------*
@@ -75,7 +75,7 @@ Core::Geo::Cut::ElementHandle* Core::Geo::Cut::LevelSetIntersection::add_element
     // add all nodes to mesh
     for (int i = 0; i < numnode; ++i)
     {
-      NormalMesh().GetNode(nids[i], &xyz(0, i), lsv[i]);
+      normal_mesh().get_node(nids[i], &xyz(0, i), lsv[i]);
     }
 
     // create element
@@ -87,11 +87,11 @@ Core::Geo::Cut::ElementHandle* Core::Geo::Cut::LevelSetIntersection::add_element
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
+void Core::Geo::Cut::LevelSetIntersection::cut_mesh(bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 1/3 --- Cut");
 
-  Mesh& m = NormalMesh();
+  Mesh& m = normal_mesh();
 
   double t_diff = 0.0;
   {
@@ -99,7 +99,7 @@ void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
     if (myrank_ == 0 and screenoutput)
       std::cout << "\n\t * 1/6 Cut ......................" << std::flush;
 
-    m.Cut(*side_);
+    m.cut(*side_);
 
     if (myrank_ == 0 and screenoutput)
     {
@@ -115,7 +115,7 @@ void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
     if (myrank_ == 0 and screenoutput)
       std::cout << "\n\t * 2/6 MakeCutLines ............." << std::flush;
 
-    m.MakeCutLines();
+    m.make_cut_lines();
 
     if (myrank_ == 0 and screenoutput)
     {
@@ -131,7 +131,7 @@ void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
     if (myrank_ == 0 and screenoutput)
       std::cout << "\n\t * 3/6 MakeFacets ..............." << std::flush;
 
-    m.MakeFacets();
+    m.make_facets();
 
     if (myrank_ == 0 and screenoutput)
     {
@@ -147,7 +147,7 @@ void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
     if (myrank_ == 0 and screenoutput)
       std::cout << "\n\t * 4/6 MakeVolumeCells .........." << std::flush;
 
-    m.MakeVolumeCells();
+    m.make_volume_cells();
 
     if (myrank_ == 0 and screenoutput)
     {
@@ -161,27 +161,27 @@ void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::LevelSetIntersection::Cut(
+void Core::Geo::Cut::LevelSetIntersection::cut(
     bool include_inner, bool screenoutput, VCellGaussPts VCellGP)
 {
   // ###########################################################################
   //  STEP 1/3 CUT THE MESH
   // ###########################################################################
-  Cut_Mesh(screenoutput);
+  cut_mesh(screenoutput);
 
   // ###########################################################################
   //  STEP 2/3 ASSIGN DOFS
   // ###########################################################################
 
-  Mesh& m = NormalMesh();
+  Mesh& m = normal_mesh();
 
-  if (options_.FindPositions())
+  if (options_.find_positions())
   {
-    m.FindLSNodePositions();
+    m.find_ls_node_positions();
 
     //=====================================================================
 
-    m.FindNodalDOFSets(include_inner);
+    m.find_nodal_dof_sets(include_inner);
 
     //=====================================================================
   }
@@ -214,7 +214,7 @@ void Core::Geo::Cut::LevelSetIntersection::Cut(
     if (myrank_ == 0 and screenoutput)
       std::cout << "\n\t * 6/6 TestElementVolume ........" << std::flush;
 
-    m.TestElementVolume(true, VCellGP);
+    m.test_element_volume(true, VCellGP);
 
     if (myrank_ == 0 and screenoutput)
     {

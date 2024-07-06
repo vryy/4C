@@ -27,7 +27,7 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static PoroFluidMultiPhaseEleParameter* Instance(
+      static PoroFluidMultiPhaseEleParameter* instance(
           const std::string& disname  //!< name of discretization
       );
 
@@ -40,23 +40,23 @@ namespace Discret
       );
 
       //! @name access methods
-      double Time() const { return time_; };
-      bool IsGenAlpha() const { return is_genalpha_; };
-      bool IsStationary() const { return is_stationary_; };
-      double Dt() const { return dt_; };
-      double TimeFac() const { return timefac_; };
-      double TimeFacRhs() const { return timefacrhs_; };
-      double TimeFacRhsTau() const { return timefacrhstau_; };
-      double AlphaF() const { return alpha_f_; };
-      bool IsAle() const { return is_ale_; };
-      bool BiotStab() const { return stab_biot_; };
-      int NdsDisp() const { return nds_disp_; };
-      int NdsVel() const { return nds_vel_; };
-      int NdsSolidPressure() const { return nds_solidpressure_; };
-      int NdsScalar() const { return nds_scalar_; };
-      bool HasScalar() const { return nds_scalar_ > -1; };
+      double time() const { return time_; };
+      bool is_gen_alpha() const { return is_genalpha_; };
+      bool is_stationary() const { return is_stationary_; };
+      double dt() const { return dt_; };
+      double time_fac() const { return timefac_; };
+      double time_fac_rhs() const { return timefacrhs_; };
+      double time_fac_rhs_tau() const { return timefacrhstau_; };
+      double alpha_f() const { return alpha_f_; };
+      bool is_ale() const { return is_ale_; };
+      bool biot_stab() const { return stab_biot_; };
+      int nds_disp() const { return nds_disp_; };
+      int nds_vel() const { return nds_vel_; };
+      int nds_solid_pressure() const { return nds_solidpressure_; };
+      int nds_scalar() const { return nds_scalar_; };
+      bool has_scalar() const { return nds_scalar_ > -1; };
       int num_domain_int_functions() const { return domainint_funct_.size(); };
-      std::vector<int> DomainIntFunctions() const { return domainint_funct_; };
+      std::vector<int> domain_int_functions() const { return domainint_funct_; };
       //@}
 
      private:

@@ -116,7 +116,7 @@ bool NOX::FSI::Newton::compute(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void NOX::FSI::Newton::Residual(double current, double desired)
+void NOX::FSI::Newton::residual(double current, double desired)
 {
   // utils_->out() << "NOX::FSI::Newton::Residual(" << current << "," << desired << ")\n";
   cresiduals_.push_back(current);

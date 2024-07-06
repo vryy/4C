@@ -42,7 +42,7 @@ Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::So3PoroP1Scatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>(*this);
   return newelement;
@@ -58,7 +58,7 @@ void Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::pack(
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   So3Ele::add_to_pack(data, type);
 
   // pack scalar transport impltype
@@ -78,7 +78,7 @@ void Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::unpack(const std::vect
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(So3Ele::extract_int(position, data));
@@ -109,19 +109,19 @@ void Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::print(std::ostream& os
  | get the unique ParObject Id (public)                    schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::UniqueParObjectId() const
+int Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::unique_par_object_id() const
 {
   int parobjectid(-1);
   switch (distype)
   {
     case Core::FE::CellType::hex8:
     {
-      parobjectid = SoHex8PoroP1ScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoHex8PoroP1ScatraType::instance().unique_par_object_id();
       break;
     }
     case Core::FE::CellType::tet4:
     {
-      parobjectid = SoTet4PoroP1ScatraType::Instance().UniqueParObjectId();
+      parobjectid = SoTet4PoroP1ScatraType::instance().unique_par_object_id();
       break;
     }
     default:
@@ -137,31 +137,31 @@ int Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::UniqueParObjectId() con
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::ElementType()
+Core::Elements::ElementType& Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::element_type()
     const
 {
   switch (distype)
   {
     case Core::FE::CellType::tet4:
-      return SoTet4PoroP1ScatraType::Instance();
+      return SoTet4PoroP1ScatraType::instance();
     case Core::FE::CellType::hex8:
-      return SoHex8PoroP1ScatraType::Instance();
+      return SoHex8PoroP1ScatraType::instance();
     default:
       FOUR_C_THROW("unknown element type!");
       break;
   }
-  return SoHex8PoroP1ScatraType::Instance();
+  return SoHex8PoroP1ScatraType::instance();
 }
 
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::ReadElement(
+bool Discret::ELEMENTS::So3PoroP1Scatra<So3Ele, distype>::read_element(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read base element
-  my::ReadElement(eletype, eledistype, linedef);
+  my::read_element(eletype, eledistype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;

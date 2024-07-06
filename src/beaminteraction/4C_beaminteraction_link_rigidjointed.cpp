@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::init(const int id,
   Core::LinAlg::Matrix<3, 3> linkeletriad(true);
   Core::LinAlg::Matrix<3, 1> distvec(true);
 
-  distvec.update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
+  distvec.update(1.0, get_bind_spot_pos2(), -1.0, get_bind_spot_pos1());
 
   // feasibility check regarding coinciding connection sites
   if (distvec.norm2() < 1e-12)
@@ -210,7 +210,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::pack(Core::Communication::PackBuffer
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   BeamLink::pack(data);
@@ -233,7 +233,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::unpack(const std::vector<char>& data
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -257,13 +257,13 @@ void BEAMINTERACTION::BeamLinkRigidJointed::unpack(const std::vector<char>& data
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
+void BEAMINTERACTION::BeamLinkRigidJointed::reset_state(
     std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
 
-  BeamLink::ResetState(bspotpos, bspottriad);
+  BeamLink::reset_state(bspotpos, bspottriad);
 
   /* the two orientations, i.e. triads of the linkage element are defined via a
    * constant relative rotation based on the triads at the binding spots of the
@@ -281,7 +281,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> BEAMINTERACTION::BeamLinkRigidJointed::Create()
+Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> BEAMINTERACTION::BeamLinkRigidJointed::create()
 {
   // for now, we always use a 2-noded linear Reissner element
   return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed());

@@ -90,7 +90,7 @@ namespace BEAMINTERACTION
       template <typename ELEMENT>
       bool operator()(ELEMENT const* first, ELEMENT const* second) const
       {
-        return first->Id() < second->Id();
+        return first->id() < second->id();
       }
     };
 

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -34,7 +34,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instan
                 numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -61,11 +61,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     const int iquad, const double timefacfac, const double rhsfac)
 {
   // extract multi-scale Newman material
-  const auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->Material());
+  const auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
   const auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
+      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   const auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
+      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // initialize variables for micro-scale coupling flux and derivatives of micro-scale coupling flux
   // w.r.t. macro-scale state variables
@@ -74,7 +74,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
   // initialize vector with macro-scale state variables
   std::vector<double> phinp(3, 0.0);
-  phinp[0] = my::scatravarmanager_->Phinp(0);
+  phinp[0] = my::scatravarmanager_->phinp(0);
   phinp[1] = my::funct_.dot(my::ephinp_[1]);
   phinp[2] = my::funct_.dot(my::ephinp_[2]);
 
@@ -85,7 +85,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
   // evaluate multi-scale Newman material
   newmanmultiscale->evaluate(iquad, phinp, q_micro, dq_dphi_micro, detF,
-      not Discret::ELEMENTS::ScaTraEleParameterStd::Instance("scatra")->partitioned_multi_scale());
+      not Discret::ELEMENTS::ScaTraEleParameterStd::instance("scatra")->partitioned_multi_scale());
 
   // calculate gradient of electric potential inside electrode
   Core::LinAlg::Matrix<nsd_, 1> gradpot_ed(true);
@@ -139,8 +139,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
       my::get_laplacian_weak_form(laplawf, ui, vi);
       emat(fvi + 2, fui) += -vi_dq_dc_el_ui;
       emat(fvi + 2, fui + 1) += -vi_dq_dpot_el_ui;
-      emat(fvi + 2, fui + 2) += timefacfac * mydiffcond::var_manager()->InvF() *
-                                    diff_manager()->GetPhasePoroTort(0) *
+      emat(fvi + 2, fui + 2) += timefacfac * mydiffcond::var_manager()->inv_f() *
+                                    diff_manager()->get_phase_poro_tort(0) *
                                     newmanmultiscale->electronic_cond(iquad) * laplawf -
                                 vi_dq_dpot_ed_ui;
     }
@@ -154,8 +154,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
     double laplawfrhs_gradpot(0.0);
     my::get_laplacian_weak_form_rhs(laplawfrhs_gradpot, gradpot_ed, vi);
-    erhs[fvi + 2] -= rhsfac * mydiffcond::var_manager()->InvF() *
-                         diff_manager()->GetPhasePoroTort(0) *
+    erhs[fvi + 2] -= rhsfac * mydiffcond::var_manager()->inv_f() *
+                         diff_manager()->get_phase_poro_tort(0) *
                          newmanmultiscale->electronic_cond(iquad) * laplawfrhs_gradpot -
                      vi_rhsterm;
   }
@@ -176,7 +176,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::s
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // preparations
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -184,8 +184,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::s
     std::vector<double> dummy(1, 0.);
     this->get_material_params(ele, dummy, dummy, dummy, dummy[0], iquad);
 
-    calc_mat_and_rhs_multi_scale(ele, emat, erhs, 0, iquad, my::scatraparatimint_->TimeFac() * fac,
-        my::scatraparatimint_->TimeFacRhs() * fac);
+    calc_mat_and_rhs_multi_scale(ele, emat, erhs, 0, iquad, my::scatraparatimint_->time_fac() * fac,
+        my::scatraparatimint_->time_fac_rhs() * fac);
   }
 }
 

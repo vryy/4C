@@ -15,7 +15,6 @@
 
 #include <Intrepid_FieldContainer.hpp>
 #include <Intrepid_PointTools.hpp>
-#include <Intrepid_Types.hpp>
 #include <Shards_CellTopology.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -46,7 +45,6 @@ namespace
         return Core::FE::GaussRule1D::line_lobatto10point;
       default:
         FOUR_C_THROW("The Lobatto Gauss rule is not implemented for degree %d", degree);
-        return Core::FE::GaussRule1D::undefined;
     }
   }
 }  // namespace
@@ -164,7 +162,6 @@ namespace Core::FE
         break;
       default:
         FOUR_C_THROW("Invalid dimension");
-        break;
     }
   }
 
@@ -173,7 +170,7 @@ namespace Core::FE
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
   template <int nsd, class POLY>
-  void PolynomialSpaceTensor<nsd, POLY>::Evaluate_deriv1(
+  void PolynomialSpaceTensor<nsd, POLY>::evaluate_deriv1(
       const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
@@ -218,7 +215,6 @@ namespace Core::FE
         break;
       default:
         FOUR_C_THROW("Invalid dimension");
-        break;
     }
   }
 
@@ -228,7 +224,7 @@ namespace Core::FE
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
   template <int nsd, class POLY>
-  void PolynomialSpaceTensor<nsd, POLY>::Evaluate_deriv2(
+  void PolynomialSpaceTensor<nsd, POLY>::evaluate_deriv2(
       const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
@@ -281,7 +277,6 @@ namespace Core::FE
         break;
       default:
         FOUR_C_THROW("Invalid dimension");
-        break;
     }
   }
 
@@ -291,10 +286,10 @@ namespace Core::FE
    \brief Creates an array with coordinates of the nodes supporting the polynomials.
    */
   template <int nsd, class POLY>
-  void PolynomialSpaceTensor<nsd, POLY>::FillUnitNodePoints(
+  void PolynomialSpaceTensor<nsd, POLY>::fill_unit_node_points(
       Core::LinAlg::SerialDenseMatrix &matrix) const
   {
-    matrix.shape(nsd, Size());
+    matrix.shape(nsd, size());
 
     const unsigned int size = poly_space1d_.size();
     switch (nsd)
@@ -305,28 +300,27 @@ namespace Core::FE
             for (unsigned int k = 0; k < size; ++k)
             {
               matrix(0, renumbering_[i * size * size + j * size + k]) =
-                  poly_space1d_[k].NodePoint();
+                  poly_space1d_[k].node_point();
               matrix(1, renumbering_[i * size * size + j * size + k]) =
-                  poly_space1d_[j].NodePoint();
+                  poly_space1d_[j].node_point();
               matrix(2, renumbering_[i * size * size + j * size + k]) =
-                  poly_space1d_[i].NodePoint();
+                  poly_space1d_[i].node_point();
             }
         break;
       case 2:
         for (unsigned int j = 0; j < size; ++j)
           for (unsigned int k = 0; k < size; ++k)
           {
-            matrix(0, renumbering_[j * size + k]) = poly_space1d_[k].NodePoint();
-            matrix(1, renumbering_[j * size + k]) = poly_space1d_[j].NodePoint();
+            matrix(0, renumbering_[j * size + k]) = poly_space1d_[k].node_point();
+            matrix(1, renumbering_[j * size + k]) = poly_space1d_[j].node_point();
           }
         break;
       case 1:
         for (unsigned int k = 0; k < size; ++k)
-          matrix(0, renumbering_[k]) = poly_space1d_[k].NodePoint();
+          matrix(0, renumbering_[k]) = poly_space1d_[k].node_point();
         break;
       default:
         FOUR_C_THROW("Invalid dimension");
-        break;
     }
   }
 
@@ -369,7 +363,7 @@ namespace Core::FE
         break;
     }
 
-    FOUR_C_ASSERT(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == PolynomialSpaceComplete::size(), "Internal error");
   }
 
 
@@ -377,7 +371,7 @@ namespace Core::FE
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
   template <int nsd, class POLY>
-  void PolynomialSpaceComplete<nsd, POLY>::Evaluate_deriv1(
+  void PolynomialSpaceComplete<nsd, POLY>::evaluate_deriv1(
       const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
@@ -427,7 +421,7 @@ namespace Core::FE
         break;
     }
 
-    FOUR_C_ASSERT(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == PolynomialSpaceComplete::size(), "Internal error");
   }
 
 
@@ -436,7 +430,7 @@ namespace Core::FE
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
   template <int nsd, class POLY>
-  void PolynomialSpaceComplete<nsd, POLY>::Evaluate_deriv2(
+  void PolynomialSpaceComplete<nsd, POLY>::evaluate_deriv2(
       const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
@@ -487,7 +481,7 @@ namespace Core::FE
         FOUR_C_THROW("Invalid dimension");
         break;
     }
-    FOUR_C_ASSERT(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == PolynomialSpaceComplete::size(), "Internal error");
   }
 
 
@@ -496,10 +490,10 @@ namespace Core::FE
    \brief Creates an array with coordinates of the nodes supporting the polynomials.
    */
   template <int nsd, class POLY>
-  void PolynomialSpaceComplete<nsd, POLY>::FillUnitNodePoints(
+  void PolynomialSpaceComplete<nsd, POLY>::fill_unit_node_points(
       Core::LinAlg::SerialDenseMatrix &matrix) const
   {
-    matrix.shape(nsd, Size());
+    matrix.shape(nsd, size());
 
     const unsigned int size = poly_space1d_.size();
     unsigned int c = 0;
@@ -510,28 +504,28 @@ namespace Core::FE
           for (unsigned int j = 0; j < size - i; ++j)
             for (unsigned int k = 0; k < size - i - j; ++k, ++c)
             {
-              matrix(0, renumbering_[c]) = poly_space1d_[k].NodePoint();
-              matrix(1, renumbering_[c]) = poly_space1d_[j].NodePoint();
-              matrix(2, renumbering_[c]) = poly_space1d_[i].NodePoint();
+              matrix(0, renumbering_[c]) = poly_space1d_[k].node_point();
+              matrix(1, renumbering_[c]) = poly_space1d_[j].node_point();
+              matrix(2, renumbering_[c]) = poly_space1d_[i].node_point();
             }
         break;
       case 2:
         for (unsigned int j = 0; j < size; ++j)
           for (unsigned int k = 0; k < size - j; ++k, ++c)
           {
-            matrix(0, renumbering_[c]) = poly_space1d_[k].NodePoint();
-            matrix(1, renumbering_[c]) = poly_space1d_[j].NodePoint();
+            matrix(0, renumbering_[c]) = poly_space1d_[k].node_point();
+            matrix(1, renumbering_[c]) = poly_space1d_[j].node_point();
           }
         break;
       case 1:
         for (unsigned int k = 0; k < size; ++k, ++c)
-          matrix(0, renumbering_[c]) = poly_space1d_[k].NodePoint();
+          matrix(0, renumbering_[c]) = poly_space1d_[k].node_point();
         break;
       default:
         FOUR_C_THROW("Invalid dimension");
         break;
     }
-    FOUR_C_ASSERT(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == PolynomialSpaceComplete::size(), "Internal error");
   }
 
 
@@ -548,34 +542,34 @@ namespace Core::FE
 
 
   template <int nsd>
-  void LagrangeBasisTet<nsd>::Evaluate_deriv1(
+  void LagrangeBasisTet<nsd>::evaluate_deriv1(
       const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
-    legendre_.Evaluate_deriv1(point, derivatives);
+    legendre_.evaluate_deriv1(point, derivatives);
     for (unsigned int d = 0; d < nsd; ++d)
     {
-      for (unsigned int i = 0; i < Size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
+      for (unsigned int i = 0; i < size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
       vandermonde_factor_.setVectors(
           Teuchos::rcpFromRef(evaluate_vec_), Teuchos::rcpFromRef(evaluate_vec_));
       vandermonde_factor_.solve();
-      for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluate_vec_(i, 0);
+      for (unsigned int i = 0; i < size(); ++i) derivatives(d, i) = evaluate_vec_(i, 0);
     }
   }
 
 
 
   template <int nsd>
-  void LagrangeBasisTet<nsd>::Evaluate_deriv2(
+  void LagrangeBasisTet<nsd>::evaluate_deriv2(
       const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
-    legendre_.Evaluate_deriv2(point, derivatives);
+    legendre_.evaluate_deriv2(point, derivatives);
     for (unsigned int d = 0; d < (nsd * (nsd + 1)) / 2; ++d)
     {
-      for (unsigned int i = 0; i < Size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
+      for (unsigned int i = 0; i < size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
       vandermonde_factor_.setVectors(
           Teuchos::rcpFromRef(evaluate_vec_), Teuchos::rcpFromRef(evaluate_vec_));
       vandermonde_factor_.solve();
-      for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluate_vec_(i, 0);
+      for (unsigned int i = 0; i < size(); ++i) derivatives(d, i) = evaluate_vec_(i, 0);
     }
   }
 
@@ -584,7 +578,7 @@ namespace Core::FE
   template <>
   void LagrangeBasisTet<2>::fill_fekete_points(const unsigned int degree)
   {
-    fekete_points_.shape(2, Size(degree));
+    fekete_points_.shape(2, size(degree));
 
     if (degree == 0)
     {
@@ -599,14 +593,14 @@ namespace Core::FE
     }
     else
     {
-      Intrepid::FieldContainer<double> wb_points(Size(degree), 2);
+      Intrepid::FieldContainer<double> wb_points(size(degree), 2);
 
       //  CellTopologyData
       shards::CellTopology myTri(shards::getCellTopologyData<shards::Triangle<3>>());
       Intrepid::PointTools::getLattice<double, Intrepid::FieldContainer<double>>(
           wb_points, myTri, degree, 0, Intrepid::POINTTYPE_WARPBLEND);
 
-      for (unsigned int i = 0; i < Size(degree); ++i)
+      for (unsigned int i = 0; i < size(degree); ++i)
         for (int j = 0; j < 2; ++j) fekete_points_(j, i) = wb_points(i, j);
     }
   }
@@ -616,7 +610,7 @@ namespace Core::FE
   template <>
   void LagrangeBasisTet<3>::fill_fekete_points(const unsigned int degree)
   {
-    fekete_points_.shape(3, Size(degree));
+    fekete_points_.shape(3, size(degree));
     unsigned int c = 0;
     if (degree == 0)
     {
@@ -637,14 +631,14 @@ namespace Core::FE
     }
     else
     {
-      Intrepid::FieldContainer<double> wb_points(Size(degree), 3);
+      Intrepid::FieldContainer<double> wb_points(size(degree), 3);
 
       //  CellTopologyData
       shards::CellTopology myTet(shards::getCellTopologyData<shards::Tetrahedron<4>>());
       Intrepid::PointTools::getLattice<double, Intrepid::FieldContainer<double>>(
           wb_points, myTet, degree, 0, Intrepid::POINTTYPE_WARPBLEND);
 
-      for (unsigned int i = 0; i < Size(degree); ++i)
+      for (unsigned int i = 0; i < size(degree); ++i)
         for (int j = 0; j < 3; ++j) fekete_points_(j, i) = wb_points(i, j);
     }
   }
@@ -662,23 +656,23 @@ namespace Core::FE
   template <int nsd>
   void Core::FE::LagrangeBasisTet<nsd>::compute_vandermonde_matrices(const unsigned int degree)
   {
-    vandermonde_.shape(Size(), Size());
+    vandermonde_.shape(size(), size());
 
-    Core::LinAlg::SerialDenseVector values(Size());
-    Core::LinAlg::SerialDenseMatrix deriv1(nsd, Size());
-    Core::LinAlg::SerialDenseMatrix deriv2(nsd * (nsd + 1) / 2, Size());
+    Core::LinAlg::SerialDenseVector values(size());
+    Core::LinAlg::SerialDenseMatrix deriv1(nsd, size());
+    Core::LinAlg::SerialDenseMatrix deriv2(nsd * (nsd + 1) / 2, size());
     Core::LinAlg::Matrix<nsd, 1> point;
-    for (unsigned int i = 0; i < Size(); ++i)
+    for (unsigned int i = 0; i < size(); ++i)
     {
       for (unsigned int d = 0; d < nsd; ++d) point(d, 0) = fekete_points_(d, i);
 
       legendre_.evaluate(point, values);
-      for (unsigned int j = 0; j < Size(); ++j) vandermonde_(j, i) = values(j);
+      for (unsigned int j = 0; j < size(); ++j) vandermonde_(j, i) = values(j);
     }
 
     vandermonde_factor_.setMatrix(Teuchos::rcpFromRef(vandermonde_));
     vandermonde_factor_.factor();
-    evaluate_vec_.shape(Size(), 1);
+    evaluate_vec_.shape(size(), 1);
 
 
     // Sanity check: Polynomials should be nodal in the Fekete points
@@ -701,7 +695,7 @@ namespace Core::FE
 
 
   template <int nsd>
-  void Core::FE::LagrangeBasisTet<nsd>::FillUnitNodePoints(
+  void Core::FE::LagrangeBasisTet<nsd>::fill_unit_node_points(
       Core::LinAlg::SerialDenseMatrix &matrix) const
   {
     matrix.shape(fekete_points_.numRows(), fekete_points_.numCols());
@@ -710,7 +704,7 @@ namespace Core::FE
   }
 
   template <int nsd>
-  Core::FE::PolynomialSpaceCache<nsd> &Core::FE::PolynomialSpaceCache<nsd>::Instance()
+  Core::FE::PolynomialSpaceCache<nsd> &Core::FE::PolynomialSpaceCache<nsd>::instance()
   {
     static Core::UTILS::SingletonOwner<Core::FE::PolynomialSpaceCache<nsd>> owner(
         []() {
@@ -718,11 +712,11 @@ namespace Core::FE
               new PolynomialSpaceCache<nsd>);
         });
 
-    return *owner.Instance(Core::UTILS::SingletonAction::create);
+    return *owner.instance(Core::UTILS::SingletonAction::create);
   }
 
   template <int nsd>
-  Teuchos::RCP<Core::FE::PolynomialSpace<nsd>> Core::FE::PolynomialSpaceCache<nsd>::Create(
+  Teuchos::RCP<Core::FE::PolynomialSpace<nsd>> Core::FE::PolynomialSpaceCache<nsd>::create(
       PolynomialSpaceParams params)
   {
     typename std::map<PolynomialSpaceParams, Teuchos::RCP<Core::FE::PolynomialSpace<nsd>>>::iterator

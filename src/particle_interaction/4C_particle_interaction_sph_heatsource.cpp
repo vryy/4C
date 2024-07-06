@@ -55,13 +55,13 @@ void ParticleInteraction::SPHHeatSourceBase::setup(
   neighborpairs_ = neighborpairs;
 
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   // allocate memory to hold particle types
   thermomaterial_.resize(typevectorsize);
 
   // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
     thermomaterial_[type_i] = dynamic_cast<const Mat::PAR::ParticleMaterialThermo*>(
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 
@@ -70,7 +70,7 @@ void ParticleInteraction::SPHHeatSourceBase::setup(
       PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::RigidPhase};
 
   // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
   {
     // determine absorbing particle types
     if (thermomaterial_[type_i]->thermalAbsorptivity_ > 0.0)
@@ -96,7 +96,7 @@ ParticleInteraction::SPHHeatSourceVolume::SPHHeatSourceVolume(const Teuchos::Par
   // empty constructor
 }
 
-void ParticleInteraction::SPHHeatSourceVolume::EvaluateHeatSource(const double& evaltime) const
+void ParticleInteraction::SPHHeatSourceVolume::evaluate_heat_source(const double& evaltime) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHHeatSourceVolume::EvaluateHeatSource");
 
@@ -105,11 +105,11 @@ void ParticleInteraction::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
 
   // get reference to function
   const auto& function =
-      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
           heatsourcefctnumber_ - 1);
 
   // safety check
-  if (function.NumberComponents() != 1)
+  if (function.number_components() != 1)
     FOUR_C_THROW("dimension of function defining heat source is not one!");
 
   // iterate over absorbing particle types
@@ -126,15 +126,16 @@ void ParticleInteraction::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
     const Mat::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
     // iterate over particles in container
-    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    for (int particle_i = 0; particle_i < container_i->particles_stored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
-                                 ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
-                                 : &(basematerial_i->initDensity_);
+      const double* dens_i =
+          (container_i->have_stored_state(PARTICLEENGINE::Density))
+              ? container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i)
+              : &(basematerial_i->initDensity_);
 
-      const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-      double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
+      const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+      double* tempdot_i = container_i->get_ptr_to_state(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
       funct = function.evaluate_time_derivative(pos_i, evaltime, 0, 0);
@@ -179,7 +180,7 @@ void ParticleInteraction::SPHHeatSourceSurface::init()
   }
 }
 
-void ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource(const double& evaltime) const
+void ParticleInteraction::SPHHeatSourceSurface::evaluate_heat_source(const double& evaltime) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource");
 
@@ -197,7 +198,7 @@ void ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource(const double&
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    const int particlestored = container_i->ParticlesStored();
+    const int particlestored = container_i->particles_stored();
 
     // allocate memory
     cfg_i[type_i].assign(particlestored, std::vector<double>(3, 0.0));
@@ -240,16 +241,16 @@ void ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource(const double&
         particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i = container_i->HaveStoredState(PARTICLEENGINE::Density)
-                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+    const double* dens_i = container_i->have_stored_state(PARTICLEENGINE::Density)
+                               ? container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i)
                                : &(material_i->initDensity_);
 
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
 
-    const double* dens_j = container_j->HaveStoredState(PARTICLEENGINE::Density)
-                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+    const double* dens_j = container_j->have_stored_state(PARTICLEENGINE::Density)
+                               ? container_j->get_ptr_to_state(PARTICLEENGINE::Density, particle_j)
                                : &(material_j->initDensity_);
 
     // (current) volume of particle i and j
@@ -280,11 +281,11 @@ void ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource(const double&
 
   // get reference to function
   const auto& function =
-      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
           heatsourcefctnumber_ - 1);
 
   // safety check
-  if (function.NumberComponents() != 1)
+  if (function.number_components() != 1)
     FOUR_C_THROW("dimension of function defining heat source is not one!");
 
   // iterate over absorbing particle types
@@ -301,7 +302,7 @@ void ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     const Mat::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
     // iterate over particles in container
-    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    for (int particle_i = 0; particle_i < container_i->particles_stored(); ++particle_i)
     {
       // norm of colorfield gradient of absorbing interface particles
       const double f_i = UTILS::VecNormTwo(cfg_i[type_i][particle_i].data());
@@ -318,12 +319,13 @@ void ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource(const double&
       if (f_i_proj < 0.0) continue;
 
       // get pointer to particle states
-      const double* dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
-                                 ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
-                                 : &(basematerial_i->initDensity_);
+      const double* dens_i =
+          (container_i->have_stored_state(PARTICLEENGINE::Density))
+              ? container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i)
+              : &(basematerial_i->initDensity_);
 
-      const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-      double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
+      const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+      double* tempdot_i = container_i->get_ptr_to_state(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
       funct = function.evaluate_time_derivative(pos_i, evaltime, 0, 0);

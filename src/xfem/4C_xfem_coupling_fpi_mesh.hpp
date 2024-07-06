@@ -63,11 +63,11 @@ namespace XFEM
     );
 
     //! cutter dis should be loaded into the cut?
-    bool CutGeometry() override { return (coupled_field_ == MeshCouplingFPI::ps_ps); }
+    bool cut_geometry() override { return (coupled_field_ == MeshCouplingFPI::ps_ps); }
 
-    bool isBJ() const { return full_bj_; }
+    bool is_bj() const { return full_bj_; }
 
-    void SetFullState(
+    void set_full_state(
         Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<const Epetra_Vector> pres)
     {
       fulldispnp_ = dispnp;
@@ -116,23 +116,23 @@ namespace XFEM
 
     virtual void zero_state_vectors_fpi();
 
-    void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
+    void gmsh_output(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen) override;
 
     void gmsh_output_discretization(std::ostream& gmshfilecontent) override;
 
-    void LiftDrag(const int step, const double time) const override;
+    void lift_drag(const int step, const double time) const override;
 
     void read_restart(const int step) override;
 
     // interface foces
-    Teuchos::RCP<Epetra_Vector> ITrueResidual() { return itrueresidual_; }
+    Teuchos::RCP<Epetra_Vector> i_true_residual() { return itrueresidual_; }
 
     // for assembly of fluid interface forces
-    Teuchos::RCP<Epetra_Vector> IForcecol() { return iforcecol_; }
+    Teuchos::RCP<Epetra_Vector> i_forcecol() { return iforcecol_; }
 
     //! Caluculate the Porosity for this FaceElement Gausspoint
-    double CalcPorosity(
+    double calc_porosity(
         Core::Elements::Element* ele, Core::LinAlg::Matrix<3, 1>& rst_slave, double& J);
 
     //! get distance when transition between FPSI and PSCI is started
@@ -142,13 +142,13 @@ namespace XFEM
     double get_fpi_pcontact_fullfraction() { return fpsi_contact_fullpcfraction_; }
 
     /// Assign communicator to contact to mesh coupling object
-    void Assign_Contact_Comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
+    void assign_contact_comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
     {
       xf_c_comm_ = xf_c_comm;
     }
 
     /// Get communicator to contact
-    Teuchos::RCP<XFEM::XFluidContactComm> Get_Contact_Comm()
+    Teuchos::RCP<XFEM::XFluidContactComm> get_contact_comm()
     {
       if (xf_c_comm_ == Teuchos::null)
         FOUR_C_THROW("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
@@ -156,7 +156,7 @@ namespace XFEM
     }
 
     /// Register this side on this proc
-    void RegisterSideProc(int sid);
+    void register_side_proc(int sid);
 
     /// Reconnect Parent Pointers
     void reconnect_parent_pointers();
@@ -200,7 +200,7 @@ namespace XFEM
 
     void do_condition_specific_setup() override;
 
-    bool HasMovingInterface() override { return true; }
+    bool has_moving_interface() override { return true; }
 
     void set_condition_specific_parameters() override;
 

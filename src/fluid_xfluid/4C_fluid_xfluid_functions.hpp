@@ -43,7 +43,7 @@ namespace Discret
 
       double evaluate(const double* x, double t, std::size_t component) const override;
 
-      [[nodiscard]] std::size_t NumberComponents() const override
+      [[nodiscard]] std::size_t number_components() const override
       {
         FOUR_C_THROW("Number of components not defined for GerstenbergerForwardfacingStep.");
       };
@@ -67,7 +67,7 @@ namespace Discret
 
       double evaluate(const double* x, double t, std::size_t component) const override;
 
-      [[nodiscard]] std::size_t NumberComponents() const override
+      [[nodiscard]] std::size_t number_components() const override
       {
         FOUR_C_THROW("Number of components not defined for MovingLevelSetCylinder.");
       };
@@ -134,7 +134,7 @@ namespace Discret
           double radius, double radius_tube, std::vector<double>* direction, double distance,
           double maxspeed, std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
-      [[nodiscard]] std::size_t NumberComponents() const override
+      [[nodiscard]] std::size_t number_components() const override
       {
         FOUR_C_THROW("Number of components not defined for MovingLSTorus.");
       };
@@ -212,7 +212,7 @@ namespace Discret
        *
        * \return number of components (u,v,w)
        */
-      [[nodiscard]] std::size_t NumberComponents() const override { return (3); };
+      [[nodiscard]] std::size_t number_components() const override { return (3); };
     };
 
     class MovingLevelSetTorusSliplength : public MovingLSTorus
@@ -250,7 +250,7 @@ namespace Discret
       std::vector<double> evaluate_spatial_derivative(
           const double* x, double t, std::size_t component) const override;
 
-      [[nodiscard]] std::size_t NumberComponents() const override
+      [[nodiscard]] std::size_t number_components() const override
       {
         FOUR_C_THROW("Number of components not defined for TaylorCouetteFlow.");
       };
@@ -283,7 +283,7 @@ namespace Discret
       std::vector<double> evaluate_spatial_derivative(
           const double* x, double t, std::size_t component) const override;
 
-      [[nodiscard]] std::size_t NumberComponents() const override
+      [[nodiscard]] std::size_t number_components() const override
       {
         FOUR_C_THROW("Number of components not defined for UrquizaBoxFlow.");
       };

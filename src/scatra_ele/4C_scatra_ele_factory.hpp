@@ -33,12 +33,12 @@ namespace Discret
       virtual ~ScaTraFactory() = default;
 
       //! ProvideImpl
-      static ScaTraEleInterface* ProvideImpl(Core::FE::CellType distype,
+      static ScaTraEleInterface* provide_impl(Core::FE::CellType distype,
           Inpar::ScaTra::ImplType problem, const int numdofpernode, const int numscal,
           const std::string& disname);
 
       //! ProvideImplHDG
-      static ScaTraEleInterface* ProvideImplHDG(Core::FE::CellType distype,
+      static ScaTraEleInterface* provide_impl_hdg(Core::FE::CellType distype,
           Inpar::ScaTra::ImplType problem, const int numdofpernode, const int numscal,
           const std::string& disname);
 

@@ -33,7 +33,7 @@ namespace Mat
       explicit FluidPoroPhaseDof(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! build the phase dof
-      static FluidPoroPhaseDof* CreatePhaseDof(int phasedofId);
+      static FluidPoroPhaseDof* create_phase_dof(int phasedofId);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
@@ -42,17 +42,19 @@ namespace Mat
       virtual void initialize() = 0;
 
       /// return type of phase law
-      virtual Core::Materials::MaterialType PoroPhaseLawType() const = 0;
+      virtual Core::Materials::MaterialType poro_phase_law_type() const = 0;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      virtual void FillDoFMatrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const = 0;
+      virtual void fill_do_f_matrix(
+          Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const = 0;
 
       /// evaluate saturation of the phase
-      virtual double EvaluateSaturation(int phasenum, const std::vector<double>& state,
+      virtual double evaluate_saturation(int phasenum, const std::vector<double>& state,
           const std::vector<double>& pressure) const = 0;
 
       /// evaluate the generalized(!) pressure of this phase
-      virtual double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const = 0;
+      virtual double evaluate_gen_pressure(
+          int phasenum, const std::vector<double>& state) const = 0;
 
       //! evaluate derivative of saturation with respect to pressure
       virtual double evaluate_deriv_of_saturation_wrt_pressure(
@@ -79,17 +81,17 @@ namespace Mat
       void initialize() override;
 
       /// return type of phase law
-      Core::Materials::MaterialType PoroPhaseLawType() const override;
+      Core::Materials::MaterialType poro_phase_law_type() const override;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      void FillDoFMatrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const override;
+      void fill_do_f_matrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const override;
 
       /// evaluate saturation of the phase
-      double EvaluateSaturation(int phasenum, const std::vector<double>& state,
+      double evaluate_saturation(int phasenum, const std::vector<double>& state,
           const std::vector<double>& pressure) const override;
 
       /// evaluate the generalized(!) pressure of this phase
-      double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const override;
+      double evaluate_gen_pressure(int phasenum, const std::vector<double>& state) const override;
 
       //! evaluate derivative of saturation with respect to pressure
       double evaluate_deriv_of_saturation_wrt_pressure(
@@ -121,17 +123,17 @@ namespace Mat
       void initialize() override;
 
       /// return type of phase law
-      Core::Materials::MaterialType PoroPhaseLawType() const override;
+      Core::Materials::MaterialType poro_phase_law_type() const override;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      void FillDoFMatrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const override;
+      void fill_do_f_matrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const override;
 
       /// evaluate saturation of the phase
-      double EvaluateSaturation(int phasenum, const std::vector<double>& state,
+      double evaluate_saturation(int phasenum, const std::vector<double>& state,
           const std::vector<double>& pressure) const override;
 
       /// evaluate the generalized(!) pressure of this phase
-      double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const override;
+      double evaluate_gen_pressure(int phasenum, const std::vector<double>& state) const override;
 
       //! evaluate derivative of saturation with respect to pressure
       double evaluate_deriv_of_saturation_wrt_pressure(
@@ -165,17 +167,17 @@ namespace Mat
       void initialize() override;
 
       /// return type of phase law
-      Core::Materials::MaterialType PoroPhaseLawType() const override;
+      Core::Materials::MaterialType poro_phase_law_type() const override;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      void FillDoFMatrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const override;
+      void fill_do_f_matrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const override;
 
       /// evaluate saturation of the phase
-      double EvaluateSaturation(int phasenum, const std::vector<double>& state,
+      double evaluate_saturation(int phasenum, const std::vector<double>& state,
           const std::vector<double>& pressure) const override;
 
       /// evaluate the generalized(!) pressure of this phase
-      double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const override;
+      double evaluate_gen_pressure(int phasenum, const std::vector<double>& state) const override;
 
       //! evaluate derivative of saturation with respect to pressure
       double evaluate_deriv_of_saturation_wrt_pressure(

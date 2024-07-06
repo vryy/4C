@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamToSolidParamsBase::BeamToSolidParamsBase()
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidParamsBase::SetBaseParams(
+void BEAMINTERACTION::BeamToSolidParamsBase::set_base_params(
     const Teuchos::ParameterList& beam_to_solid_params_list)
 {
   // Get parameters form input file.

@@ -34,13 +34,13 @@ FLD::TimIntAC::TimIntAC(const Teuchos::RCP<Core::FE::Discretization>& actdis,
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::read_restart(int step)
 {
-  const Teuchos::ParameterList& fs3idyn = Global::Problem::Instance()->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
   const bool restartfrompartfsi = Core::UTILS::IntegralValue<int>(fs3idyn, "RESTART_FROM_PART_FSI");
 
   if (not restartfrompartfsi)  // standard restart
   {
     Core::IO::DiscretizationReader reader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step);
+        discret_, Global::Problem::instance()->input_control_file(), step);
 
     reader.read_vector(trueresidual_, "trueresidual");
   }

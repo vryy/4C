@@ -31,7 +31,7 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Create(
+Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::create(
     const std::vector<char>& data)
 {
   BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed* my_beam3rline2 =
@@ -61,14 +61,14 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed(
 {
   if (linkele_ != Teuchos::null)
     linkele_ = Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Beam3r>(
-        Teuchos::rcp(old.linkele_->Clone(), true));
+        Teuchos::rcp(old.linkele_->clone(), true));
   else
     linkele_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Clone()
+Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::clone()
     const
 {
   Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed> newlinker =
@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
   Core::LinAlg::Matrix<3, 3> linkeletriad(true);
   Core::LinAlg::Matrix<3, 1> distvec(true);
 
-  distvec.update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
+  distvec.update(1.0, get_bind_spot_pos2(), -1.0, get_bind_spot_pos1());
 
   // feasibility check regarding coinciding connection sites
   if (distvec.norm2() < 1e-12)
@@ -226,7 +226,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
   linkele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3r(-1, 0));
 
   // set material
-  linkele_->SetMaterial(0, Mat::Factory(matnum));
+  linkele_->set_material(0, Mat::Factory(matnum));
 
   // Todo @grill: safety check for proper material type (done on element anyway, but do it here as
   // well)?!
@@ -236,7 +236,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of
   // nodes
   constexpr std::array nodeids = {-1, -1};
-  linkele_->SetNodeIds(2, nodeids.data());
+  linkele_->set_node_ids(2, nodeids.data());
 
   // the triads at the two connection sites are chosen identical initially, so we only use the first
   // one
@@ -248,8 +248,8 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
 
   for (unsigned int i = 0; i < 3; ++i)
   {
-    refpos[i] = GetBindSpotPos1()(i);
-    refpos[3 + i] = GetBindSpotPos2()(i);
+    refpos[i] = get_bind_spot_pos1()(i);
+    refpos[3 + i] = get_bind_spot_pos2()(i);
 
     refrotvec[i] = linkelerotvec(i);
     refrotvec[3 + i] = linkelerotvec(i);
@@ -270,7 +270,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class
   BeamLinkPinJointed::pack(data);
@@ -287,7 +287,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(const std::vector<ch
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
@@ -429,13 +429,13 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::evaluate_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::reset_state(
     std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
 
-  BeamLinkPinJointed::ResetState(bspotpos, bspottriad);
+  BeamLinkPinJointed::reset_state(bspotpos, bspottriad);
 
   // *** re-initialization of the two triads of the connecting element ***
 
@@ -459,20 +459,20 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   Core::LinAlg::Matrix<3, 3> linkeletriad(true);
   Core::LinAlg::Matrix<3, 1> distvec(true);
 
-  distvec.update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
+  distvec.update(1.0, get_bind_spot_pos2(), -1.0, get_bind_spot_pos1());
 
   // feasibility check regarding coinciding connection sites
   if (distvec.norm2() < 1e-12)
   {
     std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    GetBindSpotPos1().print(std::cout);
+    get_bind_spot_pos1().print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    GetBindSpotPos2().print(std::cout);
+    get_bind_spot_pos2().print(std::cout);
     std::cout << "\ninitbspottriad1 =";
-    GetBindSpotPos1().print(std::cout);
+    get_bind_spot_pos1().print(std::cout);
     std::cout << "\ninitbspottriad2 =";
-    GetBindSpotPos2().print(std::cout);
+    get_bind_spot_pos2().print(std::cout);
 
     FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the two given binding "
@@ -512,13 +512,13 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   {
     std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    GetBindSpotPos1().print(std::cout);
+    get_bind_spot_pos1().print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    GetBindSpotPos2().print(std::cout);
+    get_bind_spot_pos2().print(std::cout);
     std::cout << "\ninitbspottriad1 =";
-    GetBindSpotPos1().print(std::cout);
+    get_bind_spot_pos1().print(std::cout);
     std::cout << "\ninitbspottriad2 =";
-    GetBindSpotPos2().print(std::cout);
+    get_bind_spot_pos2().print(std::cout);
 
     std::cout << "\ndistvec = ";
     distvec.print(std::cout);
@@ -544,13 +544,13 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   {
     std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    GetBindSpotPos1().print(std::cout);
+    get_bind_spot_pos1().print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    GetBindSpotPos2().print(std::cout);
+    get_bind_spot_pos2().print(std::cout);
     std::cout << "\ninitbspottriad1 =";
-    GetBindSpotPos1().print(std::cout);
+    get_bind_spot_pos1().print(std::cout);
     std::cout << "\ninitbspottriad2 =";
-    GetBindSpotPos2().print(std::cout);
+    get_bind_spot_pos2().print(std::cout);
 
     std::cout << "\ndistvec = ";
     distvec.print(std::cout);
@@ -582,8 +582,8 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::fill_state_variables_for_el
 {
   for (unsigned int i = 0; i < 3; ++i)
   {
-    disp_totlag_centerline(i) = GetBindSpotPos1()(i);
-    disp_totlag_centerline(3 + i) = GetBindSpotPos2()(i);
+    disp_totlag_centerline(i) = get_bind_spot_pos1()(i);
+    disp_totlag_centerline(3 + i) = get_bind_spot_pos2()(i);
   }
 
   Qnode.push_back(triad_);
@@ -592,7 +592,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::fill_state_variables_for_el
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::GetBindingSpotForce(
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::get_binding_spot_force(
     int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const
 {
   bspotforce = bspotforces_[bspotid];
@@ -600,16 +600,16 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::GetBindingSpotForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::GetInternalEnergy() const
+double BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::get_internal_energy() const
 {
-  return linkele_->GetInternalEnergy();
+  return linkele_->get_internal_energy();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::GetKineticEnergy() const
+double BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::get_kinetic_energy() const
 {
-  return linkele_->GetKineticEnergy();
+  return linkele_->get_kinetic_energy();
 }
 
 FOUR_C_NAMESPACE_CLOSE

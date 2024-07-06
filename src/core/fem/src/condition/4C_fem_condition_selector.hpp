@@ -81,13 +81,13 @@ namespace Core::Conditions
     virtual ~ConditionSelector() = default;
 
     /// select all matching dofs of the node and put them into conddofset
-    virtual bool SelectDofs(Core::Nodes::Node* node, std::set<int>& conddofset);
+    virtual bool select_dofs(Core::Nodes::Node* node, std::set<int>& conddofset);
 
     /// tell if the node gid is known by any condition of the given name
-    virtual bool ContainsNode(int ngid);
+    virtual bool contains_node(int ngid);
 
     /// tell if the dof of a node from this condition is covered as well
-    virtual bool ContainsDof(int dof, int pos) { return true; }
+    virtual bool contains_dof(int dof, int pos) { return true; }
 
    protected:
     /// discretization we are looking at
@@ -125,7 +125,7 @@ namespace Core::Conditions
 
     /// Contain a dof number only if the dof nodal position is within the
     /// allowed range.
-    bool ContainsDof(int dof, int pos) override { return startdim_ <= pos and pos < enddim_; }
+    bool contains_dof(int dof, int pos) override { return startdim_ <= pos and pos < enddim_; }
 
    private:
     int startdim_;
@@ -157,14 +157,14 @@ namespace Core::Conditions
       \note The order of the selector additions determines the slots within
       Core::LinAlg::MultiMapExtractor.
      */
-    void AddSelector(Teuchos::RCP<ConditionSelector> s) { selectors_.push_back(s); }
+    void add_selector(Teuchos::RCP<ConditionSelector> s) { selectors_.push_back(s); }
 
     /// Do the setup
-    void SetupExtractor(const Core::FE::Discretization& dis, const Epetra_Map& fullmap,
+    void setup_extractor(const Core::FE::Discretization& dis, const Epetra_Map& fullmap,
         Core::LinAlg::MultiMapExtractor& extractor);
 
     /// Activate overlapping
-    void SetOverlapping(bool overlapping) { overlapping_ = overlapping; }
+    void set_overlapping(bool overlapping) { overlapping_ = overlapping; }
 
    private:
     /// evaluate the ConditionSelector objects

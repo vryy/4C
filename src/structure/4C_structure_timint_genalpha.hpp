@@ -45,10 +45,10 @@ namespace Solid
    public:
     //! verify if given coefficients are in admissible range;
     //! prints also info to STDOUT
-    void VerifyCoeff();
+    void verify_coeff();
 
     //! calculate coefficients from given spectral radius
-    void CalcCoeff();
+    void calc_coeff();
 
     //! @name Construction
     //@{
@@ -114,7 +114,7 @@ namespace Solid
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here
-    void ResizeMStep() override { ; }
+    void resize_m_step() override { ; }
 
     //@}
 
@@ -122,14 +122,14 @@ namespace Solid
     //@{
 
     //! Return name
-    enum Inpar::Solid::DynamicType MethodName() const override
+    enum Inpar::Solid::DynamicType method_name() const override
     {
       return Inpar::Solid::dyna_genalpha;
     }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() const override { return 1; }
+    int method_steps() const override { return 1; }
 
     //! Give linear order of accuracy of displacement part
     int method_order_of_accuracy_dis() const override
@@ -192,28 +192,28 @@ namespace Solid
     }
 
     //! return time integration factor
-    double TimIntParam() const override
+    double tim_int_param() const override
     {
       check_is_init();
       return alphaf_;
     }
 
     //! return time integration factor-alpham
-    virtual double TimIntParamAlpham() const
+    virtual double tim_int_param_alpham() const
     {
       check_is_init();
       return alpham_;
     }
 
     //! return time integration factor-beta
-    virtual double TimIntParamBeta() const
+    virtual double tim_int_param_beta() const
     {
       check_is_init();
       return beta_;
     }
 
     //! return time integration factor-gamma
-    virtual double TimIntParamGamma() const
+    virtual double tim_int_param_gamma() const
     {
       check_is_init();
       return gamma_;
@@ -232,7 +232,7 @@ namespace Solid
     //! Consistent predictor with constant accelerations
     //! and extrapolated velocities and displacements
     //! \author mayr
-    void PredictConstAcc() override;
+    void predict_const_acc() override;
 
     //! Create force residual #fres_ and its stiffness #stiff_
     void evaluate_force_stiff_residual(Teuchos::ParameterList& params) final;
@@ -246,7 +246,7 @@ namespace Solid
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
-    double CalcRefNormForce() override;
+    double calc_ref_norm_force() override;
 
     //! Update iteration incrementally
     //!
@@ -265,16 +265,16 @@ namespace Solid
     void update_iter_iteratively() override;
 
     //! Update step
-    void UpdateStepState() override;
+    void update_step_state() override;
 
     //! Update element
-    void UpdateStepElement() override;
+    void update_step_element() override;
 
     //! Read and set restart for forces
-    void ReadRestartForce() override;
+    void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -282,17 +282,17 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() override { return fext_; }
+    Teuchos::RCP<Epetra_Vector> fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() override { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> fext_new() override { return fextn_; }
 
     //@}
 
     //! @name Generalised-alpha specific methods
     //@{
     //! Evaluate mid-state vectors by averaging end-point vectors
-    void EvaluateMidState();
+    void evaluate_mid_state();
     //@}
 
     //! Build total residual vector and effective tangential stiffness
@@ -303,7 +303,7 @@ namespace Solid
         Teuchos::RCP<Core::LinAlg::SparseOperator> mass_);
 
     //! Check, if there are solely beam elements in the whole discretization
-    bool SolelyBeam3Elements(Teuchos::RCP<Core::FE::Discretization> actdis);
+    bool solely_beam3_elements(Teuchos::RCP<Core::FE::Discretization> actdis);
 
    protected:
     //! equal operator is NOT wanted

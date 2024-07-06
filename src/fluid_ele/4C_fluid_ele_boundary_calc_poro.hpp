@@ -66,7 +66,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static FluidEleBoundaryCalcPoro<distype>* Instance(
+      static FluidEleBoundaryCalcPoro<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// determines which boundary integral is to be evaluated
@@ -395,7 +395,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static FluidEleBoundaryCalcPoroP1<distype>* Instance(
+      static FluidEleBoundaryCalcPoroP1<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
      protected:

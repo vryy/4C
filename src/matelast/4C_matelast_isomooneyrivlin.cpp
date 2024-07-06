@@ -25,7 +25,7 @@ Mat::Elastic::IsoMooneyRivlin::IsoMooneyRivlin(Mat::Elastic::PAR::IsoMooneyRivli
 {
 }
 
-void Mat::Elastic::IsoMooneyRivlin::AddStrainEnergy(double& psi,
+void Mat::Elastic::IsoMooneyRivlin::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {

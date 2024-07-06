@@ -13,7 +13,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidEleParameterStd* Discret::ELEMENTS::FluidEleParameterStd::Instance(
+Discret::ELEMENTS::FluidEleParameterStd* Discret::ELEMENTS::FluidEleParameterStd::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -23,7 +23,7 @@ Discret::ELEMENTS::FluidEleParameterStd* Discret::ELEMENTS::FluidEleParameterStd
             new Discret::ELEMENTS::FluidEleParameterStd());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 //----------------------------------------------------------------------*/

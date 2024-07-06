@@ -29,10 +29,10 @@ namespace Mat
     GrowthEvolution(double const k, double const sig) : sig_h(sig), k_sig(k){};
 
     /// Set cauchy prestress of new mass which is deposited during G&R
-    void SetSigH(double const& sig) { sig_h = sig; };
+    void set_sig_h(double const& sig) { sig_h = sig; };
 
     /// Evaluate residual of growth evolution equation
-    void EvaluateFunc(double& r,     ///< Residual
+    void evaluate_func(double& r,    ///< Residual
         double const& sig,           ///< Current Cauchy stress
         double const& cur_rho_col,   ///< Current collagen mass density
         double const& last_rho_col,  ///< "Old" (last time step) collagen mass density
@@ -44,8 +44,8 @@ namespace Mat
 
     /// Evaluate derivative of growth evolution equation of the i-th fiber family w.r.t. the mass
     /// density of the i-th fiber family
-    void EvaluatedFuncidrhoi(double& dridrhoi,  ///< Output
-        double const& sig,                      ///< Current Cauchy stress
+    void evaluated_funcidrhoi(double& dridrhoi,  ///< Output
+        double const& sig,                       ///< Current Cauchy stress
         double const& dsigdrho,     ///< Derivative of Cauchy stress w.r.t. the mass density
         double const& cur_rho_col,  ///< Current collagen mass density
         double const& dt,           ///< Time step size
@@ -56,8 +56,8 @@ namespace Mat
 
     /// Evaluate derivative of growth evolution equation of the i-th fiber family w.r.t. the mass
     /// density of the j-th fiber family
-    void EvaluatedFuncidrhoj(double& dridrhoj,  ///< Output
-        double const& sig,                      ///< Current Cauchy stress
+    void evaluated_funcidrhoj(double& dridrhoj,  ///< Output
+        double const& sig,                       ///< Current Cauchy stress
         double const& dsigdrho,     ///< Derivative of Cauchy stress w.r.t. the mass density
         double const& cur_rho_col,  ///< Current collagen mass density
         double const& dt,           ///< Time step size
@@ -77,7 +77,7 @@ namespace Mat
     };
 
     /// Evaluate derivative of growth evolution equation w.r.t. the right Cauchy-Green tensor
-    void EvaluatedFuncidC(Core::LinAlg::Matrix<1, 6>& drdC,  ///< Output
+    void evaluated_funcid_c(Core::LinAlg::Matrix<1, 6>& drdC,  ///< Output
         Core::LinAlg::Matrix<6, 1> const&
             dsigdCv,  ///< Derivative of Cauchy stress w.r.t. the right Cauchy-Green tensor
         double const& cur_rho_col,  ///< Current collagen mass density
@@ -88,7 +88,7 @@ namespace Mat
     };
 
     /// Evaluate time derivative of the mass density of the i-th fiber family
-    void Evaluatedrhodt(double& drhodt,  ///< Output
+    void evaluatedrhodt(double& drhodt,  ///< Output
         double const& sig,               ///< Current Cauchy stress
         double const& cur_rho_col,       ///< Current collagen mass density
         int const eleGID) const          ///< Element id
@@ -108,10 +108,10 @@ namespace Mat
         : sig_h(sig), k_sig(k), t_decay(t){};
 
     /// Set cauchy prestress of new mass which is deposited during G&R
-    void SetSigH(double const& sig) { sig_h = sig; };
+    void set_sig_h(double const& sig) { sig_h = sig; };
 
     /// Evaluate residual of remodel evolution equation
-    void EvaluateFunc(double& r,                     ///< Residual
+    void evaluate_func(double& r,                    ///< Residual
         double const& sig,                           ///< Current Cauchy stress
         Core::LinAlg::Matrix<3, 3> const& YM,        ///< Factor in remodel evolution equation
         Core::LinAlg::Matrix<3, 3> const& dsigdCeM,  ///< Derivative of local Cauchy stress w.r.t.
@@ -143,8 +143,8 @@ namespace Mat
 
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
     /// inelastic (scalar) remodel stretch of the i-th fiber family
-    void EvaluatedFuncidrho(double& drdrho,  ///< Output
-        double const& sig,                   ///< Current Cauchy stress
+    void evaluated_funcidrho(double& drdrho,  ///< Output
+        double const& sig,                    ///< Current Cauchy stress
         double const& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the remodel stretch
         Core::LinAlg::Matrix<3, 3> const& YM,        ///< Factor in remodel evolution equation
         Core::LinAlg::Matrix<3, 3> const& dYdrhoM,   ///< Derivative of factor in remodel evolution
@@ -163,8 +163,8 @@ namespace Mat
 
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
     /// inelastic (scalar) remodel stretch of the i-th fiber family
-    void EvaluatedFuncidC(Core::LinAlg::Matrix<1, 6>& drdC,  ///< Output
-        double const& sig,                                   ///< Current Cauchy stress
+    void evaluated_funcid_c(Core::LinAlg::Matrix<1, 6>& drdC,  ///< Output
+        double const& sig,                                     ///< Current Cauchy stress
         Core::LinAlg::Matrix<6, 1> const&
             dsigdCv,  ///< Derivative of Cauchy stress w.r.t. the right Cauchy-Green tensor
         Core::LinAlg::Matrix<6, 1> const&
@@ -187,7 +187,7 @@ namespace Mat
 
     /// Evaluate derivative of remodel evolution equation w.r.t. time derivative of the remodel
     /// stretch
-    void Evaluatedlambrdt(double& dlambrdt,       ///< Output
+    void evaluatedlambrdt(double& dlambrdt,       ///< Output
         double const& sig,                        ///< Current Cauchy stress
         Core::LinAlg::Matrix<3, 3> const& YredM,  ///< Reduced factor in remodel evolution equation
                                                   ///< (\dot{\lambda}_r is factored out)
@@ -213,7 +213,7 @@ namespace Mat
       FiberData(Teuchos::RCP<Mat::Elastic::Summand> sum) : fiber(std::move(sum)), G(0){};
 
       /// Update of internal data
-      void UpdateNewton(int const gp, double const dt)
+      void update_newton(int const gp, double const dt)
       {
         iFrM[gp].update(G / cur_lambr[gp], AM, 0.0);
         iFrM[gp].update(1. / std::sqrt(G / cur_lambr[gp]), AM_orth, 1.0);
@@ -234,7 +234,7 @@ namespace Mat
             AM_orth, 1.0);
       };
       /// Update of internal data
-      void UpdateHistory(int const gp)
+      void update_history(int const gp)
       {
         last_lambr[gp] = cur_lambr[gp];
         last_rho[gp] = cur_rho[gp];
@@ -355,9 +355,9 @@ namespace Mat
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(Core::Communication::PackBuffer& data) const override;
+      void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      void UnpackSummand(
+      void unpack_summand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
@@ -366,16 +366,16 @@ namespace Mat
       //@{
 
       /// material type
-      Core::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType material_type() const override
       {
         return Core::Materials::mes_remodelfiber;
       };
 
       /// Return number of fiber families
-      inline unsigned GetNumFibers() const { return potsumfiber_.size(); };
+      inline unsigned get_num_fibers() const { return potsumfiber_.size(); };
 
       /// Return current mass density of k-th specific fiber
-      inline double GetCurMassDensity(unsigned const k, int const gp) const
+      inline double get_cur_mass_density(unsigned const k, int const gp) const
       {
         return potsumfiber_[k]->cur_rho[gp];
       };
@@ -404,11 +404,11 @@ namespace Mat
       virtual void setup(int numgp, double rho_tot, Input::LineDefinition* linedef);
 
       /// Update fiber directions with new local coordinate system (radaxicirc_)
-      void UpdateFiberDirs(Core::LinAlg::Matrix<3, 3> const& locsys,  ///< local coordinate system
-          const double& dt);                                          ///< time step size
+      void update_fiber_dirs(Core::LinAlg::Matrix<3, 3> const& locsys,  ///< local coordinate system
+          const double& dt);                                            ///< time step size
 
       /// Update cauchy prestress of new mass which is deposited during G&R
-      void UpdateSigH();
+      void update_sig_h();
 
       /// Returns the necessary derivations of the growth and remodel evolution equations and
       /// their residuals
@@ -496,14 +496,14 @@ namespace Mat
           const int eleGID);  ///< Element ID
 
       /// Return names of visualization data
-      virtual void VisNames(std::map<std::string, int>& names, unsigned int p);
+      virtual void vis_names(std::map<std::string, int>& names, unsigned int p);
 
       /// Return visualization data
-      bool VisData(
+      bool vis_data(
           const std::string& name, std::vector<double>& data, int numgp, int eleId) override;
 
       /// Indicator for the chosen formulations
-      void SpecifyFormulation(
+      void specify_formulation(
           bool& isoprinc,    ///< global indicator for isotropic principal formulation
           bool& isomod,      ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,  ///< global indicator for anisotropic principal formulation

@@ -386,9 +386,9 @@ namespace Core::VolMortar
           for (int i = 0; i < nn; ++i)
           {
             // first local basis vector
-            gxi[0] += deriv(0, i) * ele.Nodes()[i]->X()[0];
-            gxi[1] += deriv(0, i) * ele.Nodes()[i]->X()[1];
-            gxi[2] += deriv(0, i) * ele.Nodes()[i]->X()[2];
+            gxi[0] += deriv(0, i) * ele.nodes()[i]->x()[0];
+            gxi[1] += deriv(0, i) * ele.nodes()[i]->x()[1];
+            gxi[2] += deriv(0, i) * ele.nodes()[i]->x()[2];
           }
 
           // second local basis vector
@@ -419,14 +419,14 @@ namespace Core::VolMortar
           for (int i = 0; i < nn; ++i)
           {
             // first local basis vector
-            gxi[0] += deriv(0, i) * ele.Nodes()[i]->X()[0];
-            gxi[1] += deriv(0, i) * ele.Nodes()[i]->X()[1];
-            gxi[2] += deriv(0, i) * ele.Nodes()[i]->X()[2];
+            gxi[0] += deriv(0, i) * ele.nodes()[i]->x()[0];
+            gxi[1] += deriv(0, i) * ele.nodes()[i]->x()[1];
+            gxi[2] += deriv(0, i) * ele.nodes()[i]->x()[2];
 
             // second local basis vector
-            geta[0] += deriv(1, i) * ele.Nodes()[i]->X()[0];
-            geta[1] += deriv(1, i) * ele.Nodes()[i]->X()[1];
-            geta[2] += deriv(1, i) * ele.Nodes()[i]->X()[2];
+            geta[0] += deriv(1, i) * ele.nodes()[i]->x()[0];
+            geta[1] += deriv(1, i) * ele.nodes()[i]->x()[1];
+            geta[2] += deriv(1, i) * ele.nodes()[i]->x()[2];
           }
 
           // cross product of gxi and geta
@@ -443,7 +443,7 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<4, 4> jacob;
           for (int i = 0; i < 4; i++) jacob(0, i) = 1;
           for (int row = 0; row < 3; row++)
-            for (int col = 0; col < 4; col++) jacob(row + 1, col) = ele.Nodes()[col]->X()[row];
+            for (int col = 0; col < 4; col++) jacob(row + 1, col) = ele.nodes()[col]->x()[row];
 
           jac = jacob.determinant() / 6.0;
 
@@ -465,12 +465,12 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
-            const Core::Nodes::Node* const* nodes = ele.Nodes();
+            const Core::Nodes::Node* const* nodes = ele.nodes();
             if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
-            xrefe(i, 0) = nodes[i]->X()[0];
-            xrefe(i, 1) = nodes[i]->X()[1];
-            xrefe(i, 2) = nodes[i]->X()[2];
+            xrefe(i, 0) = nodes[i]->x()[0];
+            xrefe(i, 1) = nodes[i]->x()[1];
+            xrefe(i, 2) = nodes[i]->x()[2];
           }
 
           Core::LinAlg::Matrix<ndim, ndim> invJ;
@@ -520,9 +520,9 @@ namespace Core::VolMortar
           for (int i = 0; i < nn; ++i)
           {
             // first local basis vector
-            gxi[0] += deriv(0, i) * ele.Nodes()[i]->X()[0];
-            gxi[1] += deriv(0, i) * ele.Nodes()[i]->X()[1];
-            gxi[2] += deriv(0, i) * ele.Nodes()[i]->X()[2];
+            gxi[0] += deriv(0, i) * ele.nodes()[i]->x()[0];
+            gxi[1] += deriv(0, i) * ele.nodes()[i]->x()[1];
+            gxi[2] += deriv(0, i) * ele.nodes()[i]->x()[2];
           }
 
           // second local basis vector
@@ -546,14 +546,14 @@ namespace Core::VolMortar
           for (int i = 0; i < nn; ++i)
           {
             // first local basis vector
-            gxi[0] += deriv(0, i) * ele.Nodes()[i]->X()[0];
-            gxi[1] += deriv(0, i) * ele.Nodes()[i]->X()[1];
-            gxi[2] += deriv(0, i) * ele.Nodes()[i]->X()[2];
+            gxi[0] += deriv(0, i) * ele.nodes()[i]->x()[0];
+            gxi[1] += deriv(0, i) * ele.nodes()[i]->x()[1];
+            gxi[2] += deriv(0, i) * ele.nodes()[i]->x()[2];
 
             // second local basis vector
-            geta[0] += deriv(1, i) * ele.Nodes()[i]->X()[0];
-            geta[1] += deriv(1, i) * ele.Nodes()[i]->X()[1];
-            geta[2] += deriv(1, i) * ele.Nodes()[i]->X()[2];
+            geta[0] += deriv(1, i) * ele.nodes()[i]->x()[0];
+            geta[1] += deriv(1, i) * ele.nodes()[i]->x()[1];
+            geta[2] += deriv(1, i) * ele.nodes()[i]->x()[2];
           }
 
           // cross product of gxi and geta
@@ -571,12 +571,12 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
-            const Core::Nodes::Node* const* nodes = ele.Nodes();
+            const Core::Nodes::Node* const* nodes = ele.nodes();
             if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
-            xrefe(i, 0) = nodes[i]->X()[0];
-            xrefe(i, 1) = nodes[i]->X()[1];
-            xrefe(i, 2) = nodes[i]->X()[2];
+            xrefe(i, 0) = nodes[i]->x()[0];
+            xrefe(i, 1) = nodes[i]->x()[1];
+            xrefe(i, 2) = nodes[i]->x()[2];
           }
 
           Core::LinAlg::Matrix<ndim, ndim> invJ;
@@ -1123,9 +1123,9 @@ namespace Core::VolMortar
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0.0;
 
-          for (int i = 0; i < intpoints.IP().nquad; ++i)
+          for (int i = 0; i < intpoints.ip().nquad; ++i)
           {
-            double gpc[1] = {intpoints.IP().qxg[i][0]};
+            double gpc[1] = {intpoints.ip().qxg[i][0]};
 
             shape_function<distype>(stdval, gpc);
             detg = Jacobian<distype>(gpc, ele);
@@ -1134,8 +1134,8 @@ namespace Core::VolMortar
             {
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += intpoints.IP().qwgt[i] * stdval(j) * stdval(k) * detg;
-                de(j, k) += (j == k) * intpoints.IP().qwgt[i] * stdval(j) * detg;
+                me(j, k) += intpoints.ip().qwgt[i] * stdval(j) * stdval(k) * detg;
+                de(j, k) += (j == k) * intpoints.ip().qwgt[i] * stdval(j) * detg;
               }
             }
           }
@@ -1201,17 +1201,17 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < intpoints.IP().nquad; ++i)
+          for (int i = 0; i < intpoints.ip().nquad; ++i)
           {
-            double gpc[1] = {intpoints.IP().qxg[i][0]};
+            double gpc[1] = {intpoints.ip().qxg[i][0]};
             nurbs_shape_function<distype>(stdval, refderiv, gpc, weights, knots);
             detg = nurbs_Jacobian<distype>(refderiv, gpc, weights, knots, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += intpoints.IP().qwgt[i] * stdval(j) * stdval(k) * detg;
-                de(j, k) += (j == k) * intpoints.IP().qwgt[i] * stdval(j) * detg;
+                me(j, k) += intpoints.ip().qwgt[i] * stdval(j) * stdval(k) * detg;
+                de(j, k) += (j == k) * intpoints.ip().qwgt[i] * stdval(j) * detg;
               }
           }
 
@@ -1294,9 +1294,9 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < intpoints.IP().nquad; ++i)
+          for (int i = 0; i < intpoints.ip().nquad; ++i)
           {
-            double gpc[2] = {intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1]};
+            double gpc[2] = {intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1]};
             shape_function<distype>(stdval, gpc);
 
             detg = Jacobian<distype>(gpc, ele);
@@ -1304,8 +1304,8 @@ namespace Core::VolMortar
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += intpoints.IP().qwgt[i] * stdval(j) * stdval(k) * detg;
-                de(j, k) += (j == k) * intpoints.IP().qwgt[i] * stdval(j) * detg;
+                me(j, k) += intpoints.ip().qwgt[i] * stdval(j) * stdval(k) * detg;
+                de(j, k) += (j == k) * intpoints.ip().qwgt[i] * stdval(j) * detg;
               }
           }
           // invert bi-ortho matrix me
@@ -1371,17 +1371,17 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < intpoints.IP().nquad; ++i)
+          for (int i = 0; i < intpoints.ip().nquad; ++i)
           {
-            double gpc[2] = {intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1]};
+            double gpc[2] = {intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1]};
             nurbs_shape_function<distype>(stdval, refderiv, gpc, weights, knots);
             detg = nurbs_Jacobian<distype>(refderiv, gpc, weights, knots, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += intpoints.IP().qwgt[i] * stdval(j) * stdval(k) * detg;
-                de(j, k) += (j == k) * intpoints.IP().qwgt[i] * stdval(j) * detg;
+                me(j, k) += intpoints.ip().qwgt[i] * stdval(j) * stdval(k) * detg;
+                de(j, k) += (j == k) * intpoints.ip().qwgt[i] * stdval(j) * detg;
               }
           }
 
@@ -1456,18 +1456,18 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < intpoints.IP().nquad; ++i)
+          for (int i = 0; i < intpoints.ip().nquad; ++i)
           {
             double gpc[3] = {
-                intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1], intpoints.IP().qxg[i][2]};
+                intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1], intpoints.ip().qxg[i][2]};
             shape_function<distype>(stdval, gpc, quadtype);
             detg = Jacobian<distype>(gpc, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += intpoints.IP().qwgt[i] * stdval(j) * stdval(k) * detg;
-                de(j, k) += (j == k) * intpoints.IP().qwgt[i] * stdval(j) * detg;
+                me(j, k) += intpoints.ip().qwgt[i] * stdval(j) * stdval(k) * detg;
+                de(j, k) += (j == k) * intpoints.ip().qwgt[i] * stdval(j) * detg;
               }
           }
 
@@ -1546,18 +1546,18 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<nnodes, nnodes> de(true);
           Core::LinAlg::Matrix<nnodes, nnodes> ae;
 
-          for (int i = 0; i < intpoints.IP().nquad; ++i)
+          for (int i = 0; i < intpoints.ip().nquad; ++i)
           {
             double gpc[3] = {
-                intpoints.IP().qxg[i][0], intpoints.IP().qxg[i][1], intpoints.IP().qxg[i][2]};
+                intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1], intpoints.ip().qxg[i][2]};
             nurbs_shape_function<distype>(stdval, refderiv, gpc, weights, knots);
             detg = nurbs_Jacobian<distype>(refderiv, gpc, weights, knots, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
               {
-                me(j, k) += intpoints.IP().qwgt[i] * stdval(j) * stdval(k) * detg;
-                de(j, k) += (j == k) * intpoints.IP().qwgt[i] * stdval(j) * detg;
+                me(j, k) += intpoints.ip().qwgt[i] * stdval(j) * stdval(k) * detg;
+                de(j, k) += (j == k) * intpoints.ip().qwgt[i] * stdval(j) * detg;
               }
           }
 
@@ -1818,7 +1818,7 @@ namespace Core::VolMortar
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype>;
 
-      const Core::Nodes::Node* const* mynodes = ele.Nodes();
+      const Core::Nodes::Node* const* mynodes = ele.nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
@@ -1832,7 +1832,7 @@ namespace Core::VolMortar
       {
         for (int j = 0; j < ndim; ++j)
         {
-          coord(j, i) = mynodes[i]->X()[j];
+          coord(j, i) = mynodes[i]->x()[j];
 
           // use shape function values for interpolation
           globcoord[j] += val(i) * coord(j, i);

@@ -34,22 +34,22 @@ int Discret::ELEMENTS::Lubrication::evaluate(Teuchos::ParameterList& params,
     // be used in principle inside any element (at the moment: only Lubrication element)
     case LUBRICATION::calc_mat_and_rhs:
     {
-      return Discret::ELEMENTS::LubricationFactory::ProvideImpl(Shape(), discretization.Name())
+      return Discret::ELEMENTS::LubricationFactory::provide_impl(shape(), discretization.name())
           ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case LUBRICATION::calc_lubrication_coupltang:
     {
-      return Discret::ELEMENTS::LubricationFactory::ProvideImpl(Shape(), discretization.Name())
-          ->EvaluateEHLMon(
+      return Discret::ELEMENTS::LubricationFactory::provide_impl(shape(), discretization.name())
+          ->evaluate_ehl_mon(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case LUBRICATION::calc_error:
     case LUBRICATION::calc_mean_pressures:
     {
-      return Discret::ELEMENTS::LubricationFactory::ProvideImpl(Shape(), discretization.Name())
-          ->EvaluateService(
+      return Discret::ELEMENTS::LubricationFactory::provide_impl(shape(), discretization.name())
+          ->evaluate_service(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
@@ -97,14 +97,14 @@ void Discret::ELEMENTS::LubricationType::pre_evaluate(Core::FE::Discretization& 
   {
     case LUBRICATION::set_general_lubrication_parameter:
     {
-      Discret::ELEMENTS::LubricationEleParameter::Instance(dis.Name())->set_general_parameters(p);
+      Discret::ELEMENTS::LubricationEleParameter::instance(dis.name())->set_general_parameters(p);
 
       break;
     }
 
     case LUBRICATION::set_time_parameter:
     {
-      Discret::ELEMENTS::LubricationEleParameter::Instance(dis.Name())->SetTimeParameters(p);
+      Discret::ELEMENTS::LubricationEleParameter::instance(dis.name())->set_time_parameters(p);
 
       break;
     }

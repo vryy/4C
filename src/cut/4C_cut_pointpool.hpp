@@ -53,7 +53,7 @@ namespace Core::Geo
     {
      public:
       /// empty constructor
-      OctTreeNode(double norm) : bb_(Teuchos::rcp(BoundingBox::Create())), norm_(norm) {}
+      OctTreeNode(double norm) : bb_(Teuchos::rcp(BoundingBox::create())), norm_(norm) {}
 
       /*========================================================================*/
       //! @name create and get points
@@ -61,15 +61,15 @@ namespace Core::Geo
 
       /// If a point with the coordinates "x" does not exists, it creates a new point
       /// correspondingly
-      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
+      Point* new_point(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
           PointpoolMergeStrategy merge_strategy);
 
       /// Get the point with the specified coordinates "x" from the pointpool
-      Point* GetPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
+      Point* get_point(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
           PointpoolMergeStrategy merge_strategy);
 
       /// Simply insert p into the pointpool and correspondingly modify the boundingbox size
-      void AddPoint(const double* x, Teuchos::RCP<Point> p);
+      void add_point(const double* x, Teuchos::RCP<Point> p);
 
 
       /*========================================================================*/
@@ -80,24 +80,24 @@ namespace Core::Geo
       unsigned size() const { return points_.size(); }
 
       /// is the current tree-node a leaf of the tree?
-      bool IsLeaf() const { return nodes_[0] == Teuchos::null; }
+      bool is_leaf() const { return nodes_[0] == Teuchos::null; }
 
       /*========================================================================*/
       //! @name collect adjacent objects
       /*========================================================================*/
 
       /// collect all edges
-      void CollectEdges(const BoundingBox& edgebox, plain_edge_set& edges);
+      void collect_edges(const BoundingBox& edgebox, plain_edge_set& edges);
 
       /// collect all sides
-      void CollectSides(const BoundingBox& sidebox, plain_side_set& sides);
+      void collect_sides(const BoundingBox& sidebox, plain_side_set& sides);
 
       /*!
       \brief collect all elements near the sidebox
              (unused, does not work properly when there is no point adjacent to elements in a tree's
       leaf, e.g. when side lies within an element)
       */
-      void CollectElements(const BoundingBox& sidebox, plain_element_set& elements);
+      void collect_elements(const BoundingBox& sidebox, plain_element_set& elements);
 
 
       /*========================================================================*/
@@ -105,16 +105,16 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// reset the Point::Position of outside points
-      void ResetOutsidePoints();
+      void reset_outside_points();
 
       /// print the tree at a given level
       void print(int level, std::ostream& stream);
 
       /// Get Points
-      const RCPPointSet& GetPoints() { return points_; }
+      const RCPPointSet& get_points() { return points_; }
 
       // get the node where point with specified coordinate lies
-      OctTreeNode* FindNode(const double* coord, Point* p);
+      OctTreeNode* find_node(const double* coord, Point* p);
 
      private:
       /*========================================================================*/
@@ -164,7 +164,7 @@ namespace Core::Geo
       explicit PointPool(double norm = 1);
 
       /// create a new point in the point PointPool
-      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
+      Point* new_point(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
       {
         switch (probdim_)
         {
@@ -174,12 +174,12 @@ namespace Core::Geo
             double x_ext[3] = {0.0, 0.0, 0.0};
             std::copy(x, x + 2, x_ext);
 
-            return tree_.NewPoint(
-                x_ext, cut_edge, cut_side, GetTolerance(x_ext, tolerance), merge_strategy_);
+            return tree_.new_point(
+                x_ext, cut_edge, cut_side, get_tolerance(x_ext, tolerance), merge_strategy_);
           }
           case 3:
-            return tree_.NewPoint(
-                x, cut_edge, cut_side, GetTolerance(x, tolerance), merge_strategy_);
+            return tree_.new_point(
+                x, cut_edge, cut_side, get_tolerance(x, tolerance), merge_strategy_);
           default:
             FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
@@ -190,13 +190,13 @@ namespace Core::Geo
       }
 
       /// get the pointer to a stored point if possible
-      Point* GetPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
+      Point* get_point(const double* x, Edge* cut_edge, Side* cut_side, double tolerance)
       {
-        return tree_.GetPoint(x, cut_edge, cut_side, GetTolerance(x, tolerance), merge_strategy_);
+        return tree_.get_point(x, cut_edge, cut_side, get_tolerance(x, tolerance), merge_strategy_);
       }
 
       /// get default tolerance for the case that the tolerance of a point is set to 0!!!
-      double GetTolerance(const double* x, double tolerance)
+      double get_tolerance(const double* x, double tolerance)
       {
         if (tolerance == 0.0)
         {
@@ -211,33 +211,33 @@ namespace Core::Geo
       unsigned size() const { return tree_.size(); }
 
       /// Collects the edges that are fully or partially contained in the edgebox
-      void CollectEdges(const BoundingBox& edgebox, plain_edge_set& edges)
+      void collect_edges(const BoundingBox& edgebox, plain_edge_set& edges)
       {
-        tree_.CollectEdges(edgebox, edges);
+        tree_.collect_edges(edgebox, edges);
       }
 
       /// Collects the sides that are fully or partially contained in the sidebox
-      void CollectSides(const BoundingBox& sidebox, plain_side_set& sides)
+      void collect_sides(const BoundingBox& sidebox, plain_side_set& sides)
       {
-        tree_.CollectSides(sidebox, sides);
+        tree_.collect_sides(sidebox, sides);
       }
 
       /// Collects the elements that are fully or partially contained in the sidebox
-      void CollectElements(const BoundingBox& sidebox, plain_element_set& elements)
+      void collect_elements(const BoundingBox& sidebox, plain_element_set& elements)
       {
-        tree_.CollectElements(sidebox, elements);
+        tree_.collect_elements(sidebox, elements);
       }
 
       /// reset Point::Position of all stored outside points
-      void ResetOutsidePoints() { tree_.ResetOutsidePoints(); }
+      void reset_outside_points() { tree_.reset_outside_points(); }
 
       /// print the OctTree
       void print(std::ostream& stream) { tree_.print(0, stream); }
 
       /// Get Points
-      const RCPPointSet& GetPoints() { return tree_.GetPoints(); }
+      const RCPPointSet& get_points() { return tree_.get_points(); }
 
-      void SetMergeStrategy(PointpoolMergeStrategy strategy) { merge_strategy_ = strategy; }
+      void set_merge_strategy(PointpoolMergeStrategy strategy) { merge_strategy_ = strategy; }
 
      private:
       ///< Current Merge Strategy of the Pointpool

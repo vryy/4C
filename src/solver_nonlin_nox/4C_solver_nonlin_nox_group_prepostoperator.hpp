@@ -101,7 +101,7 @@ namespace NOX
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (will hold the new X).
          */
-        virtual void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+        virtual void run_pre_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
             const double& step, const NOX::Nln::Group& curr_grp);
 
         /** User defined method that will be executed at the end of a call to
@@ -112,7 +112,7 @@ namespace NOX
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (holds the new X).
          */
-        virtual void runPostComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+        virtual void run_post_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
             const double& step, const NOX::Nln::Group& curr_grp);
 
         /*! User defined method that will be executed at the beginning
@@ -180,7 +180,7 @@ inline void NOX::Nln::GROUP::PrePostOperator::run_post_compute_f(
   }
 }
 
-inline void NOX::Nln::GROUP::PrePostOperator::runPreComputeX(const NOX::Nln::Group& input_grp,
+inline void NOX::Nln::GROUP::PrePostOperator::run_pre_compute_x(const NOX::Nln::Group& input_grp,
     const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   if (havePrePostOperator_)
@@ -191,7 +191,7 @@ inline void NOX::Nln::GROUP::PrePostOperator::runPreComputeX(const NOX::Nln::Gro
   }
 }
 
-inline void NOX::Nln::GROUP::PrePostOperator::runPostComputeX(const NOX::Nln::Group& input_grp,
+inline void NOX::Nln::GROUP::PrePostOperator::run_post_compute_x(const NOX::Nln::Group& input_grp,
     const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   if (havePrePostOperator_)

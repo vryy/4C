@@ -41,11 +41,11 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::add_component(Teuchos::RCP<Input::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& problem,
+void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& problem,
     Core::IO::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
 {
   std::string name = "--CONTACT CONSTITUTIVE LAWS";
-  std::vector<const char*> section = reader.Section(name);
+  std::vector<const char*> section = reader.section(name);
 
   if (section.size() > 0)
   {
@@ -62,9 +62,9 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& proble
 
       Core::IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
 
-      parser.Consume(*condline, "LAW");
-      const int id = parser.Read<int>(*condline);
-      const std::string name = parser.Read<std::string>(*condline);
+      parser.consume(*condline, "LAW");
+      const int id = parser.read<int>(*condline);
+      const std::string name = parser.read<std::string>(*condline);
 
       // Remove the parts that were already read.
       condline->str(condline->str().erase(0, (size_t)condline->tellg()));
@@ -74,7 +74,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& proble
         if (id <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
         // check if material ID is already in use
-        if (bundle->Find(id) != -1)
+        if (bundle->find(id) != -1)
           FOUR_C_THROW("More than one contact constitutivelaw with 'Law %d'", id);
 
         // the read-in contact constitutive law line
@@ -82,7 +82,8 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& proble
             new CONTACT::CONSTITUTIVELAW::Container(id, coconstlawtype_, coconstlawname_));
         // fill the latter
 
-        for (const auto& j : inputline_) condline = j->read(Name(), condline, *container);
+        for (const auto& j : inputline_)
+          condline = j->read(LawDefinition::name(), condline, *container);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -92,7 +93,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& proble
               coconstlawname_.c_str(), condline->str().c_str());
 
         // put contact constitutive law in map of laws
-        bundle->Insert(id, container);
+        bundle->insert(id, container);
       }
     }
   }
@@ -141,17 +142,17 @@ void CONTACT::CONSTITUTIVELAW::AppendCoConstLawComponentDefinition(
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> mmd = *m;
 
-    if (mmd->Type() == def->Type())
+    if (mmd->type() == def->type())
       FOUR_C_THROW(
           "Trying to define two contact constitutive laws with the same type '%d'\n"
           "Please revise your definitions of valid contact constitutive laws",
-          mmd->Type());
+          mmd->type());
 
-    if (mmd->Name() == def->Name())
+    if (mmd->name() == def->name())
       FOUR_C_THROW(
           "Trying to define two contact constitutive laws with the same name '%s'\n"
           "Please revise your definitions of valid contact constitutive laws",
-          mmd->Name().c_str());
+          mmd->name().c_str());
   }
 
   // no coincidence found

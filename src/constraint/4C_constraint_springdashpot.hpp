@@ -82,28 +82,28 @@ namespace CONSTRAINTS
         Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!
-    void EvaluateRobin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
+    void evaluate_robin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
         Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
         const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p);
 
     //! reset after Newton step
-    void ResetNewton();
+    void reset_newton();
 
     //! reset after prestressing with MULF
-    void ResetPrestress(Teuchos::RCP<const Epetra_Vector> dis);
+    void reset_prestress(Teuchos::RCP<const Epetra_Vector> dis);
 
     //! set reset after prestressing with MULF
-    void SetRestart(Teuchos::RCP<Epetra_Vector> vec);
+    void set_restart(Teuchos::RCP<Epetra_Vector> vec);
 
     //! set reset after prestressing with MULF
-    void SetRestartOld(Teuchos::RCP<Epetra_MultiVector> vec);
+    void set_restart_old(Teuchos::RCP<Epetra_MultiVector> vec);
 
     //! output of gap, normal, and nodal stiffness
-    void OutputGapNormal(Teuchos::RCP<Epetra_Vector>& gap,
+    void output_gap_normal(Teuchos::RCP<Epetra_Vector>& gap,
         Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const;
 
     //! select spring stiffness for tensile or compressive spring
-    double SelectStiffness(double gap)
+    double select_stiffness(double gap)
     {
       if (gap > 0)
         return stiff_tens_;  // gap positive: tensile spring
@@ -112,13 +112,13 @@ namespace CONSTRAINTS
     }
 
     //! output of spring offset
-    void OutputPrestrOffset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const;
+    void output_prestr_offset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const;
 
     //! output of spring offset
     void output_prestr_offset_old(Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const;
 
     //! return type of spring
-    SpringType GetSpringType() { return springtype_; }
+    SpringType get_spring_type() { return springtype_; }
 
     //! udpate condition for new time step
     void update();
@@ -131,7 +131,7 @@ namespace CONSTRAINTS
      * of the previous timestep after calling update(). This is used for example to output the last
      * successfull timestep.
      */
-    void ResetStepState();
+    void reset_step_state();
 
    private:
     //! set type of spring during initialization

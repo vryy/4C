@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamPotentialPair::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::Create(
+Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::create(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
     BEAMINTERACTION::BeamPotentialParams const& beam_potential_params)
 {
@@ -74,7 +74,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
       dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
 
   // at the moment, both elements of a beam contact pair must be of same type Todo
-  const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
+  const unsigned int numnodes_centerline = beamele1->num_centerline_nodes();
   const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;
 
   switch (numnodalvalues)
@@ -85,11 +85,11 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
       {
         case 2:
         {
-          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>());
           else
           {
-            if (beam_potential_params.UseFAD())
+            if (beam_potential_params.use_fad())
               return Teuchos::rcp(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>());
             else
@@ -98,11 +98,11 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 3:
         {
-          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>());
           else
           {
-            if (beam_potential_params.UseFAD())
+            if (beam_potential_params.use_fad())
               return Teuchos::rcp(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>());
             else
@@ -111,11 +111,11 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 4:
         {
-          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>());
           else
           {
-            if (beam_potential_params.UseFAD())
+            if (beam_potential_params.use_fad())
               return Teuchos::rcp(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>());
             else
@@ -124,11 +124,11 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 5:
         {
-          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>());
           else
           {
-            if (beam_potential_params.UseFAD())
+            if (beam_potential_params.use_fad())
               return Teuchos::rcp(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>());
             else
@@ -153,11 +153,11 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
       {
         case 2:
         {
-          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>());
           else
           {
-            if (beam_potential_params.UseFAD())
+            if (beam_potential_params.use_fad())
               return Teuchos::rcp(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>());
             else
@@ -206,7 +206,7 @@ void BEAMINTERACTION::BeamPotentialPair::check_init_setup() const
  *-----------------------------------------------------------------------------------------------*/
 Core::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::get_gauss_rule() const
 {
-  switch (Params()->NumberGaussPoints())
+  switch (params()->number_gauss_points())
   {
     case 5:
     {
@@ -239,7 +239,7 @@ Core::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::get_gauss_rule() const
     }
 
     default:
-      FOUR_C_THROW("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
+      FOUR_C_THROW("%d Gauss points are not supported yet!", params()->number_gauss_points());
   }
 
   return Core::FE::GaussRule1D::undefined;

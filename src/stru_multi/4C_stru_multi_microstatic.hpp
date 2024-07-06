@@ -93,31 +93,31 @@ namespace MultiScale
     \brief Return time from parameter list
 
     */
-    double TimeOld() { return time_; }
+    double time_old() { return time_; }
 
     /*!
     \brief Predictor step
 
     */
-    void Predictor(Core::LinAlg::Matrix<3, 3>* defgrd);
+    void predictor(Core::LinAlg::Matrix<3, 3>* defgrd);
 
     /*!
     \brief Predictor step
 
     */
-    void PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd);
+    void predict_const_dis(Core::LinAlg::Matrix<3, 3>* defgrd);
 
     /*!
    \brief Predictor step
 
    */
-    void PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd);
+    void predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgrd);
 
     /*!
     \brief Full Newton iteration
 
     */
-    void FullNewton();
+    void full_newton();
 
     /*!
     \brief Calculate stresses and strains
@@ -136,14 +136,14 @@ namespace MultiScale
     \brief Determine toggle vector identifying prescribed boundary dofs
 
     */
-    void DetermineToggle();
+    void determine_toggle();
 
     /*!
     \brief Evaluate microscale boundary displacement according to
     associated macroscale deformation gradient
 
     */
-    void EvaluateMicroBC(Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
+    void evaluate_micro_bc(Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
 
     /*!
     \brief Set old state given from micromaterialgp
@@ -169,14 +169,14 @@ namespace MultiScale
     \brief Clear all displacement states
 
     */
-    void ClearState();
+    void clear_state();
 
     /*!
     \brief Set up everything for homogenization
     (e.g. calculation of matrix D containing reference boundary coordinates)
 
     */
-    void SetUpHomogenization();
+    void set_up_homogenization();
 
     /*!
     \brief Perform homogenization, i.e. calculate second Piola-Kirchhoff
@@ -196,7 +196,7 @@ namespace MultiScale
     Marsden and Hughes, Mathematical Foundations of Elasticity,
     Dover, pg. 215
     */
-    void ConvertMat(const Epetra_MultiVector& cmatpf, const Core::LinAlg::Matrix<3, 3>& F_inv,
+    void convert_mat(const Epetra_MultiVector& cmatpf, const Core::LinAlg::Matrix<3, 3>& F_inv,
         const Core::LinAlg::Matrix<6, 1>& S, Core::LinAlg::Matrix<6, 6>& cmat);
 
 
@@ -204,20 +204,20 @@ namespace MultiScale
     \brief Check for Newton convergence
     */
 
-    bool Converged();
+    bool converged();
 
     /*!
     \brief Calculate reference norms for relative convergence checks
 
     */
-    void CalcRefNorms();
+    void calc_ref_norms();
 
     /*!
     \brief Output of Newton details
 
     Note that this is currently disabled for the sake of clearness
     */
-    void PrintNewton(bool print_unconv, Teuchos::Time timer);
+    void print_newton(bool print_unconv, Teuchos::Time timer);
 
     /*!
     \brief Output of predictor details
@@ -230,9 +230,9 @@ namespace MultiScale
     \brief Set EAS internal data if necessary
 
     */
-    void SetEASData();
+    void set_eas_data();
 
-    double Density() const { return density_; };
+    double density() const { return density_; };
 
    protected:
     // don't want = operator and cctor
@@ -331,11 +331,11 @@ namespace MultiScale
   class MicroStaticParObjectType : public Core::Communication::ParObjectType
   {
    public:
-    [[nodiscard]] std::string Name() const override { return "MicroStaticParObjectType"; }
+    [[nodiscard]] std::string name() const override { return "MicroStaticParObjectType"; }
 
-    static MicroStaticParObjectType& Instance() { return instance_; };
+    static MicroStaticParObjectType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static MicroStaticParObjectType instance_;
@@ -344,9 +344,9 @@ namespace MultiScale
   class MicroStaticParObject : public Core::Communication::ParObject
   {
    public:
-    [[nodiscard]] inline int UniqueParObjectId() const override
+    [[nodiscard]] inline int unique_par_object_id() const override
     {
-      return MultiScale::MicroStaticParObjectType::Instance().UniqueParObjectId();
+      return MultiScale::MicroStaticParObjectType::instance().unique_par_object_id();
     };
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -369,7 +369,10 @@ namespace MultiScale
       return std::addressof(microstatic_data_);
     };
 
-    inline void SetMicroStaticData(MicroStaticData& micro_data) { microstatic_data_ = micro_data; };
+    inline void set_micro_static_data(MicroStaticData& micro_data)
+    {
+      microstatic_data_ = micro_data;
+    };
 
    private:
     MicroStaticData microstatic_data_{};

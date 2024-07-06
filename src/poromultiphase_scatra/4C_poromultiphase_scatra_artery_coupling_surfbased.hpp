@@ -34,7 +34,7 @@ namespace PoroMultiPhaseScaTra
         const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! set-up of global system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
@@ -45,7 +45,7 @@ namespace PoroMultiPhaseScaTra
     void setup() override;
 
     //! apply mesh movement (on artery elements)
-    void ApplyMeshMovement() override;
+    void apply_mesh_movement() override;
 
     //! access to blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;

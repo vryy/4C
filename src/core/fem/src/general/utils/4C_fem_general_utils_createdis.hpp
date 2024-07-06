@@ -46,7 +46,7 @@ namespace Core::FE
     //! destructor
     virtual ~DiscretizationCreatorBase() = default;
     //! copy given conditions from source to target discretization
-    void CopyConditions(const Core::FE::Discretization& sourcedis,
+    void copy_conditions(const Core::FE::Discretization& sourcedis,
         Core::FE::Discretization& targetdis,
         const std::map<std::string, std::string>& conditions_to_copy) const;
 
@@ -78,16 +78,16 @@ namespace Core::FE
                                                             ///< copied to the new discretization
     )
     {
-      if (cond.GetNodes() == nullptr or cond.GetNodes()->size() == 0)
+      if (cond.get_nodes() == nullptr or cond.get_nodes()->size() == 0)
         FOUR_C_THROW("The condition has no nodes!");
 
       // make sure connectivity is all set
       // we don't care, whether dofs exist or not
-      if (!sourcedis.Filled()) FOUR_C_THROW("sourcedis is not filled");
+      if (!sourcedis.filled()) FOUR_C_THROW("sourcedis is not filled");
 
       // get this condition's elements
       std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
-      const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond.Geometry();
+      const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geo = cond.geometry();
       sourceelements.insert(geo.begin(), geo.end());
 
       return create_matching_discretization_from_condition(
@@ -110,7 +110,7 @@ namespace Core::FE
     {
       // make sure connectivity is all set
       // we don't care, whether dofs exist or not
-      if (!sourcedis.Filled()) FOUR_C_THROW("sourcedis is not filled");
+      if (!sourcedis.filled()) FOUR_C_THROW("sourcedis is not filled");
 
       // We need to test for all elements (including ghosted ones) to
       // catch all nodes
@@ -134,9 +134,9 @@ namespace Core::FE
                                                             ///< copied to the new discretization
     )
     {
-      Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis.Comm().Clone());
+      Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis.get_comm().Clone());
       const int myrank = com->MyPID();
-      const Epetra_Map* sourcenoderowmap = sourcedis.NodeRowMap();
+      const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
 
       Teuchos::RCP<Core::FE::Discretization> targetdis =
           Teuchos::rcp(new Core::FE::Discretization(discret_name, com, sourcedis.n_dim()));
@@ -151,17 +151,17 @@ namespace Core::FE
         // get global node ids
         std::vector<int> nids;
         nids.reserve(sourceele->num_node());
-        transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
-            back_inserter(nids), std::mem_fn(&Core::Nodes::Node::Id));
+        transform(sourceele->nodes(), sourceele->nodes() + sourceele->num_node(),
+            back_inserter(nids), std::mem_fn(&Core::Nodes::Node::id));
 
         // check if element has nodes which are not in col map on this proc.
         // this should not be the case since each proc should have all nodes of
         // all owned or ghosted elements in the col map.
         if (std::count_if(nids.begin(), nids.end(),
-                Core::Conditions::MyGID(sourcedis.NodeColMap())) != (int)(nids.size()))
+                Core::Conditions::MyGID(sourcedis.node_col_map())) != (int)(nids.size()))
         {
-          FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", sourceele->Id(),
-              sourceele->Owner());
+          FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", sourceele->id(),
+              sourceele->owner());
         }
 
         copy(nids.begin(), nids.end(), inserter(colnodeset_, colnodeset_.begin()));
@@ -173,27 +173,27 @@ namespace Core::FE
 
         // Do not clone ghost elements here! Those will be handled by the
         // discretization itself.
-        if (sourceele->Owner() == myrank)
+        if (sourceele->owner() == myrank)
         {
           Teuchos::RCP<Core::Elements::Element> condele;
           if (element_name == "")
           {
             // copy the source ele (created in fill complete of the discretization)
-            condele = Teuchos::rcp(sourceele->Clone(), true);
+            condele = Teuchos::rcp(sourceele->clone(), true);
           }
           else
           {
             // create an element with the same global element id
             condele =
-                Core::Communication::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
+                Core::Communication::Factory(element_name, "Polynomial", sourceele->id(), myrank);
             // set the same global node ids to the new element
-            condele->SetNodeIds(nids.size(), nids.data());
+            condele->set_node_ids(nids.size(), nids.data());
           }
           // add element
           targetdis->add_element(condele);
-          roweleset_.insert(sourceele->Id());
+          roweleset_.insert(sourceele->id());
         }
-        coleleset_.insert(sourceele->Id());
+        coleleset_.insert(sourceele->id());
       }  // loop over all source elements
 
       // construct new nodes, which use the same global id as the source nodes
@@ -202,8 +202,8 @@ namespace Core::FE
         const int gid = sourcenoderowmap->GID(i);
         if (rownodeset_.find(gid) != rownodeset_.end())
         {
-          const Core::Nodes::Node* sourcenode = sourcedis.lRowNode(i);
-          targetdis->AddNode(Teuchos::rcp(new Core::Nodes::Node(gid, sourcenode->X(), myrank)));
+          const Core::Nodes::Node* sourcenode = sourcedis.l_row_node(i);
+          targetdis->add_node(Teuchos::rcp(new Core::Nodes::Node(gid, sourcenode->x(), myrank)));
         }
       }
 
@@ -218,11 +218,11 @@ namespace Core::FE
       for (const auto& cond_name : conditions_to_copy)
       {
         std::vector<Core::Conditions::Condition*> conds;
-        sourcedis.GetCondition(cond_name, conds);
+        sourcedis.get_condition(cond_name, conds);
         for (const auto& cond : conds)
         {
           // We use the same nodal ids and therefore we can just copy the conditions.
-          targetdis->SetCondition(cond_name, cond->copy_without_geometry());
+          targetdis->set_condition(cond_name, cond->copy_without_geometry());
         }
       }
 
@@ -299,11 +299,11 @@ namespace Core::FE
       if (clonefieldmatmap.size() < 1)
         FOUR_C_THROW("At least one material pairing required in --CLONING MATERIAL MAP.");
 
-      std::pair<std::string, std::string> key(sourcedis.Name(), targetdis.Name());
+      std::pair<std::string, std::string> key(sourcedis.name(), targetdis.name());
       matmap = clonefieldmatmap.at(key);
       if (matmap.size() < 1)
         FOUR_C_THROW("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.",
-            sourcedis.Name().c_str(), targetdis.Name().c_str());
+            sourcedis.name().c_str(), targetdis.name().c_str());
 
       return;
     };  // create_clone_field_mat_map
@@ -326,12 +326,12 @@ namespace Core::FE
       // We have to find out all the material ids of the source discretization.
       // All cloned elements will receive the same material with the provided matid.
       std::map<int, int> matmap;
-      int numelements = sourcedis->NumMyColElements();
+      int numelements = sourcedis->num_my_col_elements();
       if (numelements < 1) FOUR_C_THROW("At least one processor has no element");
       for (int i = 0; i < numelements; ++i)
       {
-        Core::Elements::Element* sourceele = sourcedis->lColElement(i);
-        int src_matid = sourceele->Material()->Parameter()->Id();
+        Core::Elements::Element* sourceele = sourcedis->l_col_element(i);
+        int src_matid = sourceele->material()->parameter()->id();
         // if a new material id is found -> extend the map
         std::map<int, int>::iterator mat_iter = matmap.find(src_matid);
         if (mat_iter == matmap.end())
@@ -355,9 +355,9 @@ namespace Core::FE
     )
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (!(sourcedis->HaveGlobalNode(sourcedis->NodeRowMap()->GID(0))))
+      if (!(sourcedis->have_global_node(sourcedis->node_row_map()->GID(0))))
         FOUR_C_THROW("Cloning not possible since node with GID %d is not stored on this proc!",
-            sourcedis->NodeRowMap()->GID(0));
+            sourcedis->node_row_map()->GID(0));
 #endif
       // try to cast sourcedis to NurbsDiscretisation
       Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
@@ -366,7 +366,7 @@ namespace Core::FE
 
       // try to cast source node to immersed node
       Core::Nodes::ImmersedNode* inode = dynamic_cast<Core::Nodes::ImmersedNode*>(
-          sourcedis->gNode(sourcedis->NodeRowMap()->GID(0)));
+          sourcedis->g_node(sourcedis->node_row_map()->GID(0)));
       bool buildimmersednode(inode != nullptr);
 
       // check and analyze source discretization
@@ -385,7 +385,7 @@ namespace Core::FE
 
       // copy desired conditions from source to target discretization
       const auto conditions_to_copy = CloneStrategy::conditions_to_copy();
-      CopyConditions(*sourcedis, *targetdis, conditions_to_copy);
+      copy_conditions(*sourcedis, *targetdis, conditions_to_copy);
 
       // call Redistribute, fill_complete etc.
       finalize(*sourcedis, *targetdis);
@@ -409,7 +409,7 @@ namespace Core::FE
       for (cit = conds.begin(); cit != conds.end(); ++cit)
       {
         // check the source condition
-        if ((*cit)->GetNodes() == nullptr or (*cit)->GetNodes()->size() == 0)
+        if ((*cit)->get_nodes() == nullptr or (*cit)->get_nodes()->size() == 0)
           FOUR_C_THROW("The condition has no nodes!");
       }
 
@@ -457,8 +457,8 @@ namespace Core::FE
       bool isnurbsdis(nurbsdis_ptr != nullptr);
 
       // try to cast source node to immersed node
-      Core::Nodes::ImmersedNode* inode =
-          dynamic_cast<Core::Nodes::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
+      Core::Nodes::ImmersedNode* inode = dynamic_cast<Core::Nodes::ImmersedNode*>(
+          sourcedis.g_node(sourcedis.node_row_map()->GID(0)));
       bool buildimmersednode(inode != nullptr);
 
       analyze_conditioned_source_dis(
@@ -476,7 +476,7 @@ namespace Core::FE
 
       // copy desired conditions from source to target discretization
       const auto conditions_to_copy = CloneStrategy::conditions_to_copy();
-      CopyConditions(sourcedis, targetdis, conditions_to_copy);
+      copy_conditions(sourcedis, targetdis, conditions_to_copy);
 
       // call Redistribute, fill_complete etc.
       finalize(sourcedis, targetdis);
@@ -487,17 +487,17 @@ namespace Core::FE
         std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
         std::set<int>& roweleset, std::set<int>& coleleset)
     {
-      const Epetra_Map* noderowmap = sourcedis->NodeRowMap();
+      const Epetra_Map* noderowmap = sourcedis->node_row_map();
 
       // We need to test for all elements (including ghosted ones) to
       // catch all nodes attached to the elements of the source discretization
       // we will clone only those (-> support for ALE sub-meshes)
-      int numelements = sourcedis->NumMyColElements();
+      int numelements = sourcedis->num_my_col_elements();
 
       for (int i = 0; i < numelements; ++i)
       {
-        Core::Elements::Element* actele = sourcedis->lColElement(i);
-        bool ismyele = sourcedis->ElementRowMap()->MyGID(actele->Id());
+        Core::Elements::Element* actele = sourcedis->l_col_element(i);
+        bool ismyele = sourcedis->element_row_map()->MyGID(actele->id());
 
         // we get the element type std::string and a boolean if this element
         // is considered! (see submeshes for Fluid-ALE case!)
@@ -506,17 +506,17 @@ namespace Core::FE
           // we make sure, that the cloned discretization
           // has the same parallel distribution as the
           // source discretization.
-          if (ismyele) roweleset.insert(actele->Id());
+          if (ismyele) roweleset.insert(actele->id());
 
-          coleleset.insert(actele->Id());
+          coleleset.insert(actele->id());
 
           // copy node ids of actele to rownodeset but leave those that do
           // not belong to this processor
-          remove_copy_if(actele->NodeIds(), actele->NodeIds() + actele->num_node(),
+          remove_copy_if(actele->node_ids(), actele->node_ids() + actele->num_node(),
               inserter(rownodeset, rownodeset.begin()),
               std::not_fn(Core::Conditions::MyGID(noderowmap)));
 
-          copy(actele->NodeIds(), actele->NodeIds() + actele->num_node(),
+          copy(actele->node_ids(), actele->node_ids() + actele->num_node(),
               inserter(colnodeset, colnodeset.begin()));
         }
         else
@@ -532,9 +532,9 @@ namespace Core::FE
         std::vector<std::string>& eletype, std::set<int>& rownodeset, std::set<int>& colnodeset,
         std::set<int>& roweleset, std::set<int>& coleleset)
     {
-      const int myrank = sourcedis.Comm().MyPID();
-      const Epetra_Map* sourcenoderowmap = sourcedis.NodeRowMap();
-      const Epetra_Map* sourcenodecolmap = sourcedis.NodeColMap();
+      const int myrank = sourcedis.get_comm().MyPID();
+      const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
+      const Epetra_Map* sourcenodecolmap = sourcedis.node_col_map();
 
       // construct new elements
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter;
@@ -542,7 +542,7 @@ namespace Core::FE
            ++sourceele_iter)
       {
         const Teuchos::RCP<Core::Elements::Element> actele = sourceele_iter->second;
-        const bool ismyele = (actele->Owner() == myrank);
+        const bool ismyele = (actele->owner() == myrank);
 
         // we get the element type std::string and a boolean if this element
         // is considered! (see submeshes for Fluid-ALE case!)
@@ -556,15 +556,15 @@ namespace Core::FE
           // the distribution of the underlying parent elements.
           // this is made sure in drt_discret_condition.cpp
           // (rauch 10/16).
-          if (ismyele) roweleset.insert(actele->Id());
+          if (ismyele) roweleset.insert(actele->id());
 
-          coleleset.insert(actele->Id());
+          coleleset.insert(actele->id());
 
           // get global node ids
           std::vector<int> nids;
           nids.reserve(actele->num_node());
-          transform(actele->Nodes(), actele->Nodes() + actele->num_node(), back_inserter(nids),
-              std::mem_fn(&Core::Nodes::Node::Id));
+          transform(actele->nodes(), actele->nodes() + actele->num_node(), back_inserter(nids),
+              std::mem_fn(&Core::Nodes::Node::id));
 
           // check if element has nodes, which are not in col map on this proc.
           // this should not be, since each proc should have all nodes of all
@@ -572,8 +572,8 @@ namespace Core::FE
           if (std::count_if(nids.begin(), nids.end(), Core::Conditions::MyGID(sourcenodecolmap)) !=
               (int)(nids.size()))
           {
-            FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", actele->Id(),
-                actele->Owner());
+            FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", actele->id(),
+                actele->owner());
           }
 
           // copy node ids of condition ele to set of column nodes
@@ -606,7 +606,7 @@ namespace Core::FE
       }
 
       // prepare some variables we need
-      int myrank = targetdis->Comm().MyPID();
+      int myrank = targetdis->get_comm().MyPID();
 
       // construct new elements
       // The order of the elements might be different from that of the
@@ -614,7 +614,7 @@ namespace Core::FE
       std::set<int>::iterator it = roweleset_.begin();
       for (std::size_t i = 0; i < roweleset_.size(); ++i)
       {
-        Core::Elements::Element* sourceele = sourcedis->gElement(*it);
+        Core::Elements::Element* sourceele = sourcedis->g_element(*it);
 
         std::string approxtype = "Polynomial";
         if (isnurbsdis)
@@ -656,18 +656,18 @@ namespace Core::FE
         // get global node ids of source element
         std::vector<int> nids;
         nids.reserve(sourceele->num_node());
-        transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
-            back_inserter(nids), std::mem_fn(&Core::Nodes::Node::Id));
+        transform(sourceele->nodes(), sourceele->nodes() + sourceele->num_node(),
+            back_inserter(nids), std::mem_fn(&Core::Nodes::Node::id));
 
         // set the same global node ids to the new element
-        newele->SetNodeIds(nids.size(), nids.data());
+        newele->set_node_ids(nids.size(), nids.data());
 
         // We need to set material and gauss points to complete element setup.
         // This is again really ugly as we have to extract the actual
         // element type in order to access the material property
         // note: SetMaterial() was reimplemented by the transport element!
 
-        int src_matid = sourceele->Material()->Parameter()->Id();
+        int src_matid = sourceele->material()->parameter()->id();
         std::map<int, int>::iterator mat_iter = matmap.find(src_matid);
         if (mat_iter != matmap.end())
         {
@@ -706,7 +706,7 @@ namespace Core::FE
       }
 
       // prepare some variables we need
-      int myrank = targetdis.Comm().MyPID();
+      int myrank = targetdis.get_comm().MyPID();
 
       // construct new elements
       // The order of the elements might be different from that of the
@@ -759,7 +759,7 @@ namespace Core::FE
         }
 
         // get owner of source element
-        const int sourceeleowner = sourceele->Owner();
+        const int sourceeleowner = sourceele->owner();
         if (myrank != sourceeleowner)
           FOUR_C_THROW("roweleset_ should only contain my element gids!");
 
@@ -771,17 +771,17 @@ namespace Core::FE
         // get global node ids of fluid element
         std::vector<int> nids;
         nids.reserve(sourceele->num_node());
-        transform(sourceele->Nodes(), sourceele->Nodes() + sourceele->num_node(),
-            back_inserter(nids), std::mem_fn(&Core::Nodes::Node::Id));
+        transform(sourceele->nodes(), sourceele->nodes() + sourceele->num_node(),
+            back_inserter(nids), std::mem_fn(&Core::Nodes::Node::id));
 
         // set the same global node ids to the new element
-        newele->SetNodeIds(nids.size(), nids.data());
+        newele->set_node_ids(nids.size(), nids.data());
 
         // We need to set material and gauss points to complete element setup.
         // This is again really ugly as we have to extract the actual
         // element type in order to access the material property
         // note: SetMaterial() was reimplemented by the transport element!
-        Teuchos::RCP<Core::Mat::Material> mat_ptr = sourceele->Material();
+        Teuchos::RCP<Core::Mat::Material> mat_ptr = sourceele->material();
         /* Check if the material pointer is null. If necessary, try to cast
          * the condition element to a FaceElement and ask the parent element for
          * the material.                                                      */
@@ -789,12 +789,12 @@ namespace Core::FE
         {
           Core::Elements::FaceElement* src_face_element =
               dynamic_cast<Core::Elements::FaceElement*>(sourceele);
-          if (src_face_element != nullptr) mat_ptr = src_face_element->parent_element()->Material();
+          if (src_face_element != nullptr) mat_ptr = src_face_element->parent_element()->material();
         }
         // It is no FaceElement or the material pointer of the parent element is nullptr.
         if (mat_ptr.is_null()) FOUR_C_THROW("The condition element has no material!");
 
-        int src_matid = mat_ptr->Parameter()->Id();
+        int src_matid = mat_ptr->parameter()->id();
         std::map<int, int>::const_iterator mat_iter = matmap.find(src_matid);
         if (mat_iter != matmap.end())
         {
@@ -829,7 +829,7 @@ namespace Core::FE
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
     // access the communicator for time measurement
-    const Epetra_Comm& comm = sourcedis->Comm();
+    const Epetra_Comm& comm = sourcedis->get_comm();
     Teuchos::Time time("", true);
 
     // create target discretization using a given clone strategy
@@ -844,8 +844,8 @@ namespace Core::FE
     }
     if (comm.MyPID() == 0)
     {
-      Core::IO::cout << "Created discretization " << targetdis->Name()
-                     << " as a clone of discretization " << sourcedis->Name() << " in...."
+      Core::IO::cout << "Created discretization " << targetdis->name()
+                     << " as a clone of discretization " << sourcedis->name() << " in...."
                      << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
@@ -866,7 +866,7 @@ namespace Core::FE
     if (targetdis_ptr == nullptr) FOUR_C_THROW("Cast of the target discretization failed!");
 
     // access the communicator for time measurement
-    const Epetra_Comm& comm = sourcedis_ptr->Comm();
+    const Epetra_Comm& comm = sourcedis_ptr->get_comm();
     Teuchos::Time time("", true);
 
     // create target discretization using a given clone strategy
@@ -883,10 +883,10 @@ namespace Core::FE
     }
     if (comm.MyPID() == 0)
     {
-      Core::IO::cout << "Created discretization " << targetdis_ptr->Name()
+      Core::IO::cout << "Created discretization " << targetdis_ptr->name()
                      << " as a clone from the condition(s) with ID(s)=";
-      for (unsigned int i = 0; i < conds.size(); ++i) Core::IO::cout << " " << conds[i]->Id();
-      Core::IO::cout << " of the discretization " << sourcedis_ptr->Name() << " in...."
+      for (unsigned int i = 0; i < conds.size(); ++i) Core::IO::cout << " " << conds[i]->id();
+      Core::IO::cout << " of the discretization " << sourcedis_ptr->name() << " in...."
                      << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
@@ -901,7 +901,7 @@ namespace Core::FE
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
     // access the communicator for time measurement
-    const Epetra_Comm& comm = sourcedis.Comm();
+    const Epetra_Comm& comm = sourcedis.get_comm();
     Teuchos::Time time("", true);
 
     // create target discretization using a given clone strategy
@@ -917,9 +917,9 @@ namespace Core::FE
     }
     if (comm.MyPID() == 0)
     {
-      Core::IO::cout << "Created discretization " << targetdis.Name()
+      Core::IO::cout << "Created discretization " << targetdis.name()
                      << " as a clone from the condition \"" << condname.c_str()
-                     << "\" of the discretization " << sourcedis.Name() << " in...."
+                     << "\" of the discretization " << sourcedis.name() << " in...."
                      << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;

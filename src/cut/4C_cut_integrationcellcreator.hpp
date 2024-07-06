@@ -32,9 +32,9 @@ namespace Core::Geo
     class IntegrationCellCreator
     {
      public:
-      static bool CreateCells(Mesh& mesh, Element* element, const plain_volumecell_set& cells);
+      static bool create_cells(Mesh& mesh, Element* element, const plain_volumecell_set& cells);
 
-      static bool CreateCell(Mesh& mesh, Core::FE::CellType shape, VolumeCell* cell);
+      static bool create_cell(Mesh& mesh, Core::FE::CellType shape, VolumeCell* cell);
 
      private:
       /** \brief loop over all volume cells and initiate the volume and boundary integration cell
@@ -116,9 +116,9 @@ namespace Core::Geo
         Facet* facet_;
 
         /// actual creation of the desired boundary integration cell
-        void Execute(Mesh& mesh, VolumeCell* vc)
+        void execute(Mesh& mesh, VolumeCell* vc)
         {
-          vc->NewBoundaryCell(mesh, shape_, facet_, side_);
+          vc->new_boundary_cell(mesh, shape_, facet_, side_);
         }
       };
 
@@ -130,7 +130,10 @@ namespace Core::Geo
         std::vector<Point*> points_;
 
         /// actual creation of the desired volume integration cell
-        void Execute(Mesh& mesh, VolumeCell* vc) { vc->NewIntegrationCell(mesh, shape_, points_); }
+        void execute(Mesh& mesh, VolumeCell* vc)
+        {
+          vc->new_integration_cell(mesh, shape_, points_);
+        }
       };
 
       /*-------------------------------------------------------------------------*/
@@ -144,17 +147,17 @@ namespace Core::Geo
          *
          *  At this point the necessary information for the creation must have been
          *  already added by the Add() and add_side() methods. */
-        void Execute(Mesh& mesh, VolumeCell* vc)
+        void execute(Mesh& mesh, VolumeCell* vc)
         {
           for (std::vector<Ic>::iterator i = domain_.begin(); i != domain_.end(); ++i)
           {
             Ic& cell = *i;
-            cell.Execute(mesh, vc);
+            cell.execute(mesh, vc);
           }
           for (std::vector<Bc>::iterator i = boundary_.begin(); i != boundary_.end(); ++i)
           {
             Bc& bcell = *i;
-            bcell.Execute(mesh, vc);
+            bcell.execute(mesh, vc);
           }
         }
       };  // struct volume

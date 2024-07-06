@@ -41,38 +41,38 @@ namespace Mortar
 
     virtual void clear() = 0;
 
-    virtual void AssembleRHS(Mortar::Element* mele, CONTACT::VecBlockType row,
+    virtual void assemble_rhs(Mortar::Element* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) const = 0;
 
-    virtual void AssembleMatrix(Mortar::Element* mele, CONTACT::MatBlockType block,
+    virtual void assemble_matrix(Mortar::Element* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const = 0;
 
-    virtual double* Rhs(int dof) = 0;
-    virtual double* Rhs() = 0;
-    virtual double* K(int col) = 0;
-    virtual double* K(int col, int dof) = 0;
+    virtual double* rhs(int dof) = 0;
+    virtual double* rhs() = 0;
+    virtual double* k(int col) = 0;
+    virtual double* k(int col, int dof) = 0;
 
-    virtual double* RhsT(int dof) = 0;
-    virtual double* RhsT() = 0;
-    virtual double* Ktt(int col) = 0;
-    virtual double* Ktd(int col) = 0;
-    virtual double* Kdt(int col) = 0;
+    virtual double* rhs_t(int dof) = 0;
+    virtual double* rhs_t() = 0;
+    virtual double* ktt(int col) = 0;
+    virtual double* ktd(int col) = 0;
+    virtual double* kdt(int col) = 0;
 
-    virtual double* RhsP(int dof) = 0;
-    virtual double* Kpp(int col) = 0;
-    virtual double* Kpd(int col) = 0;
-    virtual double* Kdp(int col) = 0;
+    virtual double* rhs_p(int dof) = 0;
+    virtual double* kpp(int col) = 0;
+    virtual double* kpd(int col) = 0;
+    virtual double* kdp(int col) = 0;
 
-    virtual double* RhsS(int dof) = 0;
-    virtual double* Kss(int col) = 0;
-    virtual double* Ksd(int col) = 0;
-    virtual double* Kds(int col) = 0;
+    virtual double* rhs_s(int dof) = 0;
+    virtual double* kss(int col) = 0;
+    virtual double* ksd(int col) = 0;
+    virtual double* kds(int col) = 0;
 
-    virtual double* RhsE(int dof) = 0;
-    virtual double* Kee(int col) = 0;
-    virtual double* Ked(int col) = 0;
-    virtual double* Ked(int col, int dof) = 0;
-    virtual double* Kde(int col) = 0;
+    virtual double* rhs_e(int dof) = 0;
+    virtual double* kee(int col) = 0;
+    virtual double* ked(int col) = 0;
+    virtual double* ked(int col, int dof) = 0;
+    virtual double* kde(int col) = 0;
   };
 
   template <Core::FE::CellType parent_distype>
@@ -172,47 +172,47 @@ namespace Mortar
             1>;
 
    public:
-    const VectorType& RhsVec() { return rhs_; }
-    double* Rhs(int dof) override { return &rhs_(dof); }
-    double* Rhs() override { return rhs_.data(); }
-    double* K(int col) override { return k_[col].data(); }
-    double* K(int col, int dof) override { return &k_[col](dof); }
+    const VectorType& rhs_vec() { return rhs_; }
+    double* rhs(int dof) override { return &rhs_(dof); }
+    double* rhs() override { return rhs_.data(); }
+    double* k(int col) override { return k_[col].data(); }
+    double* k(int col, int dof) override { return &k_[col](dof); }
 
-    double* RhsT(int dof) override { return &tsi_data_.rhs_t_(dof); }
-    double* RhsT() override { return tsi_data_.rhs_t_.data(); }
-    double* Ktt(int col) override { return tsi_data_.k_tt_[col].data(); }
-    double* Ktd(int col) override { return tsi_data_.k_td_[col].data(); }
-    double* Kdt(int col) override { return tsi_data_.k_dt_[col].data(); }
+    double* rhs_t(int dof) override { return &tsi_data_.rhs_t_(dof); }
+    double* rhs_t() override { return tsi_data_.rhs_t_.data(); }
+    double* ktt(int col) override { return tsi_data_.k_tt_[col].data(); }
+    double* ktd(int col) override { return tsi_data_.k_td_[col].data(); }
+    double* kdt(int col) override { return tsi_data_.k_dt_[col].data(); }
 
-    double* RhsP(int dof) override { return &poro_data_.rhs_p_(dof); }
-    double* Kpp(int col) override { return poro_data_.k_pp_[col].data(); }
-    double* Kpd(int col) override { return poro_data_.k_pd_[col].data(); }
-    double* Kdp(int col) override { return poro_data_.k_dp_[col].data(); }
+    double* rhs_p(int dof) override { return &poro_data_.rhs_p_(dof); }
+    double* kpp(int col) override { return poro_data_.k_pp_[col].data(); }
+    double* kpd(int col) override { return poro_data_.k_pd_[col].data(); }
+    double* kdp(int col) override { return poro_data_.k_dp_[col].data(); }
 
-    double* RhsS(int dof) override { return &ssi_data_.rhs_s_(dof); }
-    double* Kss(int col) override { return ssi_data_.k_ss_[col].data(); }
-    double* Ksd(int col) override { return ssi_data_.k_sd_[col].data(); }
-    double* Kds(int col) override { return ssi_data_.k_ds_[col].data(); }
+    double* rhs_s(int dof) override { return &ssi_data_.rhs_s_(dof); }
+    double* kss(int col) override { return ssi_data_.k_ss_[col].data(); }
+    double* ksd(int col) override { return ssi_data_.k_sd_[col].data(); }
+    double* kds(int col) override { return ssi_data_.k_ds_[col].data(); }
 
-    double* RhsE(int dof) override { return &ssi_elch_data_.rhs_e_(dof); }
-    double* Kee(int col) override { return ssi_elch_data_.k_ee_[col].data(); }
-    double* Ked(int col) override { return ssi_elch_data_.k_ed_[col].data(); }
-    double* Ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
-    double* Kde(int col) override { return ssi_elch_data_.k_de_[col].data(); }
+    double* rhs_e(int dof) override { return &ssi_elch_data_.rhs_e_(dof); }
+    double* kee(int col) override { return ssi_elch_data_.k_ee_[col].data(); }
+    double* ked(int col) override { return ssi_elch_data_.k_ed_[col].data(); }
+    double* ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
+    double* kde(int col) override { return ssi_elch_data_.k_de_[col].data(); }
 
-    void AssembleRHS(Mortar::Element* mele, CONTACT::VecBlockType row,
+    void assemble_rhs(Mortar::Element* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) const override;
 
-    void AssembleMatrix(Mortar::Element* mele, CONTACT::MatBlockType block,
+    void assemble_matrix(Mortar::Element* mele, CONTACT::MatBlockType block,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const override;
 
     template <int num_dof_per_node>
-    void AssembleRHS(Mortar::Element* mele,
+    void assemble_rhs(Mortar::Element* mele,
         const Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
         std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc) const;
 
     template <int num_dof_per_node>
-    void AssembleMatrix(Mortar::Element* mele,
+    void assemble_matrix(Mortar::Element* mele,
         const std::unordered_map<int,
             Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
         std::vector<int>& dofs, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const;

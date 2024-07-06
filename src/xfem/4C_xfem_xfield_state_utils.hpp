@@ -47,7 +47,7 @@ namespace XFEM
         {
           case NOX::Nln::LinSystem::LinalgSparseMatrix:
           {
-            Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mat)->Destroy();
+            Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mat)->destroy();
             break;
           }
           case NOX::Nln::LinSystem::LinalgBlockSparseMatrix:
@@ -56,7 +56,7 @@ namespace XFEM
                 block_mat = Teuchos::rcp_dynamic_cast<
                     Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
                     mat, true);
-            block_mat->Destroy(false);
+            block_mat->destroy(false);
             break;
           }
           default:
@@ -111,7 +111,7 @@ namespace XFEM
     {
       if (mat.strong_count() == 1)
       {
-        mat->Destroy();       // destroy underlying Epetra objects of the reference-counted object
+        mat->destroy();       // destroy underlying Epetra objects of the reference-counted object
         mat = Teuchos::null;  // destroy the rcp itself and delete the reference-counted object
       }
       else if (mat.strong_count() > 1)
@@ -184,15 +184,15 @@ namespace XFEM
    *  \date 01/15 */
   inline void ZeroMatrix(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat)
   {
-    if (mat->ExplicitDirichlet())
+    if (mat->explicit_dirichlet())
     {
-      mat->Zero();  // matrix could have been changed due to Dirichlet conditions, go back to
+      mat->zero();  // matrix could have been changed due to Dirichlet conditions, go back to
                     // original Graph if savegraph == true
     }
     else
     {
       // do not create a new matrix via Zero() but zero entries
-      mat->PutScalar(0.0);
+      mat->put_scalar(0.0);
     }
   }
 

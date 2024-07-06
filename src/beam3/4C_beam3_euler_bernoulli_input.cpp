@@ -19,15 +19,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3eb::ReadElement(
+bool Discret::ELEMENTS::Beam3eb::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  const auto mat_type = Material()->Parameter()->Type();
+  const auto mat_type = material()->parameter()->type();
   FOUR_C_THROW_UNLESS(
       mat_type == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper ||
           mat_type == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes,

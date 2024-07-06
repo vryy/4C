@@ -28,7 +28,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
     Teuchos::ParameterList& params, const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "This is the turbulence statistics manager of periodic hill problem" << std::endl;
     std::cout << "based on the geometry of ERCOFTAC" << std::endl;
@@ -64,28 +64,28 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
   std::set<double, LineSortCriterion> x2statlocat;
 
 
-  for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+  for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
   {
-    Core::Nodes::Node* node = discret_->lRowNode(i);
+    Core::Nodes::Node* node = discret_->l_row_node(i);
 
-    if (node->X()[1] < 85.008 + 2e-9 && node->X()[1] > 85.008 - 2e-9)
-      x1avcoords.insert(node->X()[0]);
+    if (node->x()[1] < 85.008 + 2e-9 && node->x()[1] > 85.008 - 2e-9)
+      x1avcoords.insert(node->x()[0]);
 
-    if (node->X()[0] < 2e-9 && node->X()[0] > -2e-9) x2avcoords.insert(node->X()[1]);
+    if (node->x()[0] < 2e-9 && node->x()[0] > -2e-9) x2avcoords.insert(node->x()[1]);
   }
 
   //--------------------------------------------------------------------
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
   {
-    int myrank = discret_->Comm().MyPID();
-    int numprocs = discret_->Comm().NumProc();
+    int myrank = discret_->get_comm().MyPID();
+    int numprocs = discret_->get_comm().NumProc();
 
     std::vector<char> sblock;
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    Core::Communication::Exporter exporter(discret_->Comm());
+    Core::Communication::Exporter exporter(discret_->get_comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
@@ -113,18 +113,18 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -169,18 +169,18 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       {
         // for safety
-        exporter.Comm().Barrier();
+        exporter.get_comm().Barrier();
       }
 
       //--------------------------------------------------
@@ -250,7 +250,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 #endif
   numx1statlocations_ = x1setstatlocations_->size();
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "Sample at " << numx1statlocations_ << " numx1statlocations_ \n" << std::endl;
   }
@@ -293,14 +293,14 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
   {
     x2statlocat.clear();
 
-    for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
+    for (int i = 0; i < discret_->num_my_row_nodes(); ++i)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(i);
-      if (node->X()[2] < +2e-9 && node->X()[2] > -2e-9 &&
-          node->X()[0] < x1statlocations_(x1stat, 0) + 2e-9 &&
-          node->X()[0] > x1statlocations_(x1stat, 0) - 2e-9)
+      Core::Nodes::Node* node = discret_->l_row_node(i);
+      if (node->x()[2] < +2e-9 && node->x()[2] > -2e-9 &&
+          node->x()[0] < x1statlocations_(x1stat, 0) + 2e-9 &&
+          node->x()[0] > x1statlocations_(x1stat, 0) - 2e-9)
       {
-        x2statlocat.insert(node->X()[1]);
+        x2statlocat.insert(node->x()[1]);
       }
     }
 
@@ -308,14 +308,14 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
     //  communication of x2-ccordinates
     //////////////////////////////////////////////
     {
-      int myrank = discret_->Comm().MyPID();
-      int numprocs = discret_->Comm().NumProc();
+      int myrank = discret_->get_comm().MyPID();
+      int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      Core::Communication::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->get_comm());
 
       // first, communicate coordinates in x1-direction
       for (int np = 0; np < numprocs; ++np)
@@ -343,18 +343,18 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 
         // receive from predecessor
         frompid = (myrank + numprocs - 1) % numprocs;
-        exporter.ReceiveAny(frompid, tag, rblock, length);
+        exporter.receive_any(frompid, tag, rblock, length);
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
           FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
-        exporter.Wait(request);
+        exporter.wait(request);
 
         {
           // for safety
-          exporter.Comm().Barrier();
+          exporter.get_comm().Barrier();
         }
 
         //--------------------------------------------------
@@ -455,7 +455,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 
   Teuchos::RCP<std::ofstream> log;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
 
@@ -476,10 +476,10 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsPh::DoTimeSample(
+void FLD::TurbulenceStatisticsPh::do_time_sample(
     Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses)
 {
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
     std::cout << "------------Time Sampling Routine begins---------" << std::endl;
 
 
@@ -510,14 +510,14 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
         // this is the wall node
-        if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
-            node->X()[1] < (x2cwall + 2e-9) and node->X()[1] > (x2cwall - 2e-9))
+        if (node->x()[0] < (x1cwall + 2e-9) and node->x()[0] > (x1cwall - 2e-9) and
+            node->x()[1] < (x2cwall + 2e-9) and node->x()[1] > (x2cwall - 2e-9))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, dof.data());
@@ -526,7 +526,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
       }
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -555,14 +555,14 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
         // this is the wall node
-        if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
-            node->X()[1] < (x2cwall_plw + 2e-9) and node->X()[1] > (x2cwall_plw - 2e-9))
+        if (node->x()[0] < (x1cwall + 2e-9) and node->x()[0] > (x1cwall - 2e-9) and
+            node->x()[1] < (x2cwall_plw + 2e-9) and node->x()[1] > (x2cwall_plw - 2e-9))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
@@ -571,7 +571,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
       }
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -600,14 +600,14 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
         // this is the wall node
-        if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
-            node->X()[1] < (x2cwall_puw + 2e-9) and node->X()[1] > (x2cwall_puw - 2e-9))
+        if (node->x()[0] < (x1cwall + 2e-9) and node->x()[0] > (x1cwall - 2e-9) and
+            node->x()[1] < (x2cwall_puw + 2e-9) and node->x()[1] > (x2cwall_puw - 2e-9))
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           togglep_->ReplaceGlobalValues(1, &one, &(dof[3]));
@@ -616,7 +616,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
       }
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -657,14 +657,14 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
     // count the number of nodes in x3-direction contributing to this nodal value
     int countnodes = 0;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->l_row_node(nn);
       // this is the wall node
-      if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
-          node->X()[1] < (x2cwall + 2e-9) and node->X()[1] > (x2cwall - 2e-9))
+      if (node->x()[0] < (x1cwall + 2e-9) and node->x()[0] > (x1cwall - 2e-9) and
+          node->x()[1] < (x2cwall + 2e-9) and node->x()[1] > (x2cwall - 2e-9))
       {
-        std::vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->dof(node);
         double one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -675,7 +675,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
     }
     int countnodesonallprocs = 0;
 
-    discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+    discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
     // reduce by 1 due to periodic boundary condition
     countnodesonallprocs -= 1;
@@ -726,18 +726,18 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes = 0;
 
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
-        Core::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->l_row_node(nn);
 
         // this is the node
-        if (node->X()[0] < x1statlocations_(x1nodnum, 0) + 2e-5 &&
-            node->X()[0] > x1statlocations_(x1nodnum, 0) - 2e-5 &&
-            node->X()[1] < x2statlocations_(x1nodnum, x2line) + 2e-9 &&
-            node->X()[1] > x2statlocations_(x1nodnum, x2line) -
+        if (node->x()[0] < x1statlocations_(x1nodnum, 0) + 2e-5 &&
+            node->x()[0] > x1statlocations_(x1nodnum, 0) - 2e-5 &&
+            node->x()[1] < x2statlocations_(x1nodnum, x2line) + 2e-9 &&
+            node->x()[1] > x2statlocations_(x1nodnum, x2line) -
                                2e-9)  // the last node in x3 direction has to be sampled
         {
-          std::vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->dof(node);
           double one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1, &one, &(dof[0]));
@@ -751,7 +751,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       int countnodesonallprocs = 0;
 
-      discret_->Comm().SumAll(&countnodes, &countnodesonallprocs, 1);
+      discret_->get_comm().SumAll(&countnodes, &countnodesonallprocs, 1);
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs -= 1;
@@ -789,17 +789,17 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
         {
           locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
         }
-        discret_->Comm().SumAll(&locuv, &uv, 1);
+        discret_->get_comm().SumAll(&locuv, &uv, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locuw, &uw, 1);
+        discret_->get_comm().SumAll(&locuw, &uw, 1);
         for (int rr = 2; rr < velnp->MyLength(); ++rr)
         {
           locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
         }
-        discret_->Comm().SumAll(&locvw, &vw, 1);
+        discret_->get_comm().SumAll(&locvw, &vw, 1);
 
         //----------------------------------------------------------------------
         // calculate spatial means on this line
@@ -829,13 +829,13 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
+void FLD::TurbulenceStatisticsPh::dump_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RCP<std::ofstream> log;
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");

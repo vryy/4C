@@ -37,21 +37,21 @@ namespace Discret
     class FluidHDGWeakCompType : public FluidType
     {
      public:
-      std::string Name() const override { return "FluidHDGWeakCompType"; }
+      std::string name() const override { return "FluidHDGWeakCompType"; }
 
-      static FluidHDGWeakCompType& Instance();
+      static FluidHDGWeakCompType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(Core::FE::Discretization& dis, std::vector<double>& ns,
+      virtual void compute_null_space(Core::FE::Discretization& dis, std::vector<double>& ns,
           const double* x0, int numdf, int dimns);
 
       void setup_element_definition(
@@ -89,11 +89,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of fluid and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
 
       /*!
@@ -102,9 +102,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return FluidHDGWeakCompType::Instance().UniqueParObjectId();
+        return FluidHDGWeakCompType::instance().unique_par_object_id();
       }
 
       /*!
@@ -125,7 +125,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -135,7 +135,7 @@ namespace Discret
       \brief Get number of degrees of freedom per node, zero for the primary
       and the secondary dof set and equal to the given number for the tertiary dof set
       */
-      int NumDofPerNode(const Core::Nodes::Node&) const override { return 0; }
+      int num_dof_per_node(const Core::Nodes::Node&) const override { return 0; }
 
       /*!
       \brief Returns the number of dofs per node for the ALE displacements
@@ -153,16 +153,16 @@ namespace Discret
       */
       int num_dof_per_face(const unsigned face) const override
       {
-        return (1 + Core::FE::getDimension(distype_)) * NumDofPerComponent(face);
+        return (1 + Core::FE::getDimension(distype_)) * num_dof_per_component(face);
       }
 
       /*!
       \brief Get number of dofs per component per face
       */
-      int NumDofPerComponent(const unsigned face) const override
+      int num_dof_per_component(const unsigned face) const override
       {
         return Core::FE::getBasisSize(
-            Core::FE::getEleFaceShapeType(distype_), this->Degree(), completepol_);
+            Core::FE::getEleFaceShapeType(distype_), this->degree(), completepol_);
       }
 
       /*!
@@ -184,7 +184,7 @@ namespace Discret
       /*!
        \brief Returns the degree of the element
        */
-      int Degree() const override { return degree_; }
+      int degree() const override { return degree_; }
 
       /*!
        \brief Returns the degree of the element
@@ -231,9 +231,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return FluidHDGWeakCompType::Instance();
+        return FluidHDGWeakCompType::instance();
       }
 
      private:

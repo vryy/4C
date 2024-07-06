@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 CONTACT::RoughNodeType CONTACT::RoughNodeType::instance_;
 
-Core::Communication::ParObject* CONTACT::RoughNodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::RoughNodeType::create(const std::vector<char>& data)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
@@ -52,13 +52,13 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
   if (isslave)
   {
     hurstExponent_ =
-        Global::Problem::Instance()
-            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(hurstexponentfunction_ - 1)
-            .evaluate(this->X().data(), 1, this->Dim());
-    initialTopologyStdDeviation_ = Global::Problem::Instance()
-                                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+        Global::Problem::instance()
+            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(hurstexponentfunction_ - 1)
+            .evaluate(this->x().data(), 1, this->n_dim());
+    initialTopologyStdDeviation_ = Global::Problem::instance()
+                                       ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
                                            initialtopologystddeviationfunction_ - 1)
-                                       .evaluate(this->X().data(), 1, this->Dim());
+                                       .evaluate(this->x().data(), 1, this->n_dim());
 
     const int N = pow(2, resolution_);
     topology_.shape(N + 1, N + 1);
@@ -90,7 +90,7 @@ void CONTACT::RoughNode::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Mortar::Node
@@ -118,7 +118,7 @@ void CONTACT::RoughNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class CONTACT::Node
   std::vector<char> basedata(0);

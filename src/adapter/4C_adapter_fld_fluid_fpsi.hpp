@@ -43,7 +43,7 @@ namespace Adapter
     void init() override;
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const override
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& fpsi_interface() const override
     {
       return fpsiinterface_;
     }

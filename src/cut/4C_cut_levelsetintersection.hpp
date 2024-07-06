@@ -48,10 +48,10 @@ namespace Core::Geo
       /** \brief add a side of the cut mesh and return the side-handle
        *
        * (e.g. quadratic side-handle for quadratic sides) */
-      void AddCutSide(int levelset_sid);
+      void add_cut_side(int levelset_sid);
 
       ///
-      bool HasLSCuttingSide(int sid) { return true; /*return sid == side_->Id();*/ };
+      bool has_ls_cutting_side(int sid) { return true; /*return sid == side_->Id();*/ };
 
       /*========================================================================*/
       //! @name Cut functionality, routines
@@ -65,7 +65,7 @@ namespace Core::Geo
        *
        *  \author winter
        *  \date 08/14  */
-      void Cut_Mesh(bool screenoutput = false) override;
+      void cut_mesh(bool screenoutput = false) override;
 
       /*! \brief Performs all the level set cut operations including find positions
        *  and triangulation. (Used for the test cases)
@@ -76,7 +76,7 @@ namespace Core::Geo
        *
        *  \author winter
        *  \date 08/14  */
-      void Cut(bool include_inner = true, bool screenoutput = false,
+      void cut(bool include_inner = true, bool screenoutput = false,
           VCellGaussPts VCellGP = VCellGaussPts_Tessellation);
 
       //! @}
@@ -96,7 +96,7 @@ namespace Core::Geo
       //! @}
 
      private:
-      const Epetra_Comm& comm() const
+      const Epetra_Comm& get_comm() const
       {
         if (not comm_) FOUR_C_THROW("Epetra communicator was not initialized!");
 

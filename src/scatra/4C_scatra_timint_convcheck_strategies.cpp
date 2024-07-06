@@ -46,26 +46,26 @@ bool ScaTra::ConvCheckStrategyStd::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // compute L2 norm of concentration state vector
   double conc_state_L2(0.0);
-  scatratimint.Phinp()->Norm2(&conc_state_L2);
+  scatratimint.phinp()->Norm2(&conc_state_L2);
 
   // compute L2 norm of concentration residual vector
   double conc_res_L2(0.);
-  scatratimint.Residual()->Norm2(&conc_res_L2);
+  scatratimint.residual()->Norm2(&conc_res_L2);
 
   // compute infinity norm of concentration residual vector
   double conc_res_inf(0.);
-  scatratimint.Residual()->NormInf(&conc_res_inf);
+  scatratimint.residual()->NormInf(&conc_res_inf);
 
   // compute L2 norm of concentration increment vector
   double conc_inc_L2(0.);
-  scatratimint.Increment()->Norm2(&conc_inc_L2);
+  scatratimint.increment()->Norm2(&conc_inc_L2);
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
@@ -95,7 +95,7 @@ bool ScaTra::ConvCheckStrategyStd::abort_nonlin_iter(
                 << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << conc_res_L2 << "   |      --      | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << conc_res_inf << "       | (      --     ,te=" << std::setw(10)
-                << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")"
+                << std::setprecision(3) << std::scientific << scatratimint.dt_ele() << ")"
                 << std::endl;
     }
   }
@@ -113,8 +113,8 @@ bool ScaTra::ConvCheckStrategyStd::abort_nonlin_iter(
                 << std::scientific << conc_inc_L2 / conc_state_L2 << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << conc_res_inf
                 << "       | (ts=" << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatratimint.DtSolve() << ",te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << scatratimint.dt_solve() << ",te=" << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
 
     // convergence check
     if (conc_res_L2 <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_)
@@ -168,21 +168,21 @@ bool ScaTra::ConvCheckStrategyStd::abort_nonlin_iter(
 /*--------------------------------------------------------------------------------------------*
  | perform convergence check for outer iteration in partitioned coupling schemes   fang 08/17 |
  *--------------------------------------------------------------------------------------------*/
-bool ScaTra::ConvCheckStrategyStd::AbortOuterIter(
+bool ScaTra::ConvCheckStrategyStd::abort_outer_iter(
     const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current outer iteration step
-  const int itnum = scatratimint.IterNumOuter();
+  const int itnum = scatratimint.iter_num_outer();
 
   // compute vector norms
   double L2_phinp(0.);
   double L2_phinp_inc(0.);
-  scatratimint.Phinp()->Norm2(&L2_phinp);
-  scatratimint.PhinpInc()->Norm2(&L2_phinp_inc);
+  scatratimint.phinp()->Norm2(&L2_phinp);
+  scatratimint.phinp_inc()->Norm2(&L2_phinp_inc);
   if (L2_phinp < 1.e-10) L2_phinp = 1.;
 
   // print convergence status
@@ -251,23 +251,23 @@ bool ScaTra::ConvCheckStrategyStdMicroScale::abort_nonlin_iter(
 ) const
 {
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // compute L2 norm of concentration state vector
   double conc_state_L2(0.0);
-  scatratimint.Phinp()->Norm2(&conc_state_L2);
+  scatratimint.phinp()->Norm2(&conc_state_L2);
 
   // compute L2 norm of concentration residual vector
   double conc_res_L2(0.);
-  scatratimint.Residual()->Norm2(&conc_res_L2);
+  scatratimint.residual()->Norm2(&conc_res_L2);
 
   // compute infinity norm of concentration residual vector
   double conc_res_inf(0.);
-  scatratimint.Residual()->NormInf(&conc_res_inf);
+  scatratimint.residual()->NormInf(&conc_res_inf);
 
   // compute L2 norm of concentration increment vector
   double conc_inc_L2(0.);
-  scatratimint.Increment()->Norm2(&conc_inc_L2);
+  scatratimint.increment()->Norm2(&conc_inc_L2);
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
@@ -303,19 +303,19 @@ bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // compute L2 norm of concentration state vector
   Teuchos::RCP<Epetra_Vector> conc_vector =
-      scatratimint.Splitter()->extract_other_vector(scatratimint.Phinp());
+      scatratimint.splitter()->extract_other_vector(scatratimint.phinp());
   double conc_state_L2(0.0);
   conc_vector->Norm2(&conc_state_L2);
 
   // compute L2 norm of concentration residual vector
-  scatratimint.Splitter()->extract_other_vector(scatratimint.Residual(), conc_vector);
+  scatratimint.splitter()->extract_other_vector(scatratimint.residual(), conc_vector);
   double conc_res_L2(0.);
   conc_vector->Norm2(&conc_res_L2);
 
@@ -324,23 +324,23 @@ bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
   conc_vector->NormInf(&conc_res_inf);
 
   // compute L2 norm of concentration increment vector
-  scatratimint.Splitter()->extract_other_vector(scatratimint.Increment(), conc_vector);
+  scatratimint.splitter()->extract_other_vector(scatratimint.increment(), conc_vector);
   double conc_inc_L2(0.);
   conc_vector->Norm2(&conc_inc_L2);
 
   // compute L2 norm of electric potential state vector
   Teuchos::RCP<Epetra_Vector> pot_vector =
-      scatratimint.Splitter()->extract_cond_vector(scatratimint.Phinp());
+      scatratimint.splitter()->extract_cond_vector(scatratimint.phinp());
   double pot_state_L2(0.0);
   pot_vector->Norm2(&pot_state_L2);
 
   // compute L2 norm of electric potential residual vector
-  scatratimint.Splitter()->extract_cond_vector(scatratimint.Residual(), pot_vector);
+  scatratimint.splitter()->extract_cond_vector(scatratimint.residual(), pot_vector);
   double pot_res_L2(0.);
   pot_vector->Norm2(&pot_res_L2);
 
   // compute L2 norm of electric potential increment vector
-  scatratimint.Splitter()->extract_cond_vector(scatratimint.Increment(), pot_vector);
+  scatratimint.splitter()->extract_cond_vector(scatratimint.increment(), pot_vector);
   double pot_inc_L2(0.);
   pot_vector->Norm2(&pot_inc_L2);
 
@@ -379,7 +379,7 @@ bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
                 << std::scientific << pot_res_L2 << "   |      --      |      --      | "
                 << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_inf
                 << "       | (      --     ,te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
     }
   }
 
@@ -398,8 +398,8 @@ bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
                 << std::setprecision(3) << std::scientific << pot_inc_L2 / pot_state_L2 << "   | "
                 << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_inf
                 << "       | (ts=" << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatratimint.DtSolve() << ",te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << scatratimint.dt_solve() << ",te=" << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
 
     // convergence check
     if (conc_res_L2 <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_ and pot_res_L2 <= ittol_ and
@@ -462,44 +462,44 @@ bool ScaTra::ConvCheckStrategyS2ILM::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // compute L2 norm of concentration state vector
   double conc_state_L2(0.0);
-  scatratimint.Phinp()->Norm2(&conc_state_L2);
+  scatratimint.phinp()->Norm2(&conc_state_L2);
 
   // compute L2 norm of concentration residual vector
   double conc_res_L2(0.);
-  scatratimint.Residual()->Norm2(&conc_res_L2);
+  scatratimint.residual()->Norm2(&conc_res_L2);
 
   // compute infinity norm of concentration residual vector
   double conc_res_inf(0.);
-  scatratimint.Residual()->NormInf(&conc_res_inf);
+  scatratimint.residual()->NormInf(&conc_res_inf);
 
   // compute L2 norm of concentration increment vector
   double conc_inc_L2(0.);
-  scatratimint.Increment()->Norm2(&conc_inc_L2);
+  scatratimint.increment()->Norm2(&conc_inc_L2);
 
   // extract meshtying strategy from scalar transport time integrator
   const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategys2i =
-      Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint.Strategy());
+      Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint.strategy());
   if (meshtyingstrategys2i == Teuchos::null)
     FOUR_C_THROW("Invalid scalar transport meshtying strategy!");
 
   // compute L2 norm of Lagrange multiplier state vector
   double lm_state_L2(0.0);
-  meshtyingstrategys2i->LM()->Norm2(&lm_state_L2);
+  meshtyingstrategys2i->lm()->Norm2(&lm_state_L2);
 
   // compute L2 norm of Lagrange multiplier residual vector
   double lm_res_L2(0.);
-  meshtyingstrategys2i->LMResidual()->Norm2(&lm_res_L2);
+  meshtyingstrategys2i->lm_residual()->Norm2(&lm_res_L2);
 
   // compute L2 norm of Lagrange multiplier increment vector
   double lm_inc_L2(0.);
-  meshtyingstrategys2i->LMIncrement()->Norm2(&lm_inc_L2);
+  meshtyingstrategys2i->lm_increment()->Norm2(&lm_inc_L2);
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
@@ -537,7 +537,7 @@ bool ScaTra::ConvCheckStrategyS2ILM::abort_nonlin_iter(
                 << std::scientific << lm_res_L2 << "   |      --      |      --      | "
                 << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_inf
                 << "       | (      --     ,te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
     }
   }
 
@@ -556,8 +556,8 @@ bool ScaTra::ConvCheckStrategyS2ILM::abort_nonlin_iter(
                 << std::setprecision(3) << std::scientific << lm_inc_L2 / lm_state_L2 << "   | "
                 << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_inf
                 << "       | (ts=" << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatratimint.DtSolve() << ",te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << scatratimint.dt_solve() << ",te=" << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
 
     // convergence check
     if (conc_res_L2 <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_ and lm_res_L2 <= ittol_ and
@@ -620,19 +620,19 @@ bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // compute L2 norm of concentration state vector
   Teuchos::RCP<Epetra_Vector> conc_vector =
-      scatratimint.Splitter()->extract_other_vector(scatratimint.Phinp());
+      scatratimint.splitter()->extract_other_vector(scatratimint.phinp());
   double conc_state_L2(0.0);
   conc_vector->Norm2(&conc_state_L2);
 
   // compute L2 norm of concentration residual vector
-  scatratimint.Splitter()->extract_other_vector(scatratimint.Residual(), conc_vector);
+  scatratimint.splitter()->extract_other_vector(scatratimint.residual(), conc_vector);
   double conc_res_L2(0.);
   conc_vector->Norm2(&conc_res_L2);
 
@@ -641,43 +641,43 @@ bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
   conc_vector->NormInf(&conc_res_inf);
 
   // compute L2 norm of concentration increment vector
-  scatratimint.Splitter()->extract_other_vector(scatratimint.Increment(), conc_vector);
+  scatratimint.splitter()->extract_other_vector(scatratimint.increment(), conc_vector);
   double conc_inc_L2(0.);
   conc_vector->Norm2(&conc_inc_L2);
 
   // compute L2 norm of electric potential state vector
   Teuchos::RCP<Epetra_Vector> pot_vector =
-      scatratimint.Splitter()->extract_cond_vector(scatratimint.Phinp());
+      scatratimint.splitter()->extract_cond_vector(scatratimint.phinp());
   double pot_state_L2(0.0);
   pot_vector->Norm2(&pot_state_L2);
 
   // compute L2 norm of electric potential residual vector
-  scatratimint.Splitter()->extract_cond_vector(scatratimint.Residual(), pot_vector);
+  scatratimint.splitter()->extract_cond_vector(scatratimint.residual(), pot_vector);
   double pot_res_L2(0.);
   pot_vector->Norm2(&pot_res_L2);
 
   // compute L2 norm of electric potential increment vector
-  scatratimint.Splitter()->extract_cond_vector(scatratimint.Increment(), pot_vector);
+  scatratimint.splitter()->extract_cond_vector(scatratimint.increment(), pot_vector);
   double pot_inc_L2(0.);
   pot_vector->Norm2(&pot_inc_L2);
 
   // extract meshtying strategy from scalar transport time integrator
   const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategys2i =
-      Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint.Strategy());
+      Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint.strategy());
   if (meshtyingstrategys2i == Teuchos::null)
     FOUR_C_THROW("Invalid scalar transport meshtying strategy!");
 
   // compute L2 norm of Lagrange multiplier state vector
   double lm_state_L2(0.0);
-  meshtyingstrategys2i->LM()->Norm2(&lm_state_L2);
+  meshtyingstrategys2i->lm()->Norm2(&lm_state_L2);
 
   // compute L2 norm of Lagrange multiplier residual vector
   double lm_res_L2(0.);
-  meshtyingstrategys2i->LMResidual()->Norm2(&lm_res_L2);
+  meshtyingstrategys2i->lm_residual()->Norm2(&lm_res_L2);
 
   // compute L2 norm of Lagrange multiplier increment vector
   double lm_inc_L2(0.);
-  meshtyingstrategys2i->LMIncrement()->Norm2(&lm_inc_L2);
+  meshtyingstrategys2i->lm_increment()->Norm2(&lm_inc_L2);
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
@@ -722,7 +722,7 @@ bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
                 << "   |      --      |      --      |      --      | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << conc_res_inf
                 << "       | (      --     ,te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
     }
   }
 
@@ -743,9 +743,9 @@ bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
                 << std::setw(10) << std::setprecision(3) << std::scientific
                 << lm_inc_L2 / lm_state_L2 << "   | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << conc_res_inf << "       | (ts=" << std::setw(10)
-                << std::setprecision(3) << std::scientific << scatratimint.DtSolve()
+                << std::setprecision(3) << std::scientific << scatratimint.dt_solve()
                 << ",te=" << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatratimint.DtEle() << ")" << std::endl;
+                << scatratimint.dt_ele() << ")" << std::endl;
 
     // convergence check
     if (conc_res_L2 <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_ and pot_res_L2 <= ittol_ and
@@ -815,19 +815,19 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
   if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // compute L2 norm of state vector associated with electrolyte concentration
   const Teuchos::RCP<Epetra_Vector> vector_conc_el =
-      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 0);
+      elchtimint->splitter_macro()->extract_vector(scatratimint.phinp(), 0);
   double L2_state_conc_el(0.);
   vector_conc_el->Norm2(&L2_state_conc_el);
 
   // compute L2 norm of residual vector associated with electrolyte concentration
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.Residual(), 0, vector_conc_el);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.residual(), 0, vector_conc_el);
   double L2_res_conc_el(0.);
   vector_conc_el->Norm2(&L2_res_conc_el);
 
@@ -836,39 +836,39 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
   vector_conc_el->NormInf(&inf_res_conc_el);
 
   // compute L2 norm of increment vector associated with electrolyte concentration
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.Increment(), 0, vector_conc_el);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.increment(), 0, vector_conc_el);
   double L2_inc_conc_el(0.);
   vector_conc_el->Norm2(&L2_inc_conc_el);
 
   // compute L2 norm of state vector associated with electrolyte potential
   const Teuchos::RCP<Epetra_Vector> vector_pot_el =
-      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 1);
+      elchtimint->splitter_macro()->extract_vector(scatratimint.phinp(), 1);
   double L2_state_pot_el(0.);
   vector_pot_el->Norm2(&L2_state_pot_el);
 
   // compute L2 norm of residual vector associated with electrolyte potential
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.Residual(), 1, vector_pot_el);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.residual(), 1, vector_pot_el);
   double L2_res_pot_el(0.);
   vector_pot_el->Norm2(&L2_res_pot_el);
 
   // compute L2 norm of increment vector associated with electrolyte potential
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.Increment(), 1, vector_pot_el);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.increment(), 1, vector_pot_el);
   double L2_inc_pot_el(0.);
   vector_pot_el->Norm2(&L2_inc_pot_el);
 
   // compute L2 norm of state vector associated with electrode potential
   const Teuchos::RCP<Epetra_Vector> vector_pot_ed =
-      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 2);
+      elchtimint->splitter_macro()->extract_vector(scatratimint.phinp(), 2);
   double L2_state_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_state_pot_ed);
 
   // compute L2 norm of residual vector associated with electrode potential
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.Residual(), 2, vector_pot_ed);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.residual(), 2, vector_pot_ed);
   double L2_res_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_res_pot_ed);
 
   // compute L2 norm of increment vector associated with electrode potential
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.Increment(), 2, vector_pot_ed);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.increment(), 2, vector_pot_ed);
   double L2_inc_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_inc_pot_ed);
 
@@ -915,7 +915,7 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
                 << "   |      --      |      --      |      --      | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << inf_res_conc_el
                 << "       | (      --     ,te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
     }
   }
 
@@ -938,8 +938,8 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
                 << L2_inc_pot_ed / L2_state_pot_ed << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << inf_res_conc_el
                 << "       | (ts=" << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatratimint.DtSolve() << ",te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << scatratimint.dt_solve() << ",te=" << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
 
     // convergence check
     if (L2_res_conc_el <= ittol_ and L2_inc_conc_el / L2_state_conc_el <= ittol_ and
@@ -999,7 +999,7 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
 /*--------------------------------------------------------------------------------------------*
  | perform convergence check for outer iteration in partitioned coupling schemes   fang 08/17 |
  *--------------------------------------------------------------------------------------------*/
-bool ScaTra::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
+bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_outer_iter(
     const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
 ) const
 {
@@ -1008,31 +1008,31 @@ bool ScaTra::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
   if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current outer iteration step
-  const int itnum = scatratimint.IterNumOuter();
+  const int itnum = scatratimint.iter_num_outer();
 
   // compute vector norms
   const Teuchos::RCP<Epetra_Vector> vector_conc_el =
-      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 0);
+      elchtimint->splitter_macro()->extract_vector(scatratimint.phinp(), 0);
   double L2_state_conc_el(0.);
   vector_conc_el->Norm2(&L2_state_conc_el);
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.PhinpInc(), 0, vector_conc_el);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.phinp_inc(), 0, vector_conc_el);
   double L2_inc_conc_el(0.);
   vector_conc_el->Norm2(&L2_inc_conc_el);
   const Teuchos::RCP<Epetra_Vector> vector_pot_el =
-      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 1);
+      elchtimint->splitter_macro()->extract_vector(scatratimint.phinp(), 1);
   double L2_state_pot_el(0.);
   vector_pot_el->Norm2(&L2_state_pot_el);
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.PhinpInc(), 1, vector_pot_el);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.phinp_inc(), 1, vector_pot_el);
   double L2_inc_pot_el(0.);
   vector_pot_el->Norm2(&L2_inc_pot_el);
   const Teuchos::RCP<Epetra_Vector> vector_pot_ed =
-      elchtimint->SplitterMacro()->extract_vector(scatratimint.Phinp(), 2);
+      elchtimint->splitter_macro()->extract_vector(scatratimint.phinp(), 2);
   double L2_state_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_state_pot_ed);
-  elchtimint->SplitterMacro()->extract_vector(scatratimint.PhinpInc(), 2, vector_pot_ed);
+  elchtimint->splitter_macro()->extract_vector(scatratimint.phinp_inc(), 2, vector_pot_ed);
   double L2_inc_pot_ed(0.);
   vector_pot_ed->Norm2(&L2_inc_pot_ed);
   if (L2_state_conc_el < 1.e-10) L2_state_conc_el = 1.;
@@ -1111,23 +1111,23 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // compute L2 norm of concentration state vector
   double conc_state_L2(0.0);
-  scatratimint.Phinp()->Norm2(&conc_state_L2);
+  scatratimint.phinp()->Norm2(&conc_state_L2);
 
   // compute Rms norm of concentration residual vector
   double conc_res_Rms(0.);
-  scatratimint.Residual()->Norm2(&conc_res_Rms);
-  conc_res_Rms /= sqrt(scatratimint.Residual()->GlobalLength());
+  scatratimint.residual()->Norm2(&conc_res_Rms);
+  conc_res_Rms /= sqrt(scatratimint.residual()->GlobalLength());
 
   // compute L2 norm of concentration increment vector
   double conc_inc_L2(0.);
-  scatratimint.Increment()->Norm2(&conc_inc_L2);
+  scatratimint.increment()->Norm2(&conc_inc_L2);
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_Rms) or std::isnan(conc_inc_L2))
@@ -1158,7 +1158,7 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
                 << conc_res_Rms << "   | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << ittol_
                 << "[ L2 ]  |      --      | (      --     ,te=" << std::setw(10)
-                << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")"
+                << std::setprecision(3) << std::scientific << scatratimint.dt_ele() << ")"
                 << std::endl;
     }
   }
@@ -1176,8 +1176,8 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
                 << std::scientific << ittol_ << "[ L2 ]  | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << conc_inc_L2 / conc_state_L2
                 << "   | (ts=" << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatratimint.DtSolve() << ",te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << scatratimint.dt_solve() << ",te=" << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
 
     // convergence check
     if (conc_res_Rms <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_)
@@ -1235,26 +1235,26 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_ite
 ) const
 {
   // extract processor ID
-  const int mypid = scatratimint.discretization()->Comm().MyPID();
+  const int mypid = scatratimint.discretization()->get_comm().MyPID();
 
   // extract current Newton-Raphson iteration step
-  const int itnum = scatratimint.IterNum();
+  const int itnum = scatratimint.iter_num();
 
   // get mesh tying strategy
   Teuchos::RCP<ScaTra::MeshtyingStrategyArtery> scatramsht =
-      Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyArtery>(scatratimint.Strategy());
+      Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyArtery>(scatratimint.strategy());
   if (scatramsht == Teuchos::null) FOUR_C_THROW("cast to Meshtying strategy failed!");
 
   // compute L2 norm of concentration state vector
   double conc_state_L2(0.0);
-  scatratimint.Phinp()->Norm2(&conc_state_L2);
+  scatratimint.phinp()->Norm2(&conc_state_L2);
   double conc_state_art_L2(0.0);
-  scatramsht->ArtScatraField()->Phinp()->Norm2(&conc_state_art_L2);
+  scatramsht->art_scatra_field()->phinp()->Norm2(&conc_state_art_L2);
 
   // extract single field rhs vectors
   Teuchos::RCP<const Epetra_Vector> artscatrarhs;
   Teuchos::RCP<const Epetra_Vector> contscatrarhs;
-  scatramsht->extract_single_field_vectors(scatramsht->CombinedRHS(), contscatrarhs, artscatrarhs);
+  scatramsht->extract_single_field_vectors(scatramsht->combined_rhs(), contscatrarhs, artscatrarhs);
 
   // compute Rms norm of concentration residual vector
   double conc_res_Rms(0.);
@@ -1268,7 +1268,7 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_ite
   Teuchos::RCP<const Epetra_Vector> artscatrainc;
   Teuchos::RCP<const Epetra_Vector> contscatrainc;
   scatramsht->extract_single_field_vectors(
-      scatramsht->CombinedIncrement(), contscatrainc, artscatrainc);
+      scatramsht->combined_increment(), contscatrainc, artscatrainc);
 
   // compute L2 norm of concentration increment vector
   double conc_inc_L2(0.);
@@ -1309,7 +1309,7 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_ite
                 << std::scientific << conc_res_art_Rms << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << ittol_
                 << "[ L2 ]  |      --      |      --      | (      --     ,te=" << std::setw(10)
-                << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")"
+                << std::setprecision(3) << std::scientific << scatratimint.dt_ele() << ")"
                 << std::endl;
     }
   }
@@ -1330,8 +1330,8 @@ bool ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_ite
                 << conc_inc_art_L2 / conc_state_art_L2 << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << conc_inc_L2 / conc_state_L2
                 << "   | (ts=" << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatratimint.DtSolve() << ",te=" << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+                << scatratimint.dt_solve() << ",te=" << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatratimint.dt_ele() << ")" << std::endl;
 
     // convergence check
     if (conc_res_Rms <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_ and

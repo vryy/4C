@@ -124,7 +124,7 @@ void ParticleInteraction::SPHPhaseChangeBase::setup(
 
   // safety check
   for (const auto& type_i : {belowphase_, abovephase_})
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
@@ -150,13 +150,13 @@ void ParticleInteraction::SPHPhaseChangeBase::evaluate_phase_change_from_below_t
       particlecontainerbundle_->get_specific_container(type_source, PARTICLEENGINE::Owned);
 
   // get number of particles stored in container
-  int particlestored = container->ParticlesStored();
+  int particlestored = container->particles_stored();
 
   // no owned particles of current particle type
   if (particlestored <= 0) return;
 
   // get pointer to particle state
-  const double* state = container->GetPtrToState(transitionstate_, 0);
+  const double* state = container->get_ptr_to_state(transitionstate_, 0);
 
   // get material for particle types
   const Mat::PAR::ParticleMaterialBase* material_source =
@@ -178,14 +178,14 @@ void ParticleInteraction::SPHPhaseChangeBase::evaluate_phase_change_from_below_t
     {
       int globalid(0);
       PARTICLEENGINE::ParticleStates particlestates;
-      container->GetParticle(index, globalid, particlestates);
+      container->get_particle(index, globalid, particlestates);
 
       // add density and pressure state for boundary or rigid particles
       if (isboundaryrigid_source and (not isboundaryrigid_target))
       {
         particlestates[PARTICLEENGINE::Density].assign(1, material_source->initDensity_);
 
-        const double press = equationofstate_target->DensityToPressure(
+        const double press = equationofstate_target->density_to_pressure(
             material_source->initDensity_, material_target->initDensity_);
 
         particlestates[PARTICLEENGINE::Pressure].assign(1, press);
@@ -234,13 +234,13 @@ void ParticleInteraction::SPHPhaseChangeBase::evaluate_phase_change_from_above_t
       particlecontainerbundle_->get_specific_container(type_source, PARTICLEENGINE::Owned);
 
   // get number of particles stored in container
-  int particlestored = container->ParticlesStored();
+  int particlestored = container->particles_stored();
 
   // no owned particles of current particle type
   if (particlestored <= 0) return;
 
   // get pointer to particle state
-  const double* state = container->GetPtrToState(transitionstate_, 0);
+  const double* state = container->get_ptr_to_state(transitionstate_, 0);
 
   // get material for particle types
   const Mat::PAR::ParticleMaterialBase* material_source =
@@ -262,14 +262,14 @@ void ParticleInteraction::SPHPhaseChangeBase::evaluate_phase_change_from_above_t
     {
       int globalid(0);
       PARTICLEENGINE::ParticleStates particlestates;
-      container->GetParticle(index, globalid, particlestates);
+      container->get_particle(index, globalid, particlestates);
 
       // add density and pressure state for boundary or rigid particles
       if (isboundaryrigid_source and (not isboundaryrigid_target))
       {
         particlestates[PARTICLEENGINE::Density].assign(1, material_source->initDensity_);
 
-        const double press = equationofstate_target->DensityToPressure(
+        const double press = equationofstate_target->density_to_pressure(
             material_source->initDensity_, material_target->initDensity_);
 
         particlestates[PARTICLEENGINE::Pressure].assign(1, press);
@@ -304,11 +304,11 @@ ParticleInteraction::SPHPhaseChangeOneWayScalarBelowToAbove::SPHPhaseChangeOneWa
   // empty constructor
 }
 
-void ParticleInteraction::SPHPhaseChangeOneWayScalarBelowToAbove::EvaluatePhaseChange(
+void ParticleInteraction::SPHPhaseChangeOneWayScalarBelowToAbove::evaluate_phase_change(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   std::vector<std::set<int>> particlestoremove(typevectorsize);
   std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>> particlestoinsert(
@@ -332,11 +332,11 @@ ParticleInteraction::SPHPhaseChangeOneWayScalarAboveToBelow::SPHPhaseChangeOneWa
   // empty constructor
 }
 
-void ParticleInteraction::SPHPhaseChangeOneWayScalarAboveToBelow::EvaluatePhaseChange(
+void ParticleInteraction::SPHPhaseChangeOneWayScalarAboveToBelow::evaluate_phase_change(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   std::vector<std::set<int>> particlestoremove(typevectorsize);
   std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>> particlestoinsert(
@@ -360,11 +360,11 @@ ParticleInteraction::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
   // empty constructor
 }
 
-void ParticleInteraction::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
+void ParticleInteraction::SPHPhaseChangeTwoWayScalar::evaluate_phase_change(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   std::vector<std::set<int>> particlestoremove(typevectorsize);
   std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>> particlestoinsert(

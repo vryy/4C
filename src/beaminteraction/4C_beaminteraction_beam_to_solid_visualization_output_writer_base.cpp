@@ -82,10 +82,10 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::get_visualization_wri
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::Write(
+void BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::write(
     const unsigned int timestep_number, const double time)
 {
-  for (auto& it : visualization_writers_) it.second->Write(timestep_number, time);
+  for (auto& it : visualization_writers_) it.second->write(timestep_number, time);
 }
 
 FOUR_C_NAMESPACE_CLOSE

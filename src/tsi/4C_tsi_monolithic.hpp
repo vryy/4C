@@ -101,13 +101,13 @@ namespace TSI
     read_mesh is called), the dofmaps for the blocks might get invalid.
     */
     //! Setup the monolithic TSI system
-    void SetupSystem() override;
+    void setup_system() override;
 
     /// non-linear solve, i.e. (multiple) corrector
-    void Solve() override;
+    void solve() override;
 
     //! outer level TSI time loop
-    void TimeLoop() override;
+    void time_loop() override;
 
     //! read restart data
     void read_restart(int step  //!< step number where the calculation is continued
@@ -122,7 +122,10 @@ namespace TSI
     void setup_system_matrix();
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const
+    {
+      return systemmatrix_;
+    }
 
     //! solve linear TSI system
     void linear_solve();
@@ -136,7 +139,7 @@ namespace TSI
     );
 
     //! Evaluate thermal-mechanical system matrix
-    void ApplyThrCouplMatrix(
+    void apply_thr_coupl_matrix(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
@@ -159,10 +162,10 @@ namespace TSI
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
     //! \author lw (originally in STR) \date 12/07
-    bool Converged();
+    bool converged();
 
     //! outer iteration loop
-    void NewtonFull();
+    void newton_full();
 
     //! apply DBC to all blocks
     void apply_dbc();
@@ -174,7 +177,7 @@ namespace TSI
     //! and/or can do larger time steps
     //!
     //! originally by mwgee for structural analysis \date 03/12
-    void PTC();
+    void ptc();
 
     //! @name Output
 

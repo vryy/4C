@@ -77,13 +77,13 @@ namespace Solid
         virtual void reset() = 0;
 
         //! Solve the non-linear problem
-        virtual Inpar::Solid::ConvergenceStatus Solve() = 0;
+        virtual Inpar::Solid::ConvergenceStatus solve() = 0;
 
         /*! returns the nox group for external and internal use
          *
          *  The nox group has to be initialized in one of the derived setup() routines beforehand.
          */
-        ::NOX::Abstract::Group& SolutionGroup();
+        ::NOX::Abstract::Group& solution_group();
         const ::NOX::Abstract::Group& get_solution_group() const;
 
         //! Get the number of nonlinear iterations

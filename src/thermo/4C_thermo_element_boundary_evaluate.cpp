@@ -31,7 +31,7 @@ int Discret::ELEMENTS::ThermoBoundary::evaluate(Teuchos::ParameterList& params,
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->evaluate(
+  return Discret::ELEMENTS::TemperBoundaryImplInterface::impl(this)->evaluate(
       this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }  // Evaluate in case of multiple dofsets
 
@@ -50,7 +50,7 @@ int Discret::ELEMENTS::ThermoBoundary::evaluate_neumann(Teuchos::ParameterList& 
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->evaluate_neumann(
+  return Discret::ELEMENTS::TemperBoundaryImplInterface::impl(this)->evaluate_neumann(
       this, params, discretization, condition, lm, elevec1);
 }
 

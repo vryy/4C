@@ -79,7 +79,7 @@ namespace ParticleInteraction
         const double& k_normal);
 
     //! get adhesion distance
-    inline double GetAdhesionDistance() const { return adhesion_distance_; };
+    inline double get_adhesion_distance() const { return adhesion_distance_; };
 
     //! add adhesion contribution to force field
     void add_force_contribution();

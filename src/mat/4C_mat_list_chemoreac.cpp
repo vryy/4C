@@ -38,7 +38,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListChemoReac::create_material()
 Mat::MatListChemoReacType Mat::MatListChemoReacType::instance_;
 
 
-Core::Communication::ParObject* Mat::MatListChemoReacType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MatListChemoReacType::create(const std::vector<char>& data)
 {
   Mat::MatListChemoReac* MatListChemoReac = new Mat::MatListChemoReac();
   MatListChemoReac->unpack(data);
@@ -103,13 +103,13 @@ void Mat::MatListChemoReac::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (paramsreachemo_ != nullptr)
-    matid = paramsreachemo_->Id();  // in case we are in post-process mode
+    matid = paramsreachemo_->id();  // in case we are in post-process mode
 
   add_to_pack(data, matid);
 
@@ -129,27 +129,27 @@ void Mat::MatListChemoReac::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover paramsreac_
   int matid(-1);
   extract_from_pack(position, data, matid);
   paramsreachemo_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
       {
         // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction
         // are in a diamond inheritance structure
         paramsreachemo_ = dynamic_cast<Mat::PAR::MatListChemoReac*>(mat);
       }
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // extract base class material

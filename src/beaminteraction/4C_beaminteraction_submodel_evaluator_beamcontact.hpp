@@ -57,7 +57,7 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current submodel evaluator
-      Inpar::BEAMINTERACTION::SubModelType Type() const override
+      Inpar::BEAMINTERACTION::SubModelType type() const override
       {
         return Inpar::BEAMINTERACTION::submodel_beamcontact;
       }
@@ -87,13 +87,13 @@ namespace BEAMINTERACTION
       void pre_evaluate();
 
       //! derived
-      void UpdateStepState(const double& timefac_n) override;
+      void update_step_state(const double& timefac_n) override;
 
       //! derived
       bool pre_update_step_element(bool beam_redist) override;
 
       //! derived
-      void UpdateStepElement(bool repartition_was_done) override;
+      void update_step_element(bool repartition_was_done) override;
 
       //! derived
       void post_update_step_element() override;
@@ -102,27 +102,27 @@ namespace BEAMINTERACTION
       std::map<Solid::EnergyType, double> get_energy() const override;
 
       //! derived
-      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
+      void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_output_step_state() const override;
 
       //! derived
-      void ResetStepState() override;
+      void reset_step_state() override;
 
       //! derived
       void write_restart(Core::IO::DiscretizationWriter& ia_writer,
           Core::IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
-      void PreReadRestart() override;
+      void pre_read_restart() override;
 
       //! derived
       void read_restart(Core::IO::DiscretizationReader& ia_reader,
           Core::IO::DiscretizationReader& bin_reader) override;
 
       //! derived
-      void PostReadRestart() override;
+      void post_read_restart() override;
 
       //! derived
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
@@ -132,7 +132,7 @@ namespace BEAMINTERACTION
           Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
-      void AddBinsToBinColMap(std::set<int>& colbins) override;
+      void add_bins_to_bin_col_map(std::set<int>& colbins) override;
 
       //! derived
       void add_bins_with_relevant_content_for_ia_discret_col_map(
@@ -146,7 +146,7 @@ namespace BEAMINTERACTION
        */
       inline const std::vector<
           Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
-      GetAssemblyManagers() const
+      get_assembly_managers() const
       {
         return assembly_managers_;
       }
@@ -154,7 +154,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the geometry pairs in this submodel evaluator.
        */
-      inline const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs()
+      inline const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs()
           const
       {
         return contact_elepairs_;
@@ -163,7 +163,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the conditions in this submodel evaluator.
        */
-      inline Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> GetConditions() const
+      inline Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> get_conditions() const
       {
         return beam_interaction_conditions_ptr_;
       }

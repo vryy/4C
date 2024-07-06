@@ -126,7 +126,7 @@ namespace XFEM
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
 
     /// Reset overall Fluid State
-    void ResetFluidState()
+    void reset_fluid_state()
     {
       fluid_init_ = false;
       cutwizard_ = Teuchos::null;
@@ -134,7 +134,7 @@ namespace XFEM
     }
 
     /// Get the FSI traction called from contact gausspoint
-    double Get_FSI_Traction(Mortar::Element* ele,        // Mortar Element
+    double get_fsi_traction(Mortar::Element* ele,        // Mortar Element
         const Core::LinAlg::Matrix<3, 1>& xsi_parent,    // local coord in the parent element
         const Core::LinAlg::Matrix<2, 1>& xsi_boundary,  // local coord on the boundary element
         const Core::LinAlg::Matrix<3, 1>& normal,        // normal for projection
@@ -143,7 +143,7 @@ namespace XFEM
         double* poropressure = nullptr);
 
     /// Get the FSI traction called from contact gausspoint
-    double Get_FSI_Traction(const Mortar::Element* ele,
+    double get_fsi_traction(const Mortar::Element* ele,
         const Core::LinAlg::Matrix<2, 1>& xsi_parent,
         const Core::LinAlg::Matrix<1, 1>& xsi_boundary, const Core::LinAlg::Matrix<2, 1>& normal,
         bool& FSI_integrated,
@@ -156,44 +156,47 @@ namespace XFEM
 
     /// Get_Contact_State at gausspoint called from XFSI: return true-->evaluate FSI, return false
     /// -->evaluate NIT-Contact
-    bool Get_Contact_State(int sid,  // Solid Surface Element
+    bool get_contact_state(int sid,  // Solid Surface Element
         std::string mcname,
         const Core::LinAlg::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty ...
         double& gap);
 
     /// Is this Structural surface registered in the Xfluid Contact Communicator
-    bool IsRegisteredSurface(const int soSurfId)
+    bool is_registered_surface(const int soSurfId)
     {
       return (soSurfId >= min_surf_id_ &&
               soSurfId < ((int)so_surf_id_to_mortar_ele_.size() + min_surf_id_));
     }
 
     /// Get the contact element for this solid surface id
-    CONTACT::Element* GetContactEle(const int soSurfId)
+    CONTACT::Element* get_contact_ele(const int soSurfId)
     {
       return so_surf_id_to_mortar_ele_.at(soSurfId - min_surf_id_);
     }
     /// Get the solid surface element for the contact element id
-    Discret::ELEMENTS::StructuralSurface* GetSurfEle(const int mortarId)
+    Discret::ELEMENTS::StructuralSurface* get_surf_ele(const int mortarId)
     {
       return mortar_id_to_so_surf_ele_.at(mortarId - min_mortar_id_);
     }
 
     /// Get the mesh coupling id for the contact element id
-    int GetSurfMc(const int mortarId) { return mortar_id_to_somc_.at(mortarId - min_mortar_id_); }
+    int get_surf_mc(const int mortarId) { return mortar_id_to_somc_.at(mortarId - min_mortar_id_); }
 
     /// Get the solid surface element if for the contact element id
-    int GetSurfSid(const int mortarId) { return mortar_id_to_sosid_.at(mortarId - min_mortar_id_); }
+    int get_surf_sid(const int mortarId)
+    {
+      return mortar_id_to_sosid_.at(mortarId - min_mortar_id_);
+    }
 
     /// Setup Interface element connection vectors based on points
-    void SetupSurfElePtrs(Core::FE::Discretization& contact_interface_dis);
+    void setup_surf_ele_ptrs(Core::FE::Discretization& contact_interface_dis);
 
     /// Get element size of background mesh
-    double Get_h();
+    double get_h();
 
     /// Register Evaluation Processor rank for specific solid surface (is the fluid proc)
-    void RegisterSideProc(int sid);
+    void register_side_proc(int sid);
 
     /// Get the CUT integration points for this contact element (id)
     void get_cut_side_integration_points(
@@ -230,10 +233,10 @@ namespace XFEM
     void create_new_gmsh_files();
 
     /// Write Gmsh files
-    void Gmsh_Write(Core::LinAlg::Matrix<3, 1> x, double val, int section);
+    void gmsh_write(Core::LinAlg::Matrix<3, 1> x, double val, int section);
 
     /// Increment gausspoint counter
-    void Inc_GP(int state) { ++sum_gps_[state]; }
+    void inc_gp(int state) { ++sum_gps_[state]; }
 
     //! get distance when transition between FPSI and PSCI is started
     double get_fpi_pcontact_exchange_dist();

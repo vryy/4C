@@ -124,7 +124,7 @@ namespace Core::IO
       try
       {
         // parse line string and apply the specified operation on the parsed data
-        T parsed_data = Core::IO::StringConverter<T>::Parse(line_str);
+        T parsed_data = Core::IO::StringConverter<T>::parse(line_str);
         operated_data = operation(std::forward<ReturnType>(operated_data), std::move(parsed_data));
       }
       catch (...)

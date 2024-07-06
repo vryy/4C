@@ -36,8 +36,8 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::init(
   // construct the writer object
   visualization_manager_ = std::make_shared<Core::IO::VisualizationManager>(
       Core::IO::VisualizationParametersFactory(
-          Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-          *Global::Problem::Instance()->OutputControlFile(), setuptime_),
+          Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+          *Global::Problem::instance()->output_control_file(), setuptime_),
       comm_, "rigidbody");
 }
 
@@ -56,12 +56,12 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
   // rigid body position
   {
     // get and prepare storage for position data
-    std::vector<double>& posdata = visualization_data.GetPointCoordinates();
+    std::vector<double>& posdata = visualization_data.get_point_coordinates();
     posdata.clear();
     posdata.reserve(3 * ownedrigidbodies.size());
 
     // get reference to rigid body position
-    const std::vector<std::vector<double>>& pos = rigidbodydatastate_->GetRefPosition();
+    const std::vector<std::vector<double>>& pos = rigidbodydatastate_->get_ref_position();
 
     // copy rigid body position data
     for (int rigidbody_k : ownedrigidbodies)
@@ -75,13 +75,13 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
     massdata.reserve(ownedrigidbodies.size());
 
     // get reference to rigid body mass
-    const std::vector<double>& mass = rigidbodydatastate_->GetRefMass();
+    const std::vector<double>& mass = rigidbodydatastate_->get_ref_mass();
 
     // copy rigid body mass data
     for (int rigidbody_k : ownedrigidbodies) massdata.push_back(mass[rigidbody_k]);
 
     // append rigid body mass data to vtp writer
-    visualization_data.SetPointDataVector<double>("mass", massdata, 1);
+    visualization_data.set_point_data_vector<double>("mass", massdata, 1);
   }
 
   // rigid body velocity
@@ -91,14 +91,14 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
     veldata.reserve(3 * ownedrigidbodies.size());
 
     // get reference to rigid body velocity
-    const std::vector<std::vector<double>>& vel = rigidbodydatastate_->GetRefVelocity();
+    const std::vector<std::vector<double>>& vel = rigidbodydatastate_->get_ref_velocity();
 
     // copy rigid body velocity data
     for (int rigidbody_k : ownedrigidbodies)
       veldata.insert(veldata.end(), vel[rigidbody_k].begin(), vel[rigidbody_k].end());
 
     // append rigid body velocity data to vtp writer
-    visualization_data.SetPointDataVector<double>("velocity", veldata, 3);
+    visualization_data.set_point_data_vector<double>("velocity", veldata, 3);
   }
 
   // rigid body acceleration
@@ -108,14 +108,14 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
     accdata.reserve(3 * ownedrigidbodies.size());
 
     // get reference to rigid body acceleration
-    const std::vector<std::vector<double>>& acc = rigidbodydatastate_->GetRefAcceleration();
+    const std::vector<std::vector<double>>& acc = rigidbodydatastate_->get_ref_acceleration();
 
     // copy rigid body acceleration data
     for (int rigidbody_k : ownedrigidbodies)
       accdata.insert(accdata.end(), acc[rigidbody_k].begin(), acc[rigidbody_k].end());
 
     // append rigid body acceleration data to vtp writer
-    visualization_data.SetPointDataVector<double>("acceleration", accdata, 3);
+    visualization_data.set_point_data_vector<double>("acceleration", accdata, 3);
   }
 
   // rigid body angular velocity
@@ -133,7 +133,7 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
       angveldata.insert(angveldata.end(), angvel[rigidbody_k].begin(), angvel[rigidbody_k].end());
 
     // append rigid body angular velocity data to vtp writer
-    visualization_data.SetPointDataVector<double>("angular velocity", angveldata, 3);
+    visualization_data.set_point_data_vector<double>("angular velocity", angveldata, 3);
   }
 
   // rigid body angular acceleration
@@ -151,7 +151,7 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
       angaccdata.insert(angaccdata.end(), angacc[rigidbody_k].begin(), angacc[rigidbody_k].end());
 
     // append rigid body angular acceleration data to vtp writer
-    visualization_data.SetPointDataVector<double>("angular acceleration", angaccdata, 3);
+    visualization_data.set_point_data_vector<double>("angular acceleration", angaccdata, 3);
   }
 
   // rigid body force
@@ -161,14 +161,14 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
     forcedata.reserve(3 * ownedrigidbodies.size());
 
     // get reference to rigid body force
-    const std::vector<std::vector<double>>& force = rigidbodydatastate_->GetRefForce();
+    const std::vector<std::vector<double>>& force = rigidbodydatastate_->get_ref_force();
 
     // copy rigid body force data
     for (int rigidbody_k : ownedrigidbodies)
       forcedata.insert(forcedata.end(), force[rigidbody_k].begin(), force[rigidbody_k].end());
 
     // append rigid body force data to vtp writer
-    visualization_data.SetPointDataVector<double>("force", forcedata, 3);
+    visualization_data.set_point_data_vector<double>("force", forcedata, 3);
   }
 
   // rigid body torque
@@ -178,14 +178,14 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
     torquedata.reserve(3 * ownedrigidbodies.size());
 
     // get reference to rigid torque force
-    const std::vector<std::vector<double>>& torque = rigidbodydatastate_->GetRefTorque();
+    const std::vector<std::vector<double>>& torque = rigidbodydatastate_->get_ref_torque();
 
     // copy rigid body torque data
     for (int rigidbody_k : ownedrigidbodies)
       torquedata.insert(torquedata.end(), torque[rigidbody_k].begin(), torque[rigidbody_k].end());
 
     // append rigid body torque data to vtp writer
-    visualization_data.SetPointDataVector<double>("torque", torquedata, 3);
+    visualization_data.set_point_data_vector<double>("torque", torquedata, 3);
   }
 
   // rigid body global id
@@ -198,7 +198,7 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
     for (int rigidbody_k : ownedrigidbodies) globaliddata.push_back(rigidbody_k);
 
     // append rigid body global id data to vtp writer
-    visualization_data.SetPointDataVector<double>("globalid", globaliddata, 1);
+    visualization_data.set_point_data_vector<double>("globalid", globaliddata, 1);
   }
 
   // rigid body owner
@@ -207,14 +207,14 @@ void ParticleRigidBody::RigidBodyRuntimeVtpWriter::set_rigid_body_positions_and_
     std::vector<double> ownerdata(ownedrigidbodies.size(), comm_.MyPID());
 
     // append owner of rigid bodies to vtp writer
-    visualization_data.SetPointDataVector<double>("owner", ownerdata, 1);
+    visualization_data.set_point_data_vector<double>("owner", ownerdata, 1);
   }
 }
 
-void ParticleRigidBody::RigidBodyRuntimeVtpWriter::WriteToDisk(
+void ParticleRigidBody::RigidBodyRuntimeVtpWriter::write_to_disk(
     const double time, const unsigned int timestep_number)
 {
-  visualization_manager_->WriteToDisk(time, timestep_number);
+  visualization_manager_->write_to_disk(time, timestep_number);
 }
 
 FOUR_C_NAMESPACE_CLOSE

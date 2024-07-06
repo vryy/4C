@@ -84,10 +84,10 @@ namespace TimeStepping
     //@{
 
     //! step index of most past and future steps
-    std::pair<int, int> GetSteps() { return std::make_pair(steppast_, stepfuture_); }
+    std::pair<int, int> get_steps() { return std::make_pair(steppast_, stepfuture_); }
 
     //! Number of steps
-    int NumSteps() { return steps_; }
+    int num_steps() { return steps_; }
     //@}
 
    protected:
@@ -214,7 +214,7 @@ namespace TimeStepping
     }
 
     //! Resize
-    void Resize(const int steppast,  //!< lower index bound
+    void resize(const int steppast,  //!< lower index bound
         const int stepfuture,        //!< higher index bound, >= lower bound
         const STATE init             //!< initialise to init
     )
@@ -245,7 +245,7 @@ namespace TimeStepping
     //@{
 
     //! Set entry at #step to #value
-    void SetStep(const int step, const STATE value)
+    void set_step(const int step, const STATE value)
     {
       MStepBase::state_.at(MStepBase::index_by_step(step)) = value;
     }
@@ -257,7 +257,7 @@ namespace TimeStepping
      *       state_{n} := state_{n+1},
      *       etc.
      */
-    void UpdateSteps(const STATE staten  //!< state_{n+1}
+    void update_steps(const STATE staten  //!< state_{n+1}
     )
     {
       for (int ind = 0; ind < MStepBase::steps_ - 1; ++ind)
@@ -313,7 +313,7 @@ namespace TimeStepping
      *  State vectors are added and placed according to their
      *  indices #steppast to #stepfuture
      */
-    void Resize(const int steppast,   //!< lower index bound
+    void resize(const int steppast,   //!< lower index bound
         const int stepfuture,         //!< higher index bound, >= lower bound
         const Epetra_Map* dofrowmap,  //!< vector layout from discretization
         const bool inittozero         //!< initialise to zero, if true
@@ -345,7 +345,7 @@ namespace TimeStepping
      *  State vectors cleared and rebuild with given map
      *  take care that underlying discret_ contains the same maps
      */
-    void ReplaceMaps(const Epetra_Map* dofrowmap  //!< new vector layout
+    void replace_maps(const Epetra_Map* dofrowmap  //!< new vector layout
     )
     {
       state_.clear();
@@ -370,7 +370,7 @@ namespace TimeStepping
      *       state_{n} := state_{n+1},
      *       etc.
      */
-    void UpdateSteps(const Epetra_Vector& staten  //!< state_{n+1}
+    void update_steps(const Epetra_Vector& staten  //!< state_{n+1}
     )
     {
       for (int ind = 0; ind < MStepBase::steps_ - 1; ++ind)

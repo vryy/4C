@@ -79,11 +79,11 @@ namespace SSI
 
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
-    int IterationCount() const { return iter_; }
+    int iteration_count() const { return iter_; }
 
     //! reset the counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
-    void ResetIterationCount() { iter_ = 0; }
+    void reset_iteration_count() { iter_ = 0; }
 
     //! increment the counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm) by 1
@@ -142,7 +142,7 @@ namespace SSI
      *
      * @return  flag indicating if simulation is restarted
      */
-    bool IsRestart() const;
+    bool is_restart() const;
 
     [[nodiscard]] bool is_s2_i_kinetics_with_pseudo_contact() const
     {
@@ -158,23 +158,23 @@ namespace SSI
     \return RedistributionType
     \date 08/16
     \author vuong, rauch  */
-    virtual RedistributionType InitFieldCoupling(const std::string& struct_disname);
+    virtual RedistributionType init_field_coupling(const std::string& struct_disname);
 
     /*! \brief Setup discretizations
 
     \date 08/16
     \author rauch  */
-    virtual void InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
+    virtual void init_discretizations(const Epetra_Comm& comm, const std::string& struct_disname,
         const std::string& scatra_disname, const bool redistribute_struct_dis);
 
     /// setup
-    virtual void SetupSystem();
+    virtual void setup_system();
 
     /// timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    virtual void TestResults(const Epetra_Comm& comm) const;
+    virtual void test_results(const Epetra_Comm& comm) const;
 
     /// read restart
     void read_restart(int restart) override;
@@ -189,7 +189,7 @@ namespace SSI
     }
 
     //! access the scalar transport base algorithm
-    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& ScaTraBaseAlgorithm() const
+    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& sca_tra_base_algorithm() const
     {
       return scatra_base_algorithm_;
     }
@@ -201,17 +201,17 @@ namespace SSI
     }
 
     //! access the scalar transport field
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() const;
 
     //! access the scalar transport field on manifolds
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraManifold() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_manifold() const;
 
     /// set structure solution on other fields
     void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
         Teuchos::RCP<const Epetra_Vector> vel, bool set_mechanical_stress);
 
     /// set scatra solution on other fields
-    virtual void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
+    virtual void set_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     /*!
      * @brief set contact states needed for evaluation of ssi contact
@@ -248,10 +248,10 @@ namespace SSI
     bool is_sca_tra_manifold_meshtying() const { return is_manifold_meshtying_; }
 
     //! Redistribute nodes and elements on processors
-    void Redistribute(RedistributionType redistribution_type);
+    void redistribute(RedistributionType redistribution_type);
 
     //! get bool indicating if we have at least one ssi interface contact condition
-    bool SSIInterfaceContact() const { return ssiinterfacecontact_; }
+    bool ssi_interface_contact() const { return ssiinterfacecontact_; }
 
     //! set up a pointer to the contact strategy of the structural field and store it
     void setup_contact_strategy();

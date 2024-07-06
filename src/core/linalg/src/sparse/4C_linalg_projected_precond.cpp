@@ -45,7 +45,7 @@ int Core::LinAlg::LinalgPrecondOperator::ApplyInverse(
   // of problem
   if (project_)
   {
-    projector_->ApplyP(Y);
+    projector_->apply_p(Y);
   }
 
   return (ierr);

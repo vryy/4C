@@ -42,19 +42,19 @@ namespace ScaTra
     HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(Inpar::ScaTra::InitialField init_field_type);
+    void set_initial_spectrum(Inpar::ScaTra::InitialField init_field_type);
 
     //! turn on forcing
-    void ActivateForcing(const bool activate);
+    void activate_forcing(const bool activate);
 
     //! calculate power input
-    void CalculateForcing(const int step);
+    void calculate_forcing(const int step);
 
     //! get forcing
-    void UpdateForcing(const int step);
+    void update_forcing(const int step);
 
     //! time update of energy spectrum
-    void TimeUpdateForcing();
+    void time_update_forcing();
 
    protected:
     //! sort criterium for double values up to a tolerance of 10-9

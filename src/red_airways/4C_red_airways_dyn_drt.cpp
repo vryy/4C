@@ -42,37 +42,37 @@ void dyn_red_airways_drt() { dyn_red_airways_drt(false); }
 
 Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D)
 {
-  if (Global::Problem::Instance()->DoesExistDis("red_airway") == false)
+  if (Global::Problem::instance()->does_exist_dis("red_airway") == false)
   {
     return Teuchos::null;
   }
 
   // 1. Access the discretization
   Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
-  actdis = Global::Problem::Instance()->GetDis("red_airway");
+  actdis = Global::Problem::instance()->get_dis("red_airway");
 
   // Set degrees of freedom in the discretization
-  if (!actdis->Filled())
+  if (!actdis->filled())
   {
     actdis->fill_complete();
   }
 
   // If discretization is empty, then return empty time integration
-  if (actdis->NumGlobalElements() < 1)
+  if (actdis->num_global_elements() < 1)
   {
     return Teuchos::null;
   }
 
   // 2. Context for output and restart
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   // 3. Set pointers and variables for ParameterList rawdyn
   const Teuchos::ParameterList& rawdyn =
-      Global::Problem::Instance()->reduced_d_airway_dynamic_params();
+      Global::Problem::instance()->reduced_d_airway_dynamic_params();
 
   // Print default parameters
-  if (actdis->Comm().MyPID() == 0)
+  if (actdis->get_comm().MyPID() == 0)
   {
     Input::PrintDefaultParameters(Core::IO::cout, rawdyn);
   }
@@ -89,17 +89,17 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
   // Create the solver
   std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
-      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm(),
-      Global::Problem::Instance()->solver_params_callback(),
+      Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::Instance()->IOParams(), "VERBOSITY"));
-  actdis->compute_null_space_if_necessary(solver->Params());
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
+  actdis->compute_null_space_if_necessary(solver->params());
 
   // 5. Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;
 
   // Number of degrees of freedom
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
   airwaystimeparams.set<int>("number of degrees of freedom", 1 * ndim);
 
   // Time step size
@@ -150,11 +150,11 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // Initialize state save vectors
   if (CoupledTo3D)
   {
-    airwayimplicit->InitSaveState();
+    airwayimplicit->init_save_state();
   }
 
   // Initial field from restart or calculated by given function
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart && !CoupledTo3D)
   {
     // Read the restart information, set vectors and variables
@@ -165,15 +165,15 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   {
     // Call time-integration scheme for 0D problem
     Teuchos::RCP<Teuchos::ParameterList> param_temp;
-    airwayimplicit->Integrate();
+    airwayimplicit->integrate();
 
     // Create resulttest
     Teuchos::RCP<Core::UTILS::ResultTest> resulttest =
         Teuchos::rcp(new Airway::RedAirwayResultTest(*airwayimplicit));
 
     // Resulttest for 0D problem and testing
-    Global::Problem::Instance()->AddFieldTest(resulttest);
-    Global::Problem::Instance()->TestAll(actdis->Comm());
+    Global::Problem::instance()->add_field_test(resulttest);
+    Global::Problem::instance()->test_all(actdis->get_comm());
 
     return airwayimplicit;
   }
@@ -191,31 +191,33 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
 void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn =
-      Global::Problem::Instance()->red_airway_tissue_dynamic_params();
-  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::Instance()->GetDis("structure");
+      Global::Problem::instance()->red_airway_tissue_dynamic_params();
+  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::instance()->get_dis("structure");
   Teuchos::RCP<Airway::RedAirwayTissue> redairway_tissue =
-      Teuchos::rcp(new Airway::RedAirwayTissue(actdis->Comm(), rawdyn));
+      Teuchos::rcp(new Airway::RedAirwayTissue(actdis->get_comm(), rawdyn));
 
   // Read the restart information, set vectors and variables
-  const int restart = Global::Problem::Instance()->restart();
+  const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
     redairway_tissue->read_restart(restart);
   }
 
   // Time integration loop for red_airway-tissue coupling
-  redairway_tissue->Integrate();
+  redairway_tissue->integrate();
 
   // Print time monitor
   Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 
   // Resulttest for red_airway-tissue coupling
   // create result tests for single fields
-  Global::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
-  Global::Problem::Instance()->AddFieldTest(redairway_tissue->structure_field()->CreateFieldTest());
+  Global::Problem::instance()->add_field_test(
+      redairway_tissue->red_airway_field()->create_field_test());
+  Global::Problem::instance()->add_field_test(
+      redairway_tissue->structure_field()->create_field_test());
 
   // Do the actual testing
-  Global::Problem::Instance()->TestAll(actdis->Comm());
+  Global::Problem::instance()->test_all(actdis->get_comm());
 }
 
 FOUR_C_NAMESPACE_CLOSE

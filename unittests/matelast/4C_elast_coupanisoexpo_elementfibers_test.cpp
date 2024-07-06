@@ -85,7 +85,7 @@ namespace
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionElementFiberTest, GetScalarProduct)
   {
-    EXPECT_NEAR(anisotropyExtension_->GetScalarProduct(get_gauss_point()), 1.0, 1e-10);
+    EXPECT_NEAR(anisotropyExtension_->get_scalar_product(get_gauss_point()), 1.0, 1e-10);
   }
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionElementFiberTest, get_fiber)

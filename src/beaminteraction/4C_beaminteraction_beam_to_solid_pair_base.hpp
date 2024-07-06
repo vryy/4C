@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
      * @param beam_centerline_dofvec
      * @param solid_nodal_dofvec
      */
-    void ResetState(const std::vector<double>& beam_centerline_dofvec,
+    void reset_state(const std::vector<double>& beam_centerline_dofvec,
         const std::vector<double>& solid_nodal_dofvec) override;
 
     /**
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
      * pre_evaluate and Evaluate are run on the geometry pair.
      * @return true if it is in contact.
      */
-    inline bool GetContactFlag() const override
+    inline bool get_contact_flag() const override
     {
       // The element pair is assumed to be active when we have at least one active contact point
       if (line_to_3D_segments_.size() > 0)

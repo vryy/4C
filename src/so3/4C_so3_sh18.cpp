@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoSh18Type Discret::ELEMENTS::SoSh18Type::instance_;
 
-Discret::ELEMENTS::SoSh18Type& Discret::ELEMENTS::SoSh18Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoSh18Type& Discret::ELEMENTS::SoSh18Type::instance() { return instance_; }
 namespace
 {
-  const std::string name = Discret::ELEMENTS::SoSh18Type::Instance().Name();
+  const std::string name = Discret::ELEMENTS::SoSh18Type::instance().name();
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoSh18Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoSh18Type::create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh18(-1, -1);
   object->unpack(data);
@@ -36,7 +36,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh18Type::Create(const std:
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -88,11 +88,11 @@ void Discret::ELEMENTS::SoSh18Type::setup_element_definition(
 Discret::ELEMENTS::SoSh18::SoSh18(int id, int owner) : SoBase(id, owner), SoHex18(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -117,7 +117,7 @@ Discret::ELEMENTS::SoSh18::SoSh18(const Discret::ELEMENTS::SoSh18& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoSh18::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoSh18::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoSh18(*this);
   return newelement;
@@ -132,7 +132,7 @@ void Discret::ELEMENTS::SoSh18::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   SoBase::pack(data);
@@ -162,7 +162,7 @@ void Discret::ELEMENTS::SoSh18::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

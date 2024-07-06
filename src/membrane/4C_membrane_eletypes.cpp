@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneTri3Type Discret::ELEMENTS::MembraneTri3Type::instance_;
 
-Discret::ELEMENTS::MembraneTri3Type& Discret::ELEMENTS::MembraneTri3Type::Instance()
+Discret::ELEMENTS::MembraneTri3Type& Discret::ELEMENTS::MembraneTri3Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri3Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri3Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>* object =
@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri3Type::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE3" && eledistype == "TRI3")
@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri3Type::Creat
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -63,7 +63,7 @@ void Discret::ELEMENTS::MembraneTri3Type::nodal_block_information(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneTri3Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneTri3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -94,12 +94,12 @@ void Discret::ELEMENTS::MembraneTri3Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneTri6Type Discret::ELEMENTS::MembraneTri6Type::instance_;
 
-Discret::ELEMENTS::MembraneTri6Type& Discret::ELEMENTS::MembraneTri6Type::Instance()
+Discret::ELEMENTS::MembraneTri6Type& Discret::ELEMENTS::MembraneTri6Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri6Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri6Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::tri6>* object =
@@ -108,7 +108,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri6Type::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri6Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE6" && eledistype == "TRI6")
@@ -120,7 +120,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri6Type::Creat
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneTri6Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -136,7 +136,7 @@ void Discret::ELEMENTS::MembraneTri6Type::nodal_block_information(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneTri6Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneTri6Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
@@ -167,12 +167,12 @@ void Discret::ELEMENTS::MembraneTri6Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneQuad4Type Discret::ELEMENTS::MembraneQuad4Type::instance_;
 
-Discret::ELEMENTS::MembraneQuad4Type& Discret::ELEMENTS::MembraneQuad4Type::Instance()
+Discret::ELEMENTS::MembraneQuad4Type& Discret::ELEMENTS::MembraneQuad4Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad4Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad4Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::quad4>* object =
@@ -181,7 +181,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad4Type::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad4Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad4Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE4" && eledistype == "QUAD4")
@@ -193,7 +193,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad4Type::Crea
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad4Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad4Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -209,7 +209,7 @@ void Discret::ELEMENTS::MembraneQuad4Type::nodal_block_information(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneQuad4Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneQuad4Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
@@ -240,12 +240,12 @@ void Discret::ELEMENTS::MembraneQuad4Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneQuad9Type Discret::ELEMENTS::MembraneQuad9Type::instance_;
 
-Discret::ELEMENTS::MembraneQuad9Type& Discret::ELEMENTS::MembraneQuad9Type::Instance()
+Discret::ELEMENTS::MembraneQuad9Type& Discret::ELEMENTS::MembraneQuad9Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad9Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad9Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::quad9>* object =
@@ -254,7 +254,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad9Type::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad9Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad9Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANE9" && eledistype == "QUAD9")
@@ -266,7 +266,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad9Type::Crea
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad9Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneQuad9Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -282,7 +282,7 @@ void Discret::ELEMENTS::MembraneQuad9Type::nodal_block_information(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneQuad9Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneQuad9Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);

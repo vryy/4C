@@ -70,13 +70,13 @@ namespace Core::Communication
 
     virtual ~ParObjectType() = default;
     /// Unique ParObject id. Automatically determined.
-    int UniqueParObjectId();
+    int unique_par_object_id();
 
     /// Create ParObject from packed data
-    virtual ParObject* Create(const std::vector<char>& data) { return nullptr; }
+    virtual ParObject* create(const std::vector<char>& data) { return nullptr; }
 
     /// internal name of this ParObjectType.
-    virtual std::string Name() const = 0;
+    virtual std::string name() const = 0;
 
     /// test equality by comparing pointers as there are just singletons allowed
     bool operator==(const ParObjectType& other) const { return this == &other; }
@@ -103,16 +103,16 @@ namespace Core::Communication
     friend class ParObjectType;
 
    public:
-    static ParObjectFactory& Instance();
+    static ParObjectFactory& instance();
 
     /// Virtual destructor.
     virtual ~ParObjectFactory() = default;
 
     /// create a parobject from its data stream
-    ParObject* Create(const std::vector<char>& data);
+    ParObject* create(const std::vector<char>& data);
 
     /// create an element from its name (and dis type if needed)
-    Teuchos::RCP<Core::Elements::Element> Create(
+    Teuchos::RCP<Core::Elements::Element> create(
         const std::string eletype, const std::string eledistype, const int id, const int owner);
 
     /// initialize all element types

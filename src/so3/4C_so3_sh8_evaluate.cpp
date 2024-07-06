@@ -58,7 +58,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (IsParamsInterface())
+  if (is_params_interface())
   {
     act = params_interface().get_action_type();
   }
@@ -135,7 +135,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.GetState("material_displacement");
+              discretization.get_state("material_displacement");
           Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -150,8 +150,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -170,7 +170,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.GetState("material_displacement");
+              discretization.get_state("material_displacement");
           Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -185,8 +185,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -207,7 +207,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.GetState("material_displacement");
+              discretization.get_state("material_displacement");
           Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -228,8 +228,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -249,7 +249,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.GetState("material_displacement");
+              discretization.get_state("material_displacement");
           Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -265,8 +265,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case Core::Elements::struct_calc_stress:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       Teuchos::RCP<std::vector<char>> stressdata =
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
@@ -308,7 +308,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.GetState("material_displacement");
+              discretization.get_state("material_displacement");
           Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -368,7 +368,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         oldfeas->putScalar(0.0);
       }
       // Update of history for materials
-      SolidMaterial()->update();
+      solid_material()->update();
     }
     break;
 
@@ -397,7 +397,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
 
@@ -436,9 +436,9 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     // read restart of microscale
     case Core::Elements::multi_readrestart:
     {
-      Teuchos::RCP<Core::Mat::Material> mat = Material();
+      Teuchos::RCP<Core::Mat::Material> mat = material();
 
-      if (mat->MaterialType() == Core::Materials::m_struct_multiscale) soh8_read_restart_multi();
+      if (mat->material_type() == Core::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
     break;
 
@@ -486,7 +486,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       }
 
       // get displacements of this processor
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
@@ -494,7 +494,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
 
-      if (IsParamsInterface())  // new structural time integration
+      if (is_params_interface())  // new structural time integration
       {
         str_params_interface().add_contribution_to_energy_type(
             sosh8_calc_energy(mydisp, params), Solid::internal_energy);
@@ -553,11 +553,10 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
-  Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -715,7 +714,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
 
     // call material for evaluation of strain energy function
     double psi = 0.0;
-    SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
+    solid_material()->strain_energy(glstrain, psi, gp, id());
 
     const double detJ_w = detJ * gpweights[gp];
 
@@ -754,10 +753,9 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -819,7 +817,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
       // ============================== DEPRECATED ==============================
       // FixMe deprecated implementation
-      if (not IsParamsInterface())
+      if (not is_params_interface())
       {
         // we need the (residual) displacement at the previous step
         Core::LinAlg::SerialDenseVector res_d(NUMDOF_SOH8);
@@ -1023,7 +1021,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary
@@ -1154,7 +1152,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
     if (massmatrix != nullptr)
     {  // evaluate mass matrix +++++++++++++++++++++++++
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -1177,7 +1175,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
   // rhs norm of eas equations
   if (eastype_ != soh8_easnone && split_res)
     // only add for row-map elements
-    if (params.get<int>("MyPID") == Owner())
+    if (params.get<int>("MyPID") == owner())
       params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::Norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
@@ -1628,7 +1626,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
 
   // calculate deformation gradient consistent with modified GL strain tensor
   if ((eastype_ != soh8_easnone || anstype_ == ansnone) &&
-      (Teuchos::rcp_static_cast<Mat::So3Material>(Material())->needs_defgrd()))
+      (Teuchos::rcp_static_cast<Mat::So3Material>(material())->needs_defgrd()))
     calc_consistent_defgrd(defgrd, glstrain, defgrd);
 }
 
@@ -1690,8 +1688,8 @@ void Discret::ELEMENTS::SoSh8::sosh8_evaluate_t(
   // now evaluate T^{-T} with solver
   Core::LinAlg::FixedSizeSerialDenseSolver<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D, 1>
       solve_for_inverseT;
-  solve_for_inverseT.SetMatrix(TinvT);
-  int err2 = solve_for_inverseT.Factor();
+  solve_for_inverseT.set_matrix(TinvT);
+  int err2 = solve_for_inverseT.factor();
   int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
@@ -1830,20 +1828,20 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
   if (stc_scaling == Inpar::Solid::stc_curr or stc_scaling == Inpar::Solid::stc_currsym)
   {
     Core::LinAlg::Matrix<NUMDOF_SOH8, 1> adjele(true);
-    Core::Nodes::Node** nodes = Nodes();
+    Core::Nodes::Node** nodes = SoSh8::nodes();
 
     std::vector<Core::Conditions::Condition*> cond0;
     std::vector<Core::Conditions::Condition*> condFSI0;
     int condnum0 = 1000;    // minimun STCid of layer with nodes 0..3
     bool current0 = false;  // layer with nodes 0..4 to be scaled
-    (nodes[0])->GetCondition("STC Layer", cond0);
-    (nodes[0])->GetCondition("FSICoupling", condFSI0);
+    (nodes[0])->get_condition("STC Layer", cond0);
+    (nodes[0])->get_condition("FSICoupling", condFSI0);
     std::vector<Core::Conditions::Condition*> cond1;
     std::vector<Core::Conditions::Condition*> condFSI1;
     int condnum1 = 1000;    // minimun STCid of layer with nodes 4..7
     bool current1 = false;  // minimun STCid of layer with nodes 4..7
-    (nodes[NUMNOD_SOH8 / 2])->GetCondition("STC Layer", cond1);
-    (nodes[NUMNOD_SOH8 / 2])->GetCondition("FSICoupling", condFSI1);
+    (nodes[NUMNOD_SOH8 / 2])->get_condition("STC Layer", cond1);
+    (nodes[NUMNOD_SOH8 / 2])->get_condition("FSICoupling", condFSI1);
 
     for (auto& conu : cond0)
     {
@@ -1875,9 +1873,9 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
       {
         for (int i = 0; i < NUMNOD_SOH8; i++)
         {
-          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->num_element();
         }
         for (int ind1 = 0; ind1 < NUMDOF_SOH8 / 2; ind1++)
         {
@@ -1898,9 +1896,9 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
       {
         for (int i = 0; i < NUMNOD_SOH8; i++)
         {
-          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->num_element();
         }
         for (int ind1 = NUMDOF_SOH8 / 2; ind1 < NUMDOF_SOH8; ind1++)
         {
@@ -1912,9 +1910,9 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
       {
         for (int i = 0; i < NUMNOD_SOH8; i++)
         {
-          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->num_element();
         }
         for (int ind1 = 0; ind1 < NUMDOF_SOH8; ind1++)
         {
@@ -1938,9 +1936,9 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
       {
         for (int i = 0; i < NUMNOD_SOH8; i++)
         {
-          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->num_element();
         }
         for (int ind1 = 0; ind1 < NUMDOF_SOH8 / 2; ind1++)
         {
@@ -1952,9 +1950,9 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
       {
         for (int i = 0; i < NUMNOD_SOH8; i++)
         {
-          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+          adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->num_element();
+          adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->num_element();
         }
         for (int ind1 = 0; ind1 < NUMDOF_SOH8; ind1++)
         {
@@ -1974,9 +1972,9 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
     {
       for (int i = 0; i < NUMNOD_SOH8; i++)
       {
-        adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->NumElement();
-        adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->NumElement();
-        adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->NumElement();
+        adjele(NUMDIM_SOH8 * i + 0, 0) = nodes[i]->num_element();
+        adjele(NUMDIM_SOH8 * i + 1, 0) = nodes[i]->num_element();
+        adjele(NUMDIM_SOH8 * i + 2, 0) = nodes[i]->num_element();
       }
       for (int ind1 = 0; ind1 < NUMDOF_SOH8; ind1++)
       {
@@ -2000,11 +1998,11 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
   int num_morphed_so_hex8_easnone = 0;
 
   // Loop through all elements
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     // get the actual element
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -2051,13 +2049,13 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
       if (altered and (actele->thickdir_ != Discret::ELEMENTS::SoSh8::undefined))
       {
         // special element-dependent input of material parameters
-        if (actele->Material()->MaterialType() == Core::Materials::m_viscoanisotropic)
+        if (actele->material()->material_type() == Core::Materials::m_viscoanisotropic)
         {
           Mat::ViscoAnisotropic* visco =
-              dynamic_cast<Mat::ViscoAnisotropic*>(actele->Material().get());
+              dynamic_cast<Mat::ViscoAnisotropic*>(actele->material().get());
           visco->setup(NUMGPT_SOH8, actele->thickvec_);
           if (actele->thickvec_.size() == 0)
-            FOUR_C_THROW("zero size thickness vector for element %d", actele->Id());
+            FOUR_C_THROW("zero size thickness vector for element %d", actele->id());
         }
       }
 
@@ -2077,17 +2075,17 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
         {
           // resorting of nodes,
           // such that previous local r-dir is local t-dir afterwards
-          new_nodeids[0] = actele->NodeIds()[7];
-          new_nodeids[1] = actele->NodeIds()[4];
-          new_nodeids[2] = actele->NodeIds()[0];
-          new_nodeids[3] = actele->NodeIds()[3];
-          new_nodeids[4] = actele->NodeIds()[6];
-          new_nodeids[5] = actele->NodeIds()[5];
-          new_nodeids[6] = actele->NodeIds()[1];
-          new_nodeids[7] = actele->NodeIds()[2];
+          new_nodeids[0] = actele->node_ids()[7];
+          new_nodeids[1] = actele->node_ids()[4];
+          new_nodeids[2] = actele->node_ids()[0];
+          new_nodeids[3] = actele->node_ids()[3];
+          new_nodeids[4] = actele->node_ids()[6];
+          new_nodeids[5] = actele->node_ids()[5];
+          new_nodeids[6] = actele->node_ids()[1];
+          new_nodeids[7] = actele->node_ids()[2];
           //        actele->sosh8_gmshplotlabeledelement(actele->NodeIds());
           //        actele->sosh8_gmshplotlabeledelement(new_nodeids);
-          actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+          actele->set_node_ids(NUMNOD_SOH8, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
@@ -2096,15 +2094,15 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
         {
           // resorting of nodes,
           // such that previous local s-dir is local t-dir afterwards
-          new_nodeids[0] = actele->NodeIds()[4];
-          new_nodeids[1] = actele->NodeIds()[5];
-          new_nodeids[2] = actele->NodeIds()[1];
-          new_nodeids[3] = actele->NodeIds()[0];
-          new_nodeids[4] = actele->NodeIds()[7];
-          new_nodeids[5] = actele->NodeIds()[6];
-          new_nodeids[6] = actele->NodeIds()[2];
-          new_nodeids[7] = actele->NodeIds()[3];
-          actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+          new_nodeids[0] = actele->node_ids()[4];
+          new_nodeids[1] = actele->node_ids()[5];
+          new_nodeids[2] = actele->node_ids()[1];
+          new_nodeids[3] = actele->node_ids()[0];
+          new_nodeids[4] = actele->node_ids()[7];
+          new_nodeids[5] = actele->node_ids()[6];
+          new_nodeids[6] = actele->node_ids()[2];
+          new_nodeids[7] = actele->node_ids()[3];
+          actele->set_node_ids(NUMNOD_SOH8, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
@@ -2114,9 +2112,9 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
           // no resorting necessary
           for (int node = 0; node < 8; ++node)
           {
-            new_nodeids[node] = actele->NodeIds()[node];
+            new_nodeids[node] = actele->node_ids()[node];
           }
-          actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+          actele->set_node_ids(NUMNOD_SOH8, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
@@ -2186,10 +2184,10 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
   dis.fill_complete(false, false, false);
 
   // loop again to init Jacobian for Sosh8's
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->init_jacobian_mapping();
   }

@@ -47,38 +47,38 @@ namespace FLD
       /// construct with a block matrix base
       explicit VelPressSplitStrategy(Core::LinAlg::BlockSparseMatrixBase& mat)
           : mat_(mat),
-            matrix00_(mat_.Matrix(0, 0)),
-            matrix01_(mat_.Matrix(0, 1)),
-            matrix10_(mat_.Matrix(1, 0)),
-            matrix11_(mat_.Matrix(1, 1)),
+            matrix00_(mat_.matrix(0, 0)),
+            matrix01_(mat_.matrix(0, 1)),
+            matrix10_(mat_.matrix(1, 0)),
+            matrix11_(mat_.matrix(1, 1)),
             numdim_(-1),
             numdofpernode_(-1)
       {
       }
 
       /// find row block to a given row gid
-      int RowBlock(int lrow, int rgid)
+      int row_block(int lrow, int rgid)
       {
         if ((lrow % numdofpernode_) < numdim_) return 0;
         return 1;
       }
 
       /// find column block to a given column gid
-      int ColBlock(int rblock, int lcol, int cgid)
+      int col_block(int rblock, int lcol, int cgid)
       {
         if ((lcol % numdofpernode_) < numdim_) return 0;
         return 1;
       }
 
       /// assemble into the given block
-      void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
+      void assemble(int eid, int myrank, const std::vector<int>& lmstride,
           const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
           const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
       {
         const int lrowdim = (int)lmrow.size();
         const int lcoldim = (int)lmcol.size();
 
-        if (mat_.Filled())
+        if (mat_.filled())
         {
           // We use the maps of the matrix to gain fast access to the LID's.
           // Assembling with SumIntoMyValues based on LID's is two times faster
@@ -97,14 +97,14 @@ namespace FLD
           if (!doit) return;
 
           // get the maps
-          const Epetra_Map& colmap00 = mat_.Matrix(0, 0).ColMap();
-          const Epetra_Map& colmap01 = mat_.Matrix(0, 1).ColMap();
-          const Epetra_Map& colmap10 = mat_.Matrix(1, 0).ColMap();
-          const Epetra_Map& colmap11 = mat_.Matrix(1, 1).ColMap();
-          const Epetra_Map& rowmap00 = mat_.Matrix(0, 0).RowMap();
-          const Epetra_Map& rowmap01 = mat_.Matrix(0, 1).RowMap();
-          const Epetra_Map& rowmap10 = mat_.Matrix(1, 0).RowMap();
-          const Epetra_Map& rowmap11 = mat_.Matrix(1, 1).RowMap();
+          const Epetra_Map& colmap00 = mat_.matrix(0, 0).col_map();
+          const Epetra_Map& colmap01 = mat_.matrix(0, 1).col_map();
+          const Epetra_Map& colmap10 = mat_.matrix(1, 0).col_map();
+          const Epetra_Map& colmap11 = mat_.matrix(1, 1).col_map();
+          const Epetra_Map& rowmap00 = mat_.matrix(0, 0).row_map();
+          const Epetra_Map& rowmap01 = mat_.matrix(0, 1).row_map();
+          const Epetra_Map& rowmap10 = mat_.matrix(1, 0).row_map();
+          const Epetra_Map& rowmap11 = mat_.matrix(1, 1).row_map();
 
           // prepare vectors for holding column local ids and the values to be assembled
           const int nnode = lcoldim / numdofpernode_;
@@ -145,7 +145,7 @@ namespace FLD
             const int rgid = lmrow[lrow];
             int rlid0;
             int rlid1;
-            int rowblock = RowBlock(lrow, rgid);
+            int rowblock = row_block(lrow, rgid);
             if (rowblock == 0)
             {
               rlid0 = rowmap00.LID(rgid);
@@ -182,22 +182,22 @@ namespace FLD
             // now assemble
             if (rowblock == 0)
             {  // rowblock 0
-              errone = matrix00_.EpetraMatrix()->SumIntoMyValues(
+              errone = matrix00_.epetra_matrix()->SumIntoMyValues(
                   rlid0, nnode * numdim_, values0.data(), localcol00.data());
               if (errone)
                 FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
-              errone = matrix01_.EpetraMatrix()->SumIntoMyValues(
+              errone = matrix01_.epetra_matrix()->SumIntoMyValues(
                   rlid1, nnode, values1.data(), localcol01.data());
               if (errone)
                 FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
             }
             else
             {  // rowblock 1
-              errone = matrix10_.EpetraMatrix()->SumIntoMyValues(
+              errone = matrix10_.epetra_matrix()->SumIntoMyValues(
                   rlid0, nnode * numdim_, values0.data(), localcol10.data());
               if (errone)
                 FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
-              errone = matrix11_.EpetraMatrix()->SumIntoMyValues(
+              errone = matrix11_.epetra_matrix()->SumIntoMyValues(
                   rlid1, nnode, values1.data(), localcol11.data());
               if (errone)
                 FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
@@ -215,35 +215,35 @@ namespace FLD
             if (lmrowowner[lrow] != myrank) continue;
 
             int rgid = lmrow[lrow];
-            int rblock = RowBlock(lrow, rgid);
+            int rblock = row_block(lrow, rgid);
 
             for (int lcol = 0; lcol < lcoldim; ++lcol)
             {
               double val = Aele(lrow, lcol);
               int cgid = lmcol[lcol];
-              int cblock = ColBlock(rblock, lcol, cgid);
+              int cblock = col_block(rblock, lcol, cgid);
 
-              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
-              matrix.Assemble(val, rgid, cgid);
+              Core::LinAlg::SparseMatrix& matrix = mat_.matrix(rblock, cblock);
+              matrix.assemble(val, rgid, cgid);
             }
           }
         }
       }
 
       /// assemble into the given block
-      void Assemble(double val, int rgid, int cgid)
+      void assemble(double val, int rgid, int cgid)
       {
-        int rblock = RowBlock(0, rgid);
-        int cblock = ColBlock(rblock, 0, cgid);
-        Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
-        matrix.Assemble(val, rgid, cgid);
+        int rblock = row_block(0, rgid);
+        int cblock = col_block(rblock, 0, cgid);
+        Core::LinAlg::SparseMatrix& matrix = mat_.matrix(rblock, cblock);
+        matrix.assemble(val, rgid, cgid);
       }
 
       /// assemble the remaining ghost entries
-      void Complete() {}
+      void complete() {}
 
       /// set number of velocity dofs
-      void SetNumdim(int numdim)
+      void set_numdim(int numdim)
       {
         numdim_ = numdim;
         numdofpernode_ = numdim + 1;
@@ -277,7 +277,7 @@ namespace FLD
       }
 
       /// assemble into the given block
-      void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
+      void assemble(int eid, int myrank, const std::vector<int>& lmstride,
           const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
           const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
       {
@@ -285,25 +285,25 @@ namespace FLD
         {
           // if we have an element with conditioned nodes, we have to do the
           // default assembling
-          Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(
+          Core::LinAlg::DefaultBlockMatrixStrategy::assemble(
               eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
         else
         {
           // if there are no conditioned nodes we can simply assemble to the
           // internal matrix
-          Core::LinAlg::SparseMatrix& matrix = mat().Matrix(0, 0);
-          matrix.Assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
+          Core::LinAlg::SparseMatrix& matrix = mat().matrix(0, 0);
+          matrix.assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
       }
 
-      void Assemble(double val, int rgid, int cgid)
+      void assemble(double val, int rgid, int cgid)
       {
         // forward single value assembling
-        Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
+        Core::LinAlg::DefaultBlockMatrixStrategy::assemble(val, rgid, cgid);
       }
 
-      void SetCondElements(Teuchos::RCP<std::set<int>> condelements)
+      void set_cond_elements(Teuchos::RCP<std::set<int>> condelements)
       {
         condelements_ = condelements;
       }
@@ -322,7 +322,7 @@ namespace FLD
           Teuchos::RCP<Epetra_Vector> dispnp, const bool alefluid, const int numdim);
 
       /// initialize smoothing of stresses
-      void InitAggr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
+      void init_aggr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
 
       /// update and return WSS vector
       Teuchos::RCP<Epetra_Vector> get_wall_shear_stresses(
@@ -337,15 +337,16 @@ namespace FLD
           Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// update and return stress vector
-      Teuchos::RCP<Epetra_Vector> GetStresses(
+      Teuchos::RCP<Epetra_Vector> get_stresses(
           Teuchos::RCP<const Epetra_Vector> trueresidual, const double dt);
 
       /// return stress vector (without updating the mean stress vector)
-      Teuchos::RCP<Epetra_Vector> GetPreCalcStresses(
+      Teuchos::RCP<Epetra_Vector> get_pre_calc_stresses(
           Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// return stress vector always without aggregation, even if scale separation matrix exists
-      Teuchos::RCP<Epetra_Vector> GetStressesWOAgg(Teuchos::RCP<const Epetra_Vector> trueresidual);
+      Teuchos::RCP<Epetra_Vector> get_stresses_wo_agg(
+          Teuchos::RCP<const Epetra_Vector> trueresidual);
 
       /// return flag if StressManager has already been initialized
       bool is_init() { return isinit_; };

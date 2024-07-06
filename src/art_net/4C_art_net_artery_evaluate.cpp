@@ -35,23 +35,23 @@ int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
   /*
   Here must add the steps for evaluating an element
   */
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   switch (action)
   {
     case Arteries::calc_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::ArtNetFactory::ProvideImpl(
-          Shape(), impltype_, discretization.Name())
+      return Discret::ELEMENTS::ArtNetFactory::provide_impl(
+          shape(), impltype_, discretization.name())
           ->evaluate(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
     case Arteries::calc_scatra_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::ArtNetFactory::ProvideImpl(
-          Shape(), impltype_, discretization.Name())
-          ->ScatraEvaluate(this, params, discretization, la[0].lm_, elemat1, elemat2, elevec1,
+      return Discret::ELEMENTS::ArtNetFactory::provide_impl(
+          shape(), impltype_, discretization.name())
+          ->scatra_evaluate(this, params, discretization, la[0].lm_, elemat1, elemat2, elevec1,
               elevec2, elevec3, mat);
       break;
     }
@@ -66,9 +66,9 @@ int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
     case Arteries::evaluate_scatra_analytically:
     case Arteries::calc_flow_pressurebased:
     {
-      return Discret::ELEMENTS::ArtNetFactory::ProvideImpl(
-          Shape(), impltype_, discretization.Name())
-          ->EvaluateService(this, action, params, discretization, la, elemat1, elemat2, elevec1,
+      return Discret::ELEMENTS::ArtNetFactory::provide_impl(
+          shape(), impltype_, discretization.name())
+          ->evaluate_service(this, action, params, discretization, la, elemat1, elemat2, elevec1,
               elevec2, elevec3, mat);
     }
     break;

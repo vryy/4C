@@ -44,7 +44,7 @@ namespace CONTACT
       FOUR_C_THROW("not implemented");
     }
 
-    void Integrate(const CONTACT::ParamsInterface& cparams) override;
+    void integrate(const CONTACT::ParamsInterface& cparams) override;
 
     //! don't want = operator
     NitscheStrategySsiElch operator=(const NitscheStrategySsiElch& old) = delete;

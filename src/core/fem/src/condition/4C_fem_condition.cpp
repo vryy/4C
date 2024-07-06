@@ -50,14 +50,14 @@ void Core::Conditions::Condition::print(std::ostream& os) const
   }
 }
 
-void Core::Conditions::Condition::AdjustId(const int shift)
+void Core::Conditions::Condition::adjust_id(const int shift)
 {
   std::map<int, Teuchos::RCP<Core::Elements::Element>> geometry;
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter;
 
   for (const auto& [ele_id, ele] : *geometry_)
   {
-    ele->SetId(ele_id + shift);
+    ele->set_id(ele_id + shift);
     geometry[ele_id + shift] = (*geometry_)[ele_id];
   }
 

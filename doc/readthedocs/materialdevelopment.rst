@@ -84,7 +84,7 @@ and a few public methods:
    }
    std::string Name() const { return "MyNewMaterial"; }
 
-   static MyNewMaterialType& Instance() { return instance_; };
+   static MyNewMaterialType& instance() { return instance_; };
 
 
 **Definition of the material class**

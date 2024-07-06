@@ -52,12 +52,12 @@ namespace GEOMETRYPAIR
     /**
      * \brief Pointer to the first element.
      */
-    inline const Core::Elements::Element* Element1() const { return element1_; };
+    inline const Core::Elements::Element* element1() const { return element1_; };
 
     /**
      * \brief Pointer to the second element.
      */
-    inline const Core::Elements::Element* Element2() const { return element2_; };
+    inline const Core::Elements::Element* element2() const { return element2_; };
 
     /**
      * \brief Set the pointer to the second element.
@@ -65,7 +65,7 @@ namespace GEOMETRYPAIR
      * For surface elements the pairs need the face element representing the surface, not the volume
      * element.
      */
-    virtual inline void SetElement2(const Core::Elements::Element* element2)
+    virtual inline void set_element2(const Core::Elements::Element* element2)
     {
       element2_ = element2;
     };

@@ -58,24 +58,24 @@ namespace Discret
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
-      [[nodiscard]] std::string Name() const override { return "Shell7pType"; }
+      [[nodiscard]] std::string name() const override { return "Shell7pType"; }
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      static Shell7pType& Instance();
+      static Shell7pType& instance();
 
      private:
       static Shell7pType instance_;
@@ -151,33 +151,33 @@ namespace Discret
       Shell7p& operator=(Shell7p&& other) noexcept = default;
       //! @}
 
-      [[nodiscard]] Core::Elements::Element* Clone() const override;
+      [[nodiscard]] Core::Elements::Element* clone() const override;
 
-      [[nodiscard]] int UniqueParObjectId() const override
+      [[nodiscard]] int unique_par_object_id() const override
       {
-        return Shell7pType::Instance().UniqueParObjectId();
+        return Shell7pType::instance().unique_par_object_id();
       };
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
       void unpack(const std::vector<char>& data) override;
 
-      [[nodiscard]] Core::Elements::ElementType& ElementType() const override
+      [[nodiscard]] Core::Elements::ElementType& element_type() const override
       {
-        return Shell7pType::Instance();
+        return Shell7pType::instance();
       }
 
-      [[nodiscard]] Core::FE::CellType Shape() const override { return distype_; };
+      [[nodiscard]] Core::FE::CellType shape() const override { return distype_; };
 
-      [[nodiscard]] int NumLine() const override;
+      [[nodiscard]] int num_line() const override;
 
-      [[nodiscard]] int NumSurface() const override;
+      [[nodiscard]] int num_surface() const override;
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
-      [[nodiscard]] int NumDofPerNode(const Core::Nodes::Node& node) const override { return 6; }
+      [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 6; }
 
       [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
@@ -197,36 +197,36 @@ namespace Discret
 
       //! @name Query methods
       //! @{
-      [[nodiscard]] inline bool IsParamsInterface() const override
+      [[nodiscard]] inline bool is_params_interface() const override
       {
         return (not interface_ptr_.is_null());
       }
 
       [[nodiscard]] inline Solid::ELEMENTS::ParamsInterface& str_params_interface() const
       {
-        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+        if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 
       void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
       //! @}
 
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
-      [[nodiscard]] const std::set<Inpar::Solid::EleTech>& GetEleTech() const { return eletech_; }
+      [[nodiscard]] const std::set<Inpar::Solid::EleTech>& get_ele_tech() const { return eletech_; }
 
-      [[nodiscard]] Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
+      [[nodiscard]] Teuchos::RCP<Mat::So3Material> solid_material(int nummat = 0) const;
 
       void print(std::ostream& os) const override;
 
-      void VisNames(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) override;
 
-      bool VisData(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) override;
 
-      [[nodiscard]] const double& GetThickness() const { return thickness_; }
+      [[nodiscard]] const double& get_thickness() const { return thickness_; }
 
-      [[nodiscard]] const Core::LinAlg::SerialDenseMatrix& GetDirectors() const
+      [[nodiscard]] const Core::LinAlg::SerialDenseMatrix& get_directors() const
       {
         return nodal_directors_;
       }
@@ -236,7 +236,7 @@ namespace Discret
         nodal_directors_ = nodal_directors;
       }
 
-      inline void SetNodalDirector(const int& node_id, const std::vector<double>& director)
+      inline void set_nodal_director(const int& node_id, const std::vector<double>& director)
       {
         nodal_directors_(node_id, 0) = director[0];
         nodal_directors_(node_id, 1) = director[1];

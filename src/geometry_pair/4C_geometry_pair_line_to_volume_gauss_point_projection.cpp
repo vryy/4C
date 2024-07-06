@@ -30,7 +30,7 @@ GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<ScalarType, Line,
 {
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
-  int line_element_id = this->Element1()->Id();
+  int line_element_id = this->element1()->id();
   std::map<int, std::vector<bool>>& projection_tracker =
       this->line_to_3d_evaluation_data_->get_gauss_point_projection_tracker();
 

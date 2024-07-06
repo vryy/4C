@@ -22,7 +22,7 @@ void Discret::ELEMENTS::evaluate_neumann_by_element(Core::Elements::Element& ele
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
 {
-  switch (element.Shape())
+  switch (element.shape())
   {
     case Core::FE::CellType::hex8:
       return evaluate_neumann<Core::FE::CellType::hex8>(
@@ -111,10 +111,10 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
       {
         if (jacobian_mapping.determinant_ == 0.0)
           FOUR_C_THROW(
-              "The determinant of the jacobian is zero for element with id %i", element.Id());
+              "The determinant of the jacobian is zero for element with id %i", element.id());
         else if (jacobian_mapping.determinant_ < 0.0)
           FOUR_C_THROW("The determinant of the jacobian is negative (%d) for element with id %i",
-              jacobian_mapping.determinant_, element.Id());
+              jacobian_mapping.determinant_, element.id());
 
         // material/reference co-ordinates of Gauss point
         Core::LinAlg::Matrix<numdim, 1> gauss_point_reference_coordinates;
@@ -129,8 +129,8 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
             const int function_number = function_ids[dim];
             const double function_scale_factor =
                 (function_number > 0)
-                    ? Global::Problem::Instance()
-                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                    ? Global::Problem::instance()
+                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
                           .evaluate(gauss_point_reference_coordinates.data(), total_time, dim)
                     : 1.0;
 

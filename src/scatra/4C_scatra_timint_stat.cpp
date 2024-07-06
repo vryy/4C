@@ -151,7 +151,7 @@ void ScaTra::TimIntStationary::av_m3_separation()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
   // AVM3 separation
-  Sep_->Multiply(false, *phinp_, *fsphinp_);
+  Sep_->multiply(false, *phinp_, *fsphinp_);
 
   // set fine-scale vector
   discret_->set_state("fsphinp", fsphinp_);
@@ -184,7 +184,7 @@ void ScaTra::TimIntStationary::read_restart(
   if (input == Teuchos::null)
   {
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step));
+        discret_, Global::Problem::instance()->input_control_file(), step));
   }
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
@@ -215,7 +215,7 @@ void ScaTra::TimIntStationary::update()
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {
-    if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
+    if (is_result_step() or do_boundary_flux_statistics()) calc_flux(true);
   }
 }
 

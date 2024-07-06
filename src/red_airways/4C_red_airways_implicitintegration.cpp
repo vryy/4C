@@ -51,7 +51,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
       coupledTo3D_(false)
 {
   // Get the processor ID from the communicator
-  myrank_ = discret_->Comm().MyPID();
+  myrank_ = discret_->get_comm().MyPID();
 
   // Time measurement: initialization
   if (!coupledTo3D_)
@@ -82,9 +82,9 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   if (calcV0PreStress_) transpulmpress_ = params_.get<double>("transpulmpress");
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled() || !actdis->HaveDofs()) discret_->fill_complete();
+  if (!discret_->filled() || !actdis->have_dofs()) discret_->fill_complete();
 
-  airway_acinus_dep_ = Core::LinAlg::CreateVector(*discret_->ElementColMap(), true);
+  airway_acinus_dep_ = Core::LinAlg::CreateVector(*discret_->element_col_map(), true);
 
   // extend ghosting of discretization to ensure correct neighbor search
   if (compAwAcInter_)
@@ -92,7 +92,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     // to be filled with additional elements to be ghosted (needs to be done before
     // making discret fully overlapping)
     std::set<int> elecolset;
-    const Epetra_Map* elecolmap = discret_->ElementColMap();
+    const Epetra_Map* elecolmap = discret_->element_col_map();
     for (int lid = 0; lid < elecolmap->NumMyElements(); ++lid)
     {
       int gid = elecolmap->GID(lid);
@@ -101,7 +101,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // to be filled with additional nodes to be ghosted
     std::set<int> nodecolset;
-    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    const Epetra_Map* nodecolmap = discret_->node_col_map();
     for (int lid = 0; lid < nodecolmap->NumMyElements(); ++lid)
     {
       int gid = nodecolmap->GID(lid);
@@ -119,23 +119,23 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     // extended ghosting for elements (also revert fully overlapping here)
     std::vector<int> coleles(elecolset.begin(), elecolset.end());
     Teuchos::RCP<const Epetra_Map> extendedelecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, discret_->get_comm()));
 
     discret_->export_column_elements(*extendedelecolmap);
 
     // extended ghosting for nodes
     std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
     Teuchos::RCP<const Epetra_Map> extendednodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, discret_->Comm()));
+        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, discret_->get_comm()));
 
-    discret_->ExportColumnNodes(*extendednodecolmap);
+    discret_->export_column_nodes(*extendednodecolmap);
 
     // fill and inform user (not fully overlapping anymore at this point
     discret_->fill_complete();
     Core::Rebalance::UTILS::print_parallel_distribution(*discret_);
 
     // Neighbouring acinus
-    airway_acinus_dep_ = Core::LinAlg::CreateVector(*discret_->ElementColMap(), true);
+    airway_acinus_dep_ = Core::LinAlg::CreateVector(*discret_->element_col_map(), true);
     compute_nearest_acinus(discret_, nullptr, nullptr, airway_acinus_dep_);
   }
 
@@ -145,9 +145,9 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  const Epetra_Map* dofcolmap = discret_->DofColMap();
-  const Epetra_Map* elementcolmap = discret_->ElementColMap();
-  const Epetra_Map* elementrowmap = discret_->ElementRowMap();
+  const Epetra_Map* dofcolmap = discret_->dof_col_map();
+  const Epetra_Map* elementcolmap = discret_->element_col_map();
+  const Epetra_Map* elementrowmap = discret_->element_row_map();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
@@ -349,17 +349,17 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   elemVolume0_->Update(1.0, *elemVolumenp_, 0.0);
 
   // Fill the NodeId vector
-  for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
+  for (int nele = 0; nele < discret_->num_my_col_elements(); ++nele)
   {
     // get the element
-    Core::Elements::Element* ele = discret_->lColElement(nele);
+    Core::Elements::Element* ele = discret_->l_col_element(nele);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
     std::vector<int> lmstride;
     // vector<int> lmowner;
     Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
-    ele->LocationVector(*discret_, lm, *lmowner, lmstride);
+    ele->location_vector(*discret_, lm, *lmowner, lmstride);
 
     // loop all nodes of this element, add values to the global vectors
 
@@ -378,20 +378,20 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   }
 
   // Set initial open/close value for an airway
-  for (int j = 0; j < (discret_->NumMyColElements()); j++)
+  for (int j = 0; j < (discret_->num_my_col_elements()); j++)
   {
     // check if element is an airway
     if (((*generations_)[j] != -1) and ((*generations_)[j] != -2))
     {
-      int GID = discret_->ElementColMap()->GID(j);  // global element ID
-      const Core::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
-      if (ele_type == Discret::ELEMENTS::RedAirwayType::Instance())
+      int GID = discret_->element_col_map()->GID(j);  // global element ID
+      const Core::Elements::ElementType& ele_type = discret_->g_element(GID)->element_type();
+      if (ele_type == Discret::ELEMENTS::RedAirwayType::instance())
       {
         // dynamic cast to airway element, since Elements base class does not have the functions
         // getParams and setParams
         Discret::ELEMENTS::RedAirway* ele =
-            dynamic_cast<Discret::ELEMENTS::RedAirway*>(discret_->gElement(GID));
-        const auto airway_params = ele->GetAirwayParams();
+            dynamic_cast<Discret::ELEMENTS::RedAirway*>(discret_->g_element(GID));
+        const auto airway_params = ele->get_airway_params();
         // check if airway is collapsible
         const double airwayColl = airway_params.airway_coll;
         if (airwayColl == 1)
@@ -410,7 +410,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   }
 
   std::vector<Core::Conditions::Condition*> conds;
-  discret_->GetCondition("RedAirwayScatraExchangeCond", conds);
+  discret_->get_condition("RedAirwayScatraExchangeCond", conds);
 }  // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
 
@@ -418,10 +418,10 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
  | Integrate () routine to start the time integration.                  |
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::Integrate()
+void Airway::RedAirwayImplicitTimeInt::integrate()
 {
   Teuchos::RCP<Teuchos::ParameterList> param;
-  Integrate(false, param);
+  integrate(false, param);
 }  // RedAirwayImplicitTimeInt::Integrate()
 
 
@@ -429,7 +429,7 @@ void Airway::RedAirwayImplicitTimeInt::Integrate()
  | Integrate () routine to start the time integration.                  |
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::Integrate(
+void Airway::RedAirwayImplicitTimeInt::integrate(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   // Do prestressing if required
@@ -448,7 +448,7 @@ void Airway::RedAirwayImplicitTimeInt::Integrate(
   }
 
   // Start time loop
-  TimeLoop(CoupledTo3D, CouplingParams);
+  time_loop(CoupledTo3D, CouplingParams);
 
   // Print the results of time measurements at the end of the simulation
   {
@@ -470,23 +470,23 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
   double p = transpulmpress_;
 
   // loop over number of elements (on processor)
-  for (int i = 0; i < (discret_->NumMyColElements()); i++)
+  for (int i = 0; i < (discret_->num_my_col_elements()); i++)
   {
     // check if element is an acinus
     if ((*generations_)[i] == -1)
     {
-      int GID = discret_->ElementColMap()->GID(i);  // global element ID
+      int GID = discret_->element_col_map()->GID(i);  // global element ID
 
       // check if aciuns is ogden type material
-      if (discret_->gElement(GID)->Material(0)->MaterialType() ==
+      if (discret_->g_element(GID)->material(0)->material_type() ==
           Core::Materials::m_0d_maxwell_acinus_ogden)
       {
         // get material parameters kappa and beta
         Teuchos::RCP<Mat::Maxwell0dAcinusOgden> mymat =
             Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinusOgden>(
-                discret_->gElement(GID)->Material(0));
-        double kappa = mymat->GetParams("kappa");
-        double beta = mymat->GetParams("beta");
+                discret_->g_element(GID)->material(0));
+        double kappa = mymat->get_params("kappa");
+        double beta = mymat->get_params("beta");
 
         // calculate alpha
         double alpha = 0.1;  // starting value for approximation
@@ -505,21 +505,21 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
 
         // adjust acinus volume 0 in the elements parameters
         // additional check whether element is RedAcinusType
-        const Core::Elements::ElementType& ele_type = discret_->gElement(GID)->ElementType();
-        if (ele_type == Discret::ELEMENTS::RedAcinusType::Instance())
+        const Core::Elements::ElementType& ele_type = discret_->g_element(GID)->element_type();
+        if (ele_type == Discret::ELEMENTS::RedAcinusType::instance())
         {
           // dynamic cast to aciunus element, since Elements base class does not have the functions
           // getParams and setParams
-          auto* acini_ele = dynamic_cast<Discret::ELEMENTS::RedAcinus*>(discret_->gElement(GID));
-          const auto acinus_params = acini_ele->GetAcinusParams();
+          auto* acini_ele = dynamic_cast<Discret::ELEMENTS::RedAcinus*>(discret_->g_element(GID));
+          const auto acinus_params = acini_ele->get_acinus_params();
           // get original value for aciuns volume (entered in dat file)
           double val = acinus_params.volume_init;
           // calculate new value for aciuns volume with alpha and set in element parameters
           val = val / alpha;
-          acini_ele->UpdateRelaxedVolume(val);
+          acini_ele->update_relaxed_volume(val);
 
           // adjust acini volumes in the vectors used in this function
-          if (not Global::Problem::Instance()->restart())
+          if (not Global::Problem::instance()->restart())
           {
             (*acini_e_volumenp_)[i] = val;
             (*acini_e_volumen_)[i] = val;
@@ -545,14 +545,14 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
     std::set<int>* nodecolset, Teuchos::RCP<Epetra_Vector> airway_acinus_dep)
 {
   // Loop over all airways contained on this proc
-  for (int j = 0; j < (search_discret->NumMyColElements()); j++)
+  for (int j = 0; j < (search_discret->num_my_col_elements()); j++)
   {
     // global element ID airway
-    int GID1 = search_discret->ElementColMap()->GID(j);
+    int GID1 = search_discret->element_col_map()->GID(j);
 
     // check if element is airway element
     Discret::ELEMENTS::RedAirway* ele_aw =
-        dynamic_cast<Discret::ELEMENTS::RedAirway*>(search_discret->gElement(GID1));
+        dynamic_cast<Discret::ELEMENTS::RedAirway*>(search_discret->g_element(GID1));
 
     // check if element j is an airway
     if (ele_aw != nullptr)
@@ -563,36 +563,36 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
 
       // Get coordinates for airway center point
       double node_coords1[3];
-      node_coords1[0] = ele_aw->Nodes()[0]->X()[0];
-      node_coords1[1] = ele_aw->Nodes()[0]->X()[1];
-      node_coords1[2] = ele_aw->Nodes()[0]->X()[2];
+      node_coords1[0] = ele_aw->nodes()[0]->x()[0];
+      node_coords1[1] = ele_aw->nodes()[0]->x()[1];
+      node_coords1[2] = ele_aw->nodes()[0]->x()[2];
 
       double node_coords2[3];
-      node_coords2[0] = ele_aw->Nodes()[1]->X()[0];
-      node_coords2[1] = ele_aw->Nodes()[1]->X()[1];
-      node_coords2[2] = ele_aw->Nodes()[1]->X()[2];
+      node_coords2[0] = ele_aw->nodes()[1]->x()[0];
+      node_coords2[1] = ele_aw->nodes()[1]->x()[1];
+      node_coords2[2] = ele_aw->nodes()[1]->x()[2];
 
 
       double node_coords_center[3];
       for (int p = 0; p < 3; p++) node_coords_center[p] = (node_coords1[p] + node_coords2[p]) / 2;
 
       // Loop over all acinus elements (on processor)
-      for (int i = 0; i < (search_discret->NumMyColElements()); i++)
+      for (int i = 0; i < (search_discret->num_my_col_elements()); i++)
       {
         // global acinus element ID
-        int GID2 = search_discret->ElementColMap()->GID(i);
+        int GID2 = search_discret->element_col_map()->GID(i);
 
         Discret::ELEMENTS::RedAcinus* ele_ac =
-            dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->gElement(GID2));
+            dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->g_element(GID2));
 
         // Check if element is an acinus
         if (ele_ac != nullptr)
         {
           // Get coordinates of acini
           double ac_coords[3];
-          ac_coords[0] = ele_ac->Nodes()[1]->X()[0];
-          ac_coords[1] = ele_ac->Nodes()[1]->X()[1];
-          ac_coords[2] = ele_ac->Nodes()[1]->X()[2];
+          ac_coords[0] = ele_ac->nodes()[1]->x()[0];
+          ac_coords[1] = ele_ac->nodes()[1]->x()[1];
+          ac_coords[2] = ele_ac->nodes()[1]->x()[2];
 
           double diff_vec[3];  // = ac_coords - airway_node_coords_center;
           for (int k = 0; k < 3; k++) diff_vec[k] = ac_coords[k] - node_coords_center[k];
@@ -610,23 +610,23 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
       }
 
       // global element ID
-      int GID3 = search_discret->ElementColMap()->GID(min_index);
+      int GID3 = search_discret->element_col_map()->GID(min_index);
 
       // why cast
       Discret::ELEMENTS::RedAcinus* ele_acinus =
-          dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->gElement(GID3));
+          dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->g_element(GID3));
 
       // extend ele and node col map
       if (elecolset != nullptr and nodecolset != nullptr)
       {
         elecolset->insert(GID3);
-        const int* nodeids = ele_acinus->NodeIds();
+        const int* nodeids = ele_acinus->node_ids();
         for (int inode = 0; inode < ele_acinus->num_node(); ++inode)
           nodecolset->insert(nodeids[inode]);
       }
 
       if (airway_acinus_dep != Teuchos::null)
-        (*airway_acinus_dep)[j] = (ele_acinus->Nodes()[1])->LID();
+        (*airway_acinus_dep)[j] = (ele_acinus->nodes()[1])->lid();
     }
   }
 }
@@ -635,7 +635,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
  | Time loop for red_airway problems                                    |
  |                                                          ismail 01/10|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::TimeLoop(
+void Airway::RedAirwayImplicitTimeInt::time_loop(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
@@ -650,7 +650,7 @@ void Airway::RedAirwayImplicitTimeInt::TimeLoop(
   while (step_ < stepmax_ and time_ < maxtime_)
   {
     // Calculate a single timestep
-    this->TimeStep(CoupledTo3D, CouplingTo3DParams);
+    this->time_step(CoupledTo3D, CouplingTo3DParams);
 
     // Stop-criterion for timeloop
     if (CoupledTo3D)
@@ -667,7 +667,7 @@ void Airway::RedAirwayImplicitTimeInt::TimeLoop(
  | Contains one timestep: Prepare, Solve, Update, Output                |
  |                                                          ismail 09/12|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::TimeStep(
+void Airway::RedAirwayImplicitTimeInt::time_step(
     bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
@@ -705,13 +705,13 @@ void Airway::RedAirwayImplicitTimeInt::TimeStep(
   if (params_.get<std::string>("solver type") == "Nonlinear")
   {
     // Nonlinear solve of current timestep
-    NonLin_Solve(CouplingTo3DParams);
+    non_lin_solve(CouplingTo3DParams);
     if (!myrank_) std::cout << std::endl;
   }
   else if (params_.get<std::string>("solver type") == "Linear")
   {
     // Linear solve of current timestep
-    Solve(CouplingTo3DParams);
+    solve(CouplingTo3DParams);
     if (!myrank_) std::cout << std::endl << std::endl;
   }
   else
@@ -722,11 +722,11 @@ void Airway::RedAirwayImplicitTimeInt::TimeStep(
   // Solve scatra if required
   if (solveScatra_)
   {
-    this->SolveScatra(CouplingTo3DParams);
+    this->solve_scatra(CouplingTo3DParams);
   }
 
   // Update solution: current solution becomes old solution of next timestep
-  TimeUpdate();
+  time_update();
 
 
   // Normal red_airway Output
@@ -745,7 +745,7 @@ void Airway::RedAirwayImplicitTimeInt::TimeStep(
  | Contains the one step time loop for red_airway_tissue problems       |
  |                                                          ismail 09/12|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::IntegrateStep(
+void Airway::RedAirwayImplicitTimeInt::integrate_step(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // Output to screen
@@ -763,12 +763,12 @@ void Airway::RedAirwayImplicitTimeInt::IntegrateStep(
   // Get the solver type parameter: linear or nonlinear solver and solve current timestep
   if (params_.get<std::string>("solver type") == "Nonlinear")
   {
-    NonLin_Solve(CouplingTo3DParams);
+    non_lin_solve(CouplingTo3DParams);
     if (!myrank_) std::cout << std::endl;
   }
   else if (params_.get<std::string>("solver type") == "Linear")
   {
-    Solve(CouplingTo3DParams);
+    solve(CouplingTo3DParams);
     if (!myrank_) std::cout << std::endl << std::endl;
   }
   else
@@ -795,7 +795,7 @@ void Airway::RedAirwayImplicitTimeInt::prepare_time_step()
  | Nonlinear iterative solver for reduced-dimensional airway problem    |
  |                                                         ismail 01/11 |
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::NonLin_Solve(
+void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   double error_norm1 = 1.e7;
@@ -803,7 +803,7 @@ void Airway::RedAirwayImplicitTimeInt::NonLin_Solve(
 
   // Evaluate total acinar volume
   double acinar_volume_np = 0.0;
-  bool err1 = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, acinar_volume_np);
+  bool err1 = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, acinar_volume_np);
   if (err1)
   {
     FOUR_C_THROW("Error in summing acinar volumes");
@@ -811,7 +811,7 @@ void Airway::RedAirwayImplicitTimeInt::NonLin_Solve(
 
   // Evaluate total airway volume
   double airway_volume_np = 0.0;
-  bool err2 = this->SumAllColElemVal(elemVolumenp_, open_, airway_volume_np);
+  bool err2 = this->sum_all_col_elem_val(elemVolumenp_, open_, airway_volume_np);
   if (err2)
   {
     FOUR_C_THROW("Error in summing airway volumes");
@@ -835,7 +835,7 @@ void Airway::RedAirwayImplicitTimeInt::NonLin_Solve(
     p_nonlin_->Update(1.0, *pnp_, 0.0);
 
     // Solve the reduced dimensional model
-    this->Solve(CouplingTo3DParams);
+    this->solve(CouplingTo3DParams);
 
     // Find the change of pressure between the last two iteration steps
     p_nonlin_->Update(1.0, *pnp_, -1.0);
@@ -844,7 +844,7 @@ void Airway::RedAirwayImplicitTimeInt::NonLin_Solve(
     p_nonlin_->Norm2(&error_norm1);
 
     // Evaluate the residual (=flow) and compute the L2 norm
-    this->EvalResidual(CouplingTo3DParams);
+    this->eval_residual(CouplingTo3DParams);
     residual_->Norm2(&error_norm2);
 
     // Print output to screen
@@ -889,7 +889,7 @@ void Airway::RedAirwayImplicitTimeInt::NonLin_Solve(
  | Single Newton step for reduced dimensional airways                   |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::Solve(
+void Airway::RedAirwayImplicitTimeInt::solve(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // Time measurement:  solving reduced dimensional airways
@@ -909,7 +909,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     }
 
     // Set both system matrix and rhs vector to zero
-    sysmat_->Zero();
+    sysmat_->zero();
     rhs_->PutScalar(0.0);
 
     // Create the element parameters for the discretization
@@ -919,7 +919,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("action", "calc_sys_matrix_rhs");
 
     // Set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("pnp", pnp_);
     discret_->set_state("pn", pn_);
     discret_->set_state("pnm", pnm_);
@@ -957,21 +957,21 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
 
     // Evaluate Lung volumes nm, n, np and set to eleparams
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_n = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumenm_, acini_bc_, lung_volume_nm);
+    err = this->sum_all_col_elem_val(acini_e_volumenm_, acini_bc_, lung_volume_nm);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -984,11 +984,11 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
 
     // Call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
-    discret_->ClearState();
+    discret_->clear_state();
 
     // finalize the complete matrix
-    sysmat_->Complete();
-    discret_->ClearState();
+    sysmat_->complete();
+    discret_->clear_state();
 
   }  // end time measurement for element
 
@@ -1005,7 +1005,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("action", "set_bc");
 
     // Set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("pnp", pnp_);
     discret_->set_state("pn", pn_);
     discret_->set_state("pnm", pnm_);
@@ -1034,13 +1034,13 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
 
     // Evaluate Lung volumes n, np and set to eleparams
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
     double lung_volume_n = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -1053,7 +1053,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
 
     // Call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
-    discret_->ClearState();
+    discret_->clear_state();
 
   }  // end of solving terminal BCs
 
@@ -1102,7 +1102,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver_->Solve(sysmat_->EpetraOperator(), pnp_, rhs_, solver_params);
+    solver_->solve(sysmat_->epetra_operator(), pnp_, rhs_, solver_params);
   }
 
   // end time measurement for solver
@@ -1124,7 +1124,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("solver type", params_.get<std::string>("solver type"));
 
     // Set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("pnp", pnp_);
     discret_->set_state("pn", pn_);
     discret_->set_state("pnm", pnm_);
@@ -1160,7 +1160,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     // Call standard loop over all elements
     discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   /***
@@ -1174,7 +1174,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("action", "calc_elem_volumes");
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -1195,7 +1195,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     // call standard loop over all elements
     discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   /***
@@ -1210,7 +1210,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
     eleparams.set("action", "get_coupled_values");
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("pnp", pnp_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
@@ -1238,7 +1238,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
 
     // call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 }  // RedAirwayImplicitTimeInt::Solve
 
@@ -1252,7 +1252,7 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Airway::RedAirwayImplicitTimeInt::SolveScatra(
+void Airway::RedAirwayImplicitTimeInt::solve_scatra(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   //---------------------------------------------------------------------
@@ -1283,7 +1283,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
 
     discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
 
     // get largest CFL number
     cfls_->NormInf(&cflmax);
@@ -1301,7 +1301,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "get_junction_volume_mix");
 
     // set vector values needed to evaluate O2 transport elements
-    discret_->ClearState();
+    discret_->clear_state();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -1337,7 +1337,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "solve_scatra");
 
     // set vector values needed to evaluate O2 transport elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("scatran", scatraO2n_);
 
     // note: We use an RCP because ParameterList wants something printable and comparable
@@ -1369,7 +1369,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
     Teuchos::RCP<Epetra_Vector> dummy = Core::LinAlg::CreateVector(*dofrowmap, true);
     discret_->evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
   //---------------------------------------------------------------------
   // Reconvert the scatran from 'number of moles' into a concentration
@@ -1398,7 +1398,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "solve_junction_scatra");
 
     // set vector values needed to evaluate O2 transport elements
-    discret_->ClearState();
+    discret_->clear_state();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -1422,7 +1422,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
 
     discret_->evaluate(
         eleparams, sysmat_, Teuchos::null, scatraO2np_, junctionVolumeInMix_, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   //---------------------------------------------------------------------
@@ -1461,7 +1461,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
 
     discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, nodal_surfaces, nodal_volumes, nodal_avg_conc);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // evaluate the transport of O2 between air and blood
@@ -1486,7 +1486,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     dVolumeO2_->PutScalar(0.0);
     acinarDO2_->PutScalar(0.0);
     discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, dscatraO2_, dVolumeO2_, acinarDO2_);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   //---------------------------------------------------------------------
@@ -1499,7 +1499,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "update_scatra");
 
     // set vector values needed to evaluate O2 transport elements
-    discret_->ClearState();
+    discret_->clear_state();
     // note: We use an RCP because ParameterList wants something printable and comparable
     Discret::ReducedLung::EvaluationData& evaluation_data =
         Discret::ReducedLung::EvaluationData::get();
@@ -1517,7 +1517,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
 
     discret_->evaluate(
         eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
   scatraO2np_->Update(1.0, *dscatraO2_, 1.0);
   //---------------------------------------------------------------------
@@ -1530,7 +1530,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     eleparams.set("action", "update_elem12_scatra");
 
     // set vector values needed to evaluate O2 transport elements
-    discret_->ClearState();
+    discret_->clear_state();
 
     // note: We use an RCP because ParameterList wants something printable and comparable
     Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -1547,7 +1547,7 @@ void Airway::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.elemVolumenp = elemVolumenp_;
     discret_->evaluate(
         eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 }  // RedAirwayImplicitTimeInt::SolveScatra
 
@@ -1577,7 +1577,7 @@ void Airway::RedAirwayImplicitTimeInt::assemble_mat_and_rhs()
  |  pn_   =  pnp_                                                       |
  |                                                          ismail 06/09|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::TimeUpdate()
+void Airway::RedAirwayImplicitTimeInt::time_update()
 {
   // Volumetric Flow rate and acini volume of this step become most recent
   pnm_->Update(1.0, *pn_, 0.0);
@@ -1621,13 +1621,13 @@ void Airway::RedAirwayImplicitTimeInt::TimeUpdate()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::InitSaveState()
+void Airway::RedAirwayImplicitTimeInt::init_save_state()
 {
   // Get discretizations DOF row map
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Get discretizations element row map
-  const Epetra_Map* elementcolmap = discret_->ElementColMap();
+  const Epetra_Map* elementcolmap = discret_->element_col_map();
 
   // saving vector for pressure
   saved_pnm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
@@ -1685,7 +1685,7 @@ void Airway::RedAirwayImplicitTimeInt::InitSaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::SaveState()
+void Airway::RedAirwayImplicitTimeInt::save_state()
 {
   // save pressure vectors
   saved_pnm_->Update(1.0, *pnm_, 0.0);
@@ -1748,7 +1748,7 @@ void Airway::RedAirwayImplicitTimeInt::SaveState()
  |                                                                      |
  |                                                          ismail 04/14|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::LoadState()
+void Airway::RedAirwayImplicitTimeInt::load_state()
 {
   // save pressure vectors
   pnm_->Update(1.0, *saved_pnm_, 0.0);
@@ -1853,7 +1853,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
 
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
         Teuchos::RCP<Epetra_Vector> po2 = Core::LinAlg::CreateVector(*dofrowmap, true);
-        discret_->ClearState();
+        discret_->clear_state();
 
         evaluation_data.po2 = po2;
         discret_->set_state("scatranp", scatraO2np_);
@@ -1861,7 +1861,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
 
         discret_->evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-        discret_->ClearState();
+        discret_->clear_state();
         output_.write_vector("PO2", po2);
       }
       // Export acinar PO2
@@ -1877,7 +1877,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
 
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
         Teuchos::RCP<Epetra_Vector> po2 = Core::LinAlg::CreateVector(*dofrowmap, true);
-        discret_->ClearState();
+        discret_->clear_state();
 
         evaluation_data.po2 = po2;
         discret_->set_state("scatranp", acinarDO2_);
@@ -1885,7 +1885,7 @@ void Airway::RedAirwayImplicitTimeInt::output(
 
         discret_->evaluate(
             eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-        discret_->ClearState();
+        discret_->clear_state();
         output_.write_vector("AcinarPO2", po2);
       }
       {
@@ -2160,7 +2160,7 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 {
   coupledTo3D_ = coupledTo3D;
   Core::IO::DiscretizationReader reader(
-      discret_, Global::Problem::Instance()->InputControlFile(), step);
+      discret_, Global::Problem::instance()->input_control_file(), step);
   time_ = reader.read_double("time");
 
   if (coupledTo3D_)
@@ -2255,7 +2255,7 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 /*----------------------------------------------------------------------*
  | Create the field test for redairway field                 roth 10/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Airway::RedAirwayImplicitTimeInt::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Airway::RedAirwayImplicitTimeInt::create_field_test()
 {
   return Teuchos::rcp(new RedAirwayResultTest(*this));
 }
@@ -2264,7 +2264,7 @@ Teuchos::RCP<Core::UTILS::ResultTest> Airway::RedAirwayImplicitTimeInt::CreateFi
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::EvalResidual(
+void Airway::RedAirwayImplicitTimeInt::eval_residual(
     Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   residual_->PutScalar(0.0);
@@ -2272,7 +2272,7 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
   // Call elements to calculate system matrix
   {
     // set both system matrix and rhs vector to zero
-    sysmat_->Zero();
+    sysmat_->zero();
     rhs_->PutScalar(0.0);
 
     // create the parameters for the discretization
@@ -2282,7 +2282,7 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
     eleparams.set("action", "calc_sys_matrix_rhs");
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("pnp", pnp_);
     discret_->set_state("pn", pn_);
     discret_->set_state("pnm", pnm_);
@@ -2319,21 +2319,21 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
 
     // get lung volume
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_n = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumenm_, acini_bc_, lung_volume_nm);
+    err = this->sum_all_col_elem_val(acini_e_volumenm_, acini_bc_, lung_volume_nm);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -2346,10 +2346,10 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
 
     // call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
-    discret_->ClearState();
+    discret_->clear_state();
 
     // finalize the complete matrix
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // Solve the boundary conditions
@@ -2364,7 +2364,7 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
     eleparams.set("action", "set_bc");
 
     // set vector values needed by elements
-    discret_->ClearState();
+    discret_->clear_state();
     discret_->set_state("pnp", pnp_);
     discret_->set_state("pn", pn_);
     discret_->set_state("pnm", pnm_);
@@ -2394,13 +2394,13 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
 
     // get lung volume
     double lung_volume_np = 0.0;
-    bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
     double lung_volume_n = 0.0;
-    err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -2411,7 +2411,7 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
 
     // call standard loop over all elements
     discret_->evaluate(eleparams, sysmat_, rhs_);
-    discret_->ClearState();
+    discret_->clear_state();
   }
 
   // Apply the BCs to the system matrix and rhs
@@ -2420,7 +2420,7 @@ void Airway::RedAirwayImplicitTimeInt::EvalResidual(
   }
 
   // Evaluate Residual
-  sysmat_->Multiply(false, *pnp_, *residual_);
+  sysmat_->multiply(false, *pnp_, *residual_);
   residual_->Update(-1.0, *rhs_, 1.0);
 }  // EvalResidual
 
@@ -2440,7 +2440,7 @@ void Airway::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
     Core::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(1, 0.0);
     newval[0] = (*coupflux)[i];
-    cond->parameters().Add("val", newval);
+    cond->parameters().add("val", newval);
   }
 }
 
@@ -2448,10 +2448,10 @@ void Airway::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::SetupForCoupling()
+void Airway::RedAirwayImplicitTimeInt::setup_for_coupling()
 {
   std::vector<Core::Conditions::Condition*> nodecond;
-  discret_->GetCondition("RedAirwayPrescribedCond", nodecond);
+  discret_->get_condition("RedAirwayPrescribedCond", nodecond);
   unsigned int numnodecond = nodecond.size();
   if (numnodecond == 0) FOUR_C_THROW("no redairway prescribed conditions");
 
@@ -2459,7 +2459,7 @@ void Airway::RedAirwayImplicitTimeInt::SetupForCoupling()
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
     Core::Conditions::Condition* actcond = nodecond[i];
-    if (actcond->Type() == Core::Conditions::RedAirwayNodeTissue)
+    if (actcond->type() == Core::Conditions::RedAirwayNodeTissue)
     {
       auto condID = actcond->parameters().get<int>("coupling id");
       coupcond_[condID] = actcond;
@@ -2469,37 +2469,38 @@ void Airway::RedAirwayImplicitTimeInt::SetupForCoupling()
   }
   unsigned int numcond = tmp.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
-  coupmap_ = Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, discret_->Comm()));
+  coupmap_ =
+      Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, discret_->get_comm()));
 }
 
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres)
+void Airway::RedAirwayImplicitTimeInt::extract_pressure(Teuchos::RCP<Epetra_Vector> couppres)
 {
   for (int i = 0; i < coupmap_->NumMyElements(); i++)
   {
     int condgid = coupmap_->GID(i);
     Core::Conditions::Condition* cond = coupcond_[condgid];
-    const std::vector<int>* nodes = cond->GetNodes();
+    const std::vector<int>* nodes = cond->get_nodes();
     if (nodes->size() != 1)
       FOUR_C_THROW("Too many nodes on coupling with tissue condition ID=[%d]\n", condgid);
 
     int gid = (*nodes)[0];
     double pressure = 0.0;
-    if (discret_->HaveGlobalNode(gid))
+    if (discret_->have_global_node(gid))
     {
-      Core::Nodes::Node* node = discret_->gNode(gid);
-      if (myrank_ == node->Owner())
+      Core::Nodes::Node* node = discret_->g_node(gid);
+      if (myrank_ == node->owner())
       {
-        int giddof = discret_->Dof(node, 0);
+        int giddof = discret_->dof(node, 0);
         int liddof = pnp_->Map().LID(giddof);
         pressure = (*pnp_)[liddof];
       }
     }
     double parpres = 0.;
-    discret_->Comm().SumAll(&pressure, &parpres, 1);
+    discret_->get_comm().SumAll(&pressure, &parpres, 1);
     (*couppres)[i] = parpres;
   }
 }
@@ -2509,11 +2510,11 @@ void Airway::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
  | Sum all ColElement values                                            |
  |                                                          ismail 11/12|
  *----------------------------------------------------------------------*/
-bool Airway::RedAirwayImplicitTimeInt::SumAllColElemVal(
+bool Airway::RedAirwayImplicitTimeInt::sum_all_col_elem_val(
     Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_Vector> sumCond, double& sum)
 {
   // Check if the vector is a ColElement vector
-  const Epetra_Map* elementcolmap = discret_->ElementColMap();
+  const Epetra_Map* elementcolmap = discret_->element_col_map();
   if (!vec->Map().SameAs(*elementcolmap) && !sumCond->Map().SameAs(*elementcolmap))
   {
     return true;

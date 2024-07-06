@@ -29,8 +29,8 @@ namespace
                 Core::IO::InputParameterContainer container;
 
                 // add material parameters to container
-                container.Add("ALPHA", -25.0);
-                container.Add("MUE", 0.8);
+                container.add("ALPHA", -25.0);
+                container.add("MUE", 0.8);
 
                 return Mat::Elastic::PAR::IsoOgden({.parameters = container});
               })),
@@ -81,7 +81,7 @@ namespace
     bool viscogeneral = false;
 
     // call SpecifyFormulation function
-    isoogden_.SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
+    isoogden_.specify_formulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
 
     // test if function correctly sets isomod to true
     EXPECT_TRUE(isomod);
@@ -101,7 +101,7 @@ namespace
     bool viscogeneral = true;
 
     // call SpecifyFormulation function
-    isoogden_.SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
+    isoogden_.specify_formulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
 
     // test if function correctly sets isomod to true
     EXPECT_TRUE(isomod);

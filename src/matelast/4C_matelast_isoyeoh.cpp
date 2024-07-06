@@ -23,7 +23,7 @@ Mat::Elastic::PAR::IsoYeoh::IsoYeoh(const Core::Mat::PAR::Parameter::Data& matda
 
 Mat::Elastic::IsoYeoh::IsoYeoh(Mat::Elastic::PAR::IsoYeoh* params) : params_(params) {}
 
-void Mat::Elastic::IsoYeoh::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+void Mat::Elastic::IsoYeoh::add_strain_energy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
     const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {

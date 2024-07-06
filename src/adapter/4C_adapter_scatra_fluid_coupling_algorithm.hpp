@@ -59,7 +59,7 @@ namespace Adapter
     void init() override;
 
     /// outer level time loop (to be implemented by deriving classes)
-    virtual void TimeLoop() = 0;
+    virtual void time_loop() = 0;
 
     /// read restart data
     void read_restart(int step  ///< step number where the calculation is continued

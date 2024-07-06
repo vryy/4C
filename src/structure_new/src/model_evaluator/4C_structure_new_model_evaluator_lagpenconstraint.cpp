@@ -71,8 +71,8 @@ void Solid::MODELEVALUATOR::LagPenConstraint::setup()
   // time-integration dies ...
   // initialize constraint manager
   constrman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
-  constrman_->init(dis, Global::Problem::Instance()->structural_dynamic_params());
-  constrman_->setup(disnp_ptr_, Global::Problem::Instance()->structural_dynamic_params());
+  constrman_->init(dis, Global::Problem::instance()->structural_dynamic_params());
+  constrman_->setup(disnp_ptr_, Global::Problem::instance()->structural_dynamic_params());
 
   // set flag
   issetup_ = true;
@@ -88,7 +88,7 @@ void Solid::MODELEVALUATOR::LagPenConstraint::reset(const Epetra_Vector& x)
   disnp_ptr_ = global_state().get_dis_np();
 
   fstrconstr_np_ptr_->PutScalar(0.0);
-  stiff_constr_ptr_->Zero();
+  stiff_constr_ptr_->zero();
 }
 
 /*----------------------------------------------------------------------*
@@ -122,7 +122,7 @@ bool Solid::MODELEVALUATOR::LagPenConstraint::evaluate_stiff()
   constrman_->evaluate_force_stiff(
       time_np, disn, disnp_ptr_, Teuchos::null, stiff_constr_ptr_, pcon);
 
-  if (not stiff_constr_ptr_->Filled()) stiff_constr_ptr_->Complete();
+  if (not stiff_constr_ptr_->filled()) stiff_constr_ptr_->complete();
 
   return true;
 }
@@ -140,7 +140,7 @@ bool Solid::MODELEVALUATOR::LagPenConstraint::evaluate_force_stiff()
   constrman_->evaluate_force_stiff(
       time_np, disn, disnp_ptr_, fstrconstr_np_ptr_, stiff_constr_ptr_, pcon);
 
-  if (not stiff_constr_ptr_->Filled()) stiff_constr_ptr_->Complete();
+  if (not stiff_constr_ptr_->filled()) stiff_constr_ptr_->complete();
 
   return true;
 }
@@ -158,7 +158,7 @@ bool Solid::MODELEVALUATOR::LagPenConstraint::assemble_force(
   if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
     // assemble constraint rhs
-    block_vec_ptr = constrman_->GetError();
+    block_vec_ptr = constrman_->get_error();
 
     if (block_vec_ptr.is_null())
       FOUR_C_THROW(
@@ -187,25 +187,25 @@ bool Solid::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
 
   // --- Kdd - block ---------------------------------------------------
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
-  jac_dd_ptr->Add(*stiff_constr_ptr_, false, timefac_np, 1.0);
+  jac_dd_ptr->add(*stiff_constr_ptr_, false, timefac_np, 1.0);
   // no need to keep it
-  stiff_constr_ptr_->Zero();
+  stiff_constr_ptr_->zero();
 
   if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
     // --- Kdz - block - scale with time-integrator dependent value!-----
     block_ptr = (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
-        constrman_->GetConstrMatrix(), true));
-    block_ptr->Scale(timefac_np);
-    global_state().assign_model_block(jac, *block_ptr, Type(), Solid::MatBlockType::displ_lm);
+        constrman_->get_constr_matrix(), true));
+    block_ptr->scale(timefac_np);
+    global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::displ_lm);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
 
     // --- Kzd - block - no scaling of this block (cf. diss Kloeppel p78)
-    block_ptr =
-        (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(constrman_->GetConstrMatrix(), true))
-            ->Transpose();
-    global_state().assign_model_block(jac, *block_ptr, Type(), Solid::MatBlockType::lm_displ);
+    block_ptr = (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
+                     constrman_->get_constr_matrix(), true))
+                    ->transpose();
+    global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_displ);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
   }
@@ -219,8 +219,8 @@ bool Solid::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
 void Solid::MODELEVALUATOR::LagPenConstraint::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
-  iowriter.write_vector("lagrmultiplier", constrman_->GetLagrMultVector());
-  iowriter.write_vector("refconval", constrman_->GetRefBaseValues());
+  iowriter.write_vector("lagrmultiplier", constrman_->get_lagr_mult_vector());
+  iowriter.write_vector("refconval", constrman_->get_ref_base_values());
 }
 
 /*----------------------------------------------------------------------*
@@ -243,7 +243,7 @@ void Solid::MODELEVALUATOR::LagPenConstraint::run_post_compute_x(
 
   Core::LinAlg::Export(dir, *lagmult_incr);
 
-  constrman_->UpdateLagrMult(lagmult_incr);
+  constrman_->update_lagr_mult(lagmult_incr);
 }
 
 /*----------------------------------------------------------------------*
@@ -320,7 +320,7 @@ Solid::MODELEVALUATOR::LagPenConstraint::nox_interface_ptr()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>&
-Solid::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
+Solid::MODELEVALUATOR::LagPenConstraint::nox_interface_prec_ptr()
 {
   check_init_setup();
 
@@ -337,7 +337,7 @@ Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::LagPenConstraint::get_bloc
 
   if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
-    return constrman_->GetConstraintMap();
+    return constrman_->get_constraint_map();
   }
   else
   {

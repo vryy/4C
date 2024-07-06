@@ -51,7 +51,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoElastHyper::create_material()
 Mat::ViscoElastHyperType Mat::ViscoElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::ViscoElastHyperType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ViscoElastHyperType::create(const std::vector<char>& data)
 {
   Mat::ViscoElastHyper* elhy = new Mat::ViscoElastHyper();
   elhy->unpack(data);
@@ -113,11 +113,11 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
   summandProperties_.pack(data);
   add_to_pack(data, isovisco_);
@@ -132,13 +132,13 @@ void Mat::ViscoElastHyper::pack(Core::Communication::PackBuffer& data) const
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->PackSummand(data);
+      potsum_[p]->pack_summand(data);
     }
   }
 
   //  pack history data 09/13
   int histsize;
-  if (!Initialized())
+  if (!initialized())
   {
     histsize = 0;
   }
@@ -198,23 +198,24 @@ void Mat::ViscoElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
   {
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const unsigned int probinst =
+          Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::ViscoElastHyper*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
   }
 
@@ -233,7 +234,7 @@ void Mat::ViscoElastHyper::unpack(const std::vector<char>& data)
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -241,7 +242,7 @@ void Mat::ViscoElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (auto& p : potsum_)
     {
-      p->UnpackSummand(data, position);
+      p->unpack_summand(data, position);
       p->register_anisotropy_extensions(anisotropy_);
     }
 
@@ -419,7 +420,7 @@ void Mat::ViscoElastHyper::update()
     // gauss-point
 
     // numsteps
-    const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+    const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
     const int numsteps = sdyn.get<int>("NUMSTEP");
     // maximal size of history (in time steps)
     const unsigned int max_hist = numsteps + 1;
@@ -852,9 +853,9 @@ void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* st
     // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
     // 09/14)
     std::string dyntype =
-        Global::Problem::Instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
+        Global::Problem::instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
     if (dyntype == "OneStepTheta")
-      theta = Global::Problem::Instance()
+      theta = Global::Problem::instance()
                   ->structural_dynamic_params()
                   .sublist("ONESTEPTHETA")
                   .get<double>("THETA");
@@ -957,7 +958,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     if (GeneralizedGenMax != Teuchos::null)
     {
       GeneralizedGenMax->read_material_parameters(numbranch, matids, solve);
-      branchespotsum = GeneralizedGenMax->GetBranchespotsum();
+      branchespotsum = GeneralizedGenMax->get_branchespotsum();
     }
   }
 
@@ -1059,9 +1060,9 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
       // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
       // 09/14)
       std::string dyntype =
-          Global::Problem::Instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
+          Global::Problem::instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
       if (dyntype == "OneStepTheta")
-        theta = Global::Problem::Instance()
+        theta = Global::Problem::instance()
                     ->structural_dynamic_params()
                     .sublist("ONESTEPTHETA")
                     .get<double>("THETA");

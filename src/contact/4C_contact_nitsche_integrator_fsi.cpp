@@ -38,7 +38,7 @@ CONTACT::IntegratorNitscheFsi::IntegratorNitscheFsi(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(Mortar::Element& sele,
+void CONTACT::IntegratorNitscheFsi::integrate_deriv_ele3_d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
@@ -61,11 +61,11 @@ void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(Mortar::Element& sele,
 
   if (!meles.size()) return;
 
-  if (xf_c_comm_->higher_integrationfor_contact_element(sele.Id()))
-    xf_c_comm_->get_cut_side_integration_points(sele.Id(), coords_, weights_, ngp_);
+  if (xf_c_comm_->higher_integrationfor_contact_element(sele.id()))
+    xf_c_comm_->get_cut_side_integration_points(sele.id(), coords_, weights_, ngp_);
 
   // Call Base Contact Integratederiv with potentially increased number of GPs!
-  CONTACT::Integrator::IntegrateDerivEle3D(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
+  CONTACT::Integrator::integrate_deriv_ele3_d(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
 }
 
 /*----------------------------------------------------------------------*
@@ -86,7 +86,7 @@ void CONTACT::IntegratorNitscheFsi::integrate_gp_3_d(Mortar::Element& sele, Mort
   double n[3];
   sele.compute_unit_normal_at_xi(sxi, n);
   std::vector<Core::Gen::Pairedvector<int, double>> dn(3, sele.num_node() * 3);
-  dynamic_cast<CONTACT::Element&>(sele).DerivUnitNormalAtXi(sxi, dn);
+  dynamic_cast<CONTACT::Element&>(sele).deriv_unit_normal_at_xi(sxi, dn);
 
   gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
       gap, deriv_gap, n, dn, sxi, mxi);
@@ -105,11 +105,11 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(Mortar::Element& sele, Mortar::E
     std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   // first rough check
-  if (gap > 10 * std::max(sele.MaxEdgeSize(), mele.MaxEdgeSize())) return;
+  if (gap > 10 * std::max(sele.max_edge_size(), mele.max_edge_size())) return;
 
   const Core::LinAlg::Matrix<dim, 1> normal(gpn, true);
 
-  if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
+  if (dim != n_dim()) FOUR_C_THROW("dimension inconsistency");
 
 
   double pen = ppn_;
@@ -128,7 +128,7 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(Mortar::Element& sele, Mortar::E
 
   bool gp_on_this_proc;
 
-  double normal_contact_transition = xf_c_comm_->Get_FSI_Traction(&sele, pxsi,
+  double normal_contact_transition = xf_c_comm_->get_fsi_traction(&sele, pxsi,
       Core::LinAlg::Matrix<dim - 1, 1>(sxi, false), normal, FSI_integrated, gp_on_this_proc);
 #ifdef WRITE_GMSH
   {
@@ -192,26 +192,26 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(Mortar::Element& sele, Mortar::E
   {
     update_ele_contact_state(sele, -1);
     if (!FSI_integrated)
-      xf_c_comm_->Inc_GP(1);
+      xf_c_comm_->inc_gp(1);
     else
-      xf_c_comm_->Inc_GP(2);
+      xf_c_comm_->inc_gp(2);
     return;
   }
 
   double cauchy_nn_weighted_average = 0.;
   Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv(
-      sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
-      mele.MoData().ParentDisp().size());
+      sele.num_node() * 3 * 12 + sele.mo_data().parent_disp().size() +
+      mele.mo_data().parent_disp().size());
 
-  Core::LinAlg::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
+  Core::LinAlg::SerialDenseVector normal_adjoint_test_slave(sele.mo_data().parent_dof().size());
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_normal_adjoint_test_slave(
-      sele.MoData().ParentDof().size() + dnmap_unit[0].size() + dsxi[0].size(), -1,
-      Core::LinAlg::SerialDenseVector(sele.MoData().ParentDof().size(), true));
+      sele.mo_data().parent_dof().size() + dnmap_unit[0].size() + dsxi[0].size(), -1,
+      Core::LinAlg::SerialDenseVector(sele.mo_data().parent_dof().size(), true));
 
-  Core::LinAlg::SerialDenseVector normal_adjoint_test_master(mele.MoData().ParentDof().size());
+  Core::LinAlg::SerialDenseVector normal_adjoint_test_master(mele.mo_data().parent_dof().size());
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_normal_adjoint_test_master(
-      mele.MoData().ParentDof().size() + dnmap_unit[0].size() + dmxi[0].size(), -1,
-      Core::LinAlg::SerialDenseVector(mele.MoData().ParentDof().size(), true));
+      mele.mo_data().parent_dof().size() + dnmap_unit[0].size() + dmxi[0].size(), -1,
+      Core::LinAlg::SerialDenseVector(mele.mo_data().parent_dof().size(), true));
 
   so_ele_cauchy<dim>(sele, sxi, dsxi, wgt, normal, dnmap_unit, normal, dnmap_unit, ws,
       cauchy_nn_weighted_average, cauchy_nn_weighted_average_deriv, normal_adjoint_test_slave,
@@ -242,7 +242,7 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(Mortar::Element& sele, Mortar::E
     xf_c_comm_->Gmsh_Write(sgp_x, 1.0, 2);
   }
 #endif
-  xf_c_comm_->Inc_GP(0);
+  xf_c_comm_->inc_gp(0);
 }
 
 void CONTACT::IntegratorNitscheFsi::update_ele_contact_state(Mortar::Element& sele, int state)
@@ -250,14 +250,14 @@ void CONTACT::IntegratorNitscheFsi::update_ele_contact_state(Mortar::Element& se
   if (!state && ele_contact_state_)
   {
     ele_contact_state_ = state;
-    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.id());
   }
   else if (ele_contact_state_ == -2)
     ele_contact_state_ = state;
   else if (ele_contact_state_ == -state)  // switch between contact and no contact
   {
     ele_contact_state_ = 0;
-    xf_c_comm_->register_contact_elementfor_higher_integration(sele.Id());
+    xf_c_comm_->register_contact_elementfor_higher_integration(sele.id());
   }
 }
 
@@ -265,7 +265,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
     const Core::LinAlg::Matrix<2, 1>& xsi, const Core::LinAlg::Matrix<3, 1>& n,
     const Core::LinAlg::Matrix<3, 1>& dir)
 {
-  if (cele->parent_element()->Shape() != Core::FE::CellType::hex8)
+  if (cele->parent_element()->shape() != Core::FE::CellType::hex8)
     FOUR_C_THROW("This Element shape is not implemented for CONTACT::UTILS::CauchyStressatXi");
 
   Core::LinAlg::Matrix<3, 1> pxsi(true);
@@ -274,12 +274,12 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
 
   double sigma_nt;
 
-  if (!cele->MoData().ParentPFPres().size())
+  if (!cele->mo_data().parent_pf_pres().size())
   {  // The element can be either an old so3 element or a new solid element
     if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(cele->parent_element());
         solid_ele != nullptr)
     {
-      solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->MoData().ParentDisp(), n, dir,
+      solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->mo_data().parent_disp(), n, dir,
           sigma_nt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
           nullptr, nullptr, nullptr, nullptr);
     }
@@ -288,7 +288,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
     {
       Discret::ELEMENTS::CauchyNDirLinearizations<3> cauchy_linearizations{};
       sigma_nt = solid_ele->get_normal_cauchy_stress_at_xi<3>(
-          cele->MoData().ParentDisp(), pxsi, n, dir, cauchy_linearizations);
+          cele->mo_data().parent_disp(), pxsi, n, dir, cauchy_linearizations);
     }
     else
     {
@@ -299,8 +299,8 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
   {
     dynamic_cast<Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
         cele->parent_element())
-        ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->MoData().ParentDisp(),
-            cele->MoData().ParentPFPres(), n, dir, sigma_nt, nullptr, nullptr, nullptr, nullptr,
+        ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->mo_data().parent_disp(),
+            cele->mo_data().parent_pf_pres(), n, dir, sigma_nt, nullptr, nullptr, nullptr, nullptr,
             nullptr);
   }
   return sigma_nt;

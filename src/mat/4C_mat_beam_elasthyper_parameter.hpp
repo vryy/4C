@@ -59,18 +59,18 @@ namespace Mat
 
       /// @name accessors to 'modal' constitutive parameters
       //@{
-      virtual double GetAxialRigidity() const = 0;
+      virtual double get_axial_rigidity() const = 0;
 
-      virtual double GetShearRigidity2() const = 0;
+      virtual double get_shear_rigidity2() const = 0;
 
-      virtual double GetShearRigidity3() const = 0;
+      virtual double get_shear_rigidity3() const = 0;
 
 
       virtual double get_torsional_rigidity() const = 0;
 
-      virtual double GetBendingRigidity2() const = 0;
+      virtual double get_bending_rigidity2() const = 0;
 
-      virtual double GetBendingRigidity3() const = 0;
+      virtual double get_bending_rigidity3() const = 0;
 
 
       virtual double get_translational_mass_inertia() const = 0;
@@ -85,9 +85,9 @@ namespace Mat
       virtual double get_interaction_radius() const = 0;
 
 
-      virtual double GetYieldStressN() const { return -1.0; };
+      virtual double get_yield_stress_n() const { return -1.0; };
 
-      virtual double GetYieldStressM() const { return -1.0; };
+      virtual double get_yield_stress_m() const { return -1.0; };
 
 
       virtual double get_hardening_axial_rigidity() const { return -1.0; };
@@ -101,7 +101,7 @@ namespace Mat
 
       virtual bool get_torsion_plasticity() const { return false; };
 
-      bool Uses_FAD() { return use_fad_; };
+      bool uses_fad() { return use_fad_; };
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() override;
@@ -123,14 +123,14 @@ namespace Mat
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      double GetAxialRigidity() const override { return youngs_modulus_ * cross_section_area_; }
+      double get_axial_rigidity() const override { return youngs_modulus_ * cross_section_area_; }
 
-      double GetShearRigidity2() const override
+      double get_shear_rigidity2() const override
       {
         return shear_modulus_ * cross_section_area_ * shear_correction_factor_;
       }
 
-      double GetShearRigidity3() const override
+      double get_shear_rigidity3() const override
       {
         return shear_modulus_ * cross_section_area_ * shear_correction_factor_;
       }
@@ -141,12 +141,12 @@ namespace Mat
         return shear_modulus_ * area_moment_inertia_polar_;
       }
 
-      double GetBendingRigidity2() const override
+      double get_bending_rigidity2() const override
       {
         return youngs_modulus_ * area_moment_inertia_2_;
       }
 
-      double GetBendingRigidity3() const override
+      double get_bending_rigidity3() const override
       {
         return youngs_modulus_ * area_moment_inertia_3_;
       }
@@ -239,18 +239,18 @@ namespace Mat
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      double GetAxialRigidity() const override { return axial_rigidity_; }
+      double get_axial_rigidity() const override { return axial_rigidity_; }
 
-      double GetShearRigidity2() const override { return shear_rigidity_2_; }
+      double get_shear_rigidity2() const override { return shear_rigidity_2_; }
 
-      double GetShearRigidity3() const override { return shear_rigidity_3_; }
+      double get_shear_rigidity3() const override { return shear_rigidity_3_; }
 
 
       double get_torsional_rigidity() const override { return torsional_rigidity_; }
 
-      double GetBendingRigidity2() const override { return bending_rigidity_2_; }
+      double get_bending_rigidity2() const override { return bending_rigidity_2_; }
 
-      double GetBendingRigidity3() const override { return bending_rigidity_3_; }
+      double get_bending_rigidity3() const override { return bending_rigidity_3_; }
 
 
       double get_translational_mass_inertia() const override { return translational_mass_inertia_; }
@@ -328,11 +328,11 @@ namespace Mat
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      double GetAxialRigidity() const override { return youngs_modulus_ * cross_section_area_; }
+      double get_axial_rigidity() const override { return youngs_modulus_ * cross_section_area_; }
 
-      double GetShearRigidity2() const override { return 0.0; }
+      double get_shear_rigidity2() const override { return 0.0; }
 
-      double GetShearRigidity3() const override { return 0.0; }
+      double get_shear_rigidity3() const override { return 0.0; }
 
 
       double get_torsional_rigidity() const override
@@ -340,12 +340,12 @@ namespace Mat
         return shear_modulus_ * area_moment_inertia_polar_;
       }
 
-      double GetBendingRigidity2() const override
+      double get_bending_rigidity2() const override
       {
         return youngs_modulus_ * area_moment_inertia_2_;
       }
 
-      double GetBendingRigidity3() const override
+      double get_bending_rigidity3() const override
       {
         return youngs_modulus_ * area_moment_inertia_3_;
       }
@@ -429,18 +429,18 @@ namespace Mat
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      double GetAxialRigidity() const override { return axial_rigidity_; }
+      double get_axial_rigidity() const override { return axial_rigidity_; }
 
-      double GetShearRigidity2() const override { return 0.0; }
+      double get_shear_rigidity2() const override { return 0.0; }
 
-      double GetShearRigidity3() const override { return 0.0; }
+      double get_shear_rigidity3() const override { return 0.0; }
 
 
       double get_torsional_rigidity() const override { return torsional_rigidity_; }
 
-      double GetBendingRigidity2() const override { return bending_rigidity_2_; }
+      double get_bending_rigidity2() const override { return bending_rigidity_2_; }
 
-      double GetBendingRigidity3() const override { return bending_rigidity_3_; }
+      double get_bending_rigidity3() const override { return bending_rigidity_3_; }
 
 
       double get_translational_mass_inertia() const override { return translational_mass_inertia_; }
@@ -516,18 +516,24 @@ namespace Mat
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      double GetAxialRigidity() const override { return youngs_modulus_ * cross_section_area_; }
+      double get_axial_rigidity() const override { return youngs_modulus_ * cross_section_area_; }
 
-      double GetShearRigidity2() const override { return 0.0; }
+      double get_shear_rigidity2() const override { return 0.0; }
 
-      double GetShearRigidity3() const override { return 0.0; }
+      double get_shear_rigidity3() const override { return 0.0; }
 
 
       double get_torsional_rigidity() const override { return 0.0; }
 
-      double GetBendingRigidity2() const override { return youngs_modulus_ * area_moment_inertia_; }
+      double get_bending_rigidity2() const override
+      {
+        return youngs_modulus_ * area_moment_inertia_;
+      }
 
-      double GetBendingRigidity3() const override { return youngs_modulus_ * area_moment_inertia_; }
+      double get_bending_rigidity3() const override
+      {
+        return youngs_modulus_ * area_moment_inertia_;
+      }
 
 
       double get_translational_mass_inertia() const override
@@ -593,18 +599,18 @@ namespace Mat
 
       /// @name derived: accessors to 'modal' constitutive parameters
       //@{
-      double GetAxialRigidity() const override { return axial_rigidity_; }
+      double get_axial_rigidity() const override { return axial_rigidity_; }
 
-      double GetShearRigidity2() const override { return 0.0; }
+      double get_shear_rigidity2() const override { return 0.0; }
 
-      double GetShearRigidity3() const override { return 0.0; }
+      double get_shear_rigidity3() const override { return 0.0; }
 
 
       double get_torsional_rigidity() const override { return 0.0; }
 
-      double GetBendingRigidity2() const override { return bending_rigidity_; }
+      double get_bending_rigidity2() const override { return bending_rigidity_; }
 
-      double GetBendingRigidity3() const override { return bending_rigidity_; }
+      double get_bending_rigidity3() const override { return bending_rigidity_; }
 
 
       double get_translational_mass_inertia() const override { return translational_mass_inertia_; }

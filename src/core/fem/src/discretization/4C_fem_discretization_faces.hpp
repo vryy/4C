@@ -65,10 +65,10 @@ namespace Core::FE
       /*--- set ------------------------------------------*/
 
       //! set the parent element id for slave parent element
-      void SetSlavePeid(int eid) { slave_peid_ = eid; }
+      void set_slave_peid(int eid) { slave_peid_ = eid; }
 
       //! set the local surface number w.r.t slave parent element
-      void SetLSurfaceSlave(int lsurface_slave) { lsurface_slave_ = lsurface_slave; }
+      void set_l_surface_slave(int lsurface_slave) { lsurface_slave_ = lsurface_slave; }
 
       /*!
       \brief set the map for the face's nodes between the local coordinate systems of the face w.r.t
@@ -84,16 +84,16 @@ namespace Core::FE
       /*--- get ------------------------------------------*/
 
       //! get the master parent element id
-      int GetMasterPeid() const { return master_peid_; }
+      int get_master_peid() const { return master_peid_; }
 
       //! get the slave parent element id
-      int GetSlavePeid() const { return slave_peid_; }
+      int get_slave_peid() const { return slave_peid_; }
 
       //! get the local surface number w.r.t master parent element
-      int GetLSurfaceMaster() const { return lsurface_master_; }
+      int get_l_surface_master() const { return lsurface_master_; }
 
       //! get the local surface number w.r.t slave parent element
-      int GetLSurfaceSlave() const { return lsurface_slave_; }
+      int get_l_surface_slave() const { return lsurface_slave_; }
 
       //! get the transformation map between the local coordinate systems of the face w.r.t the
       //! master parent element's face's coordinate system and the slave element's face's coordinate
@@ -101,7 +101,7 @@ namespace Core::FE
       const std::vector<int>& get_local_numbering_map() const { return localtrafomap_; }
 
       //! get surface's nodes (unsorted, original)
-      const std::vector<Core::Nodes::Node*>& GetNodes() const { return nodes_; }
+      const std::vector<Core::Nodes::Node*>& get_nodes() const { return nodes_; }
 
      private:
       int master_peid_;  //!< master parent element id
@@ -202,13 +202,13 @@ namespace Core::FE
     \note Sets Filled()=true
     \author schott 03/12
     */
-    int FillCompleteFaces(bool assigndegreesoffreedom = true, bool initelements = true,
+    int fill_complete_faces(bool assigndegreesoffreedom = true, bool initelements = true,
         bool doboundaryconditions = true, bool createinternalfaces = false);
 
     /*!
     \brief Get flag indicating whether create_internal_faces_extension() has been called
     */
-    virtual inline bool FilledExtension() const { return extension_filled_; }
+    virtual inline bool filled_extension() const { return extension_filled_; }
 
     /*!
     \brief Get map associated with the distribution of the ownership of faces
@@ -219,7 +219,7 @@ namespace Core::FE
 
     \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
-    virtual const Epetra_Map* FaceRowMap() const;
+    virtual const Epetra_Map* face_row_map() const;
 
     /*!
     \brief Get map associated with the distribution of elements including ghosted faces
@@ -230,7 +230,7 @@ namespace Core::FE
 
     \return nullptr if Filled() is false. A call to fill_complete() is a prerequisite.
     */
-    virtual const Epetra_Map* FaceColMap() const;
+    virtual const Epetra_Map* face_col_map() const;
 
     /*!
     \brief Get global number of internal faces (true number of total elements)
@@ -238,19 +238,19 @@ namespace Core::FE
 
     This is a collective call
     */
-    virtual int NumGlobalFaces() const;
+    virtual int num_global_faces() const;
 
     /*!
     \brief Get processor local number of internal faces owned by this processor
            (Filled()==true prerequisite)
     */
-    virtual int NumMyRowFaces() const;
+    virtual int num_my_row_faces() const;
 
     /*!
     \brief Get processor local number of internal faces including ghost elements
            (Filled()==true NOT prerequisite)
     */
-    virtual int NumMyColFaces() const;
+    virtual int num_my_col_faces() const;
 
     /*!
     \brief Get the internal face element with local row id lid (Filled()==true prerequisite)
@@ -261,10 +261,10 @@ namespace Core::FE
 
     \return Adress of internal face element if element is owned by calling proc
     */
-    virtual inline Core::Elements::Element* lRowFace(int lid) const
+    virtual inline Core::Elements::Element* l_row_face(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (!Filled()) FOUR_C_THROW("Core::FE::DiscretizationFaces::lRowIntFace: Filled() != true");
+      if (!filled()) FOUR_C_THROW("Core::FE::DiscretizationFaces::lRowIntFace: Filled() != true");
 #endif
       return facerowptr_[lid];
     }
@@ -278,10 +278,10 @@ namespace Core::FE
 
     \return Address of internal face element if element is stored by calling proc
     */
-    virtual inline Core::Elements::Element* lColFace(int lid) const
+    virtual inline Core::Elements::Element* l_col_face(int lid) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (!Filled()) FOUR_C_THROW("Core::FE::DiscretizationFaces::lColIntFace: Filled() != true");
+      if (!filled()) FOUR_C_THROW("Core::FE::DiscretizationFaces::lColIntFace: Filled() != true");
 #endif
       return facecolptr_[lid];
     }
@@ -294,7 +294,7 @@ namespace Core::FE
     /*!
     \brief Complete construction of a face elements
     */
-    void BuildFaces(const bool verbose = false);
+    void build_faces(const bool verbose = false);
 
     /*!
     \brief Build intfacerowmap_ (Filled()==true NOT prerequisite)
@@ -307,7 +307,7 @@ namespace Core::FE
     \note This is a collective call
 
     */
-    virtual void BuildFaceRowMap();
+    virtual void build_face_row_map();
 
     /*!
     \brief Build intfacecolmap_ (Filled()==true NOT prerequisite)
@@ -319,7 +319,7 @@ namespace Core::FE
     \note This is a collective call
 
     */
-    virtual void BuildFaceColMap();
+    virtual void build_face_col_map();
 
     /*!
     \brief Print Print internal faces discretization to os (Filled()==true NOT prerequisite)
@@ -327,7 +327,7 @@ namespace Core::FE
 
     \note This is a collective call
     */
-    void PrintFaces(std::ostream& os) const;
+    void print_faces(std::ostream& os) const;
 
 
    protected:

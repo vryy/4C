@@ -26,7 +26,7 @@ namespace Mat
   class So3Material : public Core::Mat::Material
   {
    public:
-    int UniqueParObjectId() const override = 0;
+    int unique_par_object_id() const override = 0;
 
     void pack(Core::Communication::PackBuffer& data) const override = 0;
 
@@ -60,13 +60,13 @@ namespace Mat
      * @param[in] gp            Current Gauss point
      * @param[in] eleGID        Global element ID
      */
-    virtual void EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    virtual void evaluate_non_lin_mass(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<6, 1>* linmass_disp, Core::LinAlg::Matrix<6, 1>* linmass_vel, int gp,
         int eleGID)
     {
       FOUR_C_THROW("Material of type %d does not support evaluation of nonlinear mass matrix",
-          this->MaterialType());
+          this->material_type());
     }
 
     /*!
@@ -77,11 +77,11 @@ namespace Mat
      * @param[in] gp       Current Gauss point
      * @param[in] eleGID   Global element ID
      */
-    virtual void StrainEnergy(
+    virtual void strain_energy(
         const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
     {
       FOUR_C_THROW("Material of type %d does not support calculation of strain energy",
-          this->MaterialType());
+          this->material_type());
     }
 
     /*!
@@ -143,7 +143,7 @@ namespace Mat
         Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT)
     {
       FOUR_C_THROW("evaluate_cauchy_n_dir_and_derivatives not implemented for material of type %d",
-          this->MaterialType());
+          this->material_type());
     }
 
     /*!
@@ -157,21 +157,21 @@ namespace Mat
         double concentration, Core::LinAlg::Matrix<9, 1>* d_F_dx)
     {
       FOUR_C_THROW("evaluate_linearization_od not implemented for material of type %d",
-          this->MaterialType());
+          this->material_type());
     }
     //@}
 
     /*!
      * @brief Return whether material includes a varying material density
      */
-    virtual bool VaryingDensity() const { return false; }
+    virtual bool varying_density() const { return false; }
 
 
     //! @name Handling of Gauss point data
     /*!
      * @brief Check if element kinematics and material kinematics are compatible
      */
-    virtual void ValidKinematics(Inpar::Solid::KinemType kinem) = 0;
+    virtual void valid_kinematics(Inpar::Solid::KinemType kinem) = 0;
 
     /*!
      * @brief Set up for materials with GP data (e.g., history variables)
@@ -202,7 +202,7 @@ namespace Mat
      *
      * Return true, if the material needs the update(defgrd, gp, params, eleGID) call
      */
-    virtual bool UsesExtendedUpdate() { return false; }
+    virtual bool uses_extended_update() { return false; }
 
     /*!
      * @brief Update of GP data (e.g., history variables)
@@ -233,14 +233,14 @@ namespace Mat
      *
      * @param[in] timestep Timestep
      */
-    virtual void StoreHistory(int timestep) {}
+    virtual void store_history(int timestep) {}
 
     /*!
      * @brief Set history variables from time point given as input
      *
      * @param[in] timestep Timestep
      */
-    virtual void SetHistory(int timestep) {}
+    virtual void set_history(int timestep) {}
     //@}
 
 
@@ -251,7 +251,7 @@ namespace Mat
      *
      * @param[in] names Names of the data to export
      */
-    virtual void VisNames(std::map<std::string, int>& names) {}
+    virtual void vis_names(std::map<std::string, int>& names) {}
 
     /*!
      * @brief Return visualization data
@@ -260,7 +260,7 @@ namespace Mat
      * @param[in] data  Data to export
      * @param[in] numgp Gauss point
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp)
+    virtual bool vis_data(const std::string& name, std::vector<double>& data, int numgp)
     {
       return false;
     }
@@ -273,7 +273,7 @@ namespace Mat
      * @param[in] numgp Gauss point
      * @param[in] eleId Element ID
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleId)
+    virtual bool vis_data(const std::string& name, std::vector<double>& data, int numgp, int eleId)
     {
       return false;
     }
@@ -297,7 +297,7 @@ namespace Mat
      *
      * @return true if data is set by the material, otherwise false
      */
-    virtual bool EvaluateOutputData(
+    virtual bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
     {
       return false;

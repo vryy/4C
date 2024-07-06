@@ -43,12 +43,12 @@ namespace
     double length = 0.0;
     // get node coordinates and number of elements per node
     static const int numnode = Core::FE::num_nodes<distype>;
-    Core::Nodes::Node** nodes = ele->Nodes();
+    Core::Nodes::Node** nodes = ele->nodes();
     // get airway length
     Core::LinAlg::Matrix<3, numnode> xyze;
     for (int inode = 0; inode < numnode; inode++)
     {
-      const auto& x = nodes[inode]->X();
+      const auto& x = nodes[inode]->x();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -80,14 +80,14 @@ namespace
     }
 
     // check if condition exists
-    if (node->GetCondition(condName))
+    if (node->get_condition(condName))
     {
-      Core::Conditions::Condition* condition = node->GetCondition(condName);
+      Core::Conditions::Condition* condition = node->get_condition(condName);
       // Get the type of prescribed bc
       std::string Bc = (condition->parameters().get<std::string>(optionName));
       if (Bc == condType)
       {
-        const auto* curve = condition->parameters().GetIf<std::vector<int>>("curve");
+        const auto* curve = condition->parameters().get_if<std::vector<int>>("curve");
         double curvefac = 1.0;
         const auto* vals = &condition->parameters().get<std::vector<double>>("val");
 
@@ -99,31 +99,31 @@ namespace
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
         if (curvenum >= 0)
-          curvefac = Global::Problem::Instance()
-                         ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
+          curvefac = Global::Problem::instance()
+                         ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
                          .evaluate(time);
 
         bcVal = (*vals)[0] * curvefac;
 
         // get funct 1
-        const int* function = condition->parameters().GetIf<int>("funct");
+        const int* function = condition->parameters().get_if<int>("funct");
         int functnum = -1;
         if (function) functnum = (*function);
 
         double functionfac = 0.0;
         if (functnum > 0)
         {
-          functionfac = Global::Problem::Instance()
-                            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .evaluate(node->X().data(), time, 0);
+          functionfac = Global::Problem::instance()
+                            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                            .evaluate(node->x().data(), time, 0);
         }
         // get curve2
         int curve2num = -1;
         double curve2fac = 1.0;
         if (curve) curve2num = (*curve)[1];
         if (curve2num >= 0)
-          curve2fac = Global::Problem::Instance()
-                          ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
+          curve2fac = Global::Problem::instance()
+                          ->function_by_id<Core::UTILS::FunctionOfTime>(curve2num)
                           .evaluate(time);
 
         bcVal += functionfac * curve2fac;
@@ -158,21 +158,21 @@ namespace
       Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
       double time, double dt, bool compute_awacinter)
   {
-    const auto airway_params = ele->GetAirwayParams();
+    const auto airway_params = ele->get_airway_params();
 
     double dens = 0.0;
     double visc = 0.0;
 
-    if (material->MaterialType() == Core::Materials::m_fluid)
+    if (material->material_type() == Core::Materials::m_fluid)
     {
       // get actual material
       const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
 
       // get density
-      dens = actmat->Density();
+      dens = actmat->density();
 
       // get dynamic viscosity
-      visc = actmat->Viscosity();
+      visc = actmat->viscosity();
     }
     else
     {
@@ -201,17 +201,17 @@ namespace
     double A = Ao;
     const double velPow = airway_params.power_velocity_profile;
 
-    if (ele->ElemSolvingType() == "Linear")
+    if (ele->elem_solving_type() == "Linear")
     {
     }
-    else if (ele->ElemSolvingType() == "NonLinear")
+    else if (ele->elem_solving_type() == "NonLinear")
     {
       A = params.volnp / L;
     }
     else
     {
       FOUR_C_THROW("[%s] is not a defined ElemSolvingType of a RED_AIRWAY element",
-          ele->ElemSolvingType().c_str());
+          ele->elem_solving_type().c_str());
     }
 
     // Get airway branch length
@@ -224,11 +224,11 @@ namespace
     // evaluate the Reynolds number
     const double Re = 2.0 * fabs(qout_np) / (visc / dens * sqrt(A * M_PI));
 
-    if (ele->Resistance() == "Poiseuille")
+    if (ele->resistance() == "Poiseuille")
     {
       R = Rp;
     }
-    else if (ele->Resistance() == "Pedley")
+    else if (ele->resistance() == "Pedley")
     {
       //-----------------------------------------------------------------
       // resistance evaluated using Pedley's model from :
@@ -252,7 +252,7 @@ namespace
 
       R = R * st + Rp * (1.0 - st);
     }
-    else if (ele->Resistance() == "Generation_Dependent_Pedley")
+    else if (ele->resistance() == "Generation_Dependent_Pedley")
     {
       //-----------------------------------------------------------------
       // Gamma is taken from Ertbruggen et al
@@ -302,7 +302,7 @@ namespace
         R = Rp;
       }
     }
-    else if (ele->Resistance() == "Cont_Pedley")
+    else if (ele->resistance() == "Cont_Pedley")
     {
       //-----------------------------------------------------------------
       // resistance evaluated using Pedley's model from :
@@ -327,7 +327,7 @@ namespace
         R = (aRe * pow(Re, bRe) + 1.0) * Rp;
       }
     }
-    else if (ele->Resistance() == "Generation_Dependent_Cont_Pedley")
+    else if (ele->resistance() == "Generation_Dependent_Cont_Pedley")
     {
       //-----------------------------------------------------------------
       // Gamma is taken from Ertbruggen et al
@@ -385,13 +385,13 @@ namespace
         R = (aRe * pow(Re, bRe) + 1.0) * Rp;
       }
     }
-    else if (ele->Resistance() == "Reynolds")
+    else if (ele->resistance() == "Reynolds")
     {
       R = Rp * (3.4 + 2.1e-3 * Re);
     }
     else
     {
-      FOUR_C_THROW("[%s] is not a defined resistance model", ele->Resistance().c_str());
+      FOUR_C_THROW("[%s] is not a defined resistance model", ele->resistance().c_str());
     }
 
     //------------------------------------------------------------
@@ -462,12 +462,12 @@ namespace
     {
       double pextVal = 0.0;
       // get Pext at time step n
-      GetCurveValAtCond<distype>(pextVal, ele->Nodes()[i], "RedAirwayPrescribedExternalPressure",
+      GetCurveValAtCond<distype>(pextVal, ele->nodes()[i], "RedAirwayPrescribedExternalPressure",
           "boundarycond", "ExternalPressure", time - dt);
       pextn += pextVal / double(ele->num_node());
 
       // get Pext at time step n+1e
-      GetCurveValAtCond<distype>(pextVal, ele->Nodes()[i], "RedAirwayPrescribedExternalPressure",
+      GetCurveValAtCond<distype>(pextVal, ele->nodes()[i], "RedAirwayPrescribedExternalPressure",
           "boundarycond", "ExternalPressure", time);
       pextnp += pextVal / double(ele->num_node());
     }
@@ -481,40 +481,40 @@ namespace
       pextnp = params.p_extnp;
     }
 
-    if (ele->Type() == "Resistive")
+    if (ele->type() == "Resistive")
     {
       C = 0.0;
       I = 0.0;
       Rconv = 0.0;
       Rvis = 0.0;
     }
-    else if (ele->Type() == "InductoResistive")
+    else if (ele->type() == "InductoResistive")
     {
       C = 0.0;
       Rconv = 0.0;
       Rvis = 0.0;
     }
-    else if (ele->Type() == "ComplientResistive")
+    else if (ele->type() == "ComplientResistive")
     {
       I = 0.0;
       Rconv = 0.0;
       Rvis = 0.0;
     }
-    else if (ele->Type() == "RLC")
+    else if (ele->type() == "RLC")
     {
       Rconv = 0.0;
       Rvis = 0.0;
     }
-    else if (ele->Type() == "ViscoElasticRLC")
+    else if (ele->type() == "ViscoElasticRLC")
     {
       Rconv = 0.0;
     }
-    else if (ele->Type() == "ConvectiveViscoElasticRLC")
+    else if (ele->type() == "ConvectiveViscoElasticRLC")
     {
     }
     else
     {
-      FOUR_C_THROW("[%s] is not an implemented element yet", (ele->Type()).c_str());
+      FOUR_C_THROW("[%s] is not an implemented element yet", (ele->type()).c_str());
       exit(1);
     }
 
@@ -550,10 +550,10 @@ namespace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInterface::Impl(
+Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInterface::impl(
     Discret::ELEMENTS::RedAirway* red_airway)
 {
-  switch (red_airway->Shape())
+  switch (red_airway->shape())
   {
     case Core::FE::CellType::line2:
     {
@@ -566,7 +566,7 @@ Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInter
     }
     default:
       FOUR_C_THROW(
-          "shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->num_node());
+          "shape %d (%d nodes) not supported", red_airway->shape(), red_airway->num_node());
       break;
   }
   return nullptr;
@@ -589,7 +589,7 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto airway_params = ele->GetAirwayParams();
+  const auto airway_params = ele->get_airway_params();
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -609,9 +609,9 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -644,19 +644,19 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   double e_acin_e_vn;
 
   // split area and volumetric flow rate, insert into element arrays
-  e_acin_e_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
-  e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->LID()];
+  e_acin_e_vnp = (*evaluation_data.acinar_vnp)[ele->lid()];
+  e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->lid()];
 
   // get the volumetric flow rate from the previous time step
   Discret::ReducedLung::ElemParams elem_params;
-  elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
-  elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
-  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
-  elem_params.qin_np = (*evaluation_data.qin_np)[ele->LID()];
-  elem_params.qin_n = (*evaluation_data.qin_n)[ele->LID()];
-  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->LID()];
-  elem_params.volnp = (*evaluation_data.elemVolumenp)[ele->LID()];
-  elem_params.voln = (*evaluation_data.elemVolumen)[ele->LID()];
+  elem_params.qout_np = (*evaluation_data.qout_np)[ele->lid()];
+  elem_params.qout_n = (*evaluation_data.qout_n)[ele->lid()];
+  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->lid()];
+  elem_params.qin_np = (*evaluation_data.qin_np)[ele->lid()];
+  elem_params.qin_n = (*evaluation_data.qin_n)[ele->lid()];
+  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->lid()];
+  elem_params.volnp = (*evaluation_data.elemVolumenp)[ele->lid()];
+  elem_params.voln = (*evaluation_data.elemVolumen)[ele->lid()];
 
   elem_params.acin_vnp = e_acin_e_vnp;
   elem_params.acin_vn = e_acin_e_vn;
@@ -668,17 +668,17 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // Routine for computing pextn and pextnp
   if (evaluation_data.compute_awacinter)
   {
-    ComputePext(ele, pn, pnp, params);
-    elem_params.p_extn = (*evaluation_data.p_extn)[ele->LID()];
-    elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->LID()];
+    compute_pext(ele, pn, pnp, params);
+    elem_params.p_extn = (*evaluation_data.p_extn)[ele->lid()];
+    elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->lid()];
   }
 
   // Routine for open/collapsed decision
   const double airwayColl = airway_params.airway_coll;
   if (airwayColl == 1)
   {
-    EvaluateCollapse(ele, epnp, params, dt);
-    elem_params.open = (*evaluation_data.open)[ele->LID()];
+    evaluate_collapse(ele, epnp, params, dt);
+    elem_params.open = (*evaluation_data.open)[ele->lid()];
   }
 
   // ---------------------------------------------------------------------
@@ -695,20 +695,20 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::ParameterList& params,
+void Discret::ELEMENTS::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto airway_params = ele->GetAirwayParams();
+  const auto airway_params = ele->get_airway_params();
 
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
-  ele->LocationVector(discretization, lm, *lmowner, lmstride);
+  ele->location_vector(discretization, lm, *lmowner, lmstride);
 
   // Calculate the length of airway element
   const double L = GetElementLength<distype>(ele);
@@ -727,7 +727,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Pa
   {
     int gid = lm[1];
     double val = 0.0;
-    if (myrank == ele->Nodes()[1]->Owner())
+    if (myrank == ele->nodes()[1]->owner())
     {
       evaluation_data.p0np->ReplaceGlobalValues(1, &val, &gid);
       evaluation_data.p0n->ReplaceGlobalValues(1, &val, &gid);
@@ -748,7 +748,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Pa
   //--------------------------------------------------------------------
   //  if(myrank == ele->Owner())
   {
-    int gid = ele->Id();
+    int gid = ele->id();
     const int generation = airway_params.generation;
 
     double val = double(generation);
@@ -770,21 +770,21 @@ void Discret::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Pa
  |                                                         roth 12/2015 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
+void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_collapse(
     RedAirway* ele, Core::LinAlg::SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto airway_params = ele->GetAirwayParams();
+  const auto airway_params = ele->get_airway_params();
 
   const double s_c = airway_params.s_close;
   const double s_o = airway_params.s_open;
   const double Pcrit_o = airway_params.p_crit_open;
   const double Pcrit_c = airway_params.p_crit_close;
 
-  double xnp = (*evaluation_data.x_np)[ele->LID()];
-  double xn = (*evaluation_data.x_n)[ele->LID()];
-  double opennp = (*evaluation_data.open)[ele->LID()];
+  double xnp = (*evaluation_data.x_np)[ele->lid()];
+  double xn = (*evaluation_data.x_n)[ele->lid()];
+  double opennp = (*evaluation_data.open)[ele->lid()];
 
   // as decisive quantity the pressure value at the first node of the airway element is chosen;
   // using the mean pressure of the airway element caused convergence problems
@@ -819,7 +819,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
     opennp = 0;
   }
 
-  int gid = ele->Id();
+  int gid = ele->id();
   evaluation_data.x_np->ReplaceGlobalValues(1, &xnp, &gid);
   evaluation_data.open->ReplaceGlobalValues(1, &opennp, &gid);
 }
@@ -830,7 +830,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
  |                                                         roth 02/2016 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
+void Discret::ELEMENTS::AirwayImpl<distype>::compute_pext(RedAirway* ele,
     Teuchos::RCP<const Epetra_Vector> pn, Teuchos::RCP<const Epetra_Vector> pnp,
     Teuchos::ParameterList& params)
 {
@@ -838,14 +838,14 @@ void Discret::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
       Discret::ReducedLung::EvaluationData::get();
 
   // get node-Id of nearest acinus
-  int node_id = (*evaluation_data.airway_acinus_dep)[ele->LID()];
+  int node_id = (*evaluation_data.airway_acinus_dep)[ele->lid()];
 
   // Set pextn and pextnp
   double pextnp = (*pnp)[node_id];
   double pextn = (*pn)[node_id];
 
 
-  int gid = ele->Id();
+  int gid = ele->id();
   evaluation_data.p_extnp->ReplaceGlobalValues(1, &pextnp, &gid);
   evaluation_data.p_extn->ReplaceGlobalValues(1, &pextn, &gid);
 }
@@ -855,11 +855,11 @@ void Discret::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
+void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -873,7 +873,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
   // the number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
+  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
 
   if (pn == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pn'");
 
@@ -892,25 +892,25 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
   }
 
   Core::LinAlg::SerialDenseVector eqn(2);
-  eqn(0) = (*evaluation_data.qin_n)[ele->LID()];
-  eqn(1) = (*evaluation_data.qout_n)[ele->LID()];
+  eqn(0) = (*evaluation_data.qin_n)[ele->lid()];
+  eqn(1) = (*evaluation_data.qout_n)[ele->lid()];
   // ---------------------------------------------------------------------------------
   // Resolve the BCs
   // ---------------------------------------------------------------------------------
   for (int i = 0; i < ele->num_node(); i++)
   {
-    if (ele->Nodes()[i]->Owner() == myrank)
+    if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") ||
-          ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond") ||
-          ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond"))
+      if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond") ||
+          ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond") ||
+          ele->nodes()[i]->get_condition("RedAirwayVentilatorCond"))
       {
         std::string Bc;
         double BCin = 0.0;
-        if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+        if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
         {
           Core::Conditions::Condition* condition =
-              ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+              ele->nodes()[i]->get_condition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("boundarycond"));
 
@@ -918,7 +918,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           {
             // get switch condition variables
             Core::Conditions::Condition* switchCondition =
-                ele->Nodes()[i]->GetCondition("RedAirwaySwitchFlowPressureCond");
+                ele->nodes()[i]->get_condition("RedAirwaySwitchFlowPressureCond");
 
             const int funct_id_flow = switchCondition->parameters().get<int>("FUNCT_ID_FLOW");
             const int funct_id_pressure =
@@ -927,8 +927,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                 switchCondition->parameters().get<int>("FUNCT_ID_PRESSURE_ACTIVE");
 
             const double pressure_active =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_switch - 1)
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfTime>(funct_id_switch - 1)
                     .evaluate(time);
 
             int funct_id_current = 0;
@@ -953,8 +953,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               exit(1);
             }
 
-            BCin = Global::Problem::Instance()
-                       ->FunctionById<Core::UTILS::FunctionOfTime>(funct_id_current - 1)
+            BCin = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfTime>(funct_id_current - 1)
                        .evaluate(time);
           }
           else
@@ -963,7 +963,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             // Read in the value of the applied BC
             //  Val = curve1*val1 + curve2*func
             // -----------------------------------------------------------------
-            const auto* curve = condition->parameters().GetIf<std::vector<int>>("curve");
+            const auto* curve = condition->parameters().get_if<std::vector<int>>("curve");
             const auto* vals = &condition->parameters().get<std::vector<double>>("val");
 
             // get factor of curve1 or curve2
@@ -973,8 +973,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
               if (curve)
               {
                 if ((curvenum = (*curve)[id]) >= 0)
-                  return Global::Problem::Instance()
-                      ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
+                  return Global::Problem::instance()
+                      ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
                       .evaluate(time);
                 else
                   return 1.0;
@@ -989,12 +989,12 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                 {
                   int functnum = -1;
                   const std::vector<int>* functions =
-                      condition->parameters().GetIf<std::vector<int>>("funct");
+                      condition->parameters().get_if<std::vector<int>>("funct");
                   if (functions)
                     if ((functnum = (*functions)[0]) > 0)
-                      return Global::Problem::Instance()
-                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .evaluate((ele->Nodes()[i])->X().data(), time, 0);
+                      return Global::Problem::instance()
+                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          .evaluate((ele->nodes()[i])->x().data(), time, 0);
                     else
                       return 0.0;
                   else
@@ -1006,18 +1006,18 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
           // -----------------------------------------------------------------------------
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
+                discretization.get_comm().MyPID());
             exit(1);
           }
         }
-        else if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+        else if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
         {
           const Core::Conditions::Condition* condition =
-              ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+              ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
 
           Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
               params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
@@ -1078,10 +1078,10 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             }
           }
         }
-        else if (ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond"))
+        else if (ele->nodes()[i]->get_condition("RedAirwayVentilatorCond"))
         {
           Core::Conditions::Condition* condition =
-              ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
+              ele->nodes()[i]->get_condition("RedAirwayVentilatorCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("phase1"));
 
@@ -1103,7 +1103,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             Bc = (condition->parameters().get<std::string>("phase2"));
           }
 
-          const auto* curve = condition->parameters().GetIf<std::vector<int>>("curve");
+          const auto* curve = condition->parameters().get_if<std::vector<int>>("curve");
           double curvefac = 1.0;
           const auto* vals = &condition->parameters().get<std::vector<double>>("val");
 
@@ -1113,8 +1113,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           int curvenum = -1;
           if (curve) curvenum = (*curve)[phase_number];
           if (curvenum >= 0)
-            curvefac = Global::Problem::Instance()
-                           ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
+            curvefac = Global::Problem::instance()
+                           ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
                            .evaluate(time);
 
           BCin = (*vals)[phase_number] * curvefac;
@@ -1127,10 +1127,10 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             if (fmod(time, period) < period1)
             {
               double Vnp = BCin;
-              double Vn =
-                  (*vals)[phase_number] * Global::Problem::Instance()
-                                              ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
-                                              .evaluate(time - dt);
+              double Vn = (*vals)[phase_number] *
+                          Global::Problem::instance()
+                              ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                              .evaluate(time - dt);
               BCin = (Vnp - Vn) / dt;
               Bc = "flow";
             }
@@ -1185,11 +1185,11 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
           // -----------------------------------------------------------------------------
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i]->id(),
+                discretization.get_comm().MyPID());
             exit(1);
           }
         }
@@ -1220,7 +1220,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // (which is the number of branches). Thus the sum of the
           // final added values is the actual prescribed flow.
           // ----------------------------------------------------------
-          int numOfElems = (ele->Nodes()[i])->NumElement();
+          int numOfElems = (ele->nodes()[i])->num_element();
           BCin /= double(numOfElems);
 
           rhs(i) += -BCin + rhs(i);
@@ -1237,17 +1237,17 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         // If the node is a terminal node, but no b.c is prescribed to it
         // then a zero output pressure is assumed
         // ---------------------------------------------------------------
-        if (ele->Nodes()[i]->NumElement() == 1)
+        if (ele->nodes()[i]->num_element() == 1)
         {
           // -------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
           // -------------------------------------------------------------
 
-          int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
           if (local_id < 0)
           {
-            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
-                discretization.Comm().MyPID());
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->nodes()[i],
+                discretization.get_comm().MyPID());
             exit(1);
           }
 
@@ -1275,7 +1275,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
+void Discret::ELEMENTS::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1297,9 +1297,9 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -1334,23 +1334,23 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   for (int i = 0; i < elemVecdim; ++i)
   {
     // split area and volumetric flow rate, insert into element arrays
-    e_acin_vnp = (*evaluation_data.acinar_vnp)[ele->LID()];
-    e_acin_vn = (*evaluation_data.acinar_vn)[ele->LID()];
+    e_acin_vnp = (*evaluation_data.acinar_vnp)[ele->lid()];
+    e_acin_vn = (*evaluation_data.acinar_vn)[ele->lid()];
   }
 
 
   // get the volumetric flow rate from the previous time step
   Discret::ReducedLung::ElemParams elem_params;
-  elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
-  elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
-  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
-  elem_params.qin_np = (*evaluation_data.qin_np)[ele->LID()];
-  elem_params.qin_n = (*evaluation_data.qin_n)[ele->LID()];
-  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->LID()];
+  elem_params.qout_np = (*evaluation_data.qout_np)[ele->lid()];
+  elem_params.qout_n = (*evaluation_data.qout_n)[ele->lid()];
+  elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->lid()];
+  elem_params.qin_np = (*evaluation_data.qin_np)[ele->lid()];
+  elem_params.qin_n = (*evaluation_data.qin_n)[ele->lid()];
+  elem_params.qin_nm = (*evaluation_data.qin_nm)[ele->lid()];
 
   // TODO same volume is used is this correct?
-  elem_params.volnp = (*evaluation_data.elemVolumenp)[ele->LID()];
-  elem_params.voln = (*evaluation_data.elemVolumenp)[ele->LID()];
+  elem_params.volnp = (*evaluation_data.elemVolumenp)[ele->lid()];
+  elem_params.voln = (*evaluation_data.elemVolumenp)[ele->lid()];
 
   elem_params.acin_vnp = e_acin_vnp;
   elem_params.acin_vn = e_acin_vn;
@@ -1359,12 +1359,12 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   elem_params.lungVolume_n = 0.0;
   elem_params.lungVolume_nm = 0.0;
 
-  elem_params.x_np = (*evaluation_data.x_np)[ele->LID()];
-  elem_params.x_n = (*evaluation_data.x_n)[ele->LID()];
-  elem_params.open = (*evaluation_data.open)[ele->LID()];
+  elem_params.x_np = (*evaluation_data.x_np)[ele->lid()];
+  elem_params.x_n = (*evaluation_data.x_n)[ele->lid()];
+  elem_params.open = (*evaluation_data.open)[ele->lid()];
 
-  elem_params.p_extn = (*evaluation_data.p_extn)[ele->LID()];
-  elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->LID()];
+  elem_params.p_extn = (*evaluation_data.p_extn)[ele->lid()];
+  elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->lid()];
 
   Core::LinAlg::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
   Core::LinAlg::SerialDenseVector rhs(elemVecdim);
@@ -1379,7 +1379,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   double qinnp = -1.0 * (sysmat(0, 0) * epnp(0) + sysmat(0, 1) * epnp(1) - rhs(0));
   double qoutnp = 1.0 * (sysmat(1, 0) * epnp(0) + sysmat(1, 1) * epnp(1) - rhs(1));
 
-  int gid = ele->Id();
+  int gid = ele->id();
 
   evaluation_data.qin_np->ReplaceGlobalValues(1, &qinnp, &gid);
   evaluation_data.qout_np->ReplaceGlobalValues(1, &qoutnp, &gid);
@@ -1391,7 +1391,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
  |  rates.                                                              |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
+void Discret::ELEMENTS::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1399,19 +1399,19 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
-  const auto airway_params = ele->GetAirwayParams();
+  const auto airway_params = ele->get_airway_params();
 
   // extract all essential element variables from their corresponding variables
-  double qinnp = (*evaluation_data.qin_np)[ele->LID()];
-  double qoutnp = (*evaluation_data.qout_np)[ele->LID()];
-  double eVolumen = (*evaluation_data.elemVolumen)[ele->LID()];
-  double eVolumenp = (*evaluation_data.elemVolumenp)[ele->LID()];
+  double qinnp = (*evaluation_data.qin_np)[ele->lid()];
+  double qoutnp = (*evaluation_data.qout_np)[ele->lid()];
+  double eVolumen = (*evaluation_data.elemVolumen)[ele->lid()];
+  double eVolumenp = (*evaluation_data.elemVolumenp)[ele->lid()];
 
   // get time-step size
   const double dt = evaluation_data.dt;
 
   // get element global ID
-  int gid = ele->Id();
+  int gid = ele->id();
 
   // -------------------------------------------------------------------
   // find the change of volume from the conservation equation
@@ -1454,11 +1454,11 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
+void Discret::ELEMENTS::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -1469,7 +1469,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
   // the number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
 
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
@@ -1492,12 +1492,12 @@ void Discret::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
   // ---------------------------------------------------------------------------------
   for (int i = 0; i < ele->num_node(); i++)
   {
-    if (ele->Nodes()[i]->Owner() == myrank)
+    if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+      if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
       {
         const Core::Conditions::Condition* condition =
-            ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
+            ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------
@@ -1597,9 +1597,9 @@ void Discret::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* 
       Discret::ReducedLung::EvaluationData::get();
 
   // get the elements Qin and Qout
-  double qoutnp = (*evaluation_data.qout_np)[ele->LID()];
-  double qinnp = (*evaluation_data.qin_np)[ele->LID()];
-  double evolnp = (*evaluation_data.elemVolumenp)[ele->LID()];
+  double qoutnp = (*evaluation_data.qout_np)[ele->lid()];
+  double qinnp = (*evaluation_data.qin_np)[ele->lid()];
+  double evolnp = (*evaluation_data.elemVolumenp)[ele->lid()];
 
   //--------------------------------------------------------------------
   // get element length
@@ -1619,15 +1619,15 @@ void Discret::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* 
   for (int i = 0; i < iel; i++)
   {
     {
-      if (ele->Nodes()[i]->NumElement() == 1) volumeMix_np(i) = evolnp / L;
+      if (ele->nodes()[i]->num_element() == 1) volumeMix_np(i) = evolnp / L;
     }
   }
 
-  if (ele->Nodes()[0]->GetCondition("RedAirwayPrescribedScatraCond"))
+  if (ele->nodes()[0]->get_condition("RedAirwayPrescribedScatraCond"))
   {
     if (qinnp >= 0) volumeMix_np(0) = evolnp / L;
   }
-  if (ele->Nodes()[1]->GetCondition("RedAirwayPrescribedScatraCond"))
+  if (ele->nodes()[1]->get_condition("RedAirwayPrescribedScatraCond"))
   {
     if (qoutnp < 0) volumeMix_np(1) = evolnp / L;
   }
@@ -1638,17 +1638,17 @@ void Discret::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* 
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, std::vector<int>& lm,
+void Discret::ELEMENTS::AirwayImpl<distype>::calc_cfl(RedAirway* ele,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
 
   // get the elements Qin and Qout
-  double q_outnp = (*evaluation_data.qout_np)[ele->LID()];
-  double q_innp = (*evaluation_data.qin_np)[ele->LID()];
-  double eVolnp = (*evaluation_data.elemVolumenp)[ele->LID()];
+  double q_outnp = (*evaluation_data.qout_np)[ele->lid()];
+  double q_innp = (*evaluation_data.qin_np)[ele->lid()];
+  double eVolnp = (*evaluation_data.elemVolumenp)[ele->lid()];
 
 
   // get time step size
@@ -1677,8 +1677,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::Pa
   cflmax = (cfl1np > cflmax) ? cfl1np : cflmax;
   cflmax = (cfl2np > cflmax) ? cfl2np : cflmax;
 
-  int gid = ele->Id();
-  if (ele->Nodes()[1]->Owner()) evaluation_data.cfl->ReplaceGlobalValues(1, &cflmax, &gid);
+  int gid = ele->id();
+  if (ele->nodes()[1]->owner()) evaluation_data.cfl->ReplaceGlobalValues(1, &cflmax, &gid);
 }
 
 
@@ -1691,21 +1691,21 @@ void Discret::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  const int myrank = discretization.Comm().MyPID();
+  const int myrank = discretization.get_comm().MyPID();
 
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
   // ---------------------------------------------------------------------
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr ||
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr)
+  if (ele->nodes()[0]->get_condition("RedAirwayScatraCapillaryCond") == nullptr ||
+      ele->nodes()[1]->get_condition("RedAirwayScatraCapillaryCond") == nullptr)
   {
     return;
   }
   else
   {
-    Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
-    Teuchos::RCP<const Epetra_Vector> avgscatranp = discretization.GetState("avg_scatranp");
-    Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
+    Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
+    Teuchos::RCP<const Epetra_Vector> avgscatranp = discretization.get_state("avg_scatranp");
+    Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
 
     Discret::ReducedLung::EvaluationData& evaluation_data =
         Discret::ReducedLung::EvaluationData::get();
@@ -1743,7 +1743,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
       int gid = lm[i];
       mydscatranp[i] = scatra_avg - myscatranp[i];
       double val = mydscatranp[i];
-      if (myrank == ele->Nodes()[i]->Owner())
+      if (myrank == ele->nodes()[i]->owner())
       {
         evaluation_data.dscatranp->ReplaceGlobalValues(1, &val, &gid);
       }
@@ -1754,23 +1754,23 @@ void Discret::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
+void Discret::ELEMENTS::AirwayImpl<distype>::update_elem12_scatra(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
   // ---------------------------------------------------------------------
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr ||
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr)
+  if (ele->nodes()[0]->get_condition("RedAirwayScatraCapillaryCond") == nullptr ||
+      ele->nodes()[1]->get_condition("RedAirwayScatraCapillaryCond") == nullptr)
   {
     return;
   }
 
 
-  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
-  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
+  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.get_state("junctionVolumeInMix");
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -1793,7 +1793,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
   double e1s = myscatranp[0];
   double e2s = myscatranp[1];
 
-  int gid = ele->Id();
+  int gid = ele->id();
   evaluation_data.e1scatranp->ReplaceGlobalValues(1, &e1s, &gid);
   evaluation_data.e2scatranp->ReplaceGlobalValues(1, &e2s, &gid);
 }
@@ -1813,8 +1813,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirw
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
   // ---------------------------------------------------------------------
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr ||
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr)
+  if (ele->nodes()[0]->get_condition("RedAirwayScatraCapillaryCond") == nullptr ||
+      ele->nodes()[1]->get_condition("RedAirwayScatraCapillaryCond") == nullptr)
   {
     return;
   }
@@ -1828,7 +1828,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirw
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
 
   // ---------------------------------------------------------------------
   // extract scatra values
@@ -1837,8 +1837,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirw
   std::vector<double> myscatranp(lm.size());
   Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
-  double qin = (*evaluation_data.qin_np)[ele->LID()];
-  double eVolnp = (*evaluation_data.elemVolumenp)[ele->LID()];
+  double qin = (*evaluation_data.qin_np)[ele->lid()];
+  double eVolnp = (*evaluation_data.elemVolumenp)[ele->lid()];
 
   // ---------------------------------------------------------------------
   // get volume of capillaries

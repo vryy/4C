@@ -107,19 +107,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
     // Factor to account for the integration segment length.
-    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].get_segment_length();
 
     // Gauss point loop.
-    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].GetProjectionPoints().size();
+    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].get_projection_points().size();
     for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
+          projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
@@ -129,12 +129,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
       N_beam.clear();
       N_surface.clear();
       GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
-          N_mortar, projected_gauss_point.GetEta());
+          N_mortar, projected_gauss_point.get_eta());
       GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
-          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
+          N_beam, projected_gauss_point.get_eta(), this->ele1pos_.shape_function_data_);
       GEOMETRYPAIR::EvaluateShapeFunction<Surface>::evaluate(N_surface,
-          projected_gauss_point.GetXi(),
-          this->face_element_->GetFaceElementData().shape_function_data_);
+          projected_gauss_point.get_xi(),
+          this->face_element_->get_face_element_data().shape_function_data_);
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -146,7 +146,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
                     i_beam_node * Beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                     N_beam(i_beam_node * Beam::n_val_ + i_beam_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                    projected_gauss_point.get_gauss_weight() * segment_jacobian;
 
       // Fill in the local templated mortar matrix M.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
                     i_surface_node * Surface::n_val_ * 3 + i_surface_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                     N_surface(i_surface_node * Surface::n_val_ + i_surface_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                    projected_gauss_point.get_gauss_weight() * segment_jacobian;
 
       // Fill in the local templated mortar scaling vector kappa.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -167,7 +167,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             local_kappa(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
                 N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
-                projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                projected_gauss_point.get_gauss_weight() * segment_jacobian;
     }
   }
 
@@ -175,21 +175,21 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
   // positions / displacements to get the actual constraint terms for this pair.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, double> beam_coupling_dof(true);
   Core::LinAlg::Matrix<Surface::n_dof_, 1, double> surface_coupling_dof(true);
-  switch (this->Params()->beam_to_solid_surface_meshtying_params()->GetCouplingType())
+  switch (this->params()->beam_to_solid_surface_meshtying_params()->get_coupling_type())
   {
     case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
       beam_coupling_dof = Core::FADUtils::CastToDouble(this->ele1pos_.element_position_);
-      surface_coupling_dof =
-          Core::FADUtils::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
+      surface_coupling_dof = Core::FADUtils::CastToDouble(
+          this->face_element_->get_face_element_data().element_position_);
       break;
     }
     case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement:
     {
       beam_coupling_dof = Core::FADUtils::CastToDouble(this->ele1pos_.element_position_);
       beam_coupling_dof -= this->ele1posref_.element_position_;
-      surface_coupling_dof =
-          Core::FADUtils::CastToDouble(this->face_element_->GetFaceElementData().element_position_);
+      surface_coupling_dof = Core::FADUtils::CastToDouble(
+          this->face_element_->get_face_element_data().element_position_);
       surface_coupling_dof -=
           this->face_element_->get_face_reference_element_data().element_position_;
       break;

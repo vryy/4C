@@ -31,29 +31,29 @@ namespace PoroElast
     template <class PoroCloneStrategy>
     void SetupPoro(bool setmaterialpointers = true)
     {
-      Global::Problem* problem = Global::Problem::Instance();
+      Global::Problem* problem = Global::Problem::instance();
 
       // access the problem-specific parameter list
       const Teuchos::ParameterList& porodyn =
-          Global::Problem::Instance()->poroelast_dynamic_params();
+          Global::Problem::instance()->poroelast_dynamic_params();
       const bool matchinggrid = Core::UTILS::IntegralValue<bool>(porodyn, "MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
       Teuchos::RCP<Core::FE::Discretization> structdis;
-      structdis = problem->GetDis("structure");
+      structdis = problem->get_dis("structure");
       // set degrees of freedom in the discretization
-      if (!structdis->Filled() or !structdis->HaveDofs()) structdis->fill_complete();
+      if (!structdis->filled() or !structdis->have_dofs()) structdis->fill_complete();
 
       // access the fluid discretization
       Teuchos::RCP<Core::FE::Discretization> fluiddis;
-      fluiddis = problem->GetDis("porofluid");
-      if (!fluiddis->Filled()) fluiddis->fill_complete();
+      fluiddis = problem->get_dis("porofluid");
+      if (!fluiddis->filled()) fluiddis->fill_complete();
 
       // we use the structure discretization as layout for the fluid discretization
-      if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
+      if (structdis->num_global_nodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
 
       // create fluid elements if the fluid discretization is empty
-      if (fluiddis->NumGlobalNodes() == 0)
+      if (fluiddis->num_global_nodes() == 0)
       {
         if (!matchinggrid)
         {
@@ -64,7 +64,7 @@ namespace PoroElast
 
         // create fluid discretization
         Core::FE::CloneDiscretization<PoroCloneStrategy>(
-            structdis, fluiddis, Global::Problem::Instance()->CloningMaterialMap());
+            structdis, fluiddis, Global::Problem::instance()->cloning_material_map());
         fluiddis->fill_complete();
 
         // set material pointers
@@ -73,8 +73,8 @@ namespace PoroElast
 
         // if one discretization is a subset of the other, they will differ in node number (and
         // element number) we assume matching grids for the overlapping part here
-        const Epetra_Map* structnodecolmap = structdis->NodeColMap();
-        const Epetra_Map* fluidnodecolmap = fluiddis->NodeColMap();
+        const Epetra_Map* structnodecolmap = structdis->node_col_map();
+        const Epetra_Map* fluidnodecolmap = fluiddis->node_col_map();
 
         const int numglobalstructnodes = structnodecolmap->NumGlobalElements();
         const int numglobalfluidnodes = fluidnodecolmap->NumGlobalElements();
@@ -88,27 +88,28 @@ namespace PoroElast
         if (numglobalstructnodes != numglobalfluidnodes)
         {
           Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
-              new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+              new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->get_dof_set_proxy()));
           Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
-              new Core::DOFSets::DofSetGIDBasedWrapper(fluiddis, fluiddis->GetDofSetProxy()));
+              new Core::DOFSets::DofSetGIDBasedWrapper(fluiddis, fluiddis->get_dof_set_proxy()));
 
           // check if fluid_field has 2 discretizations, so that coupling is possible
-          if (fluiddis->AddDofSet(structsubdofset) != 1)
+          if (fluiddis->add_dof_set(structsubdofset) != 1)
             FOUR_C_THROW("unexpected dof sets in fluid field");
-          if (structdis->AddDofSet(fluidsubdofset) != 1)
+          if (structdis->add_dof_set(fluidsubdofset) != 1)
             FOUR_C_THROW("unexpected dof sets in structure field");
         }
         else
         {
           // build a proxy of the structure discretization for the fluid field
-          Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+          Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset =
+              structdis->get_dof_set_proxy();
           // build a proxy of the fluid discretization for the structure field
-          Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
+          Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
 
           // check if fluid_field has 2 discretizations, so that coupling is possible
-          if (fluiddis->AddDofSet(structdofset) != 1)
+          if (fluiddis->add_dof_set(structdofset) != 1)
             FOUR_C_THROW("unexpected dof sets in fluid field");
-          if (structdis->AddDofSet(fluiddofset) != 1)
+          if (structdis->add_dof_set(fluiddofset) != 1)
             FOUR_C_THROW("unexpected dof sets in structure field");
         }
 
@@ -130,19 +131,20 @@ namespace PoroElast
         fluiddis->fill_complete();
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
-        const int ndofpernode_fluid = Global::Problem::Instance()->NDim() + 1;
+        const int ndofpernode_fluid = Global::Problem::instance()->n_dim() + 1;
         const int ndofperelement_fluid = 0;
-        const int ndofpernode_struct = Global::Problem::Instance()->NDim();
+        const int ndofpernode_struct = Global::Problem::instance()->n_dim();
         const int ndofperelement_struct = 0;
 
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
-        if (structdis->AddDofSet(dofsetaux) != 1)
+        if (structdis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in structure field");
         dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_struct, ndofperelement_struct, 0, true));
-        if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
+        if (fluiddis->add_dof_set(dofsetaux) != 1)
+          FOUR_C_THROW("unexpected dof sets in fluid field");
 
         // call assign_degrees_of_freedom also for auxiliary dofsets
         // note: the order of fill_complete() calls determines the gid numbering!

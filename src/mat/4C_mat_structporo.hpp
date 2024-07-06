@@ -59,11 +59,11 @@ namespace Mat
   class StructPoroType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "StructPoroType"; }
+    std::string name() const override { return "StructPoroType"; }
 
-    static StructPoroType& Instance() { return instance_; }
+    static StructPoroType& instance() { return instance_; }
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static StructPoroType instance_;
@@ -113,9 +113,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return StructPoroType::Instance().UniqueParObjectId();
+      return StructPoroType::instance().unique_par_object_id();
     }
 
     /*!
@@ -123,7 +123,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -137,7 +137,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -147,31 +147,31 @@ namespace Mat
     //!@}
 
     //! material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_structporo;
     }
 
     //! poro law type
-    virtual Core::Materials::MaterialType PoroLawType() const;
+    virtual Core::Materials::MaterialType poro_law_type() const;
 
     //! return inverse bulk modulus (=compressibility)
-    double InvBulkModulus() const;
+    double inv_bulk_modulus() const;
 
     //! check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override { mat_->ValidKinematics(kinem); }
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override { mat_->valid_kinematics(kinem); }
 
     //! return material
-    Teuchos::RCP<Core::Mat::Material> GetMaterial() const { return mat_; }
+    Teuchos::RCP<Core::Mat::Material> get_material() const { return mat_; }
 
     //! return material ID
-    int MatID() const { return params_->matid_; }
+    int mat_id() const { return params_->matid_; }
 
     //! return porosity average (for post processing only!)
-    double PorosityAv() const;
+    double porosity_av() const;
 
     //! return initial porosity
-    double InitPorosity() const { return params_->init_porosity_; }
+    double init_porosity() const { return params_->init_porosity_; }
 
     //! return time derivative of reference porosity (only nonzero with reaction)
     virtual double ref_porosity_time_deriv() const { return 0.0; }
@@ -199,8 +199,8 @@ namespace Mat
         bool save = true);
 
     //! compute current surface porosity and save it
-    void ComputeSurfPorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
-        double press,                                         //!< (i) pressure at gauss point
+    void compute_surf_porosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                           //!< (i) pressure at gauss point
         double J,           //!< (i) determinant of jacobian at gauss point
         const int surfnum,  //!< (i) number of surface
         int gp,             //!< (i) number of current gauss point
@@ -214,8 +214,8 @@ namespace Mat
         bool save = true);
 
     //! compute current surface porosity and save it
-    void ComputeSurfPorosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
-        double press,                                         //!< (i) pressure at gauss point
+    void compute_surf_porosity(Teuchos::ParameterList& params,  //!< (i) element parameter list
+        double press,                                           //!< (i) pressure at gauss point
         double J,           //!< (i) determinant of jacobian at gauss point
         const int surfnum,  //!< (i) number of surface
         int gp,             //!< (i) number of current gauss point
@@ -223,7 +223,7 @@ namespace Mat
         bool save = true);
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new StructPoro(*this));
     }
@@ -239,7 +239,7 @@ namespace Mat
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const Core::LinAlg::Matrix<3, 3>& defgrd, const double& press,
+    void coupl_stress(const Core::LinAlg::Matrix<3, 3>& defgrd, const double& press,
         Core::LinAlg::Matrix<6, 1>& couplstress) const;
 
     /*!
@@ -249,7 +249,7 @@ namespace Mat
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const Core::LinAlg::Matrix<2, 2>& defgrd, const double& press,
+    void coupl_stress(const Core::LinAlg::Matrix<2, 2>& defgrd, const double& press,
         Core::LinAlg::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives
@@ -278,7 +278,7 @@ namespace Mat
     );
 
     //! Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! @name Evaluation methods
 
@@ -290,10 +290,10 @@ namespace Mat
       mat_->evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
     }
 
-    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
+    void strain_energy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
         const int EleID) override
     {
-      mat_->StrainEnergy(glstrain, psi, gp, EleID);
+      mat_->strain_energy(glstrain, psi, gp, EleID);
     }
 
     void evaluate_cauchy_n_dir_and_derivatives(const Core::LinAlg::Matrix<3, 3>& defgrd,
@@ -315,8 +315,8 @@ namespace Mat
     //!@}
 
     //! Return material density (if provided by the specific material)
-    double Density() const override;
-    virtual double DensitySolidPhase() const;
+    double density() const override;
+    virtual double density_solid_phase() const;
 
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material
@@ -336,9 +336,10 @@ namespace Mat
 
     //! @name Visualization methods
 
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //!@}
 

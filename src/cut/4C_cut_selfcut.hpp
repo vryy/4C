@@ -40,30 +40,30 @@ namespace Core::Geo
       //! @name Main routines to run the self cut
       /*========================================================================*/
 
-      void PerformSelfCut();
+      void perform_self_cut();
 
       /// detects cutsides which cut each other by finding the respective cutpoints
-      bool CollisionDetection();
+      bool collision_detection();
 
       /// replaces cutted sides by creating new nodes, edges and sides
-      void MeshIntersection();
+      void mesh_intersection();
 
       /// erases nodes, edges and sides which lies inside a structure body by locating there
       /// position
-      void ElementSelection();
+      void element_selection();
 
       /// repair the mesh from potential islands
-      void MeshCorrection();
+      void mesh_correction();
 
       /// represents the result by using text viewer or gmsh
-      void StatusInspection();
+      void status_inspection();
 
       /*========================================================================*/
       //! @name Basic routines to run the collision detection
       /*========================================================================*/
 
       /// finds cutsides which possibly cuts the considered side
-      void FindCuttingSides();
+      void find_cutting_sides();
 
       /// if there are two nodes from cut sides are at the same position, we merge it into one node
       bool merge_coinciding_nodes(Side* keep, Side* replace);
@@ -74,37 +74,37 @@ namespace Core::Geo
 
       /// templated function to delete "nod" by "replwith" in both edge and side data-structures
       template <typename A, typename B>
-      void ModifyEdgeOrSideMap(std::map<A, B>& data, int nod, int replwith);
+      void modify_edge_or_side_map(std::map<A, B>& data, int nod, int replwith);
 
       /// finds cutpoints by searching the intersection between the edges of one side with the other
       /// side and vice versa
-      void FindSelfCutPoints();
+      void find_self_cut_points();
 
       /// gets all cutted sides and there nodes and edges to store them as privat variables
-      void GetSelfCutObjects();
+      void get_self_cut_objects();
 
       /*========================================================================*/
       //! @name Basic routines to run the mesh intersection
       /*========================================================================*/
 
       /// creates a node at every selfcutpoint with respect to the corresponding cutsides
-      void CreateSelfCutNodes();
+      void create_self_cut_nodes();
 
       /// creates a edge between two selfcutnodes with respect to the corresponding cutsides
-      void CreateSelfCutEdges();
+      void create_self_cut_edges();
 
       /// finds triangles with respect to the self cut by using a pointgraph and a triangulation
       /// method
       void find_self_cut_triangulation();
 
       /// creates triangular sides out of the self cut triangles
-      void CreateSelfCutSides();
+      void create_self_cut_sides();
 
       /// erases all cutsides which are cut by another side
-      void EraseCuttedSides();
+      void erase_cutted_sides();
 
       /// erases all edges which are cut by a cutside
-      void EraseCuttedEdges();
+      void erase_cutted_edges();
 
       /// Is this edge connected to the backgound mesh
       bool connectedto_background(Edge* edge);
@@ -124,25 +124,25 @@ namespace Core::Geo
       void propagate_self_cut_position();
 
       /// erases sides which lies inside a structure body by locating there position
-      void EraseInsideSides();
+      void erase_inside_sides();
 
       /// erases edges which lies inside a structure body by locating there position
-      void EraseInsideEdges();
+      void erase_inside_edges();
 
       /// erases nodes which lies inside a structure body by locating there position
-      void EraseInsideNodes();
+      void erase_inside_nodes();
 
       /// construct the connectivity of the nodes toi find potential islands in the cut mesh
       void construct_connectivity();
 
       /// find the next node for the construction of the connectivity
-      void NextNode(Node* node, plain_node_set& remainingnodes, int count);
+      void next_node(Node* node, plain_node_set& remainingnodes, int count);
 
       /// identify the islands
-      void FindIslands();
+      void find_islands();
 
       /// Get next Sides
-      void NextSides(Side* cutside, Teuchos::RCP<Core::Geo::Cut::BoundingBox>& tmpbb,
+      void next_sides(Side* cutside, Teuchos::RCP<Core::Geo::Cut::BoundingBox>& tmpbb,
           // plain_side_set allselfcutsides,
           plain_side_set& selfcutsides, plain_side_set& islandsides, bool& IsIsland);
 
@@ -154,77 +154,77 @@ namespace Core::Geo
       void cutted_side_status_text();
 
       /// Status of the cutmesh for text viewer
-      void CutMeshStatusText();
+      void cut_mesh_status_text();
 
       /// Status of one problematic side for text viewer
-      void ErrorStatusText(Side& cutside);
+      void error_status_text(Side& cutside);
 
       /// Status of the cutted sides for gmsh
       void cutted_side_status_gmsh(const std::string& name);
 
       /// Status of the cutmesh in gmsh
-      void WallGmsh(const std::string& name);
+      void wall_gmsh(const std::string& name);
 
       /// Status of the selfcut objects in gmsh
-      void SCObjectsGmsh(const std::string& name);
+      void sc_objects_gmsh(const std::string& name);
 
       /// Status of the cutmesh in gmsh for my CMGM (old)
-      void SCmgmGmsh(const std::string& name);
+      void s_cmgm_gmsh(const std::string& name);
 
 
       /// Status of all sides in separates files for gmsh
-      void AllSingleGmsh(const std::string& location);
+      void all_single_gmsh(const std::string& location);
 
       /// Status of one problematic side for gmsh
-      void ErrorGmsh(const std::string& name, Side& cutside);
+      void error_gmsh(const std::string& name, Side& cutside);
 
       /*========================================================================*/
       //! @name Auxiliary routines to run the self cut
       /*========================================================================*/
 
       /// cuts the edges of the first cutside with the other cutside
-      void PerformSelfCut(Side& cutside, Side& otherside, PointSet& selfcutpoints);
+      void perform_self_cut(Side& cutside, Side& otherside, PointSet& selfcutpoints);
 
       /// gets the edges of the new created sides
-      void GetSelfCutEdges(Side& cutside);
+      void get_self_cut_edges(Side& cutside);
 
       /// checks if the direction of rotation of the cycle is correct
-      bool CheckNormal(std::vector<double> cutsideplane, Cycle& maincycle);
+      bool check_normal(std::vector<double> cutsideplane, Cycle& maincycle);
 
       /// deletes all pointers which are pointing to a soon to be erased side
-      void EraseSidePointer(Side& cutside, bool erase_nodepointers);
+      void erase_side_pointer(Side& cutside, bool erase_nodepointers);
 
       /// erases a side
-      void EraseSide(std::vector<plain_int_set>& cutsideids);
+      void erase_side(std::vector<plain_int_set>& cutsideids);
 
       /// erases a side which is in the unphysical part
-      void EraseInsideSide(std::vector<plain_int_set>& cutsideids);
+      void erase_inside_side(std::vector<plain_int_set>& cutsideids);
 
       /// deletes all pointers which are pointing to a soon to be erased edge
-      void EraseEdgePointer(Edge& cutsideedge);
+      void erase_edge_pointer(Edge& cutsideedge);
 
       /// erases an edge
-      void EraseEdge(std::vector<plain_int_set>& cutsideedgeids);
+      void erase_edge(std::vector<plain_int_set>& cutsideedgeids);
 
-      void PlotAcross();
+      void plot_across();
 
-      void PointPlotHead();
+      void point_plot_head();
 
-      void NodePlotHead();
+      void node_plot_head();
 
-      void EdgePlotHead();
+      void edge_plot_head();
 
-      void SidePlotHead();
+      void side_plot_head();
 
-      void PointPlot(Point& point);
+      void point_plot(Point& point);
 
-      void NodePlot(Node& node);
+      void node_plot(Node& node);
 
-      void EdgePlot(Edge& edge);
+      void edge_plot(Edge& edge);
 
-      void SidePlot(Side& side);
+      void side_plot(Side& side);
 
-      void SideNodePlot(Side& side);
+      void side_node_plot(Side& side);
 
 
      private:

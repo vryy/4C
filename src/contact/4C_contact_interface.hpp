@@ -68,131 +68,131 @@ namespace CONTACT
     /// @name Accessors
     /// @{
 
-    inline bool& IsSelfContact() { return selfcontact_; }
+    inline bool& is_self_contact() { return selfcontact_; }
 
-    inline bool IsSelfContact() const { return selfcontact_; }
+    inline bool is_self_contact() const { return selfcontact_; }
 
-    inline bool& IsFriction() { return friction_; }
+    inline bool& is_friction() { return friction_; }
 
-    inline bool IsFriction() const { return friction_; }
+    inline bool is_friction() const { return friction_; }
 
-    inline bool& IsNonSmoothContact() { return non_smooth_contact_; }
+    inline bool& is_non_smooth_contact() { return non_smooth_contact_; }
 
-    inline bool IsNonSmoothContact() const { return non_smooth_contact_; }
+    inline bool is_non_smooth_contact() const { return non_smooth_contact_; }
 
-    inline bool IsTwoHalfPass() const { return two_half_pass_; }
+    inline bool is_two_half_pass() const { return two_half_pass_; }
 
-    inline bool& IsTwoHalfPass() { return two_half_pass_; }
+    inline bool& is_two_half_pass() { return two_half_pass_; }
 
-    inline enum Inpar::CONTACT::ConstraintDirection& ConstraintDirection()
+    inline enum Inpar::CONTACT::ConstraintDirection& constraint_direction()
     {
       return constr_direction_;
     }
 
-    inline enum Inpar::CONTACT::ConstraintDirection ConstraintDirection() const
+    inline enum Inpar::CONTACT::ConstraintDirection constraint_direction() const
     {
       return constr_direction_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& ActiveNodes() { return activenodes_; }
+    inline Teuchos::RCP<Epetra_Map>& active_nodes() { return activenodes_; }
 
-    inline const Teuchos::RCP<Epetra_Map>& ActiveNodes() const { return activenodes_; }
+    inline const Teuchos::RCP<Epetra_Map>& active_nodes() const { return activenodes_; }
 
-    inline Teuchos::RCP<Epetra_Map>& ActiveDofs() { return activedofs_; }
+    inline Teuchos::RCP<Epetra_Map>& active_dofs() { return activedofs_; }
 
-    inline Teuchos::RCP<const Epetra_Map> ActiveDofs() const { return activedofs_; }
+    inline Teuchos::RCP<const Epetra_Map> active_dofs() const { return activedofs_; }
 
-    inline Teuchos::RCP<Epetra_Map>& InActiveNodes() { return inactivenodes_; }
+    inline Teuchos::RCP<Epetra_Map>& in_active_nodes() { return inactivenodes_; }
 
-    inline const Teuchos::RCP<Epetra_Map>& InActiveNodes() const { return inactivenodes_; }
+    inline const Teuchos::RCP<Epetra_Map>& in_active_nodes() const { return inactivenodes_; }
 
-    inline Teuchos::RCP<Epetra_Map>& InActiveDofs() { return inactivedofs_; }
+    inline Teuchos::RCP<Epetra_Map>& in_active_dofs() { return inactivedofs_; }
 
-    inline Teuchos::RCP<const Epetra_Map> InActiveDofs() const { return inactivedofs_; }
+    inline Teuchos::RCP<const Epetra_Map> in_active_dofs() const { return inactivedofs_; }
 
-    inline Teuchos::RCP<Epetra_Map>& ActiveN() { return activen_; }
+    inline Teuchos::RCP<Epetra_Map>& active_n() { return activen_; }
 
-    inline Teuchos::RCP<const Epetra_Map> ActiveN() const { return activen_; }
+    inline Teuchos::RCP<const Epetra_Map> active_n() const { return activen_; }
 
-    inline Teuchos::RCP<Epetra_Map>& ActiveT() { return activet_; }
+    inline Teuchos::RCP<Epetra_Map>& active_t() { return activet_; }
 
-    inline Teuchos::RCP<const Epetra_Map> ActiveT() const { return activet_; }
+    inline Teuchos::RCP<const Epetra_Map> active_t() const { return activet_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SlipNodes() { return slipnodes_; }
+    inline Teuchos::RCP<Epetra_Map>& slip_nodes() { return slipnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SlipNodes() const { return slipnodes_; }
+    inline Teuchos::RCP<const Epetra_Map> slip_nodes() const { return slipnodes_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SlipDofs() { return slipdofs_; }
+    inline Teuchos::RCP<Epetra_Map>& slip_dofs() { return slipdofs_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SlipDofs() const { return slipdofs_; }
+    inline Teuchos::RCP<const Epetra_Map> slip_dofs() const { return slipdofs_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SlipT() { return slipt_; }
+    inline Teuchos::RCP<Epetra_Map>& slip_t() { return slipt_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SlipT() const { return slipt_; }
+    inline Teuchos::RCP<const Epetra_Map> slip_t() const { return slipt_; }
 
-    inline Teuchos::RCP<Epetra_Map>& NonSmoothNodes() { return nonsmoothnodes_; }
+    inline Teuchos::RCP<Epetra_Map>& non_smooth_nodes() { return nonsmoothnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> NonSmoothNodes() const { return nonsmoothnodes_; }
+    inline Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const { return nonsmoothnodes_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SmoothNodes() { return smoothnodes_; }
+    inline Teuchos::RCP<Epetra_Map>& smooth_nodes() { return smoothnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SmoothNodes() const { return smoothnodes_; }
+    inline Teuchos::RCP<const Epetra_Map> smooth_nodes() const { return smoothnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofVertexRowmap() const { return sdof_vertex_rowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const { return sdof_vertex_rowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofVertexRowmap() { return sdof_vertex_rowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& sdof_vertex_rowmap() { return sdof_vertex_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofVertexColmap() const { return sdof_vertex_colmap_; }
+    inline Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const { return sdof_vertex_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofVertexColmap() { return sdof_vertex_colmap_; }
+    inline Teuchos::RCP<Epetra_Map>& sdof_vertex_colmap() { return sdof_vertex_colmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofEdgeRowmap() const { return sdof_edge_rowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const { return sdof_edge_rowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofEdgeRowmap() { return sdof_edge_rowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& sdof_edge_rowmap() { return sdof_edge_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofEdgeColmap() const { return sdof_edge_colmap_; }
+    inline Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const { return sdof_edge_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofEdgeColmap() { return sdof_edge_colmap_; }
+    inline Teuchos::RCP<Epetra_Map>& sdof_edge_colmap() { return sdof_edge_colmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofSurfRowmap() const { return sdof_surf_rowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const { return sdof_surf_rowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofSurfRowmap() { return sdof_surf_rowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& sdof_surf_rowmap() { return sdof_surf_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofSurfColmap() const { return sdof_surf_colmap_; }
+    inline Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const { return sdof_surf_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofSurfColmap() { return sdof_surf_colmap_; }
+    inline Teuchos::RCP<Epetra_Map>& sdof_surf_colmap() { return sdof_surf_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& NExtendedGhosting() { return nextendedghosting_; }
+    inline Teuchos::RCP<Epetra_Map>& n_extended_ghosting() { return nextendedghosting_; }
 
-    inline Teuchos::RCP<const Epetra_Map> NExtendedGhosting() const { return nextendedghosting_; }
+    inline Teuchos::RCP<const Epetra_Map> n_extended_ghosting() const { return nextendedghosting_; }
 
-    inline Teuchos::RCP<Epetra_Map>& EExtendedGhosting() { return eextendedghosting_; }
+    inline Teuchos::RCP<Epetra_Map>& e_extended_ghosting() { return eextendedghosting_; }
 
-    inline Teuchos::RCP<const Epetra_Map> EExtendedGhosting() const { return eextendedghosting_; }
+    inline Teuchos::RCP<const Epetra_Map> e_extended_ghosting() const { return eextendedghosting_; }
 
-    inline Teuchos::RCP<SelfBinaryTree>& BinaryTreeSelf() { return binarytreeself_; }
+    inline Teuchos::RCP<SelfBinaryTree>& binary_tree_self() { return binarytreeself_; }
 
-    inline Teuchos::RCP<const SelfBinaryTree> BinaryTreeSelf() const { return binarytreeself_; }
+    inline Teuchos::RCP<const SelfBinaryTree> binary_tree_self() const { return binarytreeself_; }
 
-    inline Teuchos::RCP<Epetra_Vector>& CnValues() { return cn_values_; }
+    inline Teuchos::RCP<Epetra_Vector>& cn_values() { return cn_values_; }
 
-    inline Teuchos::RCP<const Epetra_Vector> CnValues() const { return cn_values_; }
+    inline Teuchos::RCP<const Epetra_Vector> cn_values() const { return cn_values_; }
 
-    inline Teuchos::RCP<Epetra_Vector>& CtValues() { return ct_values_; }
+    inline Teuchos::RCP<Epetra_Vector>& ct_values() { return ct_values_; }
 
-    inline Teuchos::RCP<const Epetra_Vector> CtValues() const { return ct_values_; }
+    inline Teuchos::RCP<const Epetra_Vector> ct_values() const { return ct_values_; }
 
-    inline int& SMPairs() { return smpairs_; }
+    inline int& sm_pairs() { return smpairs_; }
 
-    inline int SMPairs() const { return smpairs_; }
+    inline int sm_pairs() const { return smpairs_; }
 
-    inline int& SMIntPairs() { return smintpairs_; }
+    inline int& sm_int_pairs() { return smintpairs_; }
 
-    inline int SMIntPairs() const { return smintpairs_; }
+    inline int sm_int_pairs() const { return smintpairs_; }
 
-    inline int& IntCells() { return intcells_; }
+    inline int& int_cells() { return intcells_; }
 
-    inline int IntCells() const { return intcells_; }
+    inline int int_cells() const { return intcells_; }
 
     /// @}
 
@@ -315,7 +315,7 @@ namespace CONTACT
      *  \param selfcontact (in): Boolean flag to indicate self-contact
      *
      *  \author hiermeier \date 03/17 */
-    static Teuchos::RCP<Interface> Create(const int id, const Epetra_Comm& comm,
+    static Teuchos::RCP<Interface> create(const int id, const Epetra_Comm& comm,
         const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact);
 
     /*!
@@ -355,14 +355,14 @@ namespace CONTACT
 
     \return Boolean flag to indicate self contact status of this interface
     */
-    virtual const bool& SelfContact() const { return selfcontact_; }
+    virtual const bool& self_contact() const { return selfcontact_; }
 
     /*!
     \brief Get two half pass status of this interface
 
     \return Boolean flag to indicate if two half pass algorithm shall be used
     */
-    virtual const bool& TwoHalfPass() const { return two_half_pass_; }
+    virtual const bool& two_half_pass() const { return two_half_pass_; }
 
     /*!
     \brief Get row map of active nodes
@@ -370,9 +370,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> ActiveNodes() const
+    virtual Teuchos::RCP<Epetra_Map> active_nodes() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activenodes_;
     }
@@ -384,16 +384,16 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> ActiveDofs() const
+    virtual Teuchos::RCP<Epetra_Map> active_dofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activedofs_;
     }
 
-    virtual Teuchos::RCP<Epetra_Map> InActiveNodes() const
+    virtual Teuchos::RCP<Epetra_Map> in_active_nodes() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return inactivenodes_;
     }
@@ -405,9 +405,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> InActiveDofs() const
+    virtual Teuchos::RCP<Epetra_Map> in_active_dofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return inactivedofs_;
     }
@@ -418,9 +418,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> ActiveNDofs() const
+    virtual Teuchos::RCP<Epetra_Map> active_n_dofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activen_;
     }
@@ -431,9 +431,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> ActiveTDofs() const
+    virtual Teuchos::RCP<Epetra_Map> active_t_dofs() const
     {
-      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
+      if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activet_;
     }
@@ -444,9 +444,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> SlipNodes() const
+    virtual Teuchos::RCP<Epetra_Map> slip_nodes() const
     {
-      if (Filled())
+      if (filled())
         return slipnodes_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
@@ -459,9 +459,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> SlipDofs() const
+    virtual Teuchos::RCP<Epetra_Map> slip_dofs() const
     {
-      if (Filled())
+      if (filled())
         return slipdofs_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
@@ -474,9 +474,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> SlipTDofs() const
+    virtual Teuchos::RCP<Epetra_Map> slip_t_dofs() const
     {
-      if (Filled())
+      if (filled())
         return slipt_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
@@ -489,9 +489,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> NonSmoothNodes() const
+    virtual Teuchos::RCP<Epetra_Map> non_smooth_nodes() const
     {
-      if (Filled())
+      if (filled())
         return nonsmoothnodes_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
@@ -504,9 +504,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> SmoothNodes() const
+    virtual Teuchos::RCP<Epetra_Map> smooth_nodes() const
     {
-      if (Filled())
+      if (filled())
         return smoothnodes_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
@@ -519,9 +519,9 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> SdofVertexRowmap() const
+    virtual Teuchos::RCP<Epetra_Map> sdof_vertex_rowmap() const
     {
-      if (Filled())
+      if (filled())
         return sdofVertexRowmap_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
@@ -533,41 +533,41 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> SdofVertexColmap() const
+    virtual Teuchos::RCP<Epetra_Map> sdof_vertex_colmap() const
     {
-      if (Filled())
+      if (filled())
         return sdofVertexColmap_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> SdofEdgeRowmap() const
+    virtual Teuchos::RCP<Epetra_Map> sdof_edge_rowmap() const
     {
-      if (Filled())
+      if (filled())
         return sdofEdgeRowmap_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> SdofEdgeColmap() const
+    virtual Teuchos::RCP<Epetra_Map> sdof_edge_colmap() const
     {
-      if (Filled())
+      if (filled())
         return sdofEdgeColmap_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> SdofSurfRowmap() const
+    virtual Teuchos::RCP<Epetra_Map> sdof_surf_rowmap() const
     {
-      if (Filled())
+      if (filled())
         return sdofSurfRowmap_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> SdofSurfColmap() const
+    virtual Teuchos::RCP<Epetra_Map> sdof_surf_colmap() const
     {
-      if (Filled())
+      if (filled())
         return sdofSurfColmap_;
       else
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
@@ -578,19 +578,19 @@ namespace CONTACT
     \brief Get number of slave / master pairs of this interface (proc local)
 
     */
-    virtual const int& SlaveMasterPairs() { return smpairs_; }
+    virtual const int& slave_master_pairs() { return smpairs_; }
 
     /*!
     \brief Get number of slave / master integration pairs of this interface (proc local)
 
     */
-    virtual const int& SlaveMasterIntPairs() { return smintpairs_; }
+    virtual const int& slave_master_int_pairs() { return smintpairs_; }
 
     /*!
     \brief Get number of integration cells of this interface (proc local)
 
     */
-    virtual const int& IntegrationCells() { return intcells_; }
+    virtual const int& integration_cells() { return intcells_; }
 
     //@}
 
@@ -604,7 +604,7 @@ namespace CONTACT
     \return Filled()==false
 
     */
-    virtual void AddNode(Teuchos::RCP<CONTACT::Node> cnode);
+    virtual void add_node(Teuchos::RCP<CONTACT::Node> cnode);
 
     /*!
     \brief Add a CONTACT::Element to the interface
@@ -687,7 +687,7 @@ namespace CONTACT
     - M. Mayr, A. Popp: Scalable computational kernels for mortar finite element methods,
     Engineering with Computers, 2023, https://doi.org/10.1007/s00366-022-01779-3
     */
-    void Redistribute() final;
+    void redistribute() final;
 
     void round_robin_change_ownership();
 
@@ -723,7 +723,7 @@ namespace CONTACT
     Derived version!
 
     */
-    void CreateSearchTree() final;
+    void create_search_tree() final;
 
     /*!
     \brief Initialize / reset interface for contact
@@ -768,7 +768,7 @@ namespace CONTACT
     Derived version!
 
     */
-    bool MortarCoupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
+    bool mortar_coupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
         const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) final;
 
     /*!
@@ -787,13 +787,13 @@ namespace CONTACT
     \brief evaluate coupling terms for lts coupling + lin
 
     */
-    void EvaluateLTSMaster();
+    void evaluate_lts_master();
 
     /*!
     \brief evaluate coupling terms for lts coupling + lin
 
     */
-    void EvaluateNTSMaster();
+    void evaluate_nts_master();
 
     /*!
     \brief evaluate coupling terms for ltl coupling + lin
@@ -829,7 +829,7 @@ namespace CONTACT
     evaluated here.
 
     */
-    virtual void EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
+    virtual void evaluate_rel_mov(const Teuchos::RCP<Epetra_Vector> xsmod,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod);
 
@@ -837,7 +837,7 @@ namespace CONTACT
       \brief Evaluate nodal distances and linearization
 
     */
-    virtual void EvaluateDistances(const Teuchos::RCP<const Epetra_Vector>& vec,
+    virtual void evaluate_distances(const Teuchos::RCP<const Epetra_Vector>& vec,
         std::map<int, std::vector<double>>& mynormals,
         std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>>& dmynormals,
         std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap);
@@ -846,13 +846,13 @@ namespace CONTACT
     \brief Assemble slave coordinates (xs)
 
     */
-    virtual void AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod);
+    virtual void assemble_slave_coord(Teuchos::RCP<Epetra_Vector>& xsmod);
 
     /*!
     \brief Evaluate L2 Norm of tangential contact conditions
 
     */
-    virtual void EvaluateTangentNorm(double& cnormtan);
+    virtual void evaluate_tangent_norm(double& cnormtan);
 
     /*!
     \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal
@@ -894,13 +894,13 @@ namespace CONTACT
 
     \param[in/out] lambdaglobal Matrix to be assembled into
     */
-    virtual void AssembleLinZ(Core::LinAlg::SparseMatrix& linzglobal);
+    virtual void assemble_lin_z(Core::LinAlg::SparseMatrix& linzglobal);
 
     /*!
     \brief Assemble matrix T containing nodal tangents and/or matrix N containing nodal normals!
 
     */
-    virtual void AssembleTN(Teuchos::RCP<Core::LinAlg::SparseMatrix> tglobal = Teuchos::null,
+    virtual void assemble_tn(Teuchos::RCP<Core::LinAlg::SparseMatrix> tglobal = Teuchos::null,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> nglobal = Teuchos::null);
 
     /*!
@@ -912,7 +912,7 @@ namespace CONTACT
     nodal normals and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleS(Core::LinAlg::SparseMatrix& sglobal);
+    virtual void assemble_s(Core::LinAlg::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble matrix Tderiv and Nderiv containing linearizations
@@ -928,7 +928,7 @@ namespace CONTACT
      - false -> standard contact lagrange multiplier!
 
     */
-    virtual void AssembleTNderiv(
+    virtual void assemble_t_nderiv(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> tderivglobal = Teuchos::null,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> nderivglobal = Teuchos::null,
         bool usePoroLM = false);
@@ -946,18 +946,18 @@ namespace CONTACT
      - false -> standard contact lagrange multiplier!
 
     */
-    virtual void AssembleLinDM(Core::LinAlg::SparseMatrix& lindglobal,
+    virtual void assemble_lin_dm(Core::LinAlg::SparseMatrix& lindglobal,
         Core::LinAlg::SparseMatrix& linmglobal, bool usePoroLM = false);
 
     /*!
     \brief subroutine assemble lin d
     */
-    virtual void AssembleLinD(Core::LinAlg::SparseMatrix& lindglobal, bool usePoroLM = false);
+    virtual void assemble_lin_d(Core::LinAlg::SparseMatrix& lindglobal, bool usePoroLM = false);
 
     /*!
     \brief subroutine assemble lin m
     */
-    virtual void AssembleLinM(Core::LinAlg::SparseMatrix& linmglobal, bool usePoroLM = false);
+    virtual void assemble_lin_m(Core::LinAlg::SparseMatrix& linmglobal, bool usePoroLM = false);
 
 
     /*!
@@ -973,17 +973,17 @@ namespace CONTACT
     in CONTACT::AbstractStrategy::initialize_mortar()/assemble_mortar() -> gsnoderowmap_!!!
 
     */
-    virtual void AssembleG(Epetra_Vector& gglobal);
+    virtual void assemble_g(Epetra_Vector& gglobal);
 
     /*!
     \brief Assemble inactive rhs (incremental delta_z_)
     */
-    virtual void AssembleInactiverhs(Epetra_Vector& inactiverhs);
+    virtual void assemble_inactiverhs(Epetra_Vector& inactiverhs);
 
     /*!
     \brief Assemble tangential rhs (incremental delta_z_)
     */
-    virtual void AssembleTangrhs(Epetra_Vector& tangrhs);
+    virtual void assemble_tangrhs(Epetra_Vector& tangrhs);
 
     /*!
     \brief Assemble matrix LinStick containing linearizations
@@ -994,7 +994,7 @@ namespace CONTACT
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinStick(Core::LinAlg::SparseMatrix& linstickLMglobal,
+    virtual void assemble_lin_stick(Core::LinAlg::SparseMatrix& linstickLMglobal,
         Core::LinAlg::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
     /*!
     \brief Assemble matrix LinSlip containing linearizations
@@ -1005,7 +1005,7 @@ namespace CONTACT
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipLMglobal,
+    virtual void assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLMglobal,
         Core::LinAlg::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
 
     /*!
@@ -1065,13 +1065,13 @@ namespace CONTACT
 
     \return true (hard-coded)
     */
-    virtual bool BuildActiveSet(bool init = false);
+    virtual bool build_active_set(bool init = false);
 
     /*!
     \brief Split active dofs into N- and T-part
 
     */
-    virtual bool SplitActiveDofs();
+    virtual bool split_active_dofs();
 
     /*!
     \brief Update the lagrange multiplier sets for self contact
@@ -1086,13 +1086,13 @@ namespace CONTACT
     \brief Assemble normal coupling weighted condition for poro contact
 
     */
-    virtual void AssembleNCoup(Epetra_Vector& gglobal);
+    virtual void assemble_n_coup(Epetra_Vector& gglobal);
 
     /*!
     \brief Assemble linearisation of normal coupling weighted condition for poro contact
 
     */
-    virtual void AssembleNCoupLin(
+    virtual void assemble_n_coup_lin(
         Core::LinAlg::SparseMatrix& sglobal, Core::Adapter::Coupling& coupfs,
         bool AssembleVelocityLin = false  // if true velocity linearisation will be assembled into
                                           // sglobal, otherwise lin. w.r.t. displacements!
@@ -1106,7 +1106,7 @@ namespace CONTACT
     @param CoupLin ??
     @param x ??
     */
-    virtual void AssembleCoupLinD(
+    virtual void assemble_coup_lin_d(
         Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
     /*! \brief Derivative of (transposed) M-matrix multiplied with a slave dof vector
@@ -1116,7 +1116,7 @@ namespace CONTACT
     @param CoupLin ??
     @param x ??
     */
-    virtual void AssembleCoupLinM(
+    virtual void assemble_coup_lin_m(
         Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
     /*!
@@ -1130,7 +1130,7 @@ namespace CONTACT
 
     \param type ??
     */
-    virtual void StoreToOld(Mortar::StrategyBase::QuantityType type);
+    virtual void store_to_old(Mortar::StrategyBase::QuantityType type);
 
     //@}
 
@@ -1142,7 +1142,7 @@ namespace CONTACT
     Necessary to check the angular momentum conservation
 
     */
-    void EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
+    void eval_resultant_moment(const Epetra_Vector& fs, const Epetra_Vector& fm,
         Core::LinAlg::SerialDenseMatrix* conservation_data_ptr = nullptr) const;
 
     /*!
@@ -1154,7 +1154,7 @@ namespace CONTACT
     @param force ??
     @param node Node that is queried
     */
-    void GetForceOfNode(Core::LinAlg::Matrix<3, 1>& nodal_force, const Epetra_Vector& force,
+    void get_force_of_node(Core::LinAlg::Matrix<3, 1>& nodal_force, const Epetra_Vector& force,
         const Core::Nodes::Node& node) const;
 
     /*!
@@ -1163,7 +1163,7 @@ namespace CONTACT
     \param[in] step Time step index
     \param[in] iter Nonlinear iteration index
     */
-    void VisualizeGmsh(const int step, const int iter) final;
+    void visualize_gmsh(const int step, const int iter) final;
 
     //! @name Finite difference checks
     //!@{
@@ -1172,7 +1172,7 @@ namespace CONTACT
     \brief Check normal/tangent derivatives with finite differences
 
     */
-    void FDCheckNormalDeriv();
+    void fd_check_normal_deriv();
 
     /*!
     \brief Check normal/tangent derivatives with finite differences
@@ -1184,37 +1184,37 @@ namespace CONTACT
     \brief Check Mortar matrix D derivatives with finite differences
 
     */
-    void FDCheckMortarDDeriv();
+    void fd_check_mortar_d_deriv();
 
     /*!
     \brief Check Mortar matrix M derivatives with finite differences
 
     */
-    void FDCheckMortarMDeriv();
+    void fd_check_mortar_m_deriv();
 
     /*!
     \brief Check weighted gap g derivatives with finite differences
 
     */
-    void FDCheckGapDeriv();
+    void fd_check_gap_deriv();
 
     /*!
     \brief Check gap g derivatives with finite differences LTL
 
     */
-    void FDCheckGapDerivLTL();
+    void fd_check_gap_deriv_ltl();
 
     /*!
     \brief Check jump derivatives with finite differences LTL
 
     */
-    void FDCheckJumpDerivLTL();
+    void fd_check_jump_deriv_ltl();
 
     /*!
     \brief Check alpha derivatives with finite differences (for hybrid formulation)
 
     */
-    void FDCheckAlphaDeriv();
+    void fd_check_alpha_deriv();
 
 
     /*!
@@ -1228,20 +1228,20 @@ namespace CONTACT
     \brief Check tangential LM derivatives with finite differences
 
     */
-    void FDCheckTangLMDeriv();
+    void fd_check_tang_lm_deriv();
 
     /*!
     \brief Check stick condition derivatives with finite differences
 
     */
-    virtual void FDCheckStickDeriv(Core::LinAlg::SparseMatrix& linstickLMglobal,
+    virtual void fd_check_stick_deriv(Core::LinAlg::SparseMatrix& linstickLMglobal,
         Core::LinAlg::SparseMatrix& linstickDISglobal);
 
     /*!
     \brief Check slip condition derivatives with finite differences
 
     */
-    virtual void FDCheckSlipDeriv(
+    virtual void fd_check_slip_deriv(
         Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal);
 
     /*!
@@ -1265,31 +1265,31 @@ namespace CONTACT
     \brief Add line to line penalty forces
 
     */
-    void AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_lt_lforces(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty forces
 
     */
-    void AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_lt_sforces_master(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty forces
 
     */
-    void AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_nt_sforces_master(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty forces - friction
 
     */
-    void AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_lt_lforces_fric(Teuchos::RCP<Epetra_FEVector> feff);
 
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
-    void AddLTLstiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_lt_lstiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
@@ -1308,25 +1308,25 @@ namespace CONTACT
     \brief Add line to line penalty stiffness contribution
 
     */
-    void AddLTLstiffnessFric(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_lt_lstiffness_fric(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
-    Teuchos::RCP<Epetra_Vector>& GetCn() { return cnValues_; };
+    Teuchos::RCP<Epetra_Vector>& get_cn() { return cnValues_; };
 
-    Epetra_Vector& GetCnRef()
+    Epetra_Vector& get_cn_ref()
     {
       if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
       return *cnValues_;
     }
 
-    Teuchos::RCP<Epetra_Vector>& GetCt() { return ctValues_; };
+    Teuchos::RCP<Epetra_Vector>& get_ct() { return ctValues_; };
 
-    Epetra_Vector& GetCtRef()
+    Epetra_Vector& get_ct_ref()
     {
       if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
     }
 
-    inline bool IsFriction() const { return friction_; }
+    inline bool is_friction() const { return friction_; }
 
     const Interface& get_ma_sharing_ref_interface() const;
 

@@ -36,17 +36,17 @@ namespace
       point(0) = 0.0;
       point(1) = 0.0;
       point(2) = 0.0;
-      volumes[0].AddPoint(point);
+      volumes[0].add_point(point);
 
       point(0) = 1.0;
       point(1) = 1.0;
       point(2) = 0.0;
-      volumes[0].AddPoint(point);
+      volumes[0].add_point(point);
 
       point(0) = 0.5;
       point(1) = 0.0;
       point(2) = 0.0;
-      volumes[0].AddPoint(point);
+      volumes[0].add_point(point);
     }
 
     // setting up bounding volume 2
@@ -54,17 +54,17 @@ namespace
       point(0) = 1.0;
       point(1) = -1.0;
       point(2) = 0.0;
-      volumes[1].AddPoint(point);
+      volumes[1].add_point(point);
 
       point(0) = 1.0;
       point(1) = 0.25;
       point(2) = 0.0;
-      volumes[1].AddPoint(point);
+      volumes[1].add_point(point);
 
       point(0) = 0.75;
       point(1) = 0.0;
       point(2) = 0.0;
-      volumes[1].AddPoint(point);
+      volumes[1].add_point(point);
     }
 
     // setting up bounding volume 3
@@ -72,17 +72,17 @@ namespace
       point(0) = 0.5;
       point(1) = 0.25;
       point(2) = 0.0;
-      volumes[2].AddPoint(point);
+      volumes[2].add_point(point);
 
       point(0) = 0.8;
       point(1) = 0.25;
       point(2) = 0.0;
-      volumes[2].AddPoint(point);
+      volumes[2].add_point(point);
 
       point(0) = 0.75;
       point(1) = 0.125;
       point(2) = 0.0;
-      volumes[2].AddPoint(point);
+      volumes[2].add_point(point);
     }
 
     return volumes;

@@ -176,7 +176,7 @@ namespace ParticleRigidBody
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void DistributeRigidBody();
+    void distribute_rigid_body();
 
     /*!
      * \brief communicate rigid body
@@ -228,7 +228,7 @@ namespace ParticleRigidBody
      *
      * \param[in] timeincrement time increment
      */
-    void UpdatePositions(const double timeincrement) override;
+    void update_positions(const double timeincrement) override;
 
     /*!
      * \brief update velocities with given time increment
@@ -240,7 +240,7 @@ namespace ParticleRigidBody
      *
      * \param[in] timeincrement time increment
      */
-    void UpdateVelocities(const double timeincrement) override;
+    void update_velocities(const double timeincrement) override;
 
     /*!
      * \brief clear accelerations
@@ -250,7 +250,7 @@ namespace ParticleRigidBody
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void ClearAccelerations() override;
+    void clear_accelerations() override;
 
     /*!
      * \brief have rigid body phase change
@@ -285,7 +285,7 @@ namespace ParticleRigidBody
       return rigidbodydatastate_;
     }
 
-    const std::vector<int>& GetOwnedRigidBodies() const override { return ownedrigidbodies_; }
+    const std::vector<int>& get_owned_rigid_bodies() const override { return ownedrigidbodies_; }
 
     /*!
      * \brief set initial states of rigid particles

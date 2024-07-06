@@ -52,7 +52,7 @@ void FLD::TDSEleData::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // history variables
@@ -76,7 +76,7 @@ void FLD::TDSEleData::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // history variables (subgrid-scale velocities, accelerations and pressure)
   {
@@ -109,7 +109,7 @@ void FLD::TDSEleData::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid scales (public)           gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::ActivateTDS(
+void FLD::TDSEleData::activate_tds(
     int nquad, int nsd, double** saccn, double** sveln, double** svelnp)
 {
   if (saccn_.numRows() != nsd || saccn_.numCols() != nquad)

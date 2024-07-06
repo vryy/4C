@@ -23,11 +23,9 @@ int Discret::ELEMENTS::SoSh18::init_jacobian_mapping()
   Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    Core::Nodes::Node** nodes = Nodes();
-    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
+    xrefe(i, 0) = nodes()[i]->x()[0];
+    xrefe(i, 1) = nodes()[i]->x()[1];
+    xrefe(i, 2) = nodes()[i]->x()[2];
   }
   //  std::cout << "ele: " << Id() << " xrefe: " << xrefe ;
   invJ_.resize(NUMGPT_SOH18);
@@ -89,10 +87,10 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
   Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;  // reference coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xcurr;  // current  coord. of element
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -113,7 +111,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
   if (eas_)
   {
     // recover EAS **************************************
-    if (not IsParamsInterface())
+    if (not is_params_interface())
       if (stiffmatrix)
       {
         feas_.multiply(1., Kad_, res_d, 1.);
@@ -200,7 +198,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     // calculate the deformation gradient consistent to the modified strains
     // but only if the material needs a deformation gradient (e.g. plasticity)
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
-    if (Teuchos::rcp_static_cast<Mat::So3Material>(Material())->needs_defgrd() ||
+    if (Teuchos::rcp_static_cast<Mat::So3Material>(material())->needs_defgrd() ||
         iostrain == Inpar::Solid::strain_ea || iostress == Inpar::Solid::stress_cauchy)
     {
       // compute the deformation gradient - shell-style
@@ -232,8 +230,8 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-    Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(Material());
-    so3mat->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(material());
+    so3mat->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // strain output **********************************************************
@@ -359,7 +357,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
       Core::LinAlg::Matrix<NUMNOD_SOH18, 1> shapefunct;
       Core::FE::shape_function<Core::FE::CellType::hex18>(xsi_[gp], shapefunct);
 
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
 
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
@@ -384,8 +382,8 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
   if (stiffmatrix && eas_)
   {
     Core::LinAlg::FixedSizeSerialDenseSolver<num_eas, num_eas, 1> solve_for_KaaInv;
-    solve_for_KaaInv.SetMatrix(KaaInv_);
-    int err2 = solve_for_KaaInv.Factor();
+    solve_for_KaaInv.set_matrix(KaaInv_);
+    int err2 = solve_for_KaaInv.factor();
     int err = solve_for_KaaInv.invert();
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Kaa failed");
 
@@ -409,10 +407,10 @@ void Discret::ELEMENTS::SoSh18::soh18_lumpmass(
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned int c = 0; c < (*emass).numCols(); ++c)  // parse columns
+    for (unsigned int c = 0; c < (*emass).num_cols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned int r = 0; r < (*emass).numRows(); ++r)  // parse rows
+      for (unsigned int r = 0; r < (*emass).num_rows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -429,19 +427,19 @@ int Discret::ELEMENTS::SoSh18Type::initialize(Core::FE::Discretization& dis)
 {
   // here we order the nodes such that we have a positive definite jacobian
   //       maybe the python script generating the hex18 elements would be a better place for this.
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh18*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh18*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->init_jacobian_mapping() == 1) actele->flip_t();
   }
   dis.fill_complete(false, false, false);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh18*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh18*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->init_jacobian_mapping() == 1) FOUR_C_THROW("why");
   }
@@ -453,30 +451,30 @@ int Discret::ELEMENTS::SoSh18Type::initialize(Core::FE::Discretization& dis)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoSh18::flip_t()
 {
-  if (NodeIds() == nullptr) FOUR_C_THROW("couldn't get node ids");
+  if (node_ids() == nullptr) FOUR_C_THROW("couldn't get node ids");
   // reorder nodes
   int new_nodeids[NUMNOD_SOH18];
-  new_nodeids[0] = NodeIds()[9];
-  new_nodeids[1] = NodeIds()[10];
-  new_nodeids[2] = NodeIds()[11];
-  new_nodeids[3] = NodeIds()[12];
-  new_nodeids[4] = NodeIds()[13];
-  new_nodeids[5] = NodeIds()[14];
-  new_nodeids[6] = NodeIds()[15];
-  new_nodeids[7] = NodeIds()[16];
-  new_nodeids[8] = NodeIds()[17];
+  new_nodeids[0] = node_ids()[9];
+  new_nodeids[1] = node_ids()[10];
+  new_nodeids[2] = node_ids()[11];
+  new_nodeids[3] = node_ids()[12];
+  new_nodeids[4] = node_ids()[13];
+  new_nodeids[5] = node_ids()[14];
+  new_nodeids[6] = node_ids()[15];
+  new_nodeids[7] = node_ids()[16];
+  new_nodeids[8] = node_ids()[17];
 
-  new_nodeids[9] = NodeIds()[0];
-  new_nodeids[10] = NodeIds()[1];
-  new_nodeids[11] = NodeIds()[2];
-  new_nodeids[12] = NodeIds()[3];
-  new_nodeids[13] = NodeIds()[4];
-  new_nodeids[14] = NodeIds()[5];
-  new_nodeids[15] = NodeIds()[6];
-  new_nodeids[16] = NodeIds()[7];
-  new_nodeids[17] = NodeIds()[8];
+  new_nodeids[9] = node_ids()[0];
+  new_nodeids[10] = node_ids()[1];
+  new_nodeids[11] = node_ids()[2];
+  new_nodeids[12] = node_ids()[3];
+  new_nodeids[13] = node_ids()[4];
+  new_nodeids[14] = node_ids()[5];
+  new_nodeids[15] = node_ids()[6];
+  new_nodeids[16] = node_ids()[7];
+  new_nodeids[17] = node_ids()[8];
 
-  SetNodeIds(NUMNOD_SOH18, new_nodeids);
+  set_node_ids(NUMNOD_SOH18, new_nodeids);
   return;
 }
 
@@ -536,8 +534,8 @@ void Discret::ELEMENTS::SoSh18::evaluate_t(
   // now evaluate T^{-T} with solver
   Core::LinAlg::FixedSizeSerialDenseSolver<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D, 1>
       solve_for_inverseT;
-  solve_for_inverseT.SetMatrix(TinvT);
-  int err2 = solve_for_inverseT.Factor();
+  solve_for_inverseT.set_matrix(TinvT);
+  int err2 = solve_for_inverseT.factor();
   int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
@@ -1152,13 +1150,13 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_r(
     // integrations with non-empty integration domain
     if (coord_i(0) != coord_refNode[0])
       // perform integration
-      for (int gp = 0; gp < ip.IP().nquad; ++gp)
+      for (int gp = 0; gp < ip.ip().nquad; ++gp)
       {
         const double jac = .5 * (coord_i(0) - coord_refNode[0]);
 
         // gauss point coordinates in element parameter space
         Core::LinAlg::Matrix<2, 1> xi_gp;
-        xi_gp(0) = .5 * (coord_i(0) + coord_refNode[0]) + jac * ip.IP().qxg[gp][0];
+        xi_gp(0) = .5 * (coord_i(0) + coord_refNode[0]) + jac * ip.ip().qxg[gp][0];
         xi_gp(1) = coord_i(1);
 
         // shape function
@@ -1171,7 +1169,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_r(
         for (int k = 0; k < 9; ++k)
           for (int l = 0; l < 9; ++l)
             dsg_shear_r(k, l) +=
-                deriv(0, i) * deriv_gp(0, k) * shape_gp(l) * jac * ip.IP().qwgt[gp];
+                deriv(0, i) * deriv_gp(0, k) * shape_gp(l) * jac * ip.ip().qwgt[gp];
       }
   }
 
@@ -1198,7 +1196,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_s(
     // integrations with non-empty integration domain
     if (coord_i(1) != coord_refNode[1])
       // perform integration
-      for (int gp = 0; gp < ip.IP().nquad; ++gp)
+      for (int gp = 0; gp < ip.ip().nquad; ++gp)
       {
         // integration jacobian
         const double jac = .5 * (coord_i(1) - coord_refNode[1]);
@@ -1206,7 +1204,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_s(
         // gauss point coordinates in element parameter space
         Core::LinAlg::Matrix<2, 1> xi_gp;
         xi_gp(0) = coord_i(0);
-        xi_gp(1) = .5 * (coord_i(1) + coord_refNode[1]) + jac * ip.IP().qxg[gp][0];
+        xi_gp(1) = .5 * (coord_i(1) + coord_refNode[1]) + jac * ip.ip().qxg[gp][0];
 
         // shape function
         Core::LinAlg::Matrix<9, 1> shape_gp;
@@ -1218,7 +1216,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_shear_s(
         for (int k = 0; k < 9; ++k)
           for (int l = 0; l < 9; ++l)
             dsg_shear_s(k, l) +=
-                deriv(1, i) * deriv_gp(1, k) * shape_gp(l) * jac * ip.IP().qwgt[gp];
+                deriv(1, i) * deriv_gp(1, k) * shape_gp(l) * jac * ip.ip().qwgt[gp];
       }
   }
 
@@ -1246,15 +1244,15 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_rs(
       for (int r = 0; r < 9; ++r)
         for (int s = 0; s < 9; ++s)
 
-          for (int g = 0; g < ip.IP().nquad; ++g)
-            for (int h = 0; h < ip.IP().nquad; ++h)
+          for (int g = 0; g < ip.ip().nquad; ++g)
+            for (int h = 0; h < ip.ip().nquad; ++h)
             {
               const double jac_g = .5 * (coords(r, 0) - coord_refNode[0]);
               const double jac_h = .5 * (coords(s, 1) - coord_refNode[1]);
               const double g_loc =
-                  .5 * (coords(r, 0) + coord_refNode[0]) + jac_g * ip.IP().qxg[g][0];
+                  .5 * (coords(r, 0) + coord_refNode[0]) + jac_g * ip.ip().qxg[g][0];
               const double h_loc =
-                  .5 * (coords(s, 1) + coord_refNode[1]) + jac_h * ip.IP().qxg[h][0];
+                  .5 * (coords(s, 1) + coord_refNode[1]) + jac_h * ip.ip().qxg[h][0];
 
               Core::LinAlg::Matrix<2, 1> xsi_g_eta;
               xsi_g_eta(0) = g_loc;
@@ -1269,8 +1267,8 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_rs(
 
               if (coords(r, 0) != coord_refNode[0] && coords(s, 1) != coord_refNode[1])
                 dsg_membrane_rs(k, l) += deriv_xieta(0, r) * deriv_g_eta(1, s) * deriv_g_h(0, k) *
-                                         deriv_g_h(1, l) * jac_g * ip.IP().qwgt[g] * jac_h *
-                                         ip.IP().qwgt[h];
+                                         deriv_g_h(1, l) * jac_g * ip.ip().qwgt[g] * jac_h *
+                                         ip.ip().qwgt[h];
             }
     }
 
@@ -1297,14 +1295,14 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_r(
     // integrations with non-empty integration domain
     if (coord_i(0) != coord_refNode[0])
       // perform integration
-      for (int gp = 0; gp < ip.IP().nquad; ++gp)
+      for (int gp = 0; gp < ip.ip().nquad; ++gp)
       {
         // integration jacobian
         const double jac = .5 * (coord_i(0) - coord_refNode[0]);
 
         // gauss point coordinates in element parameter space
         Core::LinAlg::Matrix<2, 1> xi_gp;
-        xi_gp(0) = .5 * (coord_i(0) + coord_refNode[0]) + jac * ip.IP().qxg[gp][0];
+        xi_gp(0) = .5 * (coord_i(0) + coord_refNode[0]) + jac * ip.ip().qxg[gp][0];
         xi_gp(1) = coord_i(1);
 
         // derivative
@@ -1315,7 +1313,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_r(
         for (int k = 0; k < 9; ++k)
           for (int l = 0; l < 9; ++l)
             dsg_membrane_r(k, l) +=
-                deriv(0, i) * deriv_gp(0, k) * deriv_gp(0, l) * jac * ip.IP().qwgt[gp];
+                deriv(0, i) * deriv_gp(0, k) * deriv_gp(0, l) * jac * ip.ip().qwgt[gp];
       }
   }
 
@@ -1342,7 +1340,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_s(
     // integrations with non-empty integration domain
     if (coord_i(1) != coord_refNode[1])
       // perform integration
-      for (int gp = 0; gp < ip.IP().nquad; ++gp)
+      for (int gp = 0; gp < ip.ip().nquad; ++gp)
       {
         // integration jacobian
         const double jac = .5 * (coord_i(1) - coord_refNode[1]);
@@ -1350,7 +1348,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_s(
         // gauss point coordinates in element parameter space
         Core::LinAlg::Matrix<2, 1> xi_gp;
         xi_gp(0) = coord_i(0);
-        xi_gp(1) = .5 * (coord_i(1) + coord_refNode[1]) + jac * ip.IP().qxg[gp][0];
+        xi_gp(1) = .5 * (coord_i(1) + coord_refNode[1]) + jac * ip.ip().qxg[gp][0];
 
         // derivative
         Core::LinAlg::Matrix<2, 9> deriv_gp;
@@ -1360,7 +1358,7 @@ void Discret::ELEMENTS::SoSh18::integrate_dsg_membrane_s(
         for (int k = 0; k < 9; ++k)
           for (int l = 0; l < 9; ++l)
             dsg_membrane_s(k, l) +=
-                deriv(1, i) * deriv_gp(1, k) * deriv_gp(1, l) * jac * ip.IP().qwgt[gp];
+                deriv(1, i) * deriv_gp(1, k) * deriv_gp(1, l) * jac * ip.ip().qwgt[gp];
       }
   }
 
@@ -1597,7 +1595,7 @@ void Discret::ELEMENTS::SoSh18::recover(const std::vector<double>& residual)
   {
     // first, store the eas state of the previous accepted Newton step
     str_params_interface().sum_into_my_previous_sol_norm(
-        NOX::Nln::StatusTest::quantity_eas, num_eas, alpha_eas_.data(), Owner());
+        NOX::Nln::StatusTest::quantity_eas, num_eas, alpha_eas_.data(), owner());
 
     feas_.multiply(1., Kad_, res_d, 1.);
     alpha_eas_inc_.multiply(-1., KaaInv_, feas_, 0.);
@@ -1612,7 +1610,7 @@ void Discret::ELEMENTS::SoSh18::recover(const std::vector<double>& residual)
   old_step_length_ = step_length;
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, num_eas,
-      alpha_eas_inc_.data(), alpha_eas_.data(), step_length, Owner());
+      alpha_eas_inc_.data(), alpha_eas_.data(), step_length, owner());
 }
 
 FOUR_C_NAMESPACE_CLOSE

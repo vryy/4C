@@ -53,10 +53,10 @@ namespace Core::LinAlg
 
 
     /// Operator domain map
-    const Epetra_Map& OperatorDomainMap() const override { return a_->FullDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return a_->full_domain_map(); }
 
     /// Operator range map
-    const Epetra_Map& OperatorRangeMap() const override { return a_->FullRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return a_->full_range_map(); }
 
     /// Setup of preconditioners for individual blocks
     void setup_block_preconditioners();

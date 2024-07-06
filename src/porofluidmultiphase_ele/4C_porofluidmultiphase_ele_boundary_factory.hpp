@@ -34,7 +34,7 @@ namespace Discret
       virtual ~PoroFluidMultiPhaseBoundaryFactory() = default;
 
       //! ProvideImpl
-      static PoroFluidMultiPhaseEleInterface* ProvideImpl(
+      static PoroFluidMultiPhaseEleInterface* provide_impl(
           const Core::Elements::Element* ele, const int numdofpernode, const std::string& disname);
 
      private:

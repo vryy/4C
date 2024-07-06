@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Truss3Type Discret::ELEMENTS::Truss3Type::instance_;
 
-Discret::ELEMENTS::Truss3Type& Discret::ELEMENTS::Truss3Type::Instance() { return instance_; }
+Discret::ELEMENTS::Truss3Type& Discret::ELEMENTS::Truss3Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::Truss3(-1, -1);
   object->unpack(data);
@@ -30,7 +30,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::Create(const std:
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3")
@@ -43,7 +43,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -60,7 +60,7 @@ void Discret::ELEMENTS::Truss3Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Truss3Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Truss3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -123,7 +123,7 @@ Discret::ELEMENTS::Truss3::Truss3(const Discret::ELEMENTS::Truss3& old)
  |  Deep copy this instance of Truss3 and return pointer to it (public) |
  |                                                            cyron 08/08|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Truss3::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Truss3::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::Truss3(*this);
   return newelement;
@@ -132,7 +132,7 @@ Core::Elements::Element* Discret::ELEMENTS::Truss3::Clone() const
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 08/08|
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Truss3::Shape() const { return Core::FE::CellType::line2; }
+Core::FE::CellType Discret::ELEMENTS::Truss3::shape() const { return Core::FE::CellType::line2; }
 
 
 /*----------------------------------------------------------------------*
@@ -144,7 +144,7 @@ void Discret::ELEMENTS::Truss3::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -169,7 +169,7 @@ void Discret::ELEMENTS::Truss3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -194,7 +194,7 @@ void Discret::ELEMENTS::Truss3::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              cyron 08/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Truss3::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Truss3::lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -351,16 +351,16 @@ void Discret::ELEMENTS::Truss3::scale_reference_length(double scalefac)
  *----------------------------------------------------------------------*/
 // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
 // inherently handle (3)...
-void Discret::ELEMENTS::Truss3::LocationVector(
+void Discret::ELEMENTS::Truss3::location_vector(
     const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
-  const Core::Nodes::Node* const* nodes = Nodes();
+  const Core::Nodes::Node* const* nodes = Truss3::nodes();
 
   la.clear();
 
   // we need to look at all DofSets of our discretization
-  for (int dofset = 0; dofset < la.Size(); ++dofset)
+  for (int dofset = 0; dofset < la.size(); ++dofset)
   {
     std::vector<int>& lm = la[dofset].lm_;
     std::vector<int>& lmdirich = la[dofset].lmdirich_;
@@ -374,9 +374,9 @@ void Discret::ELEMENTS::Truss3::LocationVector(
       {
         const Core::Nodes::Node* node = nodes[i];
 
-        const int owner = node->Owner();
+        const int owner = node->owner();
         std::vector<int> dof;
-        dis.Dof(dof, node, dofset, 0, this);
+        dis.dof(dof, node, dofset, 0, this);
         const unsigned size = dof.size();
 
         if (size) lmstride.push_back(size);
@@ -389,13 +389,13 @@ void Discret::ELEMENTS::Truss3::LocationVector(
         if (doDirichlet)
         {
           const std::vector<int>* flag = nullptr;
-          Core::Conditions::Condition* dirich = node->GetCondition("Dirichlet");
+          Core::Conditions::Condition* dirich = node->get_condition("Dirichlet");
           if (dirich)
           {
-            if (dirich->Type() != Core::Conditions::PointDirichlet &&
-                dirich->Type() != Core::Conditions::LineDirichlet &&
-                dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-                dirich->Type() != Core::Conditions::VolumeDirichlet)
+            if (dirich->type() != Core::Conditions::PointDirichlet &&
+                dirich->type() != Core::Conditions::LineDirichlet &&
+                dirich->type() != Core::Conditions::SurfaceDirichlet &&
+                dirich->type() != Core::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = &dirich->parameters().get<std::vector<int>>("onoff");
           }
@@ -411,8 +411,8 @@ void Discret::ELEMENTS::Truss3::LocationVector(
     }
 
     // fill the vector with element dofs
-    const int owner = Owner();
-    std::vector<int> dofs = dis.Dof(dofset, this);
+    const int owner = Truss3::owner();
+    std::vector<int> dofs = dis.dof(dofset, this);
     if (dofs.size()) lmstride.push_back(dofs.size());
     for (int& dof : dofs)
     {
@@ -423,13 +423,13 @@ void Discret::ELEMENTS::Truss3::LocationVector(
     if (doDirichlet)
     {
       const std::vector<int>* flag = nullptr;
-      Core::Conditions::Condition* dirich = GetCondition("Dirichlet");
+      Core::Conditions::Condition* dirich = get_condition("Dirichlet");
       if (dirich)
       {
-        if (dirich->Type() != Core::Conditions::PointDirichlet &&
-            dirich->Type() != Core::Conditions::LineDirichlet &&
-            dirich->Type() != Core::Conditions::SurfaceDirichlet &&
-            dirich->Type() != Core::Conditions::VolumeDirichlet)
+        if (dirich->type() != Core::Conditions::PointDirichlet &&
+            dirich->type() != Core::Conditions::LineDirichlet &&
+            dirich->type() != Core::Conditions::SurfaceDirichlet &&
+            dirich->type() != Core::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = &dirich->parameters().get<std::vector<int>>("onoff");
       }
@@ -457,23 +457,23 @@ int Discret::ELEMENTS::Truss3Type::initialize(Core::FE::Discretization& dis)
   xrefe.resize(3 * 2);
 
   // setting beam reference director correctly
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     // in case that current element is not a truss3 element there is nothing to do and we go back
     // to the head of the loop
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
 
     // if we get so far current element is a truss3 element and  we get a pointer at it
-    auto* currele = dynamic_cast<Discret::ELEMENTS::Truss3*>(dis.lColElement(i));
+    auto* currele = dynamic_cast<Discret::ELEMENTS::Truss3*>(dis.l_col_element(i));
     if (!currele) FOUR_C_THROW("cast to Truss3* failed");
 
     // getting element's nodal coordinates and treating them as reference configuration
-    if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
+    if (currele->nodes()[0] == nullptr || currele->nodes()[1] == nullptr)
       FOUR_C_THROW("Cannot get nodes in order to compute reference configuration'");
     else
     {
       for (int k = 0; k < 2; k++)  // element has two nodes
-        for (int l = 0; l < 3; l++) xrefe[k * 3 + l] = currele->Nodes()[k]->X()[l];
+        for (int l = 0; l < 3; l++) xrefe[k * 3 + l] = currele->nodes()[k]->x()[l];
     }
 
     currele->set_up_reference_geometry(xrefe);
@@ -498,7 +498,7 @@ void Discret::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::Paramete
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Truss3::ParamsInterfacePtr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Truss3::params_interface_ptr()
 {
   return interface_ptr_;
 }

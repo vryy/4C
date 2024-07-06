@@ -50,7 +50,7 @@ namespace PoroElastScaTra
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
     //! Main time loop.
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     //! prepare time step for single fields
     virtual void prepare_time_step(bool printheader = true)
@@ -59,7 +59,7 @@ namespace PoroElastScaTra
     };
 
     //! perform iteration loop between fields
-    virtual void Solve() { FOUR_C_THROW("not implemented in base class. override in subclass."); };
+    virtual void solve() { FOUR_C_THROW("not implemented in base class. override in subclass."); };
 
     //! prepare output
     virtual void prepare_output()
@@ -83,19 +83,19 @@ namespace PoroElastScaTra
     void read_restart(int restart) override = 0;
 
     //! setup for single fields
-    virtual void SetupSystem();
+    virtual void setup_system();
 
     //! Build the combined dirichlet map of the monolithic poro problem
     virtual void build_combined_dbc_map() { poro_->build_combined_dbc_map(); };
 
     //! perform result test
-    void TestResults(const Epetra_Comm& comm);
+    void test_results(const Epetra_Comm& comm);
 
     //! apply solution of poro-problem to scatra
-    void SetPoroSolution();
+    void set_poro_solution();
 
     //! apply solution of scatra to poro
-    void SetScatraSolution();
+    void set_scatra_solution();
 
     //! return pointer to porous medium problem
     const Teuchos::RCP<PoroElast::PoroBase>& poro_field() { return poro_; };
@@ -110,13 +110,13 @@ namespace PoroElastScaTra
     };
 
     //! return pointer to scalar transport problem
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() { return scatra_->sca_tra_field(); };
 
     //! return pointer to scalar problem adapter base class
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> sca_tra_field_base() { return scatra_; };
 
     //! setup solver (for monolithic only)
-    virtual bool SetupSolver() { return true; };
+    virtual bool setup_solver() { return true; };
 
    protected:
     //! setup up of dofsets for two way coupling

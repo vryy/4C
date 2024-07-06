@@ -54,7 +54,7 @@ std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::SoSh8Plast::numstr_,
 
 
 
-Discret::ELEMENTS::SoSh8PlastType& Discret::ELEMENTS::SoSh8PlastType::Instance()
+Discret::ELEMENTS::SoSh8PlastType& Discret::ELEMENTS::SoSh8PlastType::instance()
 {
   return instance_;
 }
@@ -63,7 +63,7 @@ Discret::ELEMENTS::SoSh8PlastType& Discret::ELEMENTS::SoSh8PlastType::Instance()
 | create the new element type (public)                     seitz 05/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoSh8Plast(-1, -1);
@@ -75,7 +75,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::Create(
 | create the new element type (public)                     seitz 05/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -91,7 +91,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::Create(
 | create the new element type (public)                     seitz 05/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -110,11 +110,11 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
   int num_morphed_so_hex8_easnone = 0;
 
   // Loop through all elements
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     // get the actual element
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -169,15 +169,15 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
         {
           // resorting of nodes,
           // such that previous local r-dir is local t-dir afterwards
-          new_nodeids[0] = actele->NodeIds()[7];
-          new_nodeids[1] = actele->NodeIds()[4];
-          new_nodeids[2] = actele->NodeIds()[0];
-          new_nodeids[3] = actele->NodeIds()[3];
-          new_nodeids[4] = actele->NodeIds()[6];
-          new_nodeids[5] = actele->NodeIds()[5];
-          new_nodeids[6] = actele->NodeIds()[1];
-          new_nodeids[7] = actele->NodeIds()[2];
-          actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+          new_nodeids[0] = actele->node_ids()[7];
+          new_nodeids[1] = actele->node_ids()[4];
+          new_nodeids[2] = actele->node_ids()[0];
+          new_nodeids[3] = actele->node_ids()[3];
+          new_nodeids[4] = actele->node_ids()[6];
+          new_nodeids[5] = actele->node_ids()[5];
+          new_nodeids[6] = actele->node_ids()[1];
+          new_nodeids[7] = actele->node_ids()[2];
+          actele->set_node_ids(NUMNOD_SOH8, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
@@ -186,15 +186,15 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
         {
           // resorting of nodes,
           // such that previous local s-dir is local t-dir afterwards
-          new_nodeids[0] = actele->NodeIds()[4];
-          new_nodeids[1] = actele->NodeIds()[5];
-          new_nodeids[2] = actele->NodeIds()[1];
-          new_nodeids[3] = actele->NodeIds()[0];
-          new_nodeids[4] = actele->NodeIds()[7];
-          new_nodeids[5] = actele->NodeIds()[6];
-          new_nodeids[6] = actele->NodeIds()[2];
-          new_nodeids[7] = actele->NodeIds()[3];
-          actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+          new_nodeids[0] = actele->node_ids()[4];
+          new_nodeids[1] = actele->node_ids()[5];
+          new_nodeids[2] = actele->node_ids()[1];
+          new_nodeids[3] = actele->node_ids()[0];
+          new_nodeids[4] = actele->node_ids()[7];
+          new_nodeids[5] = actele->node_ids()[6];
+          new_nodeids[6] = actele->node_ids()[2];
+          new_nodeids[7] = actele->node_ids()[3];
+          actele->set_node_ids(NUMNOD_SOH8, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
@@ -204,9 +204,9 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
           // no resorting necessary
           for (int node = 0; node < 8; ++node)
           {
-            new_nodeids[node] = actele->NodeIds()[node];
+            new_nodeids[node] = actele->node_ids()[node];
           }
-          actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+          actele->set_node_ids(NUMNOD_SOH8, new_nodeids);
           actele->nodes_rearranged_ = true;
           break;
         }
@@ -276,10 +276,10 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
   dis.fill_complete(false, false, false);
 
   // loop again to init Jacobian for Sosh8's
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->init_jacobian_mapping();
   }
@@ -320,11 +320,11 @@ Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
   thickvec_.resize(3, 0.);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -343,7 +343,7 @@ Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(const Discret::ELEMENTS::SoSh8Plast& o
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 05/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoSh8Plast::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoSh8Plast::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoSh8Plast(*this);
   return newelement;
@@ -357,7 +357,7 @@ void Discret::ELEMENTS::SoSh8Plast::pack(Core::Communication::PackBuffer& data) 
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class So3Plast Element
   Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::pack(data);
@@ -377,7 +377,7 @@ void Discret::ELEMENTS::SoSh8Plast::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
@@ -405,7 +405,7 @@ void Discret::ELEMENTS::SoSh8Plast::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 05/14 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
+bool Discret::ELEMENTS::SoSh8Plast::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   std::string buffer;
@@ -426,13 +426,13 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
     FOUR_C_THROW("Reading of SO3_PLAST element failed! KINEM unknown");
 
   Core::FE::GaussIntegration ip(Core::FE::CellType::hex8, 3);
-  numgpt_ = ip.NumPoints();
+  numgpt_ = ip.num_points();
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
   for (int gp = 0; gp < numgpt_; ++gp)
   {
-    wgt_[gp] = ip.Weight(gp);
-    const double* gpcoord = ip.Point(gp);
+    wgt_[gp] = ip.weight(gp);
+    const double* gpcoord = ip.point(gp);
     for (int idim = 0; idim < nsd_; idim++) xsi_[gp](idim) = gpcoord[idim];
   }
 
@@ -440,14 +440,14 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
   fbar_ = false;
 
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
 
-  SetMaterial(0, Mat::Factory(material));
+  set_material(0, Mat::Factory(material_id));
 
-  Teuchos::RCP<Mat::So3Material> so3mat = SolidMaterial();
+  Teuchos::RCP<Mat::So3Material> so3mat = solid_material();
   so3mat->setup(numgpt_, linedef);
-  so3mat->ValidKinematics(Inpar::Solid::KinemType::nonlinearTotLag);
+  so3mat->valid_kinematics(Inpar::Solid::KinemType::nonlinearTotLag);
   if (have_plastic_spin())
     plspintype_ = plspin;
   else
@@ -519,10 +519,10 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
   dDp_last_iter_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
   dDp_inc_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
 
-  Teuchos::ParameterList plparams = Global::Problem::Instance()->semi_smooth_plast_params();
+  Teuchos::ParameterList plparams = Global::Problem::instance()->semi_smooth_plast_params();
   Core::UTILS::AddEnumClassToParameterList(
-      "Core::ProblemType", Global::Problem::Instance()->GetProblemType(), plparams);
-  ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
+      "Core::ProblemType", Global::Problem::instance()->get_problem_type(), plparams);
+  read_parameter_list(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
   if (tsi_)
     FOUR_C_THROW(
@@ -543,9 +543,9 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
   Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // material coord. of element
   for (int i = 0; i < nen_; ++i)
   {
-    xrefe(i, 0) = this->Nodes()[i]->X()[0];
-    xrefe(i, 1) = this->Nodes()[i]->X()[1];
-    xrefe(i, 2) = this->Nodes()[i]->X()[2];
+    xrefe(i, 0) = this->nodes()[i]->x()[0];
+    xrefe(i, 1) = this->nodes()[i]->x()[1];
+    xrefe(i, 2) = this->nodes()[i]->x()[2];
   }
   // vector of df(origin), ie parametric derivatives of shape functions
   // evaluated at the origin (r,s,t)=(0,0,0)
@@ -649,9 +649,9 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
   Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // material coord. of element
   for (int i = 0; i < nen_; ++i)
   {
-    xrefe(i, 0) = this->Nodes()[i]->X()[0];
-    xrefe(i, 1) = this->Nodes()[i]->X()[1];
-    xrefe(i, 2) = this->Nodes()[i]->X()[2];
+    xrefe(i, 0) = this->nodes()[i]->x()[0];
+    xrefe(i, 1) = this->nodes()[i]->x()[1];
+    xrefe(i, 2) = this->nodes()[i]->x()[2];
   }
   // vector of df(origin), ie parametric derivatives of shape functions
   // evaluated at the origin (r,s,t)=(0,0,0)
@@ -788,8 +788,8 @@ void Discret::ELEMENTS::SoSh8Plast::evaluate_t(
 
   // now evaluate T^{-T} with solver
   Core::LinAlg::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT;
-  solve_for_inverseT.SetMatrix(TinvT);
-  int err2 = solve_for_inverseT.Factor();
+  solve_for_inverseT.set_matrix(TinvT);
+  int err2 = solve_for_inverseT.factor();
   int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
@@ -982,8 +982,8 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
 
   // get plastic hyperelastic material
   Mat::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
-    plmat = dynamic_cast<Mat::PlasticElastHyper*>(Material().get());
+  if (material()->material_type() == Core::Materials::m_plelasthyper)
+    plmat = dynamic_cast<Mat::PlasticElastHyper*>(material().get());
   else
     FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
 
@@ -1040,7 +1040,7 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
     output_strains(gp, iostrain, elestress);
 
     // material call *********************************************
-    plmat->EvaluateElast(&defgrd_mod(), &delta_lp(), &set_p_k2(), &set_cmat(), gp, Id());
+    plmat->evaluate_elast(&defgrd_mod(), &delta_lp(), &set_p_k2(), &set_cmat(), gp, id());
     // material call *********************************************
 
     // return gp stresses

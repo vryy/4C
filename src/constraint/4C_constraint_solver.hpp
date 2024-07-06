@@ -60,7 +60,7 @@ namespace CONSTRAINTS
     /*!
       \brief Solve constraint linear system
     */
-    void Solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
+    void solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
         Teuchos::RCP<Core::LinAlg::SparseMatrix>
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<Core::LinAlg::SparseMatrix>
@@ -74,12 +74,12 @@ namespace CONSTRAINTS
     /*!
        \brief Return the current value of the uzawa parameter
     */
-    double GetUzawaParameter() { return iterationparam_; }
+    double get_uzawa_parameter() { return iterationparam_; }
 
     /*!
       \brief Set uzawa parameter (used for dynamic adaptation and restart)
     */
-    void SetUzawaParameter(double restartval  ///< value to replace Uzawa Parameter with
+    void set_uzawa_parameter(double restartval  ///< value to replace Uzawa Parameter with
     )
     {
       iterationparam_ = restartval;
@@ -87,7 +87,8 @@ namespace CONSTRAINTS
       return;
     }
 
-    void SetSTCProp(Inpar::Solid::StcScale stcalgo, Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat)
+    void set_stc_prop(
+        Inpar::Solid::StcScale stcalgo, Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat)
     {
       stcalgo_ = stcalgo;
       stcmat_ = stcmat;

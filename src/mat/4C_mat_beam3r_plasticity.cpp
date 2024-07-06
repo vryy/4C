@@ -66,7 +66,7 @@ Mat::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
   Teuchos::RCP<Core::Mat::Material> matobject;
 
-  if (Uses_FAD())
+  if (uses_fad())
   {
     FOUR_C_THROW(
         "The elastoplastic beam material is not yet implemented to be used with automatic "
@@ -80,7 +80,7 @@ Mat::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-Core::Communication::ParObject* Mat::BeamElastPlasticMaterialType<T>::Create(
+Core::Communication::ParObject* Mat::BeamElastPlasticMaterialType<T>::create(
     const std::vector<char>& data)
 {
   // create material from packed data
@@ -169,13 +169,13 @@ void Mat::BeamPlasticMaterial<T>::pack(Core::Communication::PackBuffer& data) co
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   this->add_to_pack(data, type);
 
   // Pack material id
   int matid = -1;
-  if (this->Parameter() != nullptr)
-    matid = this->Params().Id();  // in case we are in post-process mode
+  if (this->parameter() != nullptr)
+    matid = this->params().id();  // in case we are in post-process mode
 
   this->add_to_pack(data, matid);
 
@@ -196,7 +196,7 @@ void Mat::BeamPlasticMaterial<T>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   int matid;
   this->extract_from_pack(position, data, matid);
@@ -211,13 +211,13 @@ void Mat::BeamPlasticMaterial<T>::unpack(const std::vector<char>& data)
 
   this->set_parameter(nullptr);
 
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
 
 
       this->set_parameter(static_cast<Mat::PAR::BeamReissnerElastPlasticMaterialParams*>(mat));
@@ -237,7 +237,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
   //*************Begin: Plasticity of strains in axial direction
 
   // If no yielding parameter was given, the material is modeled in a purely elastic manner
-  if (this->Params().GetYieldStressN() < 0.0)
+  if (this->params().get_yield_stress_n() < 0.0)
   {
     // compute material stresses by multiplying strains with constitutive matrix
     Mat::BeamElastHyperMaterial<T>::evaluate_force_contributions_to_stress(stressN, CN, Gamma, gp);
@@ -290,7 +290,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
   //*************Begin: Plasticity of curvatures
 
   // If no yielding parameter was given, the material is modeled in a purely elastic manner
-  if (this->Params().GetYieldStressM() < 0.0)
+  if (this->params().get_yield_stress_m() < 0.0)
   {
     // compute material stresses by multiplying curvature with constitutive matrix
     Mat::BeamElastHyperMaterial<T>::evaluate_moment_contributions_to_stress(stressM, CM, Cur, gp);
@@ -302,7 +302,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
 
     // If torsional plasticity is turned on, use full curvature vector for plasticity,
     // else, continue with reduced curvature vector (first entry is zero)
-    if (this->Params().get_torsion_plasticity())
+    if (this->params().get_torsion_plasticity())
     {
       kappa(0) = Cur(0);
     }
@@ -355,7 +355,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
 
     // if torsional plasticity is turned off, the moment needs to be recomputed using the full
     // elastic curvature (kappaelast(0) is zero in this case)
-    if (!this->Params().get_torsion_plasticity())
+    if (!this->params().get_torsion_plasticity())
     {
       kappaelast_[gp](0) = Cur(0);
       stressM.multiply(CM, kappaelast_[gp]);
@@ -375,20 +375,20 @@ void Mat::BeamPlasticMaterial<T>::compute_constitutive_parameter(
   for (unsigned int gp = 0; gp < numgp_force_; gp++)
   {
     // If plasticity for axial strains is enabled, get hardening constitutive parameters
-    if (this->Params().GetYieldStressN() >= 0)
+    if (this->params().get_yield_stress_n() >= 0)
     {
       get_hardening_constitutive_matrix_of_forces_material_frame(c_n_eff_[gp]);
-      get_effective_yield_stress_n(effyieldstress_n_[gp], this->Params().GetYieldStressN(),
+      get_effective_yield_stress_n(effyieldstress_n_[gp], this->params().get_yield_stress_n(),
           C_N(0, 0), c_n_eff_[gp](0, 0), gp);
     }
   }
   for (unsigned int gp = 0; gp < numgp_moment_; gp++)
   {
     // If plasticity for curvatures is enabled, get hardening constitutive parameters
-    if (this->Params().GetYieldStressM() >= 0)
+    if (this->params().get_yield_stress_m() >= 0)
     {
       get_hardening_constitutive_matrix_of_moments_material_frame(c_m_eff_[gp]);
-      get_effective_yield_stress_m(effyieldstress_m_[gp], this->Params().GetYieldStressM(),
+      get_effective_yield_stress_m(effyieldstress_m_[gp], this->params().get_yield_stress_m(),
           C_M(1, 1), c_m_eff_[gp](1, 1), gp);
     }
   }
@@ -447,9 +447,9 @@ void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_forces_material_fra
   // according to Jelenic 1999, section 2.4
   C_N.clear();
 
-  C_N(0, 0) = this->Params().GetAxialRigidity();
-  C_N(1, 1) = this->Params().GetShearRigidity2();
-  C_N(2, 2) = this->Params().GetShearRigidity3();
+  C_N(0, 0) = this->params().get_axial_rigidity();
+  C_N(1, 1) = this->params().get_shear_rigidity2();
+  C_N(2, 2) = this->params().get_shear_rigidity3();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -462,9 +462,9 @@ void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_moments_material_fr
   // according to Jelenic 1999, section 2.4
   C_M.clear();
 
-  C_M(0, 0) = this->Params().get_torsional_rigidity();
-  C_M(1, 1) = this->Params().GetBendingRigidity2();
-  C_M(2, 2) = this->Params().GetBendingRigidity3();
+  C_M(0, 0) = this->params().get_torsional_rigidity();
+  C_M(1, 1) = this->params().get_bending_rigidity2();
+  C_M(2, 2) = this->params().get_bending_rigidity3();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -472,14 +472,14 @@ void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_moments_material_fr
 template <typename T>
 double Mat::BeamPlasticMaterial<T>::get_translational_mass_inertia_factor() const
 {
-  return this->Params().get_translational_mass_inertia();
+  return this->params().get_translational_mass_inertia();
 }
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 double Mat::BeamPlasticMaterial<T>::get_interaction_radius() const
 {
-  return this->Params().get_interaction_radius();
+  return this->params().get_interaction_radius();
 }
 
 
@@ -491,9 +491,9 @@ void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_forces_ma
 {
   CN_eff.clear();
 
-  CN_eff(0, 0) = this->Params().get_hardening_axial_rigidity();
-  CN_eff(1, 1) = this->Params().get_hardening_shear_rigidity2();
-  CN_eff(2, 2) = this->Params().get_hardening_shear_rigidity3();
+  CN_eff(0, 0) = this->params().get_hardening_axial_rigidity();
+  CN_eff(1, 1) = this->params().get_hardening_shear_rigidity2();
+  CN_eff(2, 2) = this->params().get_hardening_shear_rigidity3();
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -503,12 +503,12 @@ void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_moments_m
     Core::LinAlg::Matrix<3, 3, T>& CM_eff) const
 {
   CM_eff.clear();
-  if (this->Params().get_torsion_plasticity())
-    CM_eff(0, 0) = this->Params().get_hardening_momental_rigidity();
+  if (this->params().get_torsion_plasticity())
+    CM_eff(0, 0) = this->params().get_hardening_momental_rigidity();
   else
-    CM_eff(0, 0) = this->Params().get_torsional_rigidity();
+    CM_eff(0, 0) = this->params().get_torsional_rigidity();
 
-  CM_eff(1, 1) = this->Params().get_hardening_momental_rigidity();
+  CM_eff(1, 1) = this->params().get_hardening_momental_rigidity();
   CM_eff(2, 2) = CM_eff(1, 1);
 }
 /*-----------------------------------------------------------------------------------------------*
@@ -539,7 +539,7 @@ void Mat::BeamPlasticMaterial<T>::get_stiffness_matrix_of_moments(
   /* compute spatial stresses and constitutive matrix from material ones according to Jelenic
    * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
 
-  if (this->Params().GetYieldStressM() < 0 || normstress_m_[gp] + 10e-10 < effyieldstress_m_[gp])
+  if (this->params().get_yield_stress_m() < 0 || normstress_m_[gp] + 10e-10 < effyieldstress_m_[gp])
     Mat::BeamElastHyperMaterial<T>::get_stiffness_matrix_of_moments(stiffM, C_M, gp);
   else
   {
@@ -553,7 +553,7 @@ void Mat::BeamPlasticMaterial<T>::get_stiffness_matrix_of_moments(
 
     // Set starting index s.t. the first entry of kappaelastflow and e will be 0 if
     // torsion plasticity is turned off
-    if (!(this->Params().get_torsion_plasticity()))
+    if (!(this->params().get_torsion_plasticity()))
     {
       i_start = 1;
     }
@@ -601,7 +601,7 @@ template <typename T>
 void Mat::BeamPlasticMaterial<T>::get_stiffness_matrix_of_forces(
     Core::LinAlg::Matrix<3, 3, T>& stiffN, const Core::LinAlg::Matrix<3, 3, T>& C_N, const int gp)
 {
-  if (this->Params().GetYieldStressN() < 0.0 || stress_n_[gp] < effyieldstress_n_[gp])
+  if (this->params().get_yield_stress_n() < 0.0 || stress_n_[gp] < effyieldstress_n_[gp])
   {
     stiffN = C_N;
   }

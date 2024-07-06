@@ -32,20 +32,20 @@ Core::Geo::Cut::CombIntersection::CombIntersection(int myrank)
 }
 
 
-void Core::Geo::Cut::CombIntersection::Cut(bool screenoutput)
+void Core::Geo::Cut::CombIntersection::cut(bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 4/6 --- Cut_Intersection");
 
   if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 4/6 Cut_Intersection ...";
 
-  Mesh& m = NormalMesh();
+  Mesh& m = normal_mesh();
 
   // Remark: we assume that there is no overlap between levelset-isocontour and mesh
 
   // find cut points with levelset-side
   if (side_ != Teuchos::null)
   {
-    m.Cut(*side_);
+    m.cut(*side_);
   }
 //
 // find cut points with cut mesh
@@ -61,7 +61,7 @@ void Core::Geo::Cut::CombIntersection::Cut(bool screenoutput)
   if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t\t...Finding cut lines" << Core::IO::endl;
   t_start = Teuchos::Time::wallTime();
 #endif
-  m.MakeCutLines();
+  m.make_cut_lines();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
@@ -70,7 +70,7 @@ void Core::Geo::Cut::CombIntersection::Cut(bool screenoutput)
     Core::IO::cout << "\t\t...Finding cut facets" << Core::IO::endl;
   t_start = Teuchos::Time::wallTime();
 #endif
-  m.MakeFacets();
+  m.make_facets();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
@@ -78,7 +78,7 @@ void Core::Geo::Cut::CombIntersection::Cut(bool screenoutput)
   if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t\t...Finding cut cells" << Core::IO::endl;
   t_start = Teuchos::Time::wallTime();
 #endif
-  m.MakeVolumeCells();
+  m.make_volume_cells();
 #if EXTENDED_CUT_DEBUG_OUTPUT
   t_diff = Teuchos::Time::wallTime() - t_start;
   if (myrank_ == 0 and screenoutput)
@@ -87,20 +87,20 @@ void Core::Geo::Cut::CombIntersection::Cut(bool screenoutput)
 }
 
 
-void Core::Geo::Cut::CombIntersection::FindNodePositions()
+void Core::Geo::Cut::CombIntersection::find_node_positions()
 {
   // TODO: this function and the overall inside-outside position strategy still has to be adapted
   // for more complex cases
 
   // NOTE: this will only work if mesh-cut area and level-set cut area are not overlapping
 
-  Mesh& m = NormalMesh();
+  Mesh& m = normal_mesh();
 
   // first, set the position for the mesh cut
-  m.FindNodePositions();
+  m.find_node_positions();
 
   // second, set the position for the level-set cut
-  m.FindLSNodePositions();
+  m.find_ls_node_positions();
 }
 
 
@@ -129,15 +129,15 @@ void Core::Geo::Cut::CombIntersection::add_element(int eid, const std::vector<in
   MeshIntersection::add_element(eid, nids, xyz, distype, lsv);
 }
 
-void Core::Geo::Cut::CombIntersection::AddLevelSetSide(int levelset_side)
+void Core::Geo::Cut::CombIntersection::add_level_set_side(int levelset_side)
 {
-  LevelSetIntersection::AddCutSide(levelset_side);
+  LevelSetIntersection::add_cut_side(levelset_side);
 }
 
 void Core::Geo::Cut::CombIntersection::add_mesh_cutting_side(int sid, const std::vector<int>& nids,
     const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, int mi)
 {
-  MeshIntersection::AddCutSide(sid, nids, xyz, distype, mi);
+  MeshIntersection::add_cut_side(sid, nids, xyz, distype, mi);
 }
 
 FOUR_C_NAMESPACE_CLOSE

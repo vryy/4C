@@ -39,11 +39,11 @@ namespace Core::Nodes
   class FiberNodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FiberNodeType"; }
+    std::string name() const override { return "FiberNodeType"; }
 
-    static FiberNodeType& Instance() { return instance_; };
+    static FiberNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FiberNodeType instance_;
@@ -88,7 +88,7 @@ namespace Core::Nodes
     \brief Deep copy the derived class and return
            pointer to it
     */
-    FiberNode* Clone() const override;
+    FiberNode* clone() const override;
 
     /*!
     \brief Return unique ParObject id
@@ -98,7 +98,10 @@ namespace Core::Nodes
 
     \return the parobject id
     */
-    int UniqueParObjectId() const override { return FiberNodeType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return FiberNodeType::instance().unique_par_object_id();
+    }
 
     /*!
     \brief Pack this class so it can be communicated
@@ -128,9 +131,9 @@ namespace Core::Nodes
       return coordinateSystemDirections_;
     }
 
-    inline const std::vector<std::array<double, 3>>& Fibers() const { return fibers_; }
+    inline const std::vector<std::array<double, 3>>& fibers() const { return fibers_; }
 
-    inline const std::map<AngleType, double>& Angles() const { return angles_; }
+    inline const std::map<AngleType, double>& angles() const { return angles_; }
 
     /*!
     \brief Print this node

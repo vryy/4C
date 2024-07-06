@@ -34,7 +34,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau(
   //----------------------------------------------------------------------
   // computation of stabilization parameters depending on definition used
   //----------------------------------------------------------------------
-  switch (scatrapara_->TauDef())
+  switch (scatrapara_->tau_def())
   {
     case Inpar::ScaTra::tau_taylor_hughes_zarins:
     case Inpar::ScaTra::tau_taylor_hughes_zarins_wo_dt:
@@ -162,8 +162,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_taylor_hughes_
   // due to time factor and reaction coefficient (reaction coefficient
   // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_taylor_hughes_zarins)
-    sigma_tot += 1.0 / scatraparatimint_->Dt();
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_taylor_hughes_zarins)
+    sigma_tot += 1.0 / scatraparatimint_->dt();
 
   // computation of various values derived from covariant metric tensor
   double G;
@@ -243,8 +243,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valenti
   // due to time factor and reaction coefficient (reaction coefficient
   // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_franca_valentin)
-    sigma_tot += 1.0 / scatraparatimint_->TimeFac();
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_franca_valentin)
+    sigma_tot += 1.0 / scatraparatimint_->time_fac();
 
   // calculate characteristic element length
   const double h = calc_char_ele_length(vol, vel_norm, convelint);
@@ -254,7 +254,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valenti
   const double epe = mk * densnp * vel_norm * h;
   // relating viscous to reactive part
   double epe1 = 0.0;
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_franca_valentin or reacoeff != 0.0)
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_franca_valentin or reacoeff != 0.0)
     epe1 = 2.0 * diffus / (mk * densnp * sigma_tot * ((h) * (h)));
 
   // respective "switching" parameters
@@ -319,8 +319,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_
   // due to time factor and reaction coefficient (reaction coefficient
   // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_shakib_hughes_codina)
-    sigma_tot += 1.0 / scatraparatimint_->Dt();
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_shakib_hughes_codina)
+    sigma_tot += 1.0 / scatraparatimint_->dt();
 
   // calculate characteristic element length
   const double h = calc_char_ele_length(vol, vel_norm, convelint);
@@ -382,8 +382,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_codina(
   // due to time factor and reaction coefficient (reaction coefficient
   // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_codina)
-    sigma_tot += 1.0 / scatraparatimint_->Dt();
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_codina)
+    sigma_tot += 1.0 / scatraparatimint_->dt();
 
   // calculate characteristic element length
   const double h = calc_char_ele_length(vol, vel_norm, convelint);
@@ -430,8 +430,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madurei
   // due to time factor and reaction coefficient (reaction coefficient
   // ensured to be zero in get_material_params for non-reactive material)
   double sigma_tot = reacoeff;
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_franca_madureira_valentin)
-    sigma_tot += 1.0 / scatraparatimint_->TimeFac();
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_franca_madureira_valentin)
+    sigma_tot += 1.0 / scatraparatimint_->time_fac();
 
   // calculate characteristic element length
   // -> currently: cubic/square root of element volume/area or
@@ -442,7 +442,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madurei
 
   // parameter relating reactive to diffusive part
   double epe = 0.0;
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_franca_madureira_valentin or reacoeff != 0.0)
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_franca_madureira_valentin or reacoeff != 0.0)
     epe = 2.0 * diffus / (mk * densnp * sigma_tot * ((h) * (h)));
 
   // respective "switching" parameter
@@ -454,7 +454,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madurei
   // Darcy flow
   const double c_u = 1.0;
 
-  if (scatrapara_->TauDef() == Inpar::ScaTra::tau_franca_madureira_valentin or reacoeff != 0.0)
+  if (scatrapara_->tau_def() == Inpar::ScaTra::tau_franca_madureira_valentin or reacoeff != 0.0)
     tau = ((h) * (h)) / (c_u * ((h) * (h)) * densnp * sigma_tot * xi + (2.0 * diffus / mk));
 
   return;
@@ -521,7 +521,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
   //---------------------------------------------------------------------
   // select from various definitions for characteristic element length
   //---------------------------------------------------------------------
-  switch (scatrapara_->CharEleLength())
+  switch (scatrapara_->char_ele_length())
   {
     // a) streamlength due to Tezduyar et al. (1992) -> default
     // normed velocity vector
@@ -597,7 +597,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
   double artdiff = 0.0;
 
   // classical linear artificial all-scale subgrid diffusivity
-  if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_artificial)
+  if (scatrapara_->assgd_type() == Inpar::ScaTra::assgd_artificial)
   {
     // get element-type constant
     const double mk = ScaTra::MK<distype>();
@@ -608,29 +608,29 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
     // parameter relating convective and diffusive forces + respective switch
     double epe = 0.0;
     double xi = 1.0;
-    if (diffmanager_->GetIsotropicDiff(k) > 1.0e-8)
+    if (diffmanager_->get_isotropic_diff(k) > 1.0e-8)
     {
-      epe = 0.5 * mk * densnp * vel_norm * h / diffmanager_->GetIsotropicDiff(k);
+      epe = 0.5 * mk * densnp * vel_norm * h / diffmanager_->get_isotropic_diff(k);
       xi = std::min(epe, 1.0);
     }
 
     // compute subgrid diffusivity
     artdiff = xi * 0.5 * densnp * vel_norm * h;
   }
-  else if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_lin_reinit)
+  else if (scatrapara_->assgd_type() == Inpar::ScaTra::assgd_lin_reinit)
   {
     artdiff = 0.005 * h;
   }
-  else if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_codina)
+  else if (scatrapara_->assgd_type() == Inpar::ScaTra::assgd_codina)
   {
     double alpha =
-        std::max(0.0, (0.7 - 2.0 * diffmanager_->GetIsotropicDiff(k) / convelint.norm2() / h));
+        std::max(0.0, (0.7 - 2.0 * diffmanager_->get_isotropic_diff(k) / convelint.norm2() / h));
 
     // gradient norm
     const double grad_norm = gradphi.norm2();
     if (grad_norm > 1e-8) artdiff = 0.5 * alpha * h * std::abs(scatrares) / grad_norm;
   }
-  else if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_yzbeta)
+  else if (scatrapara_->assgd_type() == Inpar::ScaTra::assgd_yzbeta)
   {
     // phiref is the tuning parameter for this form of artificial diffusion
     const double phiref = 0.01;
@@ -693,7 +693,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
       // residual or convective term) are different
       double sigma = 0.0;
       double specific_term = 0.0;
-      switch (scatrapara_->ASSGDType())
+      switch (scatrapara_->assgd_type())
       {
         case Inpar::ScaTra::assgd_hughes:
         {
@@ -732,7 +732,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
           // compute stabilization parameter based on b_h^par
           // (so far, only exact formula for stationary 1-D implemented)
           // element Peclet number relating convective and diffusive forces
-          double epe = 0.5 * vel_norm_bhpar * h / diffmanager_->GetIsotropicDiff(k);
+          double epe = 0.5 * vel_norm_bhpar * h / diffmanager_->get_isotropic_diff(k);
           const double pp = exp(epe);
           const double pm = exp(-epe);
           double xi = 0.0;
@@ -770,7 +770,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
           // (so far, only exact formula for stationary 1-D implemented)
 
           // compute sigma (version 1 according to John and Knobloch (2007))
-          if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_tezduyar_wo_phizero)
+          if (scatrapara_->assgd_type() == Inpar::ScaTra::assgd_tezduyar_wo_phizero)
           {
             if (vel_norm > 1e-10) sigma = (h / vel_norm) * (1.0 - (vel_norm_bhpar / vel_norm));
           }
@@ -799,7 +799,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
           // parameter zeta differentiating approaches by doCarmo and Galeao (1991)
           // and Almeida and Silva (1997)
           double zeta = 0.0;
-          if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_docarmo)
+          if (scatrapara_->assgd_type() == Inpar::ScaTra::assgd_docarmo)
             zeta = 1.0;
           else
           {
@@ -855,11 +855,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
 )
 {
   // scalar at t_(n+1)
-  const double phinp = scatravarmanager_->Phinp(k);
+  const double phinp = scatravarmanager_->phinp(k);
   // history of time integration
-  const double hist = scatravarmanager_->Hist(k);
+  const double hist = scatravarmanager_->hist(k);
   // convective contribution
-  const double conv_phi = scatravarmanager_->ConvPhi(k);
+  const double conv_phi = scatravarmanager_->conv_phi(k);
 
   // diffusive part used in stabilization terms
   double diff_phi(0.0);
@@ -872,11 +872,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
   {
     // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
     get_laplacian_strong_form(diff);
-    diff.scale(diffmanager_->GetIsotropicDiff(k));
+    diff.scale(diffmanager_->get_isotropic_diff(k));
     diff_phi = diff.dot(ephinp_[k]);
   }
 
-  if (scatraparatimint_->IsGenAlpha())
+  if (scatraparatimint_->is_gen_alpha())
   {
     // time derivative stored on history variable
     scatrares = densam * hist + densnp * conv_phi - diff_phi + rea_phi - rhsint;
@@ -886,10 +886,10 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
     // stationary residual
     scatrares = densnp * conv_phi - diff_phi + rea_phi - rhsint;
 
-    if (not scatraparatimint_->IsStationary())
+    if (not scatraparatimint_->is_stationary())
     {
-      scatrares *= scatraparatimint_->TimeFac() / scatraparatimint_->Dt();
-      scatrares += densnp * (phinp - hist) / scatraparatimint_->Dt();
+      scatrares *= scatraparatimint_->time_fac() / scatraparatimint_->dt();
+      scatrares += densnp * (phinp - hist) / scatraparatimint_->dt();
     }
   }
 
@@ -991,7 +991,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
         {
           // time factor for the intermediate step
           // (negative time value indicates error)
-          if (scatraparatimint_->Time() >= 0.0)
+          if (scatraparatimint_->time() >= 0.0)
           {
             // evaluate function at the position of the current node
             // ------------------------------------------------------
@@ -1000,13 +1000,13 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
             functfac =
-                Global::Problem::Instance()
-                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                    .evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), isd);
+                Global::Problem::instance()
+                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                    .evaluate((ele->nodes()[jnode])->x().data(), scatraparatimint_->time(), isd);
           }
           else
             FOUR_C_THROW("Negative time value in body force calculation: time = %f",
-                scatraparatimint_->Time());
+                scatraparatimint_->time());
         }
         else
           functfac = 1.0;
@@ -1069,7 +1069,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
   // and stabilization parameter
   // (different for generalized-alpha and other time-integration schemes)
   //--------------------------------------------------------------------
-  if (scatraparatimint_->IsGenAlpha())
+  if (scatraparatimint_->is_gen_alpha())
   {
     for (unsigned rr = 0; rr < nsd_; ++rr)
     {
@@ -1084,11 +1084,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
     {
       sgvelint(rr) = -tau *
                      (densnp * convelint(rr) +
-                         scatraparatimint_->TimeFac() *
+                         scatraparatimint_->time_fac() *
                              (densnp * conv(rr) + gradp(rr) - 2 * visc * epsilonvel(rr) -
                                  densnp * bodyforce(rr) - pressuregrad(rr)) -
                          densnp * acc(rr)) /
-                     scatraparatimint_->Dt();
+                     scatraparatimint_->dt();
     }
   }
 

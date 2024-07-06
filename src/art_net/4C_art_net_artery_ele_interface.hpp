@@ -62,7 +62,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       //! evaluate service (other quantities apart from rhs and matrix)
-      virtual int EvaluateService(Artery* ele, const Arteries::Action action,
+      virtual int evaluate_service(Artery* ele, const Arteries::Action action,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -73,7 +73,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
 
       //! evaluate scalar transport (only lin-exp formulation uses this)
-      virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
+      virtual int scatra_evaluate(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

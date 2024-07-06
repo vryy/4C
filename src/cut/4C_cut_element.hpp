@@ -46,12 +46,12 @@ namespace Core::Geo
     {
      public:
       /// \brief create an element with the given type
-      static Teuchos::RCP<Core::Geo::Cut::Element> Create(const Core::FE::CellType& elementtype,
+      static Teuchos::RCP<Core::Geo::Cut::Element> create(const Core::FE::CellType& elementtype,
           const int& eid, const std::vector<Side*>& sides, const std::vector<Node*>& nodes,
           const bool& active);
 
       /// create an element with the given shards-key (coming from trilinos library)
-      static Teuchos::RCP<Core::Geo::Cut::Element> Create(const unsigned& shardskey, const int& eid,
+      static Teuchos::RCP<Core::Geo::Cut::Element> create(const unsigned& shardskey, const int& eid,
           const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active);
 
       //! constructor
@@ -61,22 +61,22 @@ namespace Core::Geo
       //! destructor
       virtual ~Element() = default;
       /*! \brief Returns the ID of the element */
-      int Id() const { return eid_; }
+      int id() const { return eid_; }
 
       /*! \brief Returns the shape of the element */
-      virtual Core::FE::CellType Shape() const = 0;
+      virtual Core::FE::CellType shape() const = 0;
 
       //! element dimension
-      virtual unsigned Dim() const = 0;
+      virtual unsigned n_dim() const = 0;
 
       //! element number of nodes
-      virtual unsigned NumNodes() const = 0;
+      virtual unsigned num_nodes() const = 0;
 
       //! problem dimension
-      virtual unsigned ProbDim() const = 0;
+      virtual unsigned n_prob_dim() const = 0;
 
       /*! \brief Returns true if the point lies inside the element */
-      virtual bool PointInside(Point* p) = 0;
+      virtual bool point_inside(Point* p) = 0;
 
       /*! \brief Returns element local coordinates "rst" of a point from its global coordinates
        * "xyz"
@@ -89,14 +89,14 @@ namespace Core::Geo
       template <class T1, class T2>
       bool local_coordinates(const T1& xyz, T2& rst)
       {
-        if (static_cast<unsigned>(xyz.m()) < ProbDim())
-          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rst.m()) < Dim())
-          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
+        if (static_cast<unsigned>(xyz.m()) < n_prob_dim())
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", n_prob_dim());
+        if (static_cast<unsigned>(rst.m()) < n_dim())
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", n_dim());
 
         bool success = local_coordinates(xyz.data(), rst.data());
 
-        std::fill(rst.data() + Dim(), rst.data() + rst.m(), 0.0);
+        std::fill(rst.data() + n_dim(), rst.data() + rst.m(), 0.0);
 
         return success;
       }
@@ -111,14 +111,14 @@ namespace Core::Geo
       template <class T1, class T2>
       void global_coordinates(const T1& rst, T2& xyz)
       {
-        if (static_cast<unsigned>(xyz.m()) < ProbDim())
-          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rst.m()) < Dim())
-          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
+        if (static_cast<unsigned>(xyz.m()) < n_prob_dim())
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", n_prob_dim());
+        if (static_cast<unsigned>(rst.m()) < n_dim())
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", n_dim());
 
         global_coordinates(rst.data(), xyz.data());
 
-        std::fill(xyz.data() + ProbDim(), xyz.data() + xyz.m(), 0.0);
+        std::fill(xyz.data() + n_prob_dim(), xyz.data() + xyz.m(), 0.0);
       }
 
       /*! \brief Returns the element center global coordinates
@@ -130,8 +130,8 @@ namespace Core::Geo
       template <class T>
       void element_center(T& midpoint)
       {
-        if (static_cast<unsigned>(midpoint.m()) != ProbDim())
-          FOUR_C_THROW("The dimension of midpoint is wrong! (probdim = %d)", ProbDim());
+        if (static_cast<unsigned>(midpoint.m()) != n_prob_dim())
+          FOUR_C_THROW("The dimension of midpoint is wrong! (probdim = %d)", n_prob_dim());
 
         return element_center(midpoint.data());
       }
@@ -145,15 +145,15 @@ namespace Core::Geo
        *  \param ns (in)   : contains the value of the scalar at the corner nodes of the element
        *  \param rst (in)  : local parameter space coordinate inside the element */
       template <class T>
-      double Scalar(const std::vector<double>& ns, const T& rst)
+      double scalar(const std::vector<double>& ns, const T& rst)
       {
-        if (static_cast<unsigned>(rst.m()) != Dim())
-          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
+        if (static_cast<unsigned>(rst.m()) != n_dim())
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", n_dim());
         return Scalar(ns, rst.data());
       }
 
       //! \brief Cutting the element with the given cut side
-      bool Cut(Mesh& mesh, Side& cut_side);
+      bool cut(Mesh& mesh, Side& cut_side);
 
       /*! \brief cut this element with its cut faces */
       void find_cut_points(Mesh& mesh);
@@ -162,13 +162,13 @@ namespace Core::Geo
       bool find_cut_points(Mesh& mesh, Side& cut_side);
 
       /*! \brief Create cut lines over this element by connecting appropriate cut points */
-      void MakeCutLines(Mesh& mesh);
+      void make_cut_lines(Mesh& mesh);
 
       /*! \brief Create facets */
-      void MakeFacets(Mesh& mesh);
+      void make_facets(Mesh& mesh);
 
       /*! \brief Create volumecells */
-      void MakeVolumeCells(Mesh& mesh);
+      void make_volume_cells(Mesh& mesh);
 
       /*! \brief Create integrationcells by performing tessellation over the volumecells
        *  of the element. This uses QHULL */
@@ -192,8 +192,8 @@ namespace Core::Geo
       template <class T>
       double get_level_set_value(const T& xyz)
       {
-        if (static_cast<unsigned>(xyz.m()) < ProbDim())
-          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+        if (static_cast<unsigned>(xyz.m()) < n_prob_dim())
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", n_prob_dim());
 
         return get_level_set_value(xyz.data());
       }
@@ -203,8 +203,8 @@ namespace Core::Geo
       template <class T>
       double get_level_set_value_at_local_coords(const T& rst)
       {
-        if (static_cast<unsigned>(rst.m()) < Dim())
-          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
+        if (static_cast<unsigned>(rst.m()) < n_dim())
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", n_dim());
 
         return get_level_set_value_at_local_coords(rst.data());
       }
@@ -232,37 +232,37 @@ namespace Core::Geo
       template <class T>
       std::vector<double> get_level_set_gradient(const T& xyz)
       {
-        if (static_cast<unsigned>(xyz.m()) < ProbDim())
-          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+        if (static_cast<unsigned>(xyz.m()) < n_prob_dim())
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", n_prob_dim());
 
         return get_level_set_gradient(xyz.data());
       }
       template <class T>
       std::vector<double> get_level_set_gradient_at_local_coords(const T& rst)
       {
-        if (static_cast<unsigned>(rst.m()) < Dim())
-          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
+        if (static_cast<unsigned>(rst.m()) < n_dim())
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", n_dim());
 
         return get_level_set_gradient_at_local_coords(rst.data());
       }
       template <class T>
       std::vector<double> get_level_set_gradient_in_local_coords(const T& xyz)
       {
-        if (static_cast<unsigned>(xyz.m()) < ProbDim())
-          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+        if (static_cast<unsigned>(xyz.m()) < n_prob_dim())
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", n_prob_dim());
 
         return get_level_set_gradient_in_local_coords(xyz.data());
       }
       template <class T>
       std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(const T& rst)
       {
-        if (static_cast<unsigned>(rst.m()) < Dim())
-          FOUR_C_THROW("The dimension of rst is wrong! (probdim = %d)", ProbDim());
+        if (static_cast<unsigned>(rst.m()) < n_dim())
+          FOUR_C_THROW("The dimension of rst is wrong! (probdim = %d)", n_prob_dim());
 
         return get_level_set_gradient_at_local_coords_in_local_coords(rst.data());
       }
       /*! \brief Does the element contain a level set side. */
-      bool HasLevelSetSide();
+      bool has_level_set_side();
 
       /** \brief Artificial cells with zero volumes are removed
        *
@@ -273,7 +273,7 @@ namespace Core::Geo
       void remove_empty_volume_cells();
 
       /*! \brief Determine the inside/outside/on cut-surface position for the element's nodes */
-      void FindNodePositions();
+      void find_node_positions();
 
       /** \brief main routine to compute the position based on the angle between the
        *  line-vec (p-c) and an appropriate cut-side
@@ -291,107 +291,107 @@ namespace Core::Geo
        * \param cutpoint : the point on cut side which is connected to p via a facets line)
        * \param f        : the facet via which p and cutpoint are connected
        * \param s        : the current cut side, the cutpoint lies on */
-      bool ComputePosition(Point* p, Point* cutpoint, Facet* f, Side* s);
+      bool compute_position(Point* p, Point* cutpoint, Facet* f, Side* s);
 
       /** \brief determine the position of point p based on the angle between the line (p-c)
        * and the side's normal vector, return \TRUE if successful */
-      bool PositionByAngle(Point* p, Point* cutpoint, Side* s);
+      bool position_by_angle(Point* p, Point* cutpoint, Side* s);
 
       /** \brief returns true in case that any cut-side cut with the element produces cut points,
        *  i.e. also for touched cases (at points, edges or sides), or when an element side has more
        *  than one facet or is touched by fully/partially by the cut side */
-      bool IsCut();
+      bool is_cut();
 
       /** \brief return true if the element has more than one volume-cell and therefore
        *  is intersected by a cut-side */
-      bool IsIntersected() { return (this->NumVolumeCells() > 1); }
+      bool is_intersected() { return (this->num_volume_cells() > 1); }
 
-      bool OnSide(Facet* f);
+      bool on_side(Facet* f);
 
-      bool OnSide(const std::vector<Point*>& facet_points);
+      bool on_side(const std::vector<Point*>& facet_points);
 
       /*! \brief Get the integrationcells created from this element */
       Core::Geo::Cut::ElementIntegrationType get_element_integration_type() { return eleinttype_; }
 
       /*! \brief Get the integrationcells created from this element */
-      void GetIntegrationCells(plain_integrationcell_set& cells);
+      void get_integration_cells(plain_integrationcell_set& cells);
 
       /*! \brief Get the boundarycells created from cut facets of this element */
-      void GetBoundaryCells(plain_boundarycell_set& bcells);
+      void get_boundary_cells(plain_boundarycell_set& bcells);
 
       /*! \brief Returns all the sides of this element */
-      const std::vector<Side*>& Sides() const { return sides_; }
+      const std::vector<Side*>& sides() const { return sides_; }
 
       /*! \brief Returns true if the side is one of the element sides */
-      bool OwnedSide(Side* side)
+      bool owned_side(Side* side)
       {
         return std::find(sides_.begin(), sides_.end(), side) != sides_.end();
       }
 
       /*! \brief Get the coordinates of all the nodes of this linear (shadow) element */
       template <class T>
-      void Coordinates(T& xyze) const
+      void coordinates(T& xyze) const
       {
-        if (static_cast<unsigned>(xyze.m()) != ProbDim())
-          FOUR_C_THROW("xyze has the wrong number of rows! (probdim = %d)", ProbDim());
+        if (static_cast<unsigned>(xyze.m()) != n_prob_dim())
+          FOUR_C_THROW("xyze has the wrong number of rows! (probdim = %d)", n_prob_dim());
 
-        if (static_cast<unsigned>(xyze.n()) != NumNodes())
-          FOUR_C_THROW("xyze has the wrong number of columns! (numNodes = %d)", NumNodes());
+        if (static_cast<unsigned>(xyze.n()) != num_nodes())
+          FOUR_C_THROW("xyze has the wrong number of columns! (numNodes = %d)", num_nodes());
 
-        Coordinates(xyze.data());
+        coordinates(xyze.data());
       }
 
       /*! \brief Get the coordinates of all the nodes of this linear shadow element */
-      virtual void Coordinates(double* xyze) const = 0;
+      virtual void coordinates(double* xyze) const = 0;
 
       /*! \brief Get the coordinates of all node of parent Quad element */
-      virtual void CoordinatesQuad(double* xyze) = 0;
+      virtual void coordinates_quad(double* xyze) = 0;
 
       /*! \brief Get all the nodes of this element */
-      const std::vector<Node*>& Nodes() const { return nodes_; }
+      const std::vector<Node*>& nodes() const { return nodes_; }
 
-      const std::vector<Node*>& QuadCorners() const { return quad_corners_; }
+      const std::vector<Node*>& quad_corners() const { return quad_corners_; }
 
       /*! \brief Points that are associated with nodes of this shadow element */
-      const std::vector<Point*>& Points() const { return points_; }
+      const std::vector<Point*>& points() const { return points_; }
 
       /*! \brief Get the cutsides of this element */
-      const plain_side_set& CutSides() const { return cut_faces_; }
+      const plain_side_set& cut_sides() const { return cut_faces_; }
 
       /*! \brief Get cutpoints of this element */
-      void GetCutPoints(PointSet& cut_points);
+      void get_cut_points(PointSet& cut_points);
 
       /*! \brief Get the volumecells of this element */
-      const plain_volumecell_set& VolumeCells() const { return cells_; }
+      const plain_volumecell_set& volume_cells() const { return cells_; }
 
       /*! \brief Get the number of volume-cells */
-      int NumVolumeCells() const { return cells_.size(); }
+      int num_volume_cells() const { return cells_.size(); }
 
       /*! \brief Get the facets of this element */
-      const plain_facet_set& Facets() const { return facets_; }
+      const plain_facet_set& facets() const { return facets_; }
 
       /*! \brief Are there any facets? */
-      bool IsFacet(Facet* f) { return facets_.count(f) > 0; }
+      bool is_facet(Facet* f) { return facets_.count(f) > 0; }
 
       /*! \brief check if the side's normal vector is orthogonal to the line
        *  between p and the cutpoint */
-      bool IsOrthogonalSide(Side* s, Point* p, Point* cutpoint);
+      bool is_orthogonal_side(Side* s, Point* p, Point* cutpoint);
 
       /*!
       \brief Get total number of Gaussinan points generated over all the volumecells of this element
        */
-      int NumGaussPoints(Core::FE::CellType shape);
+      int num_gauss_points(Core::FE::CellType shape);
 
-      void DebugDump();
+      void debug_dump();
 
-      void GnuplotDump();
+      void gnuplot_dump();
 
       /*! \brief When the cut library breaks down, this writes the element
        * geometry and all the cut sides to inspect visually whether the cut
        * configuration is appropriate */
       void gmsh_failure_element_dump();
 
-      void DumpFacets();
+      void dump_facets();
 
       /*!
       \brief Inset this volumecell to this element
@@ -422,10 +422,10 @@ namespace Core::Geo
                     // only for linear elements???)
 
         // get coordiantes of parent Quad element
-        if (shadow) CoordinatesQuad(xyze.data());
+        if (shadow) coordinates_quad(xyze.data());
         // get coordinates of linear shadow element
         else
-          Coordinates(xyze.data());
+          coordinates(xyze.data());
 
         Core::LinAlg::Matrix<dim, nen> deriv;
         Core::LinAlg::Matrix<probdim, probdim> xjm;
@@ -464,41 +464,41 @@ namespace Core::Geo
 
       /*! \brief Assign the subelement his parent id (equal to the subelement
        * id eid_ for linear elements) */
-      void ParentId(int id) { parent_id_ = id; }
+      void parent_id(int id) { parent_id_ = id; }
 
       /*! \brief Gets the parent id of the subelement (equal to the sub-element
        * id eid_ for linear elements) */
-      int GetParentId() { return parent_id_; }
+      int get_parent_id() { return parent_id_; }
 
       /*!
        \brief set this element as shadow element
        */
-      void setAsShadowElem() { is_shadow_ = true; }
+      void set_as_shadow_elem() { is_shadow_ = true; }
 
       /*!
       \brief Return true if this is a shadow element
        */
-      bool isShadow() { return is_shadow_; }
+      bool is_shadow() { return is_shadow_; }
 
       /*!
       \brief Store the corners of parent Quad element from which this shadow element is derived
        */
-      void setQuadCorners(Mesh& mesh, const std::vector<int>& nodeids);
+      void set_quad_corners(Mesh& mesh, const std::vector<int>& nodeids);
 
       /*!
       \brief Get corner nodes of parent Quad element from which this shadow element is derived
        */
-      std::vector<Node*> getQuadCorners();
+      std::vector<Node*> get_quad_corners();
 
       /*!
       \brief Set the discretization type of parent quad element
        */
-      void setQuadShape(Core::FE::CellType dis) { quadshape_ = dis; }
+      void set_quad_shape(Core::FE::CellType dis) { quadshape_ = dis; }
 
       /*!
       \brief Get shape of parent Quad element from which this shadow element is derived
        */
-      Core::FE::CellType getQuadShape() { return quadshape_; }
+      Core::FE::CellType get_quad_shape() { return quadshape_; }
 
       /*!
       \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from
@@ -510,12 +510,12 @@ namespace Core::Geo
       /*!
       \brief Add cut face
        */
-      void AddCutFace(Side* cutface) { cut_faces_.insert(cutface); }
+      void add_cut_face(Side* cutface) { cut_faces_.insert(cutface); }
 
       /*!
       \brief get the bounding volume
        */
-      const BoundingBox& GetBoundingVolume() const { return *boundingvolume_; }
+      const BoundingBox& get_bounding_volume() const { return *boundingvolume_; }
 
      protected:
       // const std::vector<Side*> & Sides() { return sides_; }
@@ -654,45 +654,45 @@ namespace Core::Geo
       }
 
       //! return element shape
-      Core::FE::CellType Shape() const override { return elementtype; }
+      Core::FE::CellType shape() const override { return elementtype; }
 
       //! get problem dimension
-      unsigned ProbDim() const override { return probdim; }
+      unsigned n_prob_dim() const override { return probdim; }
 
       //! get element dimension
-      unsigned Dim() const override { return dim; }
+      unsigned n_dim() const override { return dim; }
 
       //! get the number of nodes
-      unsigned NumNodes() const override { return num_nodes_element; }
+      unsigned num_nodes() const override { return num_nodes_element; }
 
-      bool PointInside(Point* p) override;
+      bool point_inside(Point* p) override;
 
-      void Coordinates(Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze) const
+      void coordinates(Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze) const
       {
-        Coordinates(xyze.data());
+        coordinates(xyze.data());
       }
 
       /*! \brief Get the coordinates of all the nodes of this linear shadow element */
-      void Coordinates(double* xyze) const override
+      void coordinates(double* xyze) const override
       {
         double* x = xyze;
-        for (std::vector<Node*>::const_iterator i = Nodes().begin(); i != Nodes().end(); ++i)
+        for (std::vector<Node*>::const_iterator i = nodes().begin(); i != nodes().end(); ++i)
         {
           Node& n = **i;
-          n.Coordinates(x);
+          n.coordinates(x);
           x += probdim;
         }
       }
 
       /*! \brief Get the coordinates of all node of parent Quad element */
-      void CoordinatesQuad(double* xyze) override
+      void coordinates_quad(double* xyze) override
       {
         double* x = xyze;
-        for (std::vector<Node*>::const_iterator i = QuadCorners().begin(); i != QuadCorners().end();
-             ++i)
+        for (std::vector<Node*>::const_iterator i = quad_corners().begin();
+             i != quad_corners().end(); ++i)
         {
           Node& n = **i;
-          n.Coordinates(x);
+          n.coordinates(x);
           x += probdim;
         }
       }
@@ -723,10 +723,10 @@ namespace Core::Geo
 
         xyz = 0;
 
-        const std::vector<Node*>& nodes = Nodes();
+        const std::vector<Node*>& nodes = ConcreteElement::nodes();
         for (unsigned i = 0; i < num_nodes_element; ++i)
         {
-          Core::LinAlg::Matrix<probdim, 1> x(nodes[i]->point()->X());
+          Core::LinAlg::Matrix<probdim, 1> x(nodes[i]->point()->x());
           xyz.update(funct(i), x, 1);
         }
       }
@@ -738,11 +738,11 @@ namespace Core::Geo
        *
        *  \author hiermeier
        *  \date 08/16 */
-      void PointAt(const Core::LinAlg::Matrix<dim, 1>& rst, Core::LinAlg::Matrix<probdim, 1>& xyz)
+      void point_at(const Core::LinAlg::Matrix<dim, 1>& rst, Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
         Core::LinAlg::Matrix<num_nodes_element, 1> funct(true);
         Core::LinAlg::Matrix<probdim, num_nodes_element> xyze(true);
-        this->Coordinates(xyze);
+        this->coordinates(xyze);
 
         Core::FE::shape_function<elementtype>(rst, funct);
         xyz.multiply(xyze, funct);
@@ -758,7 +758,7 @@ namespace Core::Geo
       {
         // get the element center in the parameter coordinates (dim)
         Core::LinAlg::Matrix<dim, 1> center_rst(Core::FE::getLocalCenterPosition<dim>(elementtype));
-        PointAt(center_rst, midpoint);
+        point_at(center_rst, midpoint);
       }
 
       /*! \brief Find the scalar value at a particular point inside the element
@@ -769,7 +769,7 @@ namespace Core::Geo
        *
        *  \param ns (in)   : contains the value of the scalar at the corner nodes of the element
        *  \param rst (in)  : local parameter space coordinate inside the element */
-      double Scalar(const std::vector<double>& ns, const Core::LinAlg::Matrix<dim, 1>& rst)
+      double scalar(const std::vector<double>& ns, const Core::LinAlg::Matrix<dim, 1>& rst)
       {
         Core::LinAlg::Matrix<num_nodes_element, 1> funct;
         Core::FE::shape_function<elementtype>(rst, funct);
@@ -801,7 +801,7 @@ namespace Core::Geo
 
         Core::FE::shape_function<elementtype>(rst, funct);
 
-        const std::vector<Node*> ele_node = this->Nodes();
+        const std::vector<Node*> ele_node = this->nodes();
 
         // Extract Level Set values from element.
         Core::LinAlg::Matrix<num_nodes_element, 1> escaa;
@@ -809,7 +809,7 @@ namespace Core::Geo
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
           Node* nod = *i;
-          escaa(mm, 0) = nod->LSV();
+          escaa(mm, 0) = nod->lsv();
           mm++;
         }
 
@@ -836,7 +836,7 @@ namespace Core::Geo
         //----------------------------------
         Core::LinAlg::Matrix<probdim, num_nodes_element> deriv1;
         Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
-        Coordinates(xyze);
+        coordinates(xyze);
         // transposed jacobian dxyz/drst
         Core::LinAlg::Matrix<probdim, probdim> xjm;
         // inverse of transposed jacobian drst/dxyz
@@ -855,7 +855,7 @@ namespace Core::Geo
         derxy.multiply(xij, deriv1);
         //----------------------------------
 
-        const std::vector<Node*> ele_node = this->Nodes();
+        const std::vector<Node*> ele_node = this->nodes();
 
         // Extract Level Set values from element.
         Core::LinAlg::Matrix<1, num_nodes_element> escaa;
@@ -863,7 +863,7 @@ namespace Core::Geo
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
           Node* nod = *i;
-          escaa(0, mm) = nod->LSV();
+          escaa(0, mm) = nod->lsv();
           mm++;
         }
         Core::LinAlg::Matrix<probdim, 1> phi_deriv1;
@@ -896,7 +896,7 @@ namespace Core::Geo
 
         Core::FE::shape_function_deriv1<elementtype>(rst, deriv1);
 
-        const std::vector<Node*> ele_node = this->Nodes();
+        const std::vector<Node*> ele_node = this->nodes();
 
         // Extract Level Set values from element.
         Core::LinAlg::Matrix<1, num_nodes_element> escaa;
@@ -904,7 +904,7 @@ namespace Core::Geo
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
           Node* nod = *i;
-          escaa(0, mm) = nod->LSV();
+          escaa(0, mm) = nod->lsv();
           mm++;
         }
         Core::LinAlg::Matrix<dim, 1> phi_deriv1;
@@ -944,7 +944,7 @@ namespace Core::Geo
       double scalar(const std::vector<double>& ns, const double* rst) override
       {
         const Core::LinAlg::Matrix<dim, 1> rst_mat(rst, true);  // create view
-        return Scalar(ns, rst_mat);
+        return scalar(ns, rst_mat);
       }
 
       //! derived

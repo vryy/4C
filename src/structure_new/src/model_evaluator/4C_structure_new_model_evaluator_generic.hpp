@@ -130,7 +130,7 @@ namespace Solid
        *
        * @return Enum encoding the type of model evaluator
        */
-      virtual Inpar::Solid::ModelType Type() const = 0;
+      virtual Inpar::Solid::ModelType type() const = 0;
 
       /*! \brief Reset model specific variables (without jacobian)
        *
@@ -261,7 +261,7 @@ namespace Solid
 
       /*! \brief predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
-      virtual void Predict(const Inpar::Solid::PredEnum& pred_type) = 0;
+      virtual void predict(const Inpar::Solid::PredEnum& pred_type) = 0;
 
       /*! \brief Recover condensed solution variables, meant to be called by run_post_compute_x
        */

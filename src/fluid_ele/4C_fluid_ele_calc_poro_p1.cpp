@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcPoroP1<distype>*
-Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -32,7 +32,7 @@ Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance(Core::UTILS::SingletonA
             new Discret::ELEMENTS::FluidEleCalcPoroP1<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 template <Core::FE::CellType distype>
@@ -65,7 +65,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate(Discret::ELEMENTS::
   }  // Nurbs specific stuff
 
   // set element id
-  Base::eid_ = ele->Id();
+  Base::eid_ = ele->id();
   // get structure material
   Base::get_struct_material(ele);
 
@@ -112,7 +112,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate(Discret::ELEMENTS::
   evelnp.clear();
   static Core::LinAlg::Matrix<nen_, 1> eprenp(true);
   eprenp.clear();
-  if (FluidEleCalc<distype>::fldparatimint_->IsGenalphaNP())
+  if (FluidEleCalc<distype>::fldparatimint_->is_genalpha_np())
     Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
@@ -128,13 +128,13 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate(Discret::ELEMENTS::
   eaccam.clear();
   epressam_timederiv.clear();
 
-  if (Base::fldparatimint_->IsGenalpha())
+  if (Base::fldparatimint_->is_genalpha())
     Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &eaccam, &epressam_timederiv, "accam");
 
   static Core::LinAlg::Matrix<nen_, 1> epressn_timederiv(true);
   epressn_timederiv.clear();
-  if (Base::fldparatimint_->IsGenalpha())
+  if (Base::fldparatimint_->is_genalpha())
     Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, nullptr, &epressn_timederiv, "accn");
 
@@ -198,7 +198,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate(Discret::ELEMENTS::
   int result = Base::evaluate(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln,
       eprenp, epren, emhist, echist, epressnp_timederiv, epressam_timederiv, epressn_timederiv,
       eaccam, edispnp, edispn, egridv, egridvn, escaaf, &eporositynp, &eporositydot, &eporositydotn,
-      mat, ele->IsAle(), intpoints);
+      mat, ele->is_ale(), intpoints);
 
   return result;
 }
@@ -246,7 +246,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_pressure_equation(
       dphi_dJdp, dphi_dpp, dgradphi_dp, estif_q_u, ppmat, preforce);
 
   // now the porosity time derivative (different for standard poro and poro_p1 elements)
-  if (!Base::porofldpara_->IsStationaryConti())
+  if (!Base::porofldpara_->is_stationary_conti())
   {
     // inertia terms on the right hand side for instationary fluids
 
@@ -264,11 +264,12 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_pressure_equation(
       // just update internal variables, no contribution to rhs
       const double porositydotn = Base::funct_.dot(*eporositydotn);
 
-      Base::hist_con_ = Base::fldparatimint_->OmTheta() * Base::fldparatimint_->Dt() * porositydotn;
+      Base::hist_con_ =
+          Base::fldparatimint_->om_theta() * Base::fldparatimint_->dt() * porositydotn;
 
       // rhs from last time step
       Base::rhscon_ =
-          1.0 / Base::fldparatimint_->Dt() / Base::fldparatimint_->Theta() * Base::hist_con_;
+          1.0 / Base::fldparatimint_->dt() / Base::fldparatimint_->theta() * Base::hist_con_;
 
       // transient part of continuity equation residual
       Base::conres_old_ += porositydot - Base::rhscon_;
@@ -302,7 +303,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENT
   }  // Nurbs specific stuff
 
   // set element id
-  Base::eid_ = ele->Id();
+  Base::eid_ = ele->id();
 
   // get structure material
   Base::get_struct_material(ele);
@@ -350,14 +351,14 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENT
   // np_genalpha: additional vector for velocity at time n+1
   Core::LinAlg::Matrix<nsd_, nen_> evelnp(true);
   Core::LinAlg::Matrix<nen_, 1> eprenp(true);
-  if (Base::fldparatimint_->IsGenalphaNP())
+  if (Base::fldparatimint_->is_genalpha_np())
     this->extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
   // np_genalpha: additional vector for velocity at time n+1
   Core::LinAlg::Matrix<nsd_, nen_> eveln(true);
   Core::LinAlg::Matrix<nen_, 1> epren(true);
-  if (Base::fldparatimint_->IsGenalphaNP())
+  if (Base::fldparatimint_->is_genalpha_np())
     this->extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &eveln, &epren, "veln");
 
@@ -366,13 +367,13 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENT
   eaccam.clear();
   epressam_timederiv.clear();
 
-  if (Base::fldparatimint_->IsGenalpha())
+  if (Base::fldparatimint_->is_genalpha())
     Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, &eaccam, &epressam_timederiv, "accam");
 
   static Core::LinAlg::Matrix<nen_, 1> epressn_timederiv(true);
   epressn_timederiv.clear();
-  if (Base::fldparatimint_->IsGenalpha())
+  if (Base::fldparatimint_->is_genalpha())
     Base::extract_values_from_global_vector(
         discretization, lm, *Base::rotsymmpbc_, nullptr, &epressn_timederiv, "accn");
 
@@ -417,7 +418,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENT
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = evaluate_od(params, ebofoaf, elemat1, elevec1, evelaf, epreaf, evelnp, eveln, eprenp,
       epren, emhist, echist, epressnp_timederiv, epressam_timederiv, epressn_timederiv, eaccam,
-      edispnp, edispn, egridv, egridvn, escaaf, &eporositynp, mat, ele->IsAle(), intpoints);
+      edispnp, edispn, egridv, egridvn, escaaf, &eporositynp, mat, ele->is_ale(), intpoints);
 
   return result;
 }
@@ -445,7 +446,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Teuchos::Paramet
   // overrule higher_order_ele if input-parameter is set
   // this might be interesting for fast (but slightly
   // less accurate) computations
-  if (Base::fldpara_->IsInconsistent()) Base::is_higher_order_ele_ = false;
+  if (Base::fldpara_->is_inconsistent()) Base::is_higher_order_ele_ = false;
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -632,7 +633,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     lin_resM_Dphi.clear();
 
     // evaluate shape functions and derivatives at integration point
-    Base::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+    Base::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
     Base::setup_material_derivatives();
@@ -738,15 +739,15 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     Base::compute_old_rhs_conti(dphi_dp);
 
     // compute strong residual of mixture (structural) equation
-    if (Base::porofldpara_->StabBiot() and (not Base::porofldpara_->IsStationaryConti()) and
-        Base::struct_mat_->PoroLawType() != Core::Materials::m_poro_law_constant)
+    if (Base::porofldpara_->stab_biot() and (not Base::porofldpara_->is_stationary_conti()) and
+        Base::struct_mat_->poro_law_type() != Core::Materials::m_poro_law_constant)
       Base::compute_mixture_strong_residual(params, defgrd, edispnp, edispn, F_X, *iquad, true);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
-    const double timefacfac = Base::fldparatimint_->TimeFac() * Base::fac_;
-    const double timefacfacpre = Base::fldparatimint_->TimeFacPre() * Base::fac_;
+    const double timefacfac = Base::fldparatimint_->time_fac() * Base::fac_;
+    const double timefacfacpre = Base::fldparatimint_->time_fac_pre() * Base::fac_;
 
     //***********************************************************************************************
     // 1) coupling terms in momentum balance
@@ -875,14 +876,15 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     for (int i = 0; i < nen_; i++)
       for (int j = 0; j < nsd_; j++) derxy_convel(i) += Base::derxy_(j, i) * Base::velint_(j);
 
-    if (not Base::porofldpara_->IsStationaryConti())
+    if (not Base::porofldpara_->is_stationary_conti())
     {
       for (int i = 0; i < nen_; i++)
         for (int j = 0; j < nsd_; j++)
           derxy_convel(i) += Base::derxy_(j, i) * (-Base::gridvel_int_(j));
     }
 
-    if (!static_cast<Discret::ELEMENTS::FluidEleParameterPoro*>(Base::fldpara_)->PoroContiPartInt())
+    if (!static_cast<Discret::ELEMENTS::FluidEleParameterPoro*>(Base::fldpara_)
+             ->poro_conti_part_int())
     {
       /*
         /                           \     /                             \
@@ -923,7 +925,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
           |                              |
           \                             /
        */
-      if (not Base::porofldpara_->IsStationaryConti())
+      if (not Base::porofldpara_->is_stationary_conti())
       {
         for (int ui = 0; ui < nen_; ++ui)
         {
@@ -938,11 +940,11 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
 
     //*************************************************************************************************************
     // PSPG
-    if (Base::fldpara_->PSPG())
+    if (Base::fldpara_->pspg())
     {
       double scal_grad_q = 0.0;
 
-      if (Base::fldpara_->Tds() == Inpar::FLUID::subscales_quasistatic)
+      if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
       {
         scal_grad_q = Base::tau_(1);
       }
@@ -968,7 +970,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
       }
 
       // linearization of residual in stabilization term w.r.t. porosity
-      if (Base::is_higher_order_ele_ || Base::fldpara_->IsNewton())
+      if (Base::is_higher_order_ele_ || Base::fldpara_->is_newton())
       {
         static Core::LinAlg::Matrix<nen_, nen_> temp(false);
         temp.clear();
@@ -991,18 +993,18 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     }
 
     //*************************************************************************************************************
-    if (Base::fldpara_->RStab() != Inpar::FLUID::reactive_stab_none)
+    if (Base::fldpara_->r_stab() != Inpar::FLUID::reactive_stab_none)
     {
       double reac_tau;
-      if (Base::fldpara_->Tds() == Inpar::FLUID::subscales_quasistatic)
-        reac_tau = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
+      if (Base::fldpara_->tds() == Inpar::FLUID::subscales_quasistatic)
+        reac_tau = Base::fldpara_->visc_rea_stab_fac() * Base::reacoeff_ * Base::tau_(1);
       else
       {
         FOUR_C_THROW("Is this factor correct? Check for bugs!");
         reac_tau = 0.0;
       }
 
-      if (Base::is_higher_order_ele_ or Base::fldpara_->IsNewton())
+      if (Base::is_higher_order_ele_ or Base::fldpara_->is_newton())
       {
         for (int vi = 0; vi < nen_; ++vi)
         {
@@ -1021,7 +1023,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
       }
 
       {  // linearization of stabilization parameter w.r.t. porosity
-        const double v = timefacfac * Base::fldpara_->ViscReaStabFac() *
+        const double v = timefacfac * Base::fldpara_->visc_rea_stab_fac() *
                          (Base::reacoeff_ * Base::dtau_dphi_(1) / Base::tau_(1) +
                              Base::reacoeff_ / Base::porosity_);
         for (int vi = 0; vi < nen_; ++vi)
@@ -1075,7 +1077,8 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_linearization_od(co
   //------------------ d( grad(\phi) ) / du_s is also zero
   dgradphi_dus.clear();
 
-  if (!static_cast<Discret::ELEMENTS::FluidEleParameterPoro*>(Base::fldpara_)->PoroContiPartInt() or
+  if (!static_cast<Discret::ELEMENTS::FluidEleParameterPoro*>(Base::fldpara_)
+           ->poro_conti_part_int() or
       Base::visceff_)
   {
     //---------------------d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J *
@@ -1180,7 +1183,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_volume(Teuchos::Para
   Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
   // set element id
-  Base::eid_ = ele->Id();
+  Base::eid_ = ele->id();
 
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
   Core::LinAlg::Matrix<nen_, 1> eporositynp(true);
@@ -1199,7 +1202,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_volume(Teuchos::Para
        iquad != Base::intpoints_.end(); ++iquad)
   {
     // evaluate shape functions and derivatives at integration point
-    Base::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
+    Base::eval_shape_func_and_derivs_at_int_point(iquad.point(), iquad.weight());
 
     //-----------------------------------computing the porosity
     Base::porosity_ = Base::funct_.dot(eporositynp);

@@ -37,13 +37,13 @@ namespace Core::Geo
       /// @name Different Create methods
       /// @{
 
-      static BoundingBox* Create();
-      static BoundingBox* Create(Node& node);
-      static BoundingBox* Create(Edge& edge);
-      static BoundingBox* Create(Side& side);
-      static BoundingBox* Create(VolumeCell& volcell);
-      static BoundingBox* Create(VolumeCell& volcell, Element* elem1);
-      static BoundingBox* Create(Element& element);
+      static BoundingBox* create();
+      static BoundingBox* create(Node& node);
+      static BoundingBox* create(Edge& edge);
+      static BoundingBox* create(Side& side);
+      static BoundingBox* create(VolumeCell& volcell);
+      static BoundingBox* create(VolumeCell& volcell, Element* elem1);
+      static BoundingBox* create(Element& element);
 
       /// @}
      protected:
@@ -76,41 +76,41 @@ namespace Core::Geo
       /*!
        \brief Make the boundingbox larger to include this edge within the box
        */
-      void Assign(Edge& edge);
+      void assign(Edge& edge);
 
       /*! \brief Make the boundingbox larger to include this side within the
        *  box */
-      void Assign(Side& side);
+      void assign(Side& side);
 
       /*! \brief Make the boundingbox larger to include this element
        * within the box */
-      void Assign(Element& element);
+      void assign(Element& element);
 
       double operator()(int i, int j) const { return box_(i, j); }
 
       /*!  \brief If necessary make the boundingbox larger to include
        * this point as one of the corners of the box */
-      virtual void AddPoint(const double* x) = 0;
+      virtual void add_point(const double* x) = 0;
 
       /*! \brief If necessary make the boundingbox larger to include
        *  this point as one of the corners of the box */
-      void AddPoint(const Core::LinAlg::Matrix<3, 1>& p) { AddPoint(p.data()); }
+      void add_point(const Core::LinAlg::Matrix<3, 1>& p) { add_point(p.data()); }
 
       /*! \brief If necessary make the boundingbox larger to include
        *  all these nodes as one of the corners of the box */
-      void AddPoints(const std::vector<Node*>& nodes);
+      void add_points(const std::vector<Node*>& nodes);
 
       /*! \brief Check whether "b" is within this boundingbox */
-      bool Within(double norm, const BoundingBox& b) const;
+      bool within(double norm, const BoundingBox& b) const;
 
       /*! \brief Check the point is within this boundingbox */
-      virtual bool Within(double norm, const double* x) const;
+      virtual bool within(double norm, const double* x) const;
 
       /*! \brief Check these points are within this boundingbox */
-      bool Within(double norm, const Core::LinAlg::SerialDenseMatrix& xyz) const;
+      bool within(double norm, const Core::LinAlg::SerialDenseMatrix& xyz) const;
 
       /*! \brief Check the element is within this boundingbox */
-      bool Within(double norm, Element& element) const;
+      bool within(double norm, Element& element) const;
 
       /*! \brief Print the corner points of boundingbox on the screen */
       void print();
@@ -124,13 +124,13 @@ namespace Core::Geo
       double maxz() const { return box_(2, 1); }
 
       /*! \brief Get the out-most point of the boundingbox */
-      void CornerPoint(int i, double* x);
+      void corner_point(int i, double* x);
 
       /*! \brief Get the boundingbox */
-      const Core::LinAlg::Matrix<3, 2>& GetBoundingVolume() const { return box_; }
+      const Core::LinAlg::Matrix<3, 2>& get_bounding_volume() const { return box_; }
 
       /// Compute and return the diagonal length of the BoundingBox
-      double Diagonal()
+      double diagonal()
       {
         return sqrt((maxx() - minx()) * (maxx() - minx()) + (maxy() - miny()) * (maxy() - miny()) +
                     (maxz() - minz()) * (maxz() - minz()));
@@ -160,12 +160,12 @@ namespace Core::Geo
       /** add a new point under consideration of the problem dimension. If a
        *  2-dimensional problem is observed, we ignore the z-coordinate and keep
        *  a value of zero. */
-      void AddPoint(const double* x) override;
+      void add_point(const double* x) override;
 
       /** \brief [derived]
        *
        *  special treatment of the 2-D case if necessary. */
-      bool Within(double norm, const double* x) const override;
+      bool within(double norm, const double* x) const override;
     };  // class ConcreteBoundingBox
 
   }  // namespace Cut

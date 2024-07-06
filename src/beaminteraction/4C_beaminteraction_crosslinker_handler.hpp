@@ -62,12 +62,12 @@ namespace BEAMINTERACTION
     virtual ~BeamCrosslinkerHandler() = default;
 
     /// get binning strategy
-    virtual inline Teuchos::RCP<Core::Binstrategy::BinningStrategy>& BinStrategy()
+    virtual inline Teuchos::RCP<Core::Binstrategy::BinningStrategy>& bin_strategy()
     {
       return binstrategy_;
     }
 
-    virtual inline Core::Binstrategy::BinningStrategy const& BinStrategy() const
+    virtual inline Core::Binstrategy::BinningStrategy const& bin_strategy() const
     {
       return *binstrategy_;
     }
@@ -76,20 +76,20 @@ namespace BEAMINTERACTION
     virtual void distribute_linker_to_bins(Teuchos::RCP<Epetra_Map> const& linkerrowmap);
 
     /// remove all linker
-    virtual void RemoveAllLinker();
+    virtual void remove_all_linker();
 
     /// get bin colume map
-    virtual inline Teuchos::RCP<Epetra_Map>& BinColMap() { return bincolmap_; }
+    virtual inline Teuchos::RCP<Epetra_Map>& bin_col_map() { return bincolmap_; }
 
     /// get myrank
-    virtual inline int MyRank() { return myrank_; }
+    virtual inline int my_rank() { return myrank_; }
 
     /// linker are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual Teuchos::RCP<std::list<int>> TransferLinker(bool const fill_using_ghosting = true);
+    virtual Teuchos::RCP<std::list<int>> transfer_linker(bool const fill_using_ghosting = true);
 
     /// node is placed into the correct row bin or put into the list of homeless linker
-    virtual bool PlaceNodeCorrectly(Teuchos::RCP<Core::Nodes::Node> node,  ///< node to be placed
+    virtual bool place_node_correctly(Teuchos::RCP<Core::Nodes::Node> node,  ///< node to be placed
         const double* currpos,  ///< current position of this node
         std::list<Teuchos::RCP<Core::Nodes::Node>>& homelesslinker  ///< list of homeless linker
     );

@@ -71,7 +71,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
 
   // Get the vector with the projection points for this pair.
   const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& projection_points =
-      this->line_to_3D_segments_[0].GetProjectionPoints();
+      this->line_to_3D_segments_[0].get_projection_points();
 
   // If there are no projection points, return no contact status.
   if (projection_points.size() == 0) return false;
@@ -90,7 +90,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
   // Initialize scalar variables.
   double beam_jacobian;
   double penalty_parameter =
-      this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter();
+      this->params()->beam_to_solid_volume_meshtying_params()->get_penalty_parameter();
 
   // Calculate the meshtying forces.
   // Loop over segments.
@@ -103,19 +103,19 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
 
     // Get the jacobian in the reference configuration.
     GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
-        projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
+        projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
     beam_jacobian = 0.5 * dr_beam_ref.norm2();
 
     // Get the current positions on beam and solid.
-    GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.get_eta(), this->ele1pos_, r_beam);
     GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<Beam>(
-        projected_gauss_point.GetEta(), this->ele1pos_, triad);
+        projected_gauss_point.get_eta(), this->ele1pos_, triad);
     r_cross_section_ref(0) = 0.0;
-    r_cross_section_ref(1) = projected_gauss_point.GetEtaCrossSection()(0);
-    r_cross_section_ref(2) = projected_gauss_point.GetEtaCrossSection()(1);
+    r_cross_section_ref(1) = projected_gauss_point.get_eta_cross_section()(0);
+    r_cross_section_ref(2) = projected_gauss_point.get_eta_cross_section()(1);
     r_cross_section.multiply(triad, r_cross_section_ref);
     r_beam += r_cross_section;
-    GEOMETRYPAIR::EvaluatePosition<Solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
+    GEOMETRYPAIR::EvaluatePosition<Solid>(projected_gauss_point.get_xi(), this->ele2pos_, r_solid);
 
     // Calculate the force in this Gauss point. The sign of the force calculated here is the one
     // that acts on the beam.
@@ -128,11 +128,11 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
         force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
-                                  projected_gauss_point.GetGaussWeight() * beam_jacobian;
+                                  projected_gauss_point.get_gauss_weight() * beam_jacobian;
     for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
         force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + Beam::n_dof_) *
-                                  projected_gauss_point.GetGaussWeight() * beam_jacobian;
+                                  projected_gauss_point.get_gauss_weight() * beam_jacobian;
   }
 
 
@@ -206,7 +206,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::get_
   else
   {
     GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<Beam>(
-        xi, GEOMETRYPAIR::ElementDataToDouble<Beam>::ToDouble(this->ele1pos_), triad);
+        xi, GEOMETRYPAIR::ElementDataToDouble<Beam>::to_double(this->ele1pos_), triad);
   }
 }
 

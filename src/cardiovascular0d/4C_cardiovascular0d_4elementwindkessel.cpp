@@ -51,8 +51,8 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
-  if (!actdisc_->Filled()) FOUR_C_THROW("fill_complete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!actdisc_->filled()) FOUR_C_THROW("fill_complete() was not called");
+  if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   params.set("action", "calc_struct_volconstrstiff");
 
@@ -153,15 +153,15 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
       wkstiff(2, 2) = -theta;
 
 
-      sysmat1->UnComplete();
+      sysmat1->un_complete();
 
       // assemble into cardiovascular0d system matrix - wkstiff contribution
       for (int j = 0; j < numdof_per_cond; j++)
       {
         for (int k = 0; k < numdof_per_cond; k++)
         {
-          havegid[k] = sysmat1->RowMap().MyGID(gindex[k]);
-          if (havegid[k]) sysmat1->Assemble(wkstiff(k, j), gindex[k], gindex[j]);
+          havegid[k] = sysmat1->row_map().MyGID(gindex[k]);
+          if (havegid[k]) sysmat1->assemble(wkstiff(k, j), gindex[k], gindex[j]);
         }
       }
     }
@@ -192,7 +192,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
@@ -204,7 +204,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+      curr->second->location_vector(*actdisc_, lm, lmowner, lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -221,7 +221,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
 
 
       // assembly
-      int eid = curr->second->Id();
+      int eid = curr->second->id();
 
       if (assmat2)
       {
@@ -230,7 +230,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
         std::vector<int> colvec(1);
         colvec[0] = gindex[1];
         elevector2.scale(-1. / ts_size);
-        sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
+        sysmat2->assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
       }
 
       if (assvec3)
@@ -243,7 +243,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
         for (int j = 0; j < numdof_per_cond; j++)
         {
           cardiovascular0dlm.push_back(gindex[j]);
-          cardiovascular0downer.push_back(curr->second->Owner());
+          cardiovascular0downer.push_back(curr->second->owner());
         }
         Core::LinAlg::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
@@ -253,7 +253,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
   if (assmat3)
   {
     // offdiagonal stiffness block (0,1 block)
-    EvaluateDStructDp(params, sysmat3);
+    evaluate_d_struct_dp(params, sysmat3);
   }
 }  // end of evaluate_condition
 
@@ -264,8 +264,8 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
 void UTILS::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
   // get the current time
   // const double time = params.get("total time",-1.0);
 
@@ -306,7 +306,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterLis
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -317,7 +317,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterLis
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+      curr->second->location_vector(*actdisc_, lm, lmowner, lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -336,13 +336,13 @@ void UTILS::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterLis
       for (int j = 0; j < numdof_per_cond; j++)
       {
         cardiovascular0dlm.push_back(gindex[j]);
-        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->owner());
       }
       Core::LinAlg::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }
 
-  if (actdisc_->Comm().MyPID() == 0)
+  if (actdisc_->get_comm().MyPID() == 0)
   {
     std::cout << "===== Welcome to monolithic coupling of 3D structural dynamics to 0D "
                  "cardiovascular flow models ====="

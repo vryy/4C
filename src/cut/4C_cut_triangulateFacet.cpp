@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
               Split the facet into appropriate number of tri and quad Sudhakar 04/12 Work well
 for both convex and concave facets
 *------------------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::SplitFacet()
+void Core::Geo::Cut::TriangulateFacet::split_facet()
 {
   // An edge should contain only 2 end points
   // delete all remaining points on the edge
@@ -138,7 +138,7 @@ void Core::Geo::Cut::TriangulateFacet::split4node_facet(
     {
       Point* p1 = poly[i];
       double x1[3];
-      p1->Coordinates(x1);
+      p1->coordinates(x1);
       std::cout << x1[0] << "\t" << x1[1] << "\t" << x1[2] << "\n";
     }
     FOUR_C_THROW(
@@ -246,7 +246,7 @@ void Core::Geo::Cut::TriangulateFacet::split_general_facet(std::vector<int> ptCo
     int start_size = ptlist_.size();
     if ((num - concsize) < 4)  // this means that no Quad cells can be formed for this geometry
     {
-      EarClipping(ptConcavity);
+      ear_clipping(ptConcavity);
       return;
     }
 
@@ -387,7 +387,7 @@ void Core::Geo::Cut::TriangulateFacet::split_general_facet(std::vector<int> ptCo
         // trianglulate the rest with earclipping
         // one may want more elaborate strategy here
         // if somethin goes wrong
-        EarClipping(ptConcavity, true, true);
+        ear_clipping(ptConcavity, true, true);
         return;
         // FOUR_C_THROW("Starting infinite loop!");
       }
@@ -474,9 +474,9 @@ unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
     bool isEar = true;
 
     Core::LinAlg::Matrix<3, 3> tri_coord;
-    tri[0]->Coordinates(tri_coord.data());
-    tri[1]->Coordinates(tri_coord.data() + 3);
-    tri[2]->Coordinates(tri_coord.data() + 6);
+    tri[0]->coordinates(tri_coord.data());
+    tri[1]->coordinates(tri_coord.data() + 3);
+    tri[2]->coordinates(tri_coord.data() + 6);
     // check whether any point of polygon is inside
     for (unsigned j = 0; j < reflex.size(); j++)
     {
@@ -486,9 +486,9 @@ unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
 
       Core::LinAlg::Matrix<3, 1> point_cord(ptlist_[reflInd]);
       Teuchos::RCP<Core::Geo::Cut::Position> pos =
-          Core::Geo::Cut::Position::Create(tri_coord, point_cord, Core::FE::CellType::tri3);
+          Core::Geo::Cut::Position::create(tri_coord, point_cord, Core::FE::CellType::tri3);
       // precice computation if it is inside
-      bool is_inside = pos->Compute(0.0);
+      bool is_inside = pos->compute(0.0);
       if (is_inside)
       {
         // another check if it is not the same point as triangle's vertexes
@@ -537,7 +537,7 @@ unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
     Called when facets have two adjacent concave points
     During the process, if facet is free of adjacent concave points, splitanyfacet() is called
 *--------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::TriangulateFacet::EarClipping(
+void Core::Geo::Cut::TriangulateFacet::ear_clipping(
     std::vector<int> ptConcavity,  // list of concave points
     bool triOnly,                  // whether to create triangles only?
     bool DeleteInlinePts)          // how to deal with collinear points?
@@ -777,13 +777,13 @@ void Core::Geo::Cut::TriangulateFacet::EarClipping(
         }
       }
 
-      Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(BoundingBox::Create());
+      Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(BoundingBox::create());
       std::cout << "The facet points are as follows\n";
       for (std::vector<Point*>::iterator it = ptlist_.begin(); it != ptlist_.end(); it++)
       {
         Point* pp = *it;
-        const double* xp = pp->X();
-        bb->AddPoint(xp);
+        const double* xp = pp->x();
+        bb->add_point(xp);
         std::cout << xp[0] << " " << xp[1] << " " << xp[2] << "\n";
       }
       std::cout << "Bounding box details:\n";
@@ -818,7 +818,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
       Point* maincyclepoint = *i;
       Core::LinAlg::Matrix<3, 1> maincyclepointcoordinates;
       Core::LinAlg::Matrix<3, 1> localmaincyclepointcoordinates;
-      maincyclepoint->Coordinates(maincyclepointcoordinates.data());
+      maincyclepoint->coordinates(maincyclepointcoordinates.data());
       parentside->local_coordinates(
           maincyclepointcoordinates, localmaincyclepointcoordinates, false);
       localmaincyclepoints[j] = localmaincyclepointcoordinates;
@@ -833,7 +833,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         Point* holecyclepoint = *i;
         Core::LinAlg::Matrix<3, 1> holecyclepointcoordinates;
         Core::LinAlg::Matrix<3, 1> localholecyclepointcoordinates;
-        holecyclepoint->Coordinates(holecyclepointcoordinates.data());
+        holecyclepoint->coordinates(holecyclepointcoordinates.data());
         parentside->local_coordinates(
             holecyclepointcoordinates, localholecyclepointcoordinates, false);
         localholecyclespoints[k] = localholecyclepointcoordinates;
@@ -1025,7 +1025,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         int reflexmaincyclepointid = *i;
         Core::LinAlg::Matrix<3, 1> reflexmaincyclepoint =
             localmaincyclepoints[reflexmaincyclepointid];
-        Teuchos::RCP<Position> pos = Core::Geo::Cut::Position::Create(
+        Teuchos::RCP<Position> pos = Core::Geo::Cut::Position::create(
             triangle, reflexmaincyclepoint, Core::FE::CellType::tri3);
         bool within = pos->is_given_point_within_element();
         if (within)
@@ -1125,7 +1125,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
     }
   }
   std::vector<int> ptConcavity;
-  this->EarClipping(ptConcavity, true, false);
+  this->ear_clipping(ptConcavity, true, false);
 }
 
 bool Core::Geo::Cut::TriangulateFacet::hasequal_ptlist_inlist(
@@ -1142,7 +1142,7 @@ bool Core::Geo::Cut::TriangulateFacet::hasequal_ptlist_inlist(
       bool found = false;
       for (auto inlist_it = (inlists[0]).begin(); inlist_it != (inlists[0]).end(); ++inlist_it)
       {
-        if ((*ptlist_it)->Id() == (*inlist_it)->Id())
+        if ((*ptlist_it)->id() == (*inlist_it)->id())
         {
           found = true;
           break;

@@ -109,7 +109,7 @@ void ScaTra::TimIntGenAlpha::setup()
     {
       homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
-      homisoturb_forcing_->SetInitialSpectrum(
+      homisoturb_forcing_->set_initial_spectrum(
           Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
@@ -244,7 +244,7 @@ void ScaTra::TimIntGenAlpha::av_m3_separation()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
 
   // AVM3 separation
-  Sep_->Multiply(false, *phiaf_, *fsphiaf_);
+  Sep_->multiply(false, *phiaf_, *fsphiaf_);
 
   // set fine-scale velocity for parallel nigthly tests
   // separation matrix depends on the number of proc here
@@ -271,7 +271,7 @@ void ScaTra::TimIntGenAlpha::dynamic_computation_of_cs()
     {
       const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
       DynSmag_->apply_filter_for_dynamic_computation_of_prt(
-          phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+          phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel());
     }
     else
     {
@@ -289,7 +289,7 @@ void ScaTra::TimIntGenAlpha::dynamic_computation_of_cv()
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
-        phiaf_, 0.0, dirichtoggle, *extraparams_, NdsVel());
+        phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
 }
 
@@ -355,7 +355,7 @@ void ScaTra::TimIntGenAlpha::update()
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {
-    if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
+    if (is_result_step() or do_boundary_flux_statistics()) calc_flux(true);
   }
 
   // compute time derivative at time n+1
@@ -372,7 +372,7 @@ void ScaTra::TimIntGenAlpha::update()
   phidtn_->Update(1.0, *phidtnp_, 0.0);
 
   // call time update of forcing routine
-  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->TimeUpdateForcing();
+  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->time_update_forcing();
 }
 
 
@@ -404,7 +404,7 @@ void ScaTra::TimIntGenAlpha::read_restart(
   if (input == Teuchos::null)
   {
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::Instance()->InputControlFile(), step));
+        discret_, Global::Problem::instance()->input_control_file(), step));
   }
   else
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));

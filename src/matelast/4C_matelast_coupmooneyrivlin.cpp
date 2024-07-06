@@ -27,7 +27,7 @@ Mat::Elastic::CoupMooneyRivlin::CoupMooneyRivlin(Mat::Elastic::PAR::CoupMooneyRi
 {
 }
 
-void Mat::Elastic::CoupMooneyRivlin::AddStrainEnergy(double& psi,
+void Mat::Elastic::CoupMooneyRivlin::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
@@ -57,7 +57,7 @@ void Mat::Elastic::CoupMooneyRivlin::add_derivatives_principal(Core::LinAlg::Mat
   ddPII(2) += (c1 + 2 * c2) * std::pow(prinv(2), -2.) + 0.5 * c3 * std::pow(prinv(2), -1.5);
 }
 
-void Mat::Elastic::CoupMooneyRivlin::AddCoupDerivVol(
+void Mat::Elastic::CoupMooneyRivlin::add_coup_deriv_vol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
   const double c1 = params_->c1_;

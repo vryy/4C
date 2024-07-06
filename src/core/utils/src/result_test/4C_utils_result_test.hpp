@@ -59,7 +59,7 @@ namespace Core::UTILS
     virtual ~ResultTest() = default;
 
     /// perform element value test
-    virtual void TestElement(Input::LineDefinition& res, int& nerr, int& test_count);
+    virtual void test_element(Input::LineDefinition& res, int& nerr, int& test_count);
 
     /*!
      * @brief  perform nodal value test
@@ -81,7 +81,7 @@ namespace Core::UTILS
         const std::vector<std::vector<std::vector<int>>>& nodeset);
 
     /// perform special case test
-    virtual void TestSpecial(
+    virtual void test_special(
         Input::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
 
     /*!
@@ -91,10 +91,10 @@ namespace Core::UTILS
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count);
+    virtual void test_special(Input::LineDefinition& res, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line
-    virtual bool Match(Input::LineDefinition& res);
+    virtual bool match(Input::LineDefinition& res);
 
    protected:
     //! compare a calculated value with the expected one
@@ -124,13 +124,13 @@ namespace Core::UTILS
   {
    public:
     /// add field specific result test object
-    void AddFieldTest(Teuchos::RCP<ResultTest> test);
+    void add_field_test(Teuchos::RCP<ResultTest> test);
 
     /// do all tests of all fields including appropiate output
-    void TestAll(const Epetra_Comm& comm);
+    void test_all(const Epetra_Comm& comm);
 
     /// Store the parsed @p results.
-    void SetParsedLines(std::vector<Input::LineDefinition> results);
+    void set_parsed_lines(std::vector<Input::LineDefinition> results);
 
     /// Store the node set
     void set_node_set(const std::vector<std::vector<std::vector<int>>>& nodeset);

@@ -26,7 +26,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
     const Core::LinAlg::SparseMatrix& A, const Core::LinAlg::SparseMatrix& B, bool complete)
 {
   return MLMultiply(
-      *A.EpetraMatrix(), *B.EpetraMatrix(), A.explicitdirichlet_, A.savegraph_, complete);
+      *A.epetra_matrix(), *B.epetra_matrix(), A.explicitdirichlet_, A.savegraph_, complete);
 }
 
 /*----------------------------------------------------------------------*
@@ -36,7 +36,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
     const Core::LinAlg::SparseMatrix& A, const Core::LinAlg::SparseMatrix& B,
     bool explicitdirichlet, bool savegraph, bool complete)
 {
-  return MLMultiply(*A.EpetraMatrix(), *B.EpetraMatrix(), explicitdirichlet, savegraph, complete);
+  return MLMultiply(*A.epetra_matrix(), *B.epetra_matrix(), explicitdirichlet, savegraph, complete);
 }
 
 /*----------------------------------------------------------------------*
@@ -46,8 +46,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
     bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput)
 {
   // make sure fill_complete was called on the matrices
-  if (!A.Filled()) FOUR_C_THROW("A has to be fill_complete");
-  if (!B.Filled()) FOUR_C_THROW("B has to be fill_complete");
+  if (!A.filled()) FOUR_C_THROW("A has to be fill_complete");
+  if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
 
   // EpetraExt::RowMatrix_Transpose transposera(true,nullptr,false);
   // EpetraExt::RowMatrix_Transpose transposerb(true,nullptr,false);
@@ -56,13 +56,13 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MLMultiply(
   Epetra_CrsMatrix* Atrans = nullptr;
   Epetra_CrsMatrix* Btrans = nullptr;
   if (transA)
-    Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposera(*A.EpetraMatrix()));
+    Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposera(*A.epetra_matrix()));
   else
-    Atrans = A.EpetraMatrix().get();
+    Atrans = A.epetra_matrix().get();
   if (transB)
-    Btrans = dynamic_cast<Epetra_CrsMatrix*>(&transposerb(*B.EpetraMatrix()));
+    Btrans = dynamic_cast<Epetra_CrsMatrix*>(&transposerb(*B.epetra_matrix()));
   else
-    Btrans = B.EpetraMatrix().get();
+    Btrans = B.epetra_matrix().get();
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> C;
   C = Core::LinAlg::MLMultiply(*Atrans, *Btrans, explicitdirichlet, savegraph, completeoutput);

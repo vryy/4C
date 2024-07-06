@@ -70,7 +70,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::check_elch
 )
 {
   // safety checks
-  if (ele->Material()->MaterialType() != Core::Materials::m_electrode)
+  if (ele->material()->material_type() != Core::Materials::m_electrode)
     FOUR_C_THROW("Invalid material type!");
 
   if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
@@ -88,7 +88,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::get_conduc
     bool effCond)
 {
   // use precomputed conductivity
-  sigma_all = diff_manager()->GetCond();
+  sigma_all = diff_manager()->get_cond();
 }  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::get_conductivity
 
 
@@ -121,7 +121,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_
     case Inpar::ScaTra::flux_total:
     {
       // ohmic contribution to current density
-      q.update(-diff_manager()->GetCond(), var_manager()->GradPot());
+      q.update(-diff_manager()->get_cond(), var_manager()->grad_pot());
       break;
     }
 
@@ -151,9 +151,9 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // get global state vectors
-  const Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  const Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phinp\"!");
-  const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+  const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.get_state("phidtnp");
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
 
   // extract local nodal values from global state vectors
@@ -171,7 +171,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
@@ -193,7 +193,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   }  // loop over integration points
 
   // safety check
-  if (not my::scatrapara_->IsAle() and scalars.length() != 3)
+  if (not my::scatrapara_->is_ale() and scalars.length() != 3)
     FOUR_C_THROW(
         "Result vector for electrode state of charge and C rate computation has invalid length!");
 
@@ -204,11 +204,12 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   scalars(2) = intdomain;
 
   // additional computations in case of ALE
-  if (my::scatrapara_->IsAle())
+  if (my::scatrapara_->is_ale())
   {
-    const int ndsvel = my::scatrapara_->NdsVel();
+    const int ndsvel = my::scatrapara_->nds_vel();
     // extract velocities
-    const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
+    const Teuchos::RCP<const Epetra_Vector> vel =
+        discretization.get_state(ndsvel, "velocity field");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"velocity field\"!");
     Core::FE::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
 
@@ -218,7 +219,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     double intvgradc(0.);
 
     // loop over integration points
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
     {
       // evaluate values of shape functions and domain integration factor at current integration
       // point
@@ -239,10 +240,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
       intdivv += divv_fac;
 
       // integral of concentration times velocity divergence
-      intcdivv += my::scatravarmanager_->Phinp(0) * divv_fac;
+      intcdivv += my::scatravarmanager_->phinp(0) * divv_fac;
 
       // integral of velocity times concentration gradient
-      intvgradc += v.dot(my::scatravarmanager_->GradPhi(0)) * fac;
+      intvgradc += v.dot(my::scatravarmanager_->grad_phi(0)) * fac;
     }  // loop over integration points
 
     // safety check
@@ -282,7 +283,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_
     case Inpar::ScaTra::flux_total:
     {
       // diffusive flux contribution
-      q.update(-diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k));
+      q.update(-diff_manager()->get_isotropic_diff(k), var_manager()->grad_phi(k));
       break;
     }
 

@@ -37,17 +37,17 @@ void Adapter::LubricationBaseAlgorithm::setup(
   // access the discretization
   // -------------------------------------------------------------------
   Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
-  actdis = Global::Problem::Instance()->GetDis(disname);
+  actdis = Global::Problem::instance()->get_dis(disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->fill_complete();
+  if (!actdis->filled()) actdis->fill_complete();
 
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -56,10 +56,10 @@ void Adapter::LubricationBaseAlgorithm::setup(
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter
   // list? -> no default paramter possible any more
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
-      actdis->Comm(), Global::Problem::Instance()->solver_params_callback(),
+      actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::Instance()->IOParams(), "VERBOSITY")));
-  actdis->compute_null_space_if_necessary(solver->Params());
+          Global::Problem::instance()->io_params(), "VERBOSITY")));
+  actdis->compute_null_space_if_necessary(solver->params());
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -109,9 +109,9 @@ Adapter::LubricationBaseAlgorithm::create_lubrication_field_test()
   return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }
 
-Teuchos::RCP<Core::IO::DiscretizationWriter> Adapter::LubricationBaseAlgorithm::DiscWriter()
+Teuchos::RCP<Core::IO::DiscretizationWriter> Adapter::LubricationBaseAlgorithm::disc_writer()
 {
-  return lubrication_->DiscWriter();
+  return lubrication_->disc_writer();
 }
 
 FOUR_C_NAMESPACE_CLOSE

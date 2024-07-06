@@ -111,12 +111,12 @@ namespace Core::Geo
           void find_cycles(Element* element, Side* side, Cycle& cycle, Location location,
               Strategy strategy) override;
 
-          inline const std::vector<Cycle>& SurfaceMainCycles() const
+          inline const std::vector<Cycle>& surface_main_cycles() const
           {
             return surface_main_cycles_;
           }
 
-          bool HasSinglePoints(Location location) override;
+          bool has_single_points(Location location) override;
 
           void set_correct_rotation_direction(bool correct_rotation)
           {
@@ -143,12 +143,15 @@ namespace Core::Geo
 
         inline surface_const_iterator sbegin() const
         {
-          return graph_2d_->SurfaceMainCycles().begin();
+          return graph_2d_->surface_main_cycles().begin();
         }
 
-        inline surface_const_iterator send() const { return graph_2d_->SurfaceMainCycles().end(); }
+        inline surface_const_iterator send() const
+        {
+          return graph_2d_->surface_main_cycles().end();
+        }
 
-        inline unsigned NumSurfaces() const { return graph_2d_->SurfaceMainCycles().size(); }
+        inline unsigned num_surfaces() const { return graph_2d_->surface_main_cycles().size(); }
 
         /// constructor
         SimplePointGraph2D(
@@ -157,7 +160,7 @@ namespace Core::Geo
         // empty constructor
         SimplePointGraph2D();
 
-        void FindLineFacetCycles(const plain_facet_set& line_facets, Element* parent_element);
+        void find_line_facet_cycles(const plain_facet_set& line_facets, Element* parent_element);
 
         /** \brief Test and correct the rotation direction of the given cycles such
          *  that the direction fits the rotation direction of the underlying side

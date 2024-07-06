@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
     elements
     */
-    void ResetState(const std::vector<double>& centerline_dofvec_ele1,
+    void reset_state(const std::vector<double>& centerline_dofvec_ele1,
         const std::vector<double>& centerline_dofvec_ele2) override;
 
     /** \brief print information about this beam contact element pair to screen
@@ -107,7 +107,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    inline bool GetContactFlag() const override
+    inline bool get_contact_flag() const override
     {
       // The element pair is assumed to be active when we have at least one active contact point
       return (cpvariables_.size() + gpvariables_.size() + epvariables_.size());
@@ -593,7 +593,7 @@ namespace BEAMINTERACTION
 
       if (ele == nullptr) FOUR_C_THROW("Dynamic cast to Beam3Base failed");
 
-      return ele->GetJacobiFacAtXi(xi);
+      return ele->get_jacobi_fac_at_xi(xi);
     }
 
     /*!

@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
  | Constructor                                              farah 11/13 |
  *----------------------------------------------------------------------*/
 Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
-    : AlgorithmBase(comm, Global::Problem::Instance()->structural_dynamic_params())
+    : AlgorithmBase(comm, Global::Problem::instance()->structural_dynamic_params())
 
 {
   /*--------------------------------------------------------------------*
@@ -51,10 +51,10 @@ Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // create structure
   Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure = Teuchos::rcp(
-      new Adapter::StructureBaseAlgorithm(Global::Problem::Instance()->structural_dynamic_params(),
+      new Adapter::StructureBaseAlgorithm(Global::Problem::instance()->structural_dynamic_params(),
           const_cast<Teuchos::ParameterList&>(
-              Global::Problem::Instance()->structural_dynamic_params()),
-          Global::Problem::Instance()->GetDis("structure")));
+              Global::Problem::instance()->structural_dynamic_params()),
+          Global::Problem::instance()->get_dis("structure")));
   structure_ =
       Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
   structure_->setup();
@@ -64,8 +64,8 @@ Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new Adapter::AleBaseAlgorithm(Global::Problem::Instance()->structural_dynamic_params(),
-          Global::Problem::Instance()->GetDis("ale")));
+      new Adapter::AleBaseAlgorithm(Global::Problem::instance()->structural_dynamic_params(),
+          Global::Problem::instance()->get_dis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleWearWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
     FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFsiWrapper failed");
@@ -74,15 +74,15 @@ Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
   ale_->create_system_matrix();
 
   // contact/meshtying manager
-  cmtman_ = structure_field()->meshtying_contact_bridge()->ContactManager();
+  cmtman_ = structure_field()->meshtying_contact_bridge()->contact_manager();
 
   // copy interfaces for material configuration
   // stactic cast of mortar strategy to contact strategy
-  Mortar::StrategyBase& strategy = cmtman_->GetStrategy();
+  Mortar::StrategyBase& strategy = cmtman_->get_strategy();
   Wear::LagrangeStrategyWear& cstrategy = static_cast<Wear::LagrangeStrategyWear&>(strategy);
 
   // get dimension
-  dim_ = strategy.Dim();
+  dim_ = strategy.n_dim();
 
   // get vector of contact interfaces
   interfaces_ = cstrategy.contact_interfaces();
@@ -101,7 +101,7 @@ Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void Wear::Algorithm::check_input()
 {
-  //  Teuchos::ParameterList apara = Global::Problem::Instance()->AleDynamicParams();
+  //  Teuchos::ParameterList apara = Global::Problem::instance()->AleDynamicParams();
   //
   //  Inpar::ALE::AleDynamic aletype =
   //      Core::UTILS::IntegralValue<Inpar::ALE::AleDynamic>(apara, "ALE_TYPE");
@@ -115,28 +115,28 @@ void Wear::Algorithm::check_input()
  *----------------------------------------------------------------------*/
 void Wear::Algorithm::create_material_interface()
 {
-  Mortar::StrategyBase& strategy = cmtman_->GetStrategy();
+  Mortar::StrategyBase& strategy = cmtman_->get_strategy();
   Wear::LagrangeStrategyWear& cstrategy = static_cast<Wear::LagrangeStrategyWear&>(strategy);
 
   // create some local variables (later to be stored in strategy)
-  int dim = Global::Problem::Instance()->NDim();
+  int dim = Global::Problem::instance()->n_dim();
   if (dim != 2 && dim != 3) FOUR_C_THROW("Contact problem must be 2D or 3D");
-  Teuchos::ParameterList cparams = cstrategy.Params();
+  Teuchos::ParameterList cparams = cstrategy.params();
 
   // check for fill_complete of discretization
-  if (!structure_->discretization()->Filled()) FOUR_C_THROW("discretization is not fillcomplete");
+  if (!structure_->discretization()->filled()) FOUR_C_THROW("discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in discret
   // and detect groups of matching conditions
   // for each group, create a contact interface and store it
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "Building contact interface(s) for Mat. conf. ...............";
     fflush(stdout);
   }
 
   std::vector<Core::Conditions::Condition*> contactconditions(0);
-  structure_->discretization()->GetCondition("Contact", contactconditions);
+  structure_->discretization()->get_condition("Contact", contactconditions);
 
   // there must be more than one contact condition
   // unless we have a self contact problem!
@@ -306,8 +306,8 @@ void Wear::Algorithm::create_material_interface()
       FOUR_C_THROW("Self contact requires fully redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
-    Teuchos::RCP<CONTACT::Interface> newinterface = CONTACT::STRATEGY::Factory::CreateInterface(
-        groupid1, Comm(), dim, icparams, isself[0], Teuchos::null);
+    Teuchos::RCP<CONTACT::Interface> newinterface = CONTACT::STRATEGY::Factory::create_interface(
+        groupid1, get_comm(), dim, icparams, isself[0], Teuchos::null);
     interfacesMat_.push_back(newinterface);
 
     // get it again
@@ -326,14 +326,14 @@ void Wear::Algorithm::create_material_interface()
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get all nodes and add them
-      const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
+      const std::vector<int>* nodeids = currentgroup[j]->get_nodes();
       if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
       for (int k = 0; k < (int)(*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!structure_->discretization()->NodeColMap()->MyGID(gid)) continue;
-        Core::Nodes::Node* node = structure_->discretization()->gNode(gid);
+        if (!structure_->discretization()->node_col_map()->MyGID(gid)) continue;
+        Core::Nodes::Node* node = structure_->discretization()->g_node(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // store initial active node gids
@@ -361,8 +361,8 @@ void Wear::Algorithm::create_material_interface()
         // and found for the second, third, ... time!
         if (ftype != Inpar::CONTACT::friction_none)
         {
-          Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->Id(),
-              node->X(), node->Owner(), structure_->discretization()->Dof(0, node), isslave[j],
+          Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->id(),
+              node->x(), node->owner(), structure_->discretization()->dof(0, node), isslave[j],
               isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
@@ -370,20 +370,20 @@ void Wear::Algorithm::create_material_interface()
           {
             Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
-            cnode->NurbsW() = cp->W();
+            cnode->nurbs_w() = cp->w();
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<Core::Conditions::Condition*> contactSymconditions(0);
-          structure_->discretization()->GetCondition("mrtrsym", contactSymconditions);
+          structure_->discretization()->get_condition("mrtrsym", contactSymconditions);
 
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
-            if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+            if (contactSymconditions.at(j)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
                   contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
-                if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
+                if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
               if (stype == Inpar::CONTACT::solution_lagmult &&
                   constr_direction != Inpar::CONTACT::constr_xyz)
                 FOUR_C_THROW(
@@ -397,12 +397,12 @@ void Wear::Algorithm::create_material_interface()
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddNode(cnode);
+          interface->add_node(cnode);
         }
         else
         {
-          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->Id(), node->X(),
-              node->Owner(), structure_->discretization()->Dof(0, node), isslave[j],
+          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(new CONTACT::Node(node->id(), node->x(),
+              node->owner(), structure_->discretization()->dof(0, node), isslave[j],
               isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!
@@ -410,20 +410,20 @@ void Wear::Algorithm::create_material_interface()
           {
             Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
-            cnode->NurbsW() = cp->W();
+            cnode->nurbs_w() = cp->w();
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<Core::Conditions::Condition*> contactSymconditions(0);
-          structure_->discretization()->GetCondition("mrtrsym", contactSymconditions);
+          structure_->discretization()->get_condition("mrtrsym", contactSymconditions);
 
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
-            if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+            if (contactSymconditions.at(j)->contains_node(node->id()))
             {
               const std::vector<int>& onoff =
                   contactSymconditions.at(j)->parameters().get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff.size(); k++)
-                if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
+                if (onoff.at(k) == 1) cnode->dbc_dofs()[k] = true;
             }
 
           // note that we do not have to worry about double entries
@@ -431,7 +431,7 @@ void Wear::Algorithm::create_material_interface()
           // the only problem would have occured for the initial active nodes,
           // as their status could have been overwritten, but is prevented
           // by the "foundinitialactive" block above!
-          interface->AddNode(cnode);
+          interface->add_node(cnode);
         }
       }
     }
@@ -441,7 +441,7 @@ void Wear::Algorithm::create_material_interface()
     for (int j = 0; j < (int)currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele = currentgroup[j]->geometry();
 
       // elements in a boundary condition have a unique id
       // but ids are not unique among 2 distinct conditions
@@ -453,15 +453,15 @@ void Wear::Algorithm::create_material_interface()
       // note that elements in ele1/ele2 already are in column (overlapping) map
       int lsize = (int)currele.size();
       int gsize = 0;
-      Comm().SumAll(&lsize, &gsize, 1);
+      get_comm().SumAll(&lsize, &gsize, 1);
 
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<Core::Elements::Element> ele = fool->second;
         Teuchos::RCP<CONTACT::Element> cele =
-            Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
-                ele->num_node(), ele->NodeIds(), isslave[j], cparams.get<bool>("NURBS")));
+            Teuchos::rcp(new CONTACT::Element(ele->id() + ggsize, ele->owner(), ele->shape(),
+                ele->num_node(), ele->node_ids(), isslave[j], cparams.get<bool>("NURBS")));
 
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
@@ -471,7 +471,7 @@ void Wear::Algorithm::create_material_interface()
               dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(
                   &(*(structure_->discretization())));
 
-          Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+          Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
           std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
           std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -479,12 +479,12 @@ void Wear::Algorithm::create_material_interface()
               Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
           double normalfac = 0.0;
           bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots,
-              normalfac, faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+              normalfac, faceele->parent_master_element()->id(), faceele->face_master_number());
 
           // store nurbs specific data to node
-          cele->ZeroSized() = zero_size;
-          cele->Knots() = mortarknots;
-          cele->NormalFac() = normalfac;
+          cele->zero_sized() = zero_size;
+          cele->knots() = mortarknots;
+          cele->normal_fac() = normalfac;
         }
 
         interface->add_element(cele);
@@ -497,7 +497,7 @@ void Wear::Algorithm::create_material_interface()
     interface->fill_complete(maxdof);
 
   }  // for (int i=0; i<(int)contactconditions.size(); ++i)
-  if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
+  if (get_comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   return;
 }

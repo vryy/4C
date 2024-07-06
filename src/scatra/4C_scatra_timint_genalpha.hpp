@@ -37,7 +37,7 @@ namespace ScaTra
         printf(
             "\nTIME: %11.4E/%11.4E  DT = %11.4E  %s(a_F=%3.2f | a_M=%3.2f | gamma=%3.2f) STEP = "
             "%4d/%4d\n",
-            time_, maxtime_, dta_, MethodTitle().c_str(), alphaF_, alphaM_, gamma_, step_,
+            time_, maxtime_, dta_, method_title().c_str(), alphaF_, alphaM_, gamma_, step_,
             stepmax_);
       }
     }
@@ -55,17 +55,17 @@ namespace ScaTra
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
-    Teuchos::RCP<Epetra_Vector> Phiaf() override { return phiaf_; }
+    Teuchos::RCP<Epetra_Vector> phiaf() override { return phiaf_; }
 
-    Teuchos::RCP<Epetra_Vector> Phiafnp() override { return phiaf_; }
+    Teuchos::RCP<Epetra_Vector> phiafnp() override { return phiaf_; }
 
-    Teuchos::RCP<Epetra_Vector> Phiam() override { return phiam_; }
+    Teuchos::RCP<Epetra_Vector> phiam() override { return phiam_; }
 
-    Teuchos::RCP<Epetra_Vector> Phidtam() override { return phidtam_; }
+    Teuchos::RCP<Epetra_Vector> phidtam() override { return phidtam_; }
 
-    Teuchos::RCP<Epetra_Vector> FsPhi() override
+    Teuchos::RCP<Epetra_Vector> fs_phi() override
     {
-      if (Sep_ != Teuchos::null) Sep_->Multiply(false, *phiaf_, *fsphiaf_);
+      if (Sep_ != Teuchos::null) Sep_->multiply(false, *phiaf_, *fsphiaf_);
       return fsphiaf_;
     };
 

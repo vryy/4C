@@ -96,13 +96,13 @@ namespace FLD
      Smagorinsky model)
 
     */
-    void StoreElementValues(int step);
+    void store_element_values(int step);
 
     /*!
     \brief Get current velnp for meshtying, since it may have changed
 
     */
-    void GetCurrentVelnp(Teuchos::RCP<Epetra_Vector>);
+    void get_current_velnp(Teuchos::RCP<Epetra_Vector>);
 
     /*!
     \brief Include current quantities in the time
@@ -126,7 +126,7 @@ namespace FLD
     \param discretmatchingvelnp (in) : velnp built with dofrowmap from discretization
 
     */
-    void DoTimeSample(int step, const double eosfac, const double thermpressaf = 0.0,
+    void do_time_sample(int step, const double eosfac, const double thermpressaf = 0.0,
         const double thermpressam = 0.0, const double thermpressdtaf = 0.0,
         const double thermpressdtam = 0.0);
 
@@ -134,7 +134,7 @@ namespace FLD
     \brief ???
 
     */
-    void DoTimeSample(int step, Teuchos::RCP<Epetra_Vector> velnp,
+    void do_time_sample(int step, Teuchos::RCP<Epetra_Vector> velnp,
         Teuchos::RCP<Epetra_Vector> force, Teuchos::RCP<Epetra_Vector> phi,
         Teuchos::RCP<const Core::DOFSets::DofSet> stddofset);
 
@@ -142,7 +142,7 @@ namespace FLD
     \brief Write (dump) the statistics to a file
 
     */
-    void DoOutput(Core::IO::DiscretizationWriter& output, int step, const bool inflow = false);
+    void do_output(Core::IO::DiscretizationWriter& output, int step, const bool inflow = false);
 
     /*!
     \brief Restart collection of statistics
@@ -154,19 +154,19 @@ namespace FLD
     \brief Restart scatra-specific collection of statistics
 
     */
-    void ReadRestartScaTra(Core::IO::DiscretizationReader& scatrareader, int step);
+    void read_restart_sca_tra(Core::IO::DiscretizationReader& scatrareader, int step);
 
     /*!
     \brief Provide access to scalar transport field
 
     */
-    void AddScaTraField(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint);
+    void add_sca_tra_field(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint);
 
     /*!
     \brief   Write (dump) the scatra-specific mean fields to the result file
 
     */
-    void DoOutputForScaTra(Core::IO::DiscretizationWriter& output, int step);
+    void do_output_for_sca_tra(Core::IO::DiscretizationWriter& output, int step);
 
     //@}
 
@@ -179,7 +179,7 @@ namespace FLD
       return statistics_general_mean_;
     }
 
-    bool WithScaTra() { return withscatra_; }
+    bool with_sca_tra() { return withscatra_; }
 
    private:
     /*!

@@ -57,40 +57,40 @@ class MyocardFitzhughNagumo : public MyocardGeneral
       const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
   /// compute reaction coefficient
-  double ReaCoeff(const double phi, const double dt) override;
+  double rea_coeff(const double phi, const double dt) override;
 
   /// compute reaction coefficient for multiple points per element
-  double ReaCoeff(const double phi, const double dt, int gp) override;
+  double rea_coeff(const double phi, const double dt, int gp) override;
 
   ///  returns number of internal state variables of the material
   int get_number_of_internal_state_variables() const override;
 
   ///  returns current internal state of the material
-  double GetInternalState(const int k) const override;
+  double get_internal_state(const int k) const override;
 
   ///  returns current internal state of the material for multiple points per element
-  double GetInternalState(const int k, int gp) const override;
+  double get_internal_state(const int k, int gp) const override;
 
   ///  set internal state of the material
-  void SetInternalState(const int k, const double val) override;
+  void set_internal_state(const int k, const double val) override;
 
   ///  set internal state of the material for multiple points per element
-  void SetInternalState(const int k, const double val, int gp) override;
+  void set_internal_state(const int k, const double val, int gp) override;
 
   ///  return number of ionic currents
   int get_number_of_ionic_currents() const override;
 
   ///  return ionic currents
-  double GetIonicCurrents(const int k) const override;
+  double get_ionic_currents(const int k) const override;
 
   ///  return ionic currents for multiple points per element
-  double GetIonicCurrents(const int k, int gp) const override;
+  double get_ionic_currents(const int k, int gp) const override;
 
   /// time update for this material
   void update(const double phi, const double dt) override;
 
   /// get number of Gauss points
-  int GetNumberOfGP() const override { return r0_.size(); };
+  int get_number_of_gp() const override { return r0_.size(); };
 
   /// resize internal state variables if number of Gauss point changes
   void resize_internal_state_variables(int gp) override

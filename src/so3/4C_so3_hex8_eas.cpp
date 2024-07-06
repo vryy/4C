@@ -176,8 +176,8 @@ void Discret::ELEMENTS::SoHex8::soh8_eassetup(
   // now evaluate T0^{-T} with solver
   Core::LinAlg::FixedSizeSerialDenseSolver<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D, 1>
       solve_for_inverseT0;
-  solve_for_inverseT0.SetMatrix(T0invT);
-  int err2 = solve_for_inverseT0.Factor();
+  solve_for_inverseT0.set_matrix(T0invT);
+  int err2 = solve_for_inverseT0.factor();
   int err = solve_for_inverseT0.invert();
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of T0inv (Jacobian0) failed");
 

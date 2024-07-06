@@ -36,13 +36,13 @@ void ParticleInteraction::SPHEquationOfStateBundle::init(
           params_sph_, "EQUATIONOFSTATE");
 
   // determine size of vector indexed by particle types
-  const int typevectorsize = *(--particlematerial->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlematerial->get_particle_types().end()) + 1;
 
   // allocate memory to hold particle types
   phasetypetoequationofstate_.resize(typevectorsize);
 
   // iterate over particle types
-  for (const auto& type_i : particlematerial->GetParticleTypes())
+  for (const auto& type_i : particlematerial->get_particle_types())
   {
     // no equation of state for boundary or rigid particles
     if (type_i == PARTICLEENGINE::BoundaryPhase or type_i == PARTICLEENGINE::RigidPhase) continue;
@@ -60,7 +60,7 @@ void ParticleInteraction::SPHEquationOfStateBundle::init(
     {
       case Inpar::PARTICLE::GenTait:
       {
-        const double speedofsound = material->SpeedOfSound();
+        const double speedofsound = material->speed_of_sound();
         const double refdensfac = material->refDensFac_;
         const double exponent = material->exponent_;
 
@@ -72,7 +72,7 @@ void ParticleInteraction::SPHEquationOfStateBundle::init(
       }
       case Inpar::PARTICLE::IdealGas:
       {
-        const double speedofsound = material->SpeedOfSound();
+        const double speedofsound = material->speed_of_sound();
 
         phasetypetoequationofstate_[type_i] =
             std::unique_ptr<ParticleInteraction::SPHEquationOfStateIdealGas>(

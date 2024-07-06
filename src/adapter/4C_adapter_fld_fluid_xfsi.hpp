@@ -67,22 +67,22 @@ namespace Adapter
     void init() override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface() const
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& struct_interface() const
     {
       return structinterface_;
     }
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override { return interface_; }
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override { return interface_; }
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const override
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& fpsi_interface() const override
     {
       return fpsiinterface_;
     }
 
     /// Velocity-displacement conversion at the fsi interface
-    double TimeScaling() const override;
+    double time_scaling() const override;
 
     /// Return interface forces
     virtual Teuchos::RCP<Epetra_Vector> extract_struct_interface_forces();
@@ -115,29 +115,32 @@ namespace Adapter
     /// apply the interface displacements to the fluid
     void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
 
-    void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
+    void set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
 
     /// return coupling matrix between fluid and structure as sparse matrices
     Teuchos::RCP<Core::LinAlg::SparseMatrix> c_struct_fluid_matrix();
     Teuchos::RCP<Core::LinAlg::SparseMatrix> c_fluid_struct_matrix();
     Teuchos::RCP<Core::LinAlg::SparseMatrix> c_struct_struct_matrix();
 
-    Teuchos::RCP<const Epetra_Vector> RHS_Struct_Vec();
+    Teuchos::RCP<const Epetra_Vector> rhs_struct_vec();
 
-    Teuchos::RCP<FLD::XFluid> MyFluid() { return xfluid_; }
+    Teuchos::RCP<FLD::XFluid> my_fluid() { return xfluid_; }
 
     /// return boundary discretization
     Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
 
     bool newton_restart_monolithic() { return xfluid_->newton_restart_monolithic(); }
 
-    Teuchos::RCP<std::map<int, int>> GetPermutationMap() { return xfluid_->GetPermutationMap(); }
+    Teuchos::RCP<std::map<int, int>> get_permutation_map()
+    {
+      return xfluid_->get_permutation_map();
+    }
 
     /// GmshOutput for background mesh and cut mesh
-    void GmshOutput(const std::string& name,  ///< name for output file
-        const int step,                       ///< step number
-        const int count,                      ///< counter for iterations within a global time step
-        Teuchos::RCP<Epetra_Vector> vel,      ///< vector holding velocity and pressure dofs
+    void gmsh_output(const std::string& name,  ///< name for output file
+        const int step,                        ///< step number
+        const int count,                       ///< counter for iterations within a global time step
+        Teuchos::RCP<Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
         Teuchos::RCP<Epetra_Vector> acc = Teuchos::null  ///< vector holding accelerations
     );
 

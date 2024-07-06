@@ -44,7 +44,7 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
       active_gap_tolerance_(container->get<double>("ActiveGapTolerance")),
       topology_file_path_((container->get<std::string>("TopologyFilePath")))
 {
-  this->SetParameters();
+  this->set_parameters();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -60,26 +60,26 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::MircoConstitutiveLaw(
     : params_(params)
 {
 }
-void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
+void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::set_parameters()
 {
   // retrieve problem instance to read from
-  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::instance(probinst)->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  const auto& firstmat = Global::Problem::Instance(probinst)
-                             ->Materials()
-                             ->ParameterById(GetFirstMatID())
+  const auto& firstmat = Global::Problem::instance(probinst)
+                             ->materials()
+                             ->parameter_by_id(get_first_mat_id())
                              ->raw_parameters();
-  const auto& secondmat = Global::Problem::Instance(probinst)
-                              ->Materials()
-                              ->ParameterById(GetSecondMatID())
+  const auto& secondmat = Global::Problem::instance(probinst)
+                              ->materials()
+                              ->parameter_by_id(get_second_mat_id())
                               ->raw_parameters();
 
   const double E1 = firstmat.get<double>("YOUNG");
@@ -132,11 +132,11 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->GetOffset() > 0.0)
+  if (gap + params_->get_offset() > 0.0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  if (-(gap + params_->GetOffset()) < params_->get_active_gap_tolerance())
+  if (-(gap + params_->get_offset()) < params_->get_active_gap_tolerance())
   {
     return 0.0;
   }
@@ -144,25 +144,25 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONT
   RoughNode* roughNode = dynamic_cast<RoughNode*>(cnode);
 
   double pressure = 0.0;
-  MIRCO::Evaluate(pressure, -(gap + params_->GetOffset()), params_->GetLateralLength(),
-      params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
-      params_->GetCompositeYoungs(), params_->get_composite_poissons_ratio(),
-      params_->GetWarmStartingFlag(), params_->get_compliance_correction(),
-      *roughNode->GetTopology(), roughNode->get_max_topology_height(), *params_->GetMeshGrid(),
+  MIRCO::Evaluate(pressure, -(gap + params_->get_offset()), params_->get_lateral_length(),
+      params_->get_grid_size(), params_->get_tolerance(), params_->get_max_iteration(),
+      params_->get_composite_youngs(), params_->get_composite_poissons_ratio(),
+      params_->get_warm_starting_flag(), params_->get_compliance_correction(),
+      *roughNode->get_topology(), roughNode->get_max_topology_height(), *params_->get_mesh_grid(),
       params_->get_pressure_green_fun_flag());
 
   return (-1 * pressure);
 }  // end of mirco_coconstlaw evaluate
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
 {
-  if (gap + params_->GetOffset() > 0.0)
+  if (gap + params_->get_offset() > 0.0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes.");
   }
-  if (-(gap + params_->GetOffset()) < params_->get_active_gap_tolerance())
+  if (-(gap + params_->get_offset()) < params_->get_active_gap_tolerance())
   {
     return 0.0;
   }
@@ -172,22 +172,22 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(
   double pressure1 = 0.0;
   double pressure2 = 0.0;
   // using backward difference approach
-  MIRCO::Evaluate(pressure1, -1.0 * (gap + params_->GetOffset()), params_->GetLateralLength(),
-      params_->GetGridSize(), params_->GetTolerance(), params_->GetMaxIteration(),
-      params_->GetCompositeYoungs(), params_->get_composite_poissons_ratio(),
-      params_->GetWarmStartingFlag(), params_->get_compliance_correction(),
-      *roughNode->GetTopology(), roughNode->get_max_topology_height(), *params_->GetMeshGrid(),
+  MIRCO::Evaluate(pressure1, -1.0 * (gap + params_->get_offset()), params_->get_lateral_length(),
+      params_->get_grid_size(), params_->get_tolerance(), params_->get_max_iteration(),
+      params_->get_composite_youngs(), params_->get_composite_poissons_ratio(),
+      params_->get_warm_starting_flag(), params_->get_compliance_correction(),
+      *roughNode->get_topology(), roughNode->get_max_topology_height(), *params_->get_mesh_grid(),
       params_->get_pressure_green_fun_flag());
   MIRCO::Evaluate(pressure2,
-      -(1 - params_->get_finite_difference_fraction()) * (gap + params_->GetOffset()),
-      params_->GetLateralLength(), params_->GetGridSize(), params_->GetTolerance(),
-      params_->GetMaxIteration(), params_->GetCompositeYoungs(),
-      params_->get_composite_poissons_ratio(), params_->GetWarmStartingFlag(),
-      params_->get_compliance_correction(), *roughNode->GetTopology(),
-      roughNode->get_max_topology_height(), *params_->GetMeshGrid(),
+      -(1 - params_->get_finite_difference_fraction()) * (gap + params_->get_offset()),
+      params_->get_lateral_length(), params_->get_grid_size(), params_->get_tolerance(),
+      params_->get_max_iteration(), params_->get_composite_youngs(),
+      params_->get_composite_poissons_ratio(), params_->get_warm_starting_flag(),
+      params_->get_compliance_correction(), *roughNode->get_topology(),
+      roughNode->get_max_topology_height(), *params_->get_mesh_grid(),
       params_->get_pressure_green_fun_flag());
   return ((pressure1 - pressure2) /
-          (-(params_->get_finite_difference_fraction()) * (gap + params_->GetOffset())));
+          (-(params_->get_finite_difference_fraction()) * (gap + params_->get_offset())));
 }
 
 FOUR_C_NAMESPACE_CLOSE

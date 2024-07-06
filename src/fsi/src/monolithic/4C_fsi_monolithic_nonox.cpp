@@ -37,7 +37,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : MonolithicBase(comm, timeparams), zeros_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // use taylored fluid- and ALE-wrappers
@@ -51,7 +51,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
-  std::string s = Global::Problem::Instance()->OutputControlFile()->file_name();
+  std::string s = Global::Problem::instance()->output_control_file()->file_name();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
   itermax_ = fsimono.get<int>("ITEMAX");
@@ -80,9 +80,9 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   // set tolerances for nonlinear solver
 }
 
-void FSI::MonolithicNoNOX::SetupSystem()
+void FSI::MonolithicNoNOX::setup_system()
 {
-  const int ndim = Global::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::instance()->n_dim();
 
   Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
   Core::Adapter::Coupling& coupsa = structure_ale_coupling();
@@ -92,45 +92,45 @@ void FSI::MonolithicNoNOX::SetupSystem()
   // structure to fluid
 
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->fsi_cond_map(), *fluid_field()->discretization(),
-      fluid_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      structure_field()->interface()->fsi_cond_map(), *fluid_field()->discretization(),
+      fluid_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // structure to ale
 
   coupsa.setup_condition_coupling(*structure_field()->discretization(),
-      structure_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      structure_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // fluid to ale at the interface
 
   icoupfa.setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->Interface()->fsi_cond_map(), *ale_field()->discretization(),
-      ale_field()->Interface()->fsi_cond_map(), "FSICoupling", ndim);
+      fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
+      ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
-  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
+  if (not coupsf.master_dof_map()->SameAs(*coupsa.master_dof_map()))
     FOUR_C_THROW("structure interface dof maps do not match");
 
-  if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
+  if (coupsf.master_dof_map()->NumGlobalElements() == 0)
     FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
+  const Epetra_Map* alenodemap = ale_field()->discretization()->node_row_map();
 
   coupfa.setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
-  fluid_field()->SetMeshMap(coupfa.MasterDofMap());
+  fluid_field()->set_mesh_map(coupfa.master_dof_map());
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::Timeloop()
+void FSI::MonolithicNoNOX::timeloop()
 {
-  while (NotFinished())
+  while (not_finished())
   {
     prepare_time_step();
     newton();
@@ -179,7 +179,7 @@ void FSI::MonolithicNoNOX::newton()
     setup_system_matrix();
 
     // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled())
+    if (not systemmatrix_->filled())
     {
       FOUR_C_THROW("Effective tangent matrix must be filled here");
     }
@@ -189,7 +189,7 @@ void FSI::MonolithicNoNOX::newton()
     linear_solve();
 
     // reset solver tolerance
-    solver_->ResetTolerance();
+    solver_->reset_tolerance();
 
     // build residual and incremental norms
     // for now use for simplicity only L2/Euclidian norm
@@ -209,7 +209,7 @@ void FSI::MonolithicNoNOX::newton()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ((converged()) and (Comm().MyPID() == 0))
+  if ((converged()) and (get_comm().MyPID() == 0))
   {
     Core::IO::cout << Core::IO::endl;
     Core::IO::cout << "  Newton Converged! " << Core::IO::endl;
@@ -292,7 +292,7 @@ bool FSI::MonolithicNoNOX::converged()
 void FSI::MonolithicNoNOX::linear_solve()
 {
   // merge blockmatrix to SparseMatrix and solve
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 
   // apply Dirichlet BCs to system of equations
   if (firstcall_)
@@ -302,19 +302,20 @@ void FSI::MonolithicNoNOX::linear_solve()
 
   Core::LinAlg::apply_dirichlet_to_system(*sparse, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
-  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
   solver_ =
-      Teuchos::rcp(new Core::LinAlg::Solver(Global::Problem::Instance()->SolverParams(fluidsolver),
-          Comm(), Global::Problem::Instance()->solver_params_callback(),
+      Teuchos::rcp(new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(fluidsolver),
+          get_comm(), Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::Instance()->IOParams(), "VERBOSITY")));
+              Global::Problem::instance()->io_params(), "VERBOSITY")));
+
 
   // standard solver call
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = iter_ == 1;
-  solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
+  solver_->solve(sparse->epetra_operator(), iterinc_, rhs_, solver_params);
 }
 
 /*----------------------------------------------------------------------*/
@@ -347,8 +348,8 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
 
     if (sdbg_ != Teuchos::null)
     {
-      sdbg_->NewIteration();
-      sdbg_->write_vector("x", *structure_field()->Interface()->extract_fsi_cond_vector(sx));
+      sdbg_->new_iteration();
+      sdbg_->write_vector("x", *structure_field()->interface()->extract_fsi_cond_vector(sx));
     }
   }
 
@@ -368,7 +369,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid(ale_field()->Dispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
@@ -452,7 +453,7 @@ void FSI::MonolithicNoNOX::print_newton_iter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     if (iter_ == 1) print_newton_iter_header();
     print_newton_iter_text();
@@ -595,15 +596,15 @@ void FSI::MonolithicNoNOX::update()
 
   // In case of ALE relaxation
   if (fluid_->monolithic_xffsi_approach() != Inpar::XFEM::XFFSI_Full_Newton and
-      fluid_->IsAleRelaxationStep(Step()))
+      fluid_->is_ale_relaxation_step(step()))
   {
-    if (Comm().MyPID() == 0) Core::IO::cout << "Relaxing ALE!" << Core::IO::endl;
+    if (get_comm().MyPID() == 0) Core::IO::cout << "Relaxing ALE!" << Core::IO::endl;
     // Set the ALE FSI-DOFs to Dirichlet and solve ALE system again
     // to obtain the true ALE displacement
-    ale_field()->Solve();
+    ale_field()->solve();
     // Now apply the ALE-displacement to the (embedded) fluid and update the
     // grid velocity
-    fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));
+    fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->dispnp()));
   }
 
   // update subsequent fields
@@ -626,8 +627,8 @@ void FSI::MonolithicNoNOX::prepare_time_step()
   ale_field()->prepare_time_step();
 
   // no ALE-relaxation or still at the first step? leave!
-  if (fluid_->monolithic_xffsi_approach() == Inpar::XFEM::XFFSI_Full_Newton || Step() == 0 ||
-      !fluid_->IsAleRelaxationStep(Step() - 1))
+  if (fluid_->monolithic_xffsi_approach() == Inpar::XFEM::XFFSI_Full_Newton || step() == 0 ||
+      !fluid_->is_ale_relaxation_step(step() - 1))
     return;
 
   // recreate the combined dof-map and create a new block system matrix

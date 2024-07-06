@@ -123,7 +123,7 @@ namespace Mat
        * @param[in] M vector (e.g. fiber direction)
        * @param[out] result result of dyadic product
        */
-      void DyadicProduct(const Core::LinAlg::Matrix<3, 1>& M, Core::LinAlg::Matrix<6, 1>& result);
+      void dyadic_product(const Core::LinAlg::Matrix<3, 1>& M, Core::LinAlg::Matrix<6, 1>& result);
 
       /*!
        * @brief calculate MxM
@@ -131,7 +131,7 @@ namespace Mat
        * @param[in] M vector (e.g. fiber direction)
        * @param[out] result result of dyadic product
        */
-      void DyadicProduct(const Core::LinAlg::Matrix<3, 1>& M, Core::LinAlg::Matrix<3, 3>& result);
+      void dyadic_product(const Core::LinAlg::Matrix<3, 1>& M, Core::LinAlg::Matrix<3, 3>& result);
 
      protected:
       /// return residual tolerance of structural problem

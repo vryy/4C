@@ -114,7 +114,7 @@ namespace POROFLUIDMULTIPHASE
     void read_restart(int step) override;
 
     /// create result test for porous fluid field
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     //! finite difference check for system matrix
     void fd_check();
@@ -122,10 +122,10 @@ namespace POROFLUIDMULTIPHASE
     /*--- calculate and update -----------------------------------------------*/
 
     //! do time integration (time loop)
-    void TimeLoop() override;
+    void time_loop() override;
 
     //! general solver call for coupled algorithms
-    void Solve() override;
+    void solve() override;
 
     //! update the solution after convergence of the nonlinear iteration.
     void update() override;
@@ -137,7 +137,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void compute_intermediate_values() = 0;
 
     //! apply moving mesh data
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
+    void apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
         ) override;
 
     //! set convective velocity field (+ pressure and acceleration field as
@@ -158,7 +158,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void print_time_step_info();
 
     //! iterative update of phinp
-    void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc  //!< increment vector for phi
+    void update_iter(const Teuchos::RCP<const Epetra_Vector> inc  //!< increment vector for phi
         ) override;
 
     //! build linear system tangent matrix, rhs/force residual
@@ -168,7 +168,7 @@ namespace POROFLUIDMULTIPHASE
     void prepare_system_for_newton_solve();
 
     //! direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
     };
@@ -180,10 +180,10 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> RHS() const override { return residual_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() const override { return residual_; }
 
     //! right-hand side alias the dynamic force residual for coupled system
-    Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
+    Teuchos::RCP<const Epetra_Vector> artery_porofluid_rhs() const override;
 
     //! return discretization
     Teuchos::RCP<Core::FE::Discretization> discretization() const override { return discret_; }
@@ -192,7 +192,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) const override;
 
     //! access dof row map
-    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
+    Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
 
     //! direct access to block system matrix of artery poro problem
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
@@ -213,16 +213,16 @@ namespace POROFLUIDMULTIPHASE
     /*--- query and output ---------------------------------------------------*/
 
     //! return current time value
-    double Time() const { return time_; }
+    double time() const { return time_; }
 
     //! return current step number
-    int Step() const { return step_; }
+    int step() const { return step_; }
 
     //! return number of newton iterations in last timestep
-    double IterNum() const { return iternum_; }
+    double iter_num() const { return iternum_; }
 
     //! return time step size
-    double Dt() const { return dt_; }
+    double dt() const { return dt_; }
 
     /*========================================================================*/
     //! @name degrees of freedom and related
@@ -231,7 +231,7 @@ namespace POROFLUIDMULTIPHASE
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! set the initial scalar field phi
-    virtual void SetInitialField(
+    virtual void set_initial_field(
         const Inpar::POROFLUIDMULTIPHASE::InitialField init,  //!< type of initial field
         const int startfuncno                                 //!< number of spatial function
     );
@@ -239,22 +239,22 @@ namespace POROFLUIDMULTIPHASE
     /*--- query and output ---------------------------------------------------*/
 
     //! return pressure field at time n+1
-    Teuchos::RCP<const Epetra_Vector> Phinp() const override { return phinp_; }
+    Teuchos::RCP<const Epetra_Vector> phinp() const override { return phinp_; }
 
     //! return scalar field phi at time n
-    Teuchos::RCP<const Epetra_Vector> Phin() const override { return phin_; }
+    Teuchos::RCP<const Epetra_Vector> phin() const override { return phin_; }
 
     //! return time derivative of scalar field phi at time n
-    Teuchos::RCP<const Epetra_Vector> Phidtn() const { return phidtn_; }
+    Teuchos::RCP<const Epetra_Vector> phidtn() const { return phidtn_; }
 
     //! return time derivative of scalar field phi at time n+1
-    Teuchos::RCP<const Epetra_Vector> Phidtnp() const { return phidtnp_; }
+    Teuchos::RCP<const Epetra_Vector> phidtnp() const { return phidtnp_; }
 
     //! return scalar field history
-    Teuchos::RCP<const Epetra_Vector> Hist() const { return hist_; }
+    Teuchos::RCP<const Epetra_Vector> hist() const { return hist_; }
 
     //! return solid pressure field
-    Teuchos::RCP<const Epetra_Vector> SolidPressure() const override
+    Teuchos::RCP<const Epetra_Vector> solid_pressure() const override
     {
       if (!output_solidpress_)
         FOUR_C_THROW("solid pressure requested but flag OUTPUT_SOLIDPRESS set to no");
@@ -262,7 +262,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! return pressure field
-    Teuchos::RCP<const Epetra_Vector> Pressure() const override
+    Teuchos::RCP<const Epetra_Vector> pressure() const override
     {
       if (!output_satpress_)
         FOUR_C_THROW("pressure requested but flag OUTPUT_SATANDPRESS set to no");
@@ -270,7 +270,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! return saturation field
-    Teuchos::RCP<const Epetra_Vector> Saturation() const override
+    Teuchos::RCP<const Epetra_Vector> saturation() const override
     {
       if (!output_satpress_)
         FOUR_C_THROW("saturation requested but flag OUTPUT_SATANDPRESS set to no");
@@ -278,10 +278,10 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! return phase flux field at time n+1
-    Teuchos::RCP<const Epetra_MultiVector> Flux() const override { return flux_; }
+    Teuchos::RCP<const Epetra_MultiVector> flux() const override { return flux_; }
 
     //! return phase velocity at time n+1
-    Teuchos::RCP<const Epetra_MultiVector> PhaseVelocity() const { return phase_velocities_; }
+    Teuchos::RCP<const Epetra_MultiVector> phase_velocity() const { return phase_velocities_; }
 
     //! return number of dof set associated with solid pressure
     int get_dof_set_number_of_solid_pressure() const override { return nds_solidpressure_; };
@@ -296,13 +296,13 @@ namespace POROFLUIDMULTIPHASE
     int num_domain_int_functions() const { return num_domainint_funct_; }
 
     //! return the values of the domain integrals
-    Teuchos::RCP<const Core::LinAlg::SerialDenseVector> DomainIntValues() const
+    Teuchos::RCP<const Core::LinAlg::SerialDenseVector> domain_int_values() const
     {
       return domain_integrals_;
     }
 
     //! return the meshtying strategy
-    Teuchos::RCP<POROFLUIDMULTIPHASE::MeshtyingStrategyBase> MeshTyingStrategy() const
+    Teuchos::RCP<POROFLUIDMULTIPHASE::MeshtyingStrategyBase> mesh_tying_strategy() const
     {
       return strategy_;
     }
@@ -398,7 +398,7 @@ namespace POROFLUIDMULTIPHASE
     void reconstruct_solid_pressures();
 
     //! reconstruct fluxes from current solution
-    void ReconstructFlux() override;
+    void reconstruct_flux() override;
 
     //! calculate phase velocities from current solution
     void calculate_phase_velocities() override;
@@ -442,7 +442,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void print_convergence_finish_line();
 
     // return arterial network time integrator
-    Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() override;
+    Teuchos::RCP<Adapter::ArtNet> art_net_tim_int() override;
 
     /*========================================================================*/
     //! @name Time, time-step and related methods

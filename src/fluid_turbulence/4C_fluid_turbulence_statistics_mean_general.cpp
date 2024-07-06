@@ -69,7 +69,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   }
 
   // initialise all counters, timers and vectors to zero
-  ResetComplete();
+  reset_complete();
 }  // FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean
 
 //----------------------------------------------------------------------
@@ -121,7 +121,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   }
 
   // initialise all counters, timers and vectors to zero
-  ResetComplete();
+  reset_complete();
 }  // FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean
 
 
@@ -163,7 +163,7 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const dou
     {
       // any XFEM problem with scatra will crash here, it could probably be removed     henke 12/11
       const Epetra_Comm& comm = (discret_ != Teuchos::null)
-                                    ? (discret_->Comm())
+                                    ? (discret_->get_comm())
                                     : (standarddofset_->dof_row_map()->Comm());
       if (comm.MyPID() == 0) std::cout << "curr_avg_sca_ or scavec is Teuchos::null" << std::endl;
     }
@@ -188,7 +188,7 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const dou
 void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const int dim)
 {
   // get a communicator
-  const Epetra_Comm& avgcomm = discret_->Comm();
+  const Epetra_Comm& avgcomm = discret_->get_comm();
 
   // get rowmap for dofs
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
@@ -237,12 +237,12 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     // first on this proc
     double lminxdim = 1e9;
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(nn);
+      Core::Nodes::Node* lnode = discret_->l_row_node(nn);
 
-      double xdim = (lnode->X())[dim];
+      double xdim = (lnode->x())[dim];
 
       if (lminxdim > xdim)
       {
@@ -264,14 +264,14 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     double xdim;
     double xodim[2];
 
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(nn);
+      Core::Nodes::Node* lnode = discret_->l_row_node(nn);
 
       // check for slave nodes  to skip them
       std::vector<Core::Conditions::Condition*> mypbcs;
-      lnode->GetCondition("SurfacePeriodic", mypbcs);
+      lnode->get_condition("SurfacePeriodic", mypbcs);
 
       // check whether a periodic boundary condition is active on this node
       if (mypbcs.size() > 0)
@@ -331,13 +331,13 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
         }
       }
 
-      xdim = (lnode->X())[dim];
+      xdim = (lnode->x())[dim];
 
       // this is a value on the very bottom in dim direction
       if (xdim - eps < minxdim)
       {
-        xodim[0] = (lnode->X())[odim[0]];
-        xodim[1] = (lnode->X())[odim[1]];
+        xodim[0] = (lnode->x())[odim[0]];
+        xodim[1] = (lnode->x())[odim[1]];
 
         x.push_back(xodim[0]);
         y.push_back(xodim[1]);
@@ -365,7 +365,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
   {
     // FOUR_C_THROW("No node with the smallest coordinate in direction %d found. Changing master and
     // slave of the pbc might help. Read remark.");
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
       std::cout << "Warning: Sampling for paraview output (averaged velocity/pressure) is "
                    "incomplete! \nChanging master and slave of the pbc might help! \nRead remark!"
                 << std::endl;
@@ -434,17 +434,17 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       // for safety
-      exporter.Comm().Barrier();
+      exporter.get_comm().Barrier();
 
       //--------------------------------------------------
       // Unpack received block
@@ -521,14 +521,14 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
       // 3) for each node on this proc: search in map, add
       //    value to avg
-      for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+      for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
       {
         // get the processor local node
-        Core::Nodes::Node* lnode = discret_->lRowNode(nn);
+        Core::Nodes::Node* lnode = discret_->l_row_node(nn);
 
         // check for slave nodes  to skip them
         std::vector<Core::Conditions::Condition*> mypbcs;
-        lnode->GetCondition("SurfacePeriodic", mypbcs);
+        lnode->get_condition("SurfacePeriodic", mypbcs);
 
         // check whether a periodic boundary condition is active on this node
         if (mypbcs.size() > 0)
@@ -592,13 +592,13 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
         double xodim[2];
 
-        xodim[0] = (lnode->X())[odim[0]];
+        xodim[0] = (lnode->x())[odim[0]];
 
         x_and_y = xtoy.find(xodim[0]);
 
         if (x_and_y != xtoy.end())
         {
-          xodim[1] = (lnode->X())[odim[1]];
+          xodim[1] = (lnode->x())[odim[1]];
 
           y_and_i = (x_and_y->second).find(xodim[1]);
 
@@ -611,7 +611,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
             int lid;
 
             // the set of degrees of freedom associated with the node
-            std::vector<int> nodedofset = discret_->Dof(lnode);
+            std::vector<int> nodedofset = discret_->dof(lnode);
 
             // u velocity
             gid = nodedofset[0];
@@ -644,7 +644,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
           {
             if (numprocs == 1)
             {
-              FOUR_C_THROW("didn\'t find node %d on single proc\n", lnode->Id());
+              FOUR_C_THROW("didn\'t find node %d on single proc\n", lnode->id());
             }
           }
         }
@@ -652,7 +652,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
         {
           if (numprocs == 1)
           {
-            FOUR_C_THROW("didn\'t find node %d on single proc\n", lnode->Id());
+            FOUR_C_THROW("didn\'t find node %d on single proc\n", lnode->id());
           }
         }
       }
@@ -726,17 +726,17 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
         FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
-      exporter.Wait(request);
+      exporter.wait(request);
 
       // for safety
-      exporter.Comm().Barrier();
+      exporter.get_comm().Barrier();
 
       //--------------------------------------------------
       // Unpack received block
@@ -806,14 +806,14 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
     // 3) for each node on this proc: search in map, insert
     //    avg into global vector
-    for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
+    for (int nn = 0; nn < discret_->num_my_row_nodes(); ++nn)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(nn);
+      Core::Nodes::Node* lnode = discret_->l_row_node(nn);
 
       // check for slave nodes  to skip them
       std::vector<Core::Conditions::Condition*> mypbcs;
-      lnode->GetCondition("SurfacePeriodic", mypbcs);
+      lnode->get_condition("SurfacePeriodic", mypbcs);
 
       // check whether a periodic boundary condition is active on this node
       if (mypbcs.size() > 0)
@@ -877,13 +877,13 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
       double xodim[2];
 
-      xodim[0] = (lnode->X())[odim[0]];
+      xodim[0] = (lnode->x())[odim[0]];
 
       x_and_y = xtoy.find(xodim[0]);
 
       if (x_and_y != xtoy.end())
       {
-        xodim[1] = (lnode->X())[odim[1]];
+        xodim[1] = (lnode->x())[odim[1]];
 
         y_and_i = (x_and_y->second).find(xodim[1]);
 
@@ -896,7 +896,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
           int lid;
 
           // the set of degrees of freedom associated with the node
-          std::vector<int> nodedofset = discret_->Dof(lnode);
+          std::vector<int> nodedofset = discret_->dof(lnode);
 
           int err = 0;
 
@@ -1012,7 +1012,7 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average()
   prev_n_ += curr_n_;
 
   // reinitialise curr(ent) counter and averages
-  TimeReset();
+  time_reset();
 }  // FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average
 
 
@@ -1021,7 +1021,8 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average()
 //          Read previous statistics from a file (for restart)
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(Core::IO::DiscretizationReader& input)
+void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics(
+    Core::IO::DiscretizationReader& input)
 {
   prev_n_ = input.read_int("num_steps_in_sample");
   prev_avg_time_ = input.read_double("sampling_time");
@@ -1052,7 +1053,7 @@ void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
 //                 Write the statistics to a file
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
+void FLD::TurbulenceStatisticsGeneralMean::write_old_average_vec(
     Core::IO::DiscretizationWriter& output)
 {
   // loop homogeneous directions, do averaging
@@ -1063,7 +1064,7 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 
   add_to_total_time_average();
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
     std::cout << " Wrote averaged vector             ";
@@ -1088,7 +1089,7 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 //     Clear all statistics collected in the current period
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
+void FLD::TurbulenceStatisticsGeneralMean::time_reset()
 {
   if (standarddofset_ != Teuchos::null)  // XFEM case
   {
@@ -1136,7 +1137,7 @@ void FLD::TurbulenceStatisticsGeneralMean::time_reset_fluid_avg_vectors(const Ep
 //          Clear all statistics collected up to now
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
+void FLD::TurbulenceStatisticsGeneralMean::reset_complete()
 {
   if (standarddofset_ != Teuchos::null)  // XFEM case
   {
@@ -1196,7 +1197,7 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_
 //    Redistribute average vectors according to fluid discretization
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
+void FLD::TurbulenceStatisticsGeneralMean::redistribute(
     Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
     Teuchos::RCP<Core::FE::Discretization> discret)
 {
@@ -1267,7 +1268,7 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
 Add results from scalar transport field solver to statistics
 
 ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
+void FLD::TurbulenceStatisticsGeneralMean::add_sca_tra_results(
     Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   withscatra_ = true;  // now it is clear: we have scatra results as well!
@@ -1275,7 +1276,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
   scatradis_ = scatradis;
 
   // we allocate and reset everything again (but including scatra now)
-  ResetComplete();
+  reset_complete();
 }  // FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults
 
 
@@ -1284,7 +1285,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
   Write (dump) the scatra-specific mean field to the result file
 
 ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
+void FLD::TurbulenceStatisticsGeneralMean::do_output_for_sca_tra(
     Core::IO::DiscretizationWriter& output, int step)
 {
   if (withscatra_)
@@ -1296,7 +1297,7 @@ void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
     else
       FOUR_C_THROW("Could not write vector to result file");
 
-    if (scatradis_->Comm().MyPID() == 0)
+    if (scatradis_->get_comm().MyPID() == 0)
     {
       std::cout << "XXXXXXXXXXXXXXXXXXXXX           ";
       std::cout << " Wrote averaged scatra vector         ";

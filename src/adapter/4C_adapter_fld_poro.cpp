@@ -36,7 +36,7 @@ Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::
 
   if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
 
-  discretization()->GetCondition("no_penetration", nopencond_);
+  discretization()->get_condition("no_penetration", nopencond_);
 }
 
 /*======================================================================*/
@@ -47,15 +47,15 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
     PoroElast::Coupltype coupltype)
 {
-  if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(discretization()->filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!discretization()->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  discretization()->set_state(0, "dispnp", Dispnp());
-  discretization()->set_state(0, "scaaf", Scaaf());
+  discretization()->set_state(0, "dispnp", dispnp());
+  discretization()->set_state(0, "scaaf", scaaf());
 
   Teuchos::ParameterList params;
 
-  params.set("timescale", TimeScaling());
+  params.set("timescale", time_scaling());
 
   if (coupltype == PoroElast::fluidfluid)
   {
@@ -67,7 +67,7 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     // write global IDs of dofs on which the no penetration condition is applied (can vary in time
     // and iteration)
     {
-      const int ndim = Global::Problem::Instance()->NDim();
+      const int ndim = Global::Problem::instance()->n_dim();
       const int ndof = ndim + 1;
       const int length = condVector->MyLength();
       const int nnod = length / ndof;
@@ -107,8 +107,8 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
   }
   else if (coupltype == PoroElast::fluidstructure)
   {
-    discretization()->set_state(0, "velnp", Velnp());
-    discretization()->set_state(0, "gridv", GridVel());
+    discretization()->set_state(0, "velnp", velnp());
+    discretization()->set_state(0, "gridv", grid_vel());
 
     discretization()->set_state(0, "condVector", condVector);
 
@@ -132,16 +132,16 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
   else
     FOUR_C_THROW("unknown coupling type for no penetration BC");
 
-  discretization()->ClearState();
+  discretization()->clear_state();
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MapExtractor> Adapter::FluidPoro::VelPresSplitter()
+Teuchos::RCP<Core::LinAlg::MapExtractor> Adapter::FluidPoro::vel_pres_splitter()
 {
-  return fluidimpl_->VelPresSplitter();
+  return fluidimpl_->vel_pres_splitter();
 }
 
 /*----------------------------------------------------------------------*/
@@ -164,31 +164,31 @@ void Adapter::FluidPoro::output(const int step, const double time)
   else
   {
     // print info to screen
-    if (fluid_field()->discretization()->Comm().MyPID() == 0)
+    if (fluid_field()->discretization()->get_comm().MyPID() == 0)
       std::cout << "\n   Write EXTRA FLUID Output Step=" << step << " Time=" << time << " ...   \n"
                 << std::endl;
 
     // step number and time
-    fluid_field()->DiscWriter()->new_step(step, time);
+    fluid_field()->disc_writer()->new_step(step, time);
 
     // time step, especially necessary for adaptive dt
-    fluid_field()->DiscWriter()->write_double("timestep", fluid_field()->Dt());
+    fluid_field()->disc_writer()->write_double("timestep", fluid_field()->dt());
 
     // velocity/pressure vector
-    fluid_field()->DiscWriter()->write_vector("velnp", fluid_field()->Velnp());
+    fluid_field()->disc_writer()->write_vector("velnp", fluid_field()->velnp());
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure =
-        fluid_field()->GetVelPressSplitter()->extract_cond_vector(fluid_field()->Velnp());
-    fluid_field()->DiscWriter()->write_vector("pressure", pressure);
+        fluid_field()->get_vel_press_splitter()->extract_cond_vector(fluid_field()->velnp());
+    fluid_field()->disc_writer()->write_vector("pressure", pressure);
 
-    if (alefluid_) fluid_field()->DiscWriter()->write_vector("dispnp", fluid_field()->Dispnp());
+    if (alefluid_) fluid_field()->disc_writer()->write_vector("dispnp", fluid_field()->dispnp());
 
     // write domain decomposition for visualization (only once!)
-    if ((fluid_field()->Step() == upres_ or fluid_field()->Step() == 0) and
+    if ((fluid_field()->step() == upres_ or fluid_field()->step() == 0) and
         !write_eledata_every_step_)
-      fluid_field()->DiscWriter()->write_element_data(true);
+      fluid_field()->disc_writer()->write_element_data(true);
     else
-      fluid_field()->DiscWriter()->write_element_data(true);
+      fluid_field()->disc_writer()->write_element_data(true);
 
     return;
 

@@ -50,10 +50,10 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::setup()
   BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>::setup();
 
   // Initialize the element data containers
-  ele1vel_ = GEOMETRYPAIR::InitializeElementData<Beam, scalar_type>::initialize(this->Element1());
-  ele2vel_ = GEOMETRYPAIR::InitializeElementData<Fluid, scalar_type>::initialize(this->Element2());
-  ele1poscur_ = GEOMETRYPAIR::InitializeElementData<Beam, double>::initialize(this->Element1());
-  ele2poscur_ = GEOMETRYPAIR::InitializeElementData<Fluid, double>::initialize(this->Element2());
+  ele1vel_ = GEOMETRYPAIR::InitializeElementData<Beam, scalar_type>::initialize(this->element1());
+  ele2vel_ = GEOMETRYPAIR::InitializeElementData<Fluid, scalar_type>::initialize(this->element2());
+  ele1poscur_ = GEOMETRYPAIR::InitializeElementData<Beam, double>::initialize(this->element1());
+  ele2poscur_ = GEOMETRYPAIR::InitializeElementData<Fluid, double>::initialize(this->element2());
 
   // Initialize current nodal velocities for beam element
   for (unsigned int i = 0; i < Beam::n_dof_; i++) this->ele1vel_.element_position_(i) = 0.0;
@@ -69,7 +69,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::setup()
  */
 template <typename Beam, typename Fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
-    Fluid>::ResetState(  // todo somehow hand in nodal velocities
+    Fluid>::reset_state(  // todo somehow hand in nodal velocities
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& fluid_nodal_dofvec)
 {
@@ -95,7 +95,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
 }
 
 template <typename Beam, typename Fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::CreateGeometryPair(
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::create_geometry_pair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
@@ -128,8 +128,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::print(std::ostr
   // Print some general information: Element IDs and dofvecs.
   out << "\n------------------------------------------------------------------------";
   out << "\nInstance of BeamToFluidMeshtyingPair"
-      << "\nBeam EleGID:  " << this->Element1()->Id()
-      << "\nFluid EleGID: " << this->Element2()->Id();
+      << "\nBeam EleGID:  " << this->element1()->id()
+      << "\nFluid EleGID: " << this->element2()->id();
 
   out << "\n\nele1 dofvec: " << this->ele1pos_.element_position_;
   out << "\nele2 dofvec: " << this->ele2pos_.element_position_;
@@ -152,7 +152,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Display the number of segments and segment length.
-  out << "beam ID " << this->Element1()->Id() << ", fluid ID " << this->Element2()->Id() << ":";
+  out << "beam ID " << this->element1()->id() << ", fluid ID " << this->element2()->id() << ":";
   out << " n_segments = " << this->line_to_3D_segments_.size() << "\n";
 
   // Loop over segments and display information about them.
@@ -160,8 +160,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
        index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << this->line_to_3D_segments_[index_segment].GetEtadata() << ", "
-        << this->line_to_3D_segments_[index_segment].GetEtaB() << "]";
+    out << "eta in [" << this->line_to_3D_segments_[index_segment].get_etadata() << ", "
+        << this->line_to_3D_segments_[index_segment].get_eta_b() << "]";
     out << ", Gauss points = "
         << this->line_to_3D_segments_[index_segment].get_number_of_projection_points();
     out << "\n";
@@ -195,14 +195,14 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
 
     // Get the visualization vectors.
     auto& visualization_data = visualization->get_visualization_data();
-    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
-    std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
+    std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+    std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the integration points.
-      for (const auto& projection_point : segment.GetProjectionPoints())
+      for (const auto& projection_point : segment.get_projection_points())
       {
         evaluate_beam_position(projection_point, X, true);
         evaluate_beam_position(projection_point, r, false);
@@ -229,14 +229,14 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
 
     // Get the visualization vectors.
     auto& visualization_data = visualization->get_visualization_data();
-    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
-    std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
+    std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+    std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the left and right boundary point of the segment.
-      for (const auto& segmentation_point : {segment.GetEtadata(), segment.GetEtaB()})
+      for (const auto& segmentation_point : {segment.get_etadata(), segment.get_eta_b()})
       {
         GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1posref_, X);
         GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1pos_, r);
@@ -258,9 +258,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::evaluate_beam_p
     Core::LinAlg::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(), this->ele1posref_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(), this->ele1posref_, r_beam);
   else
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(), this->ele1pos_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(), this->ele1pos_, r_beam);
 }
 
 /**

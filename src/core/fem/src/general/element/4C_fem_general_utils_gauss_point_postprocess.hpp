@@ -72,7 +72,7 @@ namespace Core::FE
       Epetra_MultiVector& global_data, const T& gp_data, const Core::Elements::Element& ele)
   {
     const Epetra_BlockMap& elemap = global_data.Map();
-    int lid = elemap.LID(ele.Id());
+    int lid = elemap.LID(ele.id());
     if (lid != -1)
     {
       for (decltype(gp_data.numCols()) i = 0; i < gp_data.numCols(); ++i)

@@ -35,16 +35,16 @@ namespace Discret
     class FluidPoroEleType : public FluidType
     {
      public:
-      std::string Name() const override { return "FluidPoroEleType"; }
+      std::string name() const override { return "FluidPoroEleType"; }
 
-      static FluidPoroEleType& Instance();
+      static FluidPoroEleType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -88,11 +88,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of fluid and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -100,9 +100,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return FluidPoroEleType::Instance().UniqueParObjectId();
+        return FluidPoroEleType::instance().unique_par_object_id();
       }
 
       /*!
@@ -123,12 +123,12 @@ namespace Discret
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       //!@}
 
@@ -139,15 +139,15 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return FluidPoroEleType::Instance();
+        return FluidPoroEleType::instance();
       }
 
 
-      void SetKinematicType(Inpar::Solid::KinemType kintype) { kintype_ = kintype; }
+      void set_kinematic_type(Inpar::Solid::KinemType kintype) { kintype_ = kintype; }
 
-      Inpar::Solid::KinemType KinematicType() const { return kintype_; }
+      Inpar::Solid::KinemType kinematic_type() const { return kintype_; }
 
       //! Set anisotropic permeability directions obtained from structure element during cloning
       void set_anisotropic_permeability_directions(
@@ -232,11 +232,11 @@ namespace Discret
     class FluidPoroBoundaryType : public FluidBoundaryType
     {
      public:
-      std::string Name() const override { return "FluidPoroBoundaryType"; }
+      std::string name() const override { return "FluidPoroBoundaryType"; }
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
-      static FluidPoroBoundaryType& Instance();
+      static FluidPoroBoundaryType& instance();
 
      private:
       static FluidPoroBoundaryType instance_;
@@ -273,11 +273,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -285,9 +285,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return FluidPoroBoundaryType::Instance().UniqueParObjectId();
+        return FluidPoroBoundaryType::instance().unique_par_object_id();
       }
 
       //!@}
@@ -299,9 +299,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return FluidPoroBoundaryType::Instance();
+        return FluidPoroBoundaryType::instance();
       }
 
       //!@}
@@ -372,7 +372,7 @@ namespace Discret
       \param condstring (in) : Name of condition to be evaluated
       \param params (in)     : List of parameters for use at element level
       */
-      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
+      void location_vector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:

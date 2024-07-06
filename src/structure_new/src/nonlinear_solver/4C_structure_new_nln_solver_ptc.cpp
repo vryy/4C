@@ -85,7 +85,7 @@ void Solid::Nln::SOLVER::PseudoTransient::set_pseudo_transient_params()
   pptc.set<double>("deltaInit", data_sdyn().get_initial_ptc_pseudo_time_step());
   pptc.set<double>("deltaMax", std::numeric_limits<double>::max());
   pptc.set<double>("deltaMin", 0.0);
-  pptc.set<int>("Maximum Number of Pseudo-Transient Iterations", (data_sdyn().GetIterMax() + 1));
+  pptc.set<int>("Maximum Number of Pseudo-Transient Iterations", (data_sdyn().get_iter_max() + 1));
   pptc.set<std::string>("Time Step Control", "SER");
   pptc.set<double>("SER_alpha", 1.0);
   pptc.set<double>("ScalingFactor", 1.0);

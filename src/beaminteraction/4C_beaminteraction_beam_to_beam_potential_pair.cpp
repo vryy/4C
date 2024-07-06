@@ -66,25 +66,25 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setu
   /* take care of how to assign the role of master and slave (only applicable to
    * "SingleLengthSpecific" approach). Immediately before this setup(), the element with smaller GID
    * has been assigned as element1_, i.e., slave. */
-  if (Params()->ChoiceMasterSlave() ==
+  if (params()->choice_master_slave() ==
       Inpar::BEAMPOTENTIAL::MasterSlaveChoice::higher_eleGID_is_slave)
   {
     // interchange order, i.e., role of elements
-    Core::Elements::Element const* tmp_ele_ptr = Element1();
-    set_element1(Element2());
+    Core::Elements::Element const* tmp_ele_ptr = element1();
+    set_element1(element2());
     set_element2(tmp_ele_ptr);
   }
 
   // get initial length of beam elements
-  beam_element1_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1());
-  ele1length_ = BeamElement1()->RefLength();
-  beam_element2_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element2());
-  ele2length_ = BeamElement2()->RefLength();
+  beam_element1_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1());
+  ele1length_ = beam_element1()->ref_length();
+  beam_element2_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element2());
+  ele2length_ = beam_element2()->ref_length();
 
-  radius1_ = BeamElement1()->get_circular_cross_section_radius_for_interactions();
-  radius2_ = BeamElement2()->get_circular_cross_section_radius_for_interactions();
+  radius1_ = beam_element1()->get_circular_cross_section_radius_for_interactions();
+  radius2_ = beam_element2()->get_circular_cross_section_radius_for_interactions();
 
-  if (Element1()->ElementType() != Element2()->ElementType())
+  if (element1()->element_type() != element2()->element_type())
     FOUR_C_THROW(
         "The class BeamToBeamPotentialPair currently only supports element "
         "pairs of the same beam element type!");
@@ -105,7 +105,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::eval
     const std::vector<Core::Conditions::Condition*> linechargeconds, const double k, const double m)
 {
   // no need to evaluate this pair in case of separation by far larger than cutoff or prefactor zero
-  if ((Params()->CutoffRadius() != -1.0 and
+  if ((params()->cutoff_radius() != -1.0 and
           are_elements_much_more_separated_than_cutoff_distance()) or
       k == 0.0)
     return false;
@@ -116,7 +116,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::eval
   {
     for (unsigned int i = 0; i < 2; ++i)
     {
-      if (linechargeconds[i]->Type() == Core::Conditions::BeamPotential_LineChargeDensity)
+      if (linechargeconds[i]->type() == Core::Conditions::BeamPotential_LineChargeDensity)
         linechargeconds_[i] = linechargeconds[i];
       else
         FOUR_C_THROW(
@@ -146,7 +146,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::eval
 
 
   // compute the values for element residual vectors ('force') and linearizations ('stiff')
-  switch (Params()->Strategy())
+  switch (params()->strategy())
   {
     case Inpar::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
     {
@@ -206,10 +206,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   set_automatic_differentiation_variables_if_required(ele1pos_, ele2pos_);
 
   // get cutoff radius
-  const double cutoff_radius = Params()->CutoffRadius();
+  const double cutoff_radius = params()->cutoff_radius();
 
   // number of integration segments per element
-  const unsigned int num_integration_segments = Params()->number_integration_segments();
+  const unsigned int num_integration_segments = params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
   Core::FE::GaussRule1D gaussrule = get_gauss_rule();
@@ -243,15 +243,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    q1 *= Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    q1 *= Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    q2 *= Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    q2 *= Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
 
@@ -261,7 +261,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
 
-  switch (Params()->PotentialType())
+  switch (params()->potential_type())
   {
     case Inpar::BEAMPOTENTIAL::beampot_surf:
       prefactor *= 4 * radius1_ * radius2_ * M_PI * M_PI;
@@ -293,7 +293,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         0.5 * (integration_segment1_upper_limit - integration_segment1_lower_limit);
 
     Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints, N1_i,
-        BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
+        beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit);
 
     for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
@@ -308,7 +308,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           0.5 * (integration_segment2_upper_limit - integration_segment2_lower_limit);
 
       Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints,
-          N2_i, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
+          N2_i, beam_element2()->shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit);
 
 
@@ -330,7 +330,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         // store for visualization
         centerline_coords_gp_1_[igp1_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r1);
 
-        double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(xi_GP1);
+        double jacobifac1 = beam_element1()->get_jacobi_fac_at_xi(xi_GP1);
 
         // loop over Gauss points in current segment on ele2
         for (int igp2 = 0; igp2 < numgp_persegment; ++igp2)
@@ -351,7 +351,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           // store for visualization
           centerline_coords_gp_2_[igp2_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r2);
 
-          double jacobifac2 = BeamElement2()->GetJacobiFacAtXi(xi_GP2);
+          double jacobifac2 = beam_element2()->get_jacobi_fac_at_xi(xi_GP2);
 
           dist = Core::FADUtils::DiffVector(r1, r2);
 
@@ -579,16 +579,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   set_automatic_differentiation_variables_if_required(ele1pos_, ele2pos_);
 
   // get cutoff radius
-  const double cutoff_radius = Params()->CutoffRadius();
+  const double cutoff_radius = params()->cutoff_radius();
 
   // get regularization type and separation
   const Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
-      Params()->RegularizationType();
+      params()->regularization_type();
 
-  const double regularization_separation = Params()->regularization_separation();
+  const double regularization_separation = params()->regularization_separation();
 
   // number of integration segments per element
-  const unsigned int num_integration_segments = Params()->number_integration_segments();
+  const unsigned int num_integration_segments = params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
   Core::FE::GaussRule1D gaussrule = get_gauss_rule();
@@ -624,15 +624,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    q1 *= Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    q1 *= Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    q2 *= Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    q2 *= Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
 
@@ -706,7 +706,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         0.5 * (integration_segment1_upper_limit - integration_segment1_lower_limit);
 
     Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints, N1_i,
-        BeamElement1()->Shape(), ele1length_, integration_segment1_lower_limit,
+        beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit);
 
     for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
@@ -721,7 +721,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           0.5 * (integration_segment2_upper_limit - integration_segment2_lower_limit);
 
       Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints,
-          N2_i, BeamElement2()->Shape(), ele2length_, integration_segment2_lower_limit,
+          N2_i, beam_element2()->shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit);
 
       // loop over gauss points of current segment on element 1
@@ -743,7 +743,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         // store for visualization
         centerline_coords_gp_1_[igp1_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r1);
 
-        double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(xi_GP1);
+        double jacobifac1 = beam_element1()->get_jacobi_fac_at_xi(xi_GP1);
 
         // loop over gauss points of current segment on element 2
         for (int igp2 = 0; igp2 < numgp_persegment; ++igp2)
@@ -764,7 +764,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           // store for visualization
           centerline_coords_gp_2_[igp2_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r2);
 
-          double jacobifac2 = BeamElement2()->GetJacobiFacAtXi(xi_GP2);
+          double jacobifac2 = beam_element2()->get_jacobi_fac_at_xi(xi_GP2);
 
           dist = Core::FADUtils::DiffVector(r1, r2);
 
@@ -950,8 +950,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // auxiliary variables (same for both elements)
   double gap_exp2 = std::pow(gap_regularized, -m_ + 1.5);
 
-  if (Params()->RegularizationType() == Inpar::BEAMPOTENTIAL::regularization_constant and
-      gap < Params()->regularization_separation())
+  if (params()->regularization_type() == Inpar::BEAMPOTENTIAL::regularization_constant and
+      gap < params()->regularization_separation())
   {
     /* in case of constant extrapolation of force law, the derivative of the force is zero
      * and this contribution to the stiffness matrix vanishes */
@@ -1062,16 +1062,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         "e.g. van der Waals (m=6) or the repulsive part of Lennard-Jones (m=12)!",
         m_);
 
-  if (not Params()->UseFAD() and
-      Params()->Strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
+  if (not params()->use_fad() and
+      params()->strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
   {
     FOUR_C_THROW(
         "The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the interaction "
         "potential requires automatic differentiation via FAD!");
   }
 
-  if (Params()->Strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox &&
-      Params()->PotentialReductionLength() != -1.0)
+  if (params()->strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox &&
+      params()->potential_reduction_length() != -1.0)
   {
     FOUR_C_THROW(
         "The potential reduction strategy is currently not implemented for the beam interaction "
@@ -1084,10 +1084,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         "potential requires the beam radii to be identical!");
 
   // get cutoff radius
-  const double cutoff_radius = Params()->CutoffRadius();
+  const double cutoff_radius = params()->cutoff_radius();
 
   // get potential reduction length
-  const double potential_reduction_length = Params()->PotentialReductionLength();
+  const double potential_reduction_length = params()->potential_reduction_length();
 
   // get length from current master beam element to beam edge
   double length_prior_left = 0.0;
@@ -1096,7 +1096,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   if (potential_reduction_length > 0.0)
   {
     std::tie(length_prior_left, length_prior_right) =
-        Params()->ele_gid_prior_length_map_.at(Element2()->Id());
+        params()->ele_gid_prior_length_map_.at(element2()->id());
 
     if ((length_prior_left >= 0.0) && (length_prior_right >= 0.0) &&
         ((ele2length_ - 2 * potential_reduction_length + length_prior_left + length_prior_right) <
@@ -1121,7 +1121,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // number of integration segments per element
-  const unsigned int num_integration_segments = Params()->number_integration_segments();
+  const unsigned int num_integration_segments = params()->number_integration_segments();
 
   // Set Gauss integration rule applied in each integration segment
   Core::FE::GaussRule1D gaussrule = get_gauss_rule();
@@ -1209,15 +1209,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   int function_number = linechargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    rho1 *= Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    rho1 *= Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
                 .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    rho2 *= Global::Problem::Instance()
-                ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    rho2 *= Global::Problem::instance()
+                ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
                 .evaluate(time_);
 
 
@@ -1265,7 +1265,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
     // Evaluate shape functions at Gauss points of slave element and store values
     Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
-        gausspoints, N_i_slave, N_i_xi_slave, BeamElement1()->Shape(), ele1length_,
+        gausspoints, N_i_slave, N_i_xi_slave, beam_element1()->shape(), ele1length_,
         integration_segment_lower_limit, integration_segment_upper_limit);
 
     // loop over gauss points of element 1
@@ -1295,7 +1295,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       centerline_coords_gp_1_[igp_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r_slave);
 
       rho1rho2_JacFac_GaussWeight = rho1 * rho2 * jacobifactor_segment *
-                                    BeamElement1()->GetJacobiFacAtXi(xi_GP) * gausspoints.qwgt[igp];
+                                    beam_element1()->get_jacobi_fac_at_xi(xi_GP) *
+                                    gausspoints.qwgt[igp];
 
       /* point-to-curve projection, i.e. 'unilateral' closest-point projection
        * to determine point on master beam (i.e. parameter coordinate xi_master) */
@@ -1304,7 +1305,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       while (iter_projection < num_initial_values and
              (not BEAMINTERACTION::Geo::PointToCurveProjection<numnodes, numnodalvalues, T>(r_slave,
                  xi_master, xi_master_initial_guess_values[iter_projection], ele2pos_,
-                 Element2()->Shape(), ele2length_)))
+                 element2()->shape(), ele2length_)))
       {
         iter_projection++;
       }
@@ -1313,7 +1314,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       {
         std::cout << "\nWARNING: Point-to-Curve Projection ultimately failed at "
                      "xi_slave="
-                  << xi_GP << " of ele pair " << Element1()->Id() << " & " << Element2()->Id()
+                  << xi_GP << " of ele pair " << element1()->id() << " & " << element2()->id()
                   << "\nFallback strategy: Assume invalid projection and skip this GP..."
                   << std::endl;
         continue;
@@ -1335,7 +1336,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi<numnodes,
           numnodalvalues>(xi_master, N_i_master, N_i_xi_master, N_i_xixi_master,
-          BeamElement2()->Shape(), ele2length_);
+          beam_element2()->shape(), ele2length_);
 
       // compute coord vector and tangent vector on master side
       compute_centerline_position(r_master, N_i_master, ele2pos_);
@@ -1394,7 +1395,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // evaluate all quantities which depend on the applied disk-cylinder potential law
 
       // 'full' disk-cylinder interaction potential
-      if (Params()->Strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
+      if (params()->strategy() == Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
       {
         if (not evaluate_full_disk_cylinder_potential(interaction_potential_GP, force_pot_slave_GP,
                 force_pot_master_GP, r_slave, r_xi_slave, t_slave, r_master, r_xi_master,
@@ -1407,7 +1408,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           continue;
       }
       // reduced, simpler variant of the disk-cylinder interaction potential
-      else if (Params()->Strategy() ==
+      else if (params()->strategy() ==
                Inpar::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox_simple)
       {
         if (not evaluate_simple_disk_cylinder_potential(dist_ul, norm_dist_ul, alpha, cos_alpha,
@@ -1819,7 +1820,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> N_i_xixixi_master(true);
 
   Discret::UTILS::Beam::EvaluateShapeFunction3rdDerivsAtXi<numnodes, numnodalvalues>(
-      xi_master, N_i_xixixi_master, BeamElement2()->Shape(), ele2length_);
+      xi_master, N_i_xixixi_master, beam_element2()->shape(), ele2length_);
 
   Core::LinAlg::Matrix<3, 1, double> r_xixixi_master(true);
 
@@ -2385,9 +2386,9 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 {
   // get regularization type and separation
   const Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
-      Params()->RegularizationType();
+      params()->regularization_type();
 
-  const double regularization_separation = Params()->regularization_separation();
+  const double regularization_separation = params()->regularization_separation();
 
 
   T sin_alpha = 0.0;                              // sine of mutual angle of tangent vectors
@@ -3049,9 +3050,9 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 {
   // get regularization type and separation
   const Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type =
-      Params()->RegularizationType();
+      params()->regularization_type();
 
-  const double regularization_separation = Params()->regularization_separation();
+  const double regularization_separation = params()->regularization_separation();
 
   T signum_tangentsscalarproduct = 0.0;
 
@@ -3619,8 +3620,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::prin
 {
   check_init_setup();
 
-  out << "\nInstance of BeamToBeamPotentialPair (EleGIDs " << Element1()->Id() << " & "
-      << Element2()->Id() << "):";
+  out << "\nInstance of BeamToBeamPotentialPair (EleGIDs " << element1()->id() << " & "
+      << element2()->id() << "):";
   out << "\nele1 dofvec: "
       << Core::FADUtils::CastToDouble<T, 3 * numnodes * numnodalvalues, 1>(ele1pos_);
   out << "\nele2 dofvec: "
@@ -3653,10 +3654,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::get_
     Core::FE::IntegrationPoints1D& gausspoints) const
 {
   Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
-      gausspoints, N1_i, N1_i_xi, BeamElement1()->Shape(), ele1length_);
+      gausspoints, N1_i, N1_i_xi, beam_element1()->shape(), ele1length_);
 
   Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
-      gausspoints, N2_i, N2_i_xi, BeamElement2()->Shape(), ele2length_);
+      gausspoints, N2_i, N2_i_xi, beam_element2()->shape(), ele2length_);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -3688,7 +3689,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::ResetState(double time,
+void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::reset_state(double time,
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {
@@ -3805,7 +3806,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
                                                    element2_spherical_box_radius;
 
 
-  if (estimated_minimal_centerline_separation > safety_factor * Params()->CutoffRadius())
+  if (estimated_minimal_centerline_separation > safety_factor * params()->cutoff_radius())
     return true;
   else
     return false;

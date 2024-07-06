@@ -60,7 +60,7 @@ namespace GEOMETRYPAIR
         dN(true);
 
     // Evaluate the shape function values
-    EvaluateShapeFunction<ElementType>::EvaluateDeriv1(dN, xi, element_data.shape_function_data_);
+    EvaluateShapeFunction<ElementType>::evaluate_deriv1(dN, xi, element_data.shape_function_data_);
 
     // Calculate the derivative of the field function
     dr.clear();
@@ -250,7 +250,7 @@ namespace GEOMETRYPAIR
     // Get the derivatives of the shape functions w.r.t to the parameter coordinates
     Core::LinAlg::Matrix<Volume::element_dim_, Volume::n_nodes_ * Volume::n_val_, ScalarTypeXi>
         dNdxi(true);
-    GEOMETRYPAIR::EvaluateShapeFunction<Volume>::EvaluateDeriv1(
+    GEOMETRYPAIR::EvaluateShapeFunction<Volume>::evaluate_deriv1(
         dNdxi, xi, q_volume.shape_function_data_);
 
     // Transform to derivatives w.r.t physical coordinates

@@ -285,7 +285,7 @@ double NOX::Nln::Aux::get_norm_f_class_variable(const ::NOX::StatusTest::Generic
       else if (classVariableName == "SpecifiedTolerance")
         return normFTest->get_specified_tolerance(qType);
       else if (classVariableName == "InitialTolerance")
-        return normFTest->GetInitialTolerance(qType);
+        return normFTest->get_initial_tolerance(qType);
     }
   }
   // if the nox_nln_statustest_combo Test cast was successful

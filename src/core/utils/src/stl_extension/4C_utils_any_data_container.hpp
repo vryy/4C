@@ -67,7 +67,7 @@ namespace Core::Gen
     struct AnyData
     {
       /// accessor
-      [[nodiscard]] const std::any& TryGet() const
+      [[nodiscard]] const std::any& try_get() const
       {
         if (!data_.has_value()) FOUR_C_THROW("The data is empty!");
 
@@ -76,7 +76,7 @@ namespace Core::Gen
 
       /// set any data and perform a sanity check
       template <typename T>
-      void TrySet(const T& data)
+      void try_set(const T& data)
       {
         if (data_.has_value())
         {
@@ -135,19 +135,19 @@ namespace Core::Gen
     /// @{
 
     template <typename... Ts>
-    void SetVector(const Vec<Ts...>* unordered_map, const unsigned id = 0)
+    void set_vector(const Vec<Ts...>* unordered_map, const unsigned id = 0)
     {
       set_data<Vec<Ts...>, DataType::vector>(unordered_map, id);
     }
 
     template <typename... Ts>
-    Vec<Ts...>* GetVector(const unsigned id = 0)
+    Vec<Ts...>* get_vector(const unsigned id = 0)
     {
       return const_cast<Vec<Ts...>*>(get_data<Vec<Ts...>, DataType::vector>(id));
     }
 
     template <typename... Ts>
-    const Vec<Ts...>* GetVector(const unsigned id = 0) const
+    const Vec<Ts...>* get_vector(const unsigned id = 0) const
     {
       return get_data<Vec<Ts...>, DataType::vector>(id);
     }
@@ -158,19 +158,19 @@ namespace Core::Gen
     /// @{
 
     template <typename... Ts>
-    void SetUnorderedMap(const UMap<Ts...>* unordered_map, const unsigned id = 0)
+    void set_unordered_map(const UMap<Ts...>* unordered_map, const unsigned id = 0)
     {
       set_data<UMap<Ts...>, DataType::unordered_map>(unordered_map, id);
     }
 
     template <typename... Ts>
-    UMap<Ts...>* GetUnorderedMap(const unsigned id = 0)
+    UMap<Ts...>* get_unordered_map(const unsigned id = 0)
     {
       return const_cast<UMap<Ts...>*>(get_data<UMap<Ts...>, DataType::unordered_map>(id));
     }
 
     template <typename... Ts>
-    const UMap<Ts...>* GetUnorderedMap(const unsigned id = 0) const
+    const UMap<Ts...>* get_unordered_map(const unsigned id = 0) const
     {
       return get_data<UMap<Ts...>, DataType::unordered_map>(id);
     }
@@ -181,20 +181,20 @@ namespace Core::Gen
     /// @{
 
     template <typename EnumClass>
-    void SetTimer(const CONTACT::Aug::TimeMonitor<EnumClass>* timer, const unsigned id = 0)
+    void set_timer(const CONTACT::Aug::TimeMonitor<EnumClass>* timer, const unsigned id = 0)
     {
       set_data<TimeMonitor<EnumClass>, DataType::time_monitor>(timer, id);
     }
 
     template <typename EnumClass>
-    TimeMonitor<EnumClass>* GetTimer(const unsigned id = 0)
+    TimeMonitor<EnumClass>* get_timer(const unsigned id = 0)
     {
       return const_cast<TimeMonitor<EnumClass>*>(
           get_data<TimeMonitor<EnumClass>, DataType::time_monitor>(id));
     }
 
     template <typename EnumClass>
-    const TimeMonitor<EnumClass>* GetTimer(const unsigned id = 0) const
+    const TimeMonitor<EnumClass>* get_timer(const unsigned id = 0) const
     {
       return get_data<TimeMonitor<EnumClass>, DataType::time_monitor>(id);
     }
@@ -205,7 +205,7 @@ namespace Core::Gen
     /// @{
 
     /// clear an entry in the respective container
-    void ClearEntry(const DataType type, const int id)
+    void clear_entry(const DataType type, const int id)
     {
       switch (type)
       {
@@ -242,7 +242,7 @@ namespace Core::Gen
     }
 
     // clear all entries in the respective container
-    void ClearAll(const DataType type) { ClearEntry(type, -1); }
+    void clear_all(const DataType type) { clear_entry(type, -1); }
 
     /// @}
 
@@ -353,7 +353,7 @@ namespace Core::Gen
       if (any_data_vec.size() <= id) any_data_vec.resize(id + 1);
 
       AnyData& data_id = any_data_vec[id];
-      data_id.TrySet(any_data);
+      data_id.try_set(any_data);
     }
 
     /// access content of any data vector
@@ -365,7 +365,7 @@ namespace Core::Gen
             "Requested ID #%d exceeds the AnyData vector size (=%d).", id, any_data_vec.size());
 
 
-      return any_data_vec[id].TryGet();
+      return any_data_vec[id].try_get();
     }
 
    private:

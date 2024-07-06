@@ -33,7 +33,7 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleParameterElch* Instance(
+      static ScaTraEleParameterElch* instance(
           const std::string& disname  //!< name of discretization
       );
 
@@ -42,26 +42,26 @@ namespace Discret
       bool boundary_flux_coupling() const { return boundaryfluxcoupling_; };
 
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      void set_parameters(Teuchos::ParameterList& parameters  //!< parameter list
           ) override;
 
       //! return type of closing equation for electric potential
-      Inpar::ElCh::EquPot EquPot() const { return equpot_; };
+      Inpar::ElCh::EquPot equ_pot() const { return equpot_; };
 
       //! return Faraday constant
-      double Faraday() const { return faraday_; };
+      double faraday() const { return faraday_; };
 
       //! return the (universal) gas constant
-      double GasConstant() const { return gas_constant_; };
+      double gas_constant() const { return gas_constant_; };
 
       //! return dielectric constant
-      double Epsilon() const { return epsilon_; };
+      double epsilon() const { return epsilon_; };
 
       //! return constant F/RT
-      double FRT() const { return frt_; };
+      double frt() const { return frt_; };
 
       //! return the homogeneous temperature in the scatra field (can be time dependent)
-      double Temperature() const { return temperature_; }
+      double temperature() const { return temperature_; }
 
      private:
       //! private constructor for singletons

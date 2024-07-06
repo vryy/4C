@@ -88,7 +88,7 @@ namespace ParticleInteraction
             particlestatestotypes) = 0;
 
     //! set initial states
-    virtual void SetInitialStates() = 0;
+    virtual void set_initial_states() = 0;
 
     //! pre evaluate time step
     virtual void pre_evaluate_time_step() = 0;
@@ -122,7 +122,7 @@ namespace ParticleInteraction
     virtual void set_current_write_result_flag(bool writeresultsthisstep);
 
     //! set gravity
-    virtual void SetGravity(std::vector<double>& gravity) final;
+    virtual void set_gravity(std::vector<double>& gravity) final;
 
     //! write interaction runtime output
     virtual void write_interaction_runtime_output(const int step, const double time);

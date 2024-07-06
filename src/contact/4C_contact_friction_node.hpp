@@ -18,11 +18,11 @@ namespace CONTACT
   class FriNodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const final { return "FriNodeType"; }
+    std::string name() const final { return "FriNodeType"; }
 
-    static FriNodeType& Instance() { return instance_; };
+    static FriNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FriNodeType instance_;
@@ -90,42 +90,42 @@ namespace CONTACT
     /*!
      \brief Return friction status of this node (slip=true)
      */
-    virtual inline bool& Slip() { return slip_; }
+    virtual inline bool& slip() { return slip_; }
 
     /*!
      \brief Return the old 'D' map (vector) of this node (last converged state)
      */
-    virtual inline Core::Gen::Pairedvector<int, double>& GetDOld() { return drowsold_; }
+    virtual inline Core::Gen::Pairedvector<int, double>& get_d_old() { return drowsold_; }
 
     /*!
      \brief Return the old 'M' map (vector) of this node (last converged state)
      */
-    virtual inline std::map<int, double>& GetMOld() { return mrowsold_; }
+    virtual inline std::map<int, double>& get_m_old() { return mrowsold_; }
 
     /*!
      \brief Return the old 'D' map (vector) of this node (last converged state)
      */
-    virtual inline Core::Gen::Pairedvector<int, double>& GetDOldLTL() { return drowsoldLTL_; }
+    virtual inline Core::Gen::Pairedvector<int, double>& get_d_old_ltl() { return drowsoldLTL_; }
 
     /*!
      \brief Return the old 'M' map (vector) of this node (last converged state)
      */
-    virtual inline std::map<int, double>& GetMOldLTL() { return mrowsoldLTL_; }
+    virtual inline std::map<int, double>& get_m_old_ltl() { return mrowsoldLTL_; }
 
     /*!
      \brief Return the map with according slave nodes
      */
-    virtual inline std::set<int>& GetSNodes() { return snodes_; }
+    virtual inline std::set<int>& get_s_nodes() { return snodes_; }
 
     /*!
      \brief Return the map with according master nodes
      */
-    virtual inline std::set<int>& GetMNodes() { return mnodes_; }
+    virtual inline std::set<int>& get_m_nodes() { return mnodes_; }
 
     /*!
      \brief Return the old map with according master nodes
      */
-    virtual inline std::set<int>& GetMNodesOld() { return mnodesold_; }
+    virtual inline std::set<int>& get_m_nodes_old() { return mnodesold_; }
 
     /*!
      \brief Return the 'DerivJump' map (vector) of this node
@@ -135,7 +135,7 @@ namespace CONTACT
      A vector is used because the jump itself is a vector (2 or 3 components).
 
      */
-    virtual inline std::vector<std::map<int, double>>& GetDerivJump() { return derivjump_; }
+    virtual inline std::vector<std::map<int, double>>& get_deriv_jump() { return derivjump_; }
 
     /*!
      \brief Return the 'DerivVarJump' map (vector) of this node
@@ -146,7 +146,10 @@ namespace CONTACT
      Therefore, the vector has 1/2 components instead of 2/3
 
      */
-    virtual inline std::vector<std::map<int, double>>& GetDerivVarJump() { return derivvarjump_; }
+    virtual inline std::vector<std::map<int, double>>& get_deriv_var_jump()
+    {
+      return derivvarjump_;
+    }
     /*!
      \brief Return current penalty traction (length 3)
      */
@@ -154,11 +157,11 @@ namespace CONTACT
     /*!
      \brief Return current penalty traction (length 3)
      */
-    virtual inline double* tractionLTL() { return tractionLTL_; }
+    virtual inline double* traction_ltl() { return tractionLTL_; }
     /*!
      \brief Return contact status of last converged state n (active=true)
      */
-    virtual inline bool& SlipOld() { return slipold_; }
+    virtual inline bool& slip_old() { return slipold_; }
 
     /*!
      \brief Return old penalty traction (length 3)
@@ -167,7 +170,7 @@ namespace CONTACT
     /*!
      \brief Return old penalty traction (length 3)
      */
-    virtual inline double* tractionoldLTL() { return tractionoldLTL_; }
+    virtual inline double* tractionold_ltl() { return tractionoldLTL_; }
 
     //@}
 
@@ -276,35 +279,35 @@ namespace CONTACT
     /*!
      \brief Return the weighted wear per node (length 1)
      */
-    virtual double& WeightedWear() { return weightedwear_; }
+    virtual double& weighted_wear() { return weightedwear_; }
 
     /*!
      \brief Return the delta of the weighted wear per node without wear coefficient (length 1)
      */
-    virtual double& DeltaWeightedWear() { return deltaweightedwear_; }
+    virtual double& delta_weighted_wear() { return deltaweightedwear_; }
 
     /*!
      \brief Return the 'T' map (vector) of this node
      */
-    virtual std::vector<std::map<int, double>>& GetT() { return trows_; }
+    virtual std::vector<std::map<int, double>>& get_t() { return trows_; }
 
     /*!
      \brief Return the 'E' map (vector) of this node
      */
-    virtual std::vector<std::map<int, double>>& GetE() { return erows_; }
+    virtual std::vector<std::map<int, double>>& get_e() { return erows_; }
 
     /*!
      \brief Deriv. w.r.t. displ. of E and T matrix entries for
      this node. This matrices are required for the
      discrete wear condition.
      */
-    virtual std::map<int, std::map<int, double>>& GetDerivTw() { return derivt_; }
-    virtual std::map<int, std::map<int, double>>& GetDerivE() { return derive_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_tw() { return derivt_; }
+    virtual std::map<int, std::map<int, double>>& get_deriv_e() { return derive_; }
 
     /*!
      \brief Return the 'D2' map (vector) of this node
      */
-    virtual std::vector<std::map<int, double>>& GetD2() { return d2rows_; }
+    virtual std::vector<std::map<int, double>>& get_d2() { return d2rows_; }
 
     /*!
      \brief Return current discrete wear in step n+1 (only for slave side!) (length 1)
@@ -412,7 +415,7 @@ namespace CONTACT
      \brief Deep copy the derived class and return pointer to it
 
      */
-    CONTACT::FriNode* Clone() const override;
+    CONTACT::FriNode* clone() const override;
 
 
     /*!
@@ -422,7 +425,10 @@ namespace CONTACT
      top of lib/parobject.H.
 
      */
-    int UniqueParObjectId() const override { return FriNodeType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return FriNodeType::instance().unique_par_object_id();
+    }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -456,7 +462,7 @@ namespace CONTACT
      contact specific quantities/information are stored.
 
      */
-    inline CONTACT::FriNodeDataContainer& FriData() { return *fridata_; }
+    inline CONTACT::FriNodeDataContainer& fri_data() { return *fridata_; }
 
     /*!
      \brief Return of additional data container of this node
@@ -465,7 +471,7 @@ namespace CONTACT
      wear specific quantities/information are stored.
 
      */
-    inline CONTACT::FriNodeWearDataContainer& WearData() { return *weardata_; }
+    inline CONTACT::FriNodeWearDataContainer& wear_data() { return *weardata_; }
 
     /*!
      \brief calculate the apparent coefficient of friction
@@ -475,7 +481,7 @@ namespace CONTACT
      dependent (due to the involved projections), it requires
      a consistent linearization (see function below).
      */
-    double FrCoeff(const double& frcoeff_in);
+    double fr_coeff(const double& frcoeff_in);
 
     /*!
      \brief calculate the derivative of apparent coefficient of friction
@@ -485,7 +491,7 @@ namespace CONTACT
      dependent (due to the involved projections), it requires
      a consistent linearization (see function below).
      */
-    void derivFrCoeffTemp(
+    void deriv_fr_coeff_temp(
         const double& frcoeff_in, std::map<int, double>& derivT, std::map<int, double>& derivDisp);
 
     //@}
@@ -496,7 +502,7 @@ namespace CONTACT
      \brief Add a value to the SNode set of this node
 
      */
-    void AddSNode(int node) override;
+    void add_s_node(int node) override;
 
     /*!
      \brief Add a value to the 'T' map of this node
@@ -509,7 +515,7 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void AddTValue(int& row, int& col, double& val);
+    void add_t_value(int& row, int& col, double& val);
 
     /*!
      \brief Add a value to the 'E' map of this node
@@ -522,7 +528,7 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void AddEValue(int& row, int& col, double& val);
+    void add_e_value(int& row, int& col, double& val);
 
     /*!
      \brief Add a value to the 'WS' map of this node
@@ -535,12 +541,12 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void AddWSValue(int& row, int& col, double& val);
+    void add_ws_value(int& row, int& col, double& val);
     /*!
      \brief Add a value to the MNode set of this node
 
      */
-    void AddMNode(int node) override;
+    void add_m_node(int node) override;
 
     /*!
      \brief Add a value to the map of Jump derivatives of this node
@@ -552,11 +558,11 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void AddDerivJumpValue(int& row, const int& col, double val);
+    void add_deriv_jump_value(int& row, const int& col, double val);
 
-    void AddJumpValue(double val, int k);
+    void add_jump_value(double val, int k);
 
-    void AddD2Value(int& row, int& col, double& val);
+    void add_d2_value(int& row, int& col, double& val);
 
     /*!
      \brief Set deltawear to value
@@ -571,7 +577,7 @@ namespace CONTACT
      Matrices D and M are stored to the old ones.
 
      */
-    void StoreDMOld();
+    void store_dm_old();
 
     /*!
      \brief Write nodal entries of Penalty tractions to old ones
@@ -580,7 +586,7 @@ namespace CONTACT
      tractions are stored to the old ones.
 
      */
-    void StoreTracOld();
+    void store_trac_old();
 
     /*!
      \brief Initializes the data container of the node
@@ -598,7 +604,7 @@ namespace CONTACT
      is deleted / reset to Teuchos::null pointer
 
      */
-    void ResetDataContainer() override;
+    void reset_data_container() override;
 
     //@}
 

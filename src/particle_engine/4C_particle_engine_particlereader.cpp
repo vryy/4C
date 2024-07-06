@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 Input::ParticleReader::ParticleReader(
     const Core::IO::DatFileReader& reader, std::string sectionname)
-    : reader_(reader), comm_(reader.Comm()), sectionname_(std::move(sectionname))
+    : reader_(reader), comm_(reader.get_comm()), sectionname_(std::move(sectionname))
 {
   // empty constructor
 }
@@ -39,11 +39,11 @@ Input::ParticleReader::ParticleReader(
 /*---------------------------------------------------------------------------*
  | do the actual reading of particles                         sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void Input::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
+void Input::ParticleReader::read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();
-  std::string inputfile_name = reader_.MyInputfileName();
+  std::string inputfile_name = reader_.my_inputfile_name();
 
   const int numparticles = reader_.excluded_section_length(sectionname_);
 
@@ -52,7 +52,7 @@ void Input::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
   {
     Teuchos::Time time("", true);
 
-    if (!myrank && !reader_.MyOutputFlag())
+    if (!myrank && !reader_.my_output_flag())
       Core::IO::cout << "Read and create particles\n" << Core::IO::flush;
 
     // read in the particles block-wise:
@@ -86,7 +86,7 @@ void Input::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
     std::string line;
     bool endofsection = false;
 
-    if (!myrank && !reader_.MyOutputFlag())
+    if (!myrank && !reader_.my_output_flag())
     {
       printf("numparticle %d nblock %d bsize %d\n", numparticles, nblock, bsize);
       fflush(stdout);
@@ -192,14 +192,14 @@ void Input::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
       }
 
       double t2 = time.totalElapsedTime(true);
-      if (!myrank && !reader_.MyOutputFlag())
+      if (!myrank && !reader_.my_output_flag())
       {
         printf("reading %10.5e secs\n", t2 - t1);
         fflush(stdout);
       }
     }
 
-    if (!myrank && !reader_.MyOutputFlag())
+    if (!myrank && !reader_.my_output_flag())
       printf("in............................................. %10.5e secs\n",
           time.totalElapsedTime(true));
   }

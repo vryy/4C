@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -49,7 +49,7 @@ Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::Instance(
             new ScaTraEleCalcChemo<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -94,7 +94,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
       const int partner = get_partner(pair);  // Get attracting partner ID
 
       const Core::LinAlg::Matrix<nsd_, 1> gradattractant =
-          varmanager->GradPhi(partner);  // Gradient of attracting parnter
+          varmanager->grad_phi(partner);  // Gradient of attracting parnter
 
       bigterm.multiply_tn(my::derxy_, gradattractant);
       gradgradmatrix.multiply_tn(
@@ -120,11 +120,11 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
         {
           const int fui = ui * my::numdofpernode_ + partner;
           emat(fvi, fui) -=
-              chemofac * chemocoeff * my::scatravarmanager_->Phinp(k) * gradgradmatrix(vi, ui);
+              chemofac * chemocoeff * my::scatravarmanager_->phinp(k) * gradgradmatrix(vi, ui);
         }
       }
 
-      if (my::scatrapara_->StabType() != Inpar::ScaTra::stabtype_no_stabilization)
+      if (my::scatrapara_->stab_type() != Inpar::ScaTra::stabtype_no_stabilization)
       {
         FOUR_C_THROW("stabilization for chemotactic problems is not jet implemented!");
       }  // end stabilization
@@ -157,11 +157,11 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
       const int partner = get_partner(pair);
 
       Core::LinAlg::Matrix<nen_, 1> gradfunctattr(true);
-      Core::LinAlg::Matrix<nsd_, 1> attractant = varmanager->GradPhi(partner);
+      Core::LinAlg::Matrix<nsd_, 1> attractant = varmanager->grad_phi(partner);
 
       gradfunctattr.multiply_tn(my::derxy_, attractant);
 
-      const double decoyed = varmanager->Phinp(k);
+      const double decoyed = varmanager->phinp(k);
 
       for (unsigned vi = 0; vi < nen_; vi++)
       {
@@ -170,7 +170,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
       }
 
 
-      if (my::scatrapara_->StabType() != Inpar::ScaTra::stabtype_no_stabilization)
+      if (my::scatrapara_->stab_type() != Inpar::ScaTra::stabtype_no_stabilization)
       {
         FOUR_C_THROW("stabilization for chemotactic problems is not jet implemented!");
       }  // end stabilization
@@ -217,40 +217,40 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_material_param
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
   // We may have some chemotactic and some non-chemotactic discretisation.
   // But since the calculation classes are singleton, we have to reset all chemotaxis stuff each
   // time
   clear_chemotaxis_terms();
 
-  if (material->MaterialType() == Core::Materials::m_matlist)
+  if (material->material_type() == Core::Materials::m_matlist)
   {
     const Teuchos::RCP<const Mat::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
-  else if (material->MaterialType() == Core::Materials::m_matlist_chemotaxis)
+  else if (material->material_type() == Core::Materials::m_matlist_chemotaxis)
   {
     const Teuchos::RCP<const Mat::MatListChemotaxis>& actmat =
         Teuchos::rcp_dynamic_cast<const Mat::MatListChemotaxis>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     get_chemotaxis_coefficients(
         actmat);  // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -289,18 +289,18 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coe
   if (actmat == Teuchos::null) FOUR_C_THROW("cast to MatListChemotaxis failed");
 
   // We always have to reinitialize these vectors since our elements are singleton
-  numcondchemo_ = actmat->NumPair();
+  numcondchemo_ = actmat->num_pair();
   pair_.resize(numcondchemo_);
   chemocoeff_.resize(numcondchemo_);
 
   for (int i = 0; i < numcondchemo_; i++)
   {
-    const int pairid = actmat->PairID(i);
+    const int pairid = actmat->pair_id(i);
     const Teuchos::RCP<const Mat::ScatraChemotaxisMat>& chemomat =
-        Teuchos::rcp_dynamic_cast<const Mat::ScatraChemotaxisMat>(actmat->MaterialById(pairid));
+        Teuchos::rcp_dynamic_cast<const Mat::ScatraChemotaxisMat>(actmat->material_by_id(pairid));
 
-    pair_[i] = *(chemomat->Pair());           // get pairing
-    chemocoeff_[i] = chemomat->ChemoCoeff();  // get chemotaxis coefficient
+    pair_[i] = *(chemomat->pair());            // get pairing
+    chemocoeff_[i] = chemomat->chemo_coeff();  // get chemotaxis coefficient
   }
 }
 
@@ -347,13 +347,13 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_strong_residu
       }
 
       Core::LinAlg::Matrix<1, 1> chemoderivattr(true);
-      chemoderivattr.multiply_tn(varmanager->GradPhi(partner), varmanager->GradPhi(k));
+      chemoderivattr.multiply_tn(varmanager->grad_phi(partner), varmanager->grad_phi(k));
 
-      chemo_phi += chemocoeff * (chemoderivattr(0, 0) + laplattractant * varmanager->Phinp(k));
+      chemo_phi += chemocoeff * (chemoderivattr(0, 0) + laplattractant * varmanager->phinp(k));
     }
   }
 
-  chemo_phi *= my::scatraparatimint_->TimeFac() / my::scatraparatimint_->Dt();
+  chemo_phi *= my::scatraparatimint_->time_fac() / my::scatraparatimint_->dt();
 
   // Add to residual
   scatrares += chemo_phi;

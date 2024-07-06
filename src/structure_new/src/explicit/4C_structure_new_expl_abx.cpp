@@ -55,21 +55,21 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::setup()
   // resizing of multi-step quantities
   // ---------------------------------------------------------------------------
   constexpr int nhist = t_order - 1;
-  global_state().get_multi_time()->Resize(-nhist, 0, true);
-  global_state().get_delta_time()->Resize(-nhist, 0, true);
-  global_state().get_multi_dis()->Resize(-nhist, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_vel()->Resize(-nhist, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_acc()->Resize(-nhist, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_time()->resize(-nhist, 0, true);
+  global_state().get_delta_time()->resize(-nhist, 0, true);
+  global_state().get_multi_dis()->resize(-nhist, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_vel()->resize(-nhist, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_acc()->resize(-nhist, 0, global_state().dof_row_map_view(), true);
 
   // here we initialized the dt of previous steps in the database, since a resize is performed
   const double dt = (*global_state().get_delta_time())[0];
-  for (int i = 0; i < nhist; ++i) global_state().get_delta_time()->UpdateSteps(dt);
+  for (int i = 0; i < nhist; ++i) global_state().get_delta_time()->update_steps(dt);
 
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().StartFuncNo());
+      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().start_func_no());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -180,7 +180,7 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::add_visco_mass_contributions(
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   // set mass matrix
-  stiff_ptr->Add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
+  stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -250,14 +250,14 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::read_restart(
       Teuchos::RCP<Epetra_Vector> vel_ptr =
           Teuchos::rcp(new Epetra_Vector(*global_state().get_vel_n()));
       ioreader.read_vector(vel_ptr, velname.str());
-      global_state().get_multi_vel()->UpdateSteps(*vel_ptr);
+      global_state().get_multi_vel()->update_steps(*vel_ptr);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       Teuchos::RCP<Epetra_Vector> acc_ptr =
           Teuchos::rcp(new Epetra_Vector(*global_state().get_acc_n()));
       ioreader.read_vector(acc_ptr, accname.str());
-      global_state().get_multi_acc()->UpdateSteps(*acc_ptr);
+      global_state().get_multi_acc()->update_steps(*acc_ptr);
     }
   }
 

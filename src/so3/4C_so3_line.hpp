@@ -29,18 +29,18 @@ namespace Discret
     class StructuralLineType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "StructuralLineType"; }
+      std::string name() const override { return "StructuralLineType"; }
 
-      static StructuralLineType& Instance();
+      static StructuralLineType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -87,11 +87,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -99,9 +99,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      inline int UniqueParObjectId() const override
+      inline int unique_par_object_id() const override
       {
-        return StructuralLineType::Instance().UniqueParObjectId();
+        return StructuralLineType::instance().unique_par_object_id();
       }
 
       /*!
@@ -127,7 +127,7 @@ namespace Discret
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -138,7 +138,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
+      inline int num_dof_per_node(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -158,9 +158,9 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return StructuralLineType::Instance();
+        return StructuralLineType::instance();
       }
 
       //@}
@@ -209,9 +209,9 @@ namespace Discret
         const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
         {
-          x(i, 0) = Nodes()[i]->X()[0];
-          x(i, 1) = Nodes()[i]->X()[1];
-          x(i, 2) = Nodes()[i]->X()[2];
+          x(i, 0) = nodes()[i]->x()[0];
+          x(i, 1) = nodes()[i]->x()[1];
+          x(i, 2) = nodes()[i]->x()[2];
         }
         return;
       }

@@ -111,13 +111,13 @@ namespace EHL
     read_mesh is called), the dofmaps for the blocks might get invalid.
     */
     //! Setup the monolithic EHL system
-    void SetupSystem() override;
+    void setup_system() override;
 
     /// non-linear solve, i.e. (multiple) corrector
-    virtual void Solve();
+    virtual void solve();
 
     //! outer level EHL time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! @name Apply current field state to system
 
@@ -131,7 +131,10 @@ namespace EHL
     void apply_dbc();
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const
+    {
+      return systemmatrix_;
+    }
 
     //! solve linear EHL system
     void linear_solve();
@@ -151,14 +154,14 @@ namespace EHL
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
     void lin_poiseuille_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
-    void LinCouetteForceDisp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
+    void lin_couette_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
 
     void lin_pressure_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
     void lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
-    void LinCouetteForcePres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
+    void lin_couette_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
     //@}
 
@@ -168,10 +171,10 @@ namespace EHL
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
     //! \author lw (originally in STR) \date 12/07
-    bool Converged();
+    bool converged();
 
     //! outer iteration loop
-    void NewtonFull();
+    void newton_full();
 
     //! @name Output
 

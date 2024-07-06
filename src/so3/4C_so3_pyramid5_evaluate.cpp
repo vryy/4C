@@ -112,8 +112,8 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -146,8 +146,8 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -185,11 +185,11 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       // need current velocities and accelerations (for non constant mass matrix)
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-      Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
+      Teuchos::RCP<const Epetra_Vector> acc = discretization.get_state("acceleration");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
@@ -227,8 +227,8 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       Teuchos::RCP<std::vector<char>> stressdata =
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
@@ -293,7 +293,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
     case prestress_update:
     {
       time_ = params.get<double>("total time");
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -308,19 +308,19 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<3, 3> Fnew;
       for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
       {
-        prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
-        prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+        prestress_->storageto_matrix(gp, deltaF, gpdefgrd);
+        prestress_->storageto_matrix(gp, Fhist, prestress_->f_history());
         Fnew.multiply(deltaF, Fhist);
-        prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
+        prestress_->matrixto_storage(gp, Fnew, prestress_->f_history());
       }
 
       // push-forward invJ for every gaussian point
       update_jacobian_mapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
+      if (material()->material_type() == Core::Materials::m_constraintmixture)
       {
-        SolidMaterial()->update();
+        solid_material()->update();
       }
     }
     break;
@@ -336,14 +336,14 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       // Update of history for materials
-      SolidMaterial()->update();
+      solid_material()->update();
     }
     break;
 
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
 
@@ -362,7 +362,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       const static std::vector<double> weights = sop5_weights();
 
       // get displacements of this processor
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
@@ -373,12 +373,12 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
 
-      Core::Nodes::Node** nodes = Nodes();
+
       for (int i = 0; i < NUMNOD_SOP5; ++i)
       {
-        xrefe(i, 0) = nodes[i]->X()[0];
-        xrefe(i, 1) = nodes[i]->X()[1];
-        xrefe(i, 2) = nodes[i]->X()[2];
+        xrefe(i, 0) = nodes()[i]->x()[0];
+        xrefe(i, 1) = nodes()[i]->x()[1];
+        xrefe(i, 2) = nodes()[i]->x()[2];
 
         xcurr(i, 0) = xrefe(i, 0) + mydisp[i * NODDOF_SOP5 + 0];
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOP5 + 1];
@@ -421,7 +421,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
 
         // call material for evaluation of strain energy function
         double psi = 0.0;
-        SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
+        solid_material()->strain_energy(glstrain, psi, gp, id());
 
         // sum up GP contribution to internal energy
         intenergy += fac * psi;
@@ -474,7 +474,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& para
   const double time = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
@@ -521,10 +521,9 @@ int Discret::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& para
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -564,8 +563,8 @@ int Discret::ELEMENTS::SoPyramid5::evaluate_neumann(Teuchos::ParameterList& para
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? Global::Problem::Instance()
-                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            (functnum > 0) ? Global::Problem::instance()
+                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -591,9 +590,9 @@ void Discret::ELEMENTS::SoPyramid5::init_jacobian_mapping()
   Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    xrefe(i, 0) = Nodes()[i]->X()[0];
-    xrefe(i, 1) = Nodes()[i]->X()[1];
-    xrefe(i, 2) = Nodes()[i]->X()[2];
+    xrefe(i, 0) = nodes()[i]->x()[0];
+    xrefe(i, 1) = nodes()[i]->x()[1];
+    xrefe(i, 2) = nodes()[i]->x()[2];
   }
   invJ_.resize(NUMGPT_SOP5);
   detJ_.resize(NUMGPT_SOP5);
@@ -609,7 +608,7 @@ void Discret::ELEMENTS::SoPyramid5::init_jacobian_mapping()
 
     if (Prestress::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->is_init()))
-        prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
+        prestress_->matrixto_storage(gp, invJ_[gp], prestress_->j_history());
   }
 
   if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
@@ -648,10 +647,10 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
   Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
 
-  Core::Nodes::Node** nodes = Nodes();
+
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -798,7 +797,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
     // call material law
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law
 
     // return gp plastic strains (only in case of plastic strain output)
@@ -918,7 +917,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
 
     if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -977,10 +976,9 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
   Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -1020,7 +1018,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     {
       // get Jacobian mapping wrt to the stored configuration
       Core::LinAlg::Matrix<3, 3> invJdef;
-      prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
+      prestress_->storageto_matrix(gp, invJdef, prestress_->j_history());
       // get derivatives wrt to last spatial configuration
       Core::LinAlg::Matrix<3, 5> N_xyz;
       N_xyz.multiply(invJdef, derivs[gp]);
@@ -1033,7 +1031,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
 
       // get stored old incremental F
       Core::LinAlg::Matrix<3, 3> Fhist;
-      prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+      prestress_->storageto_matrix(gp, Fhist, prestress_->f_history());
 
       // build total defgrd = delta F * F_old
       Core::LinAlg::Matrix<3, 3> Fnew;
@@ -1156,7 +1154,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     // call material law
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law
 
     // return gp plastic strains (only in case of plastic strain output)
@@ -1297,7 +1295,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
 
     if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density(gp);
+      double density = material()->density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -1314,7 +1312,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
       }
 
       // check for non constant mass matrix
-      if (SolidMaterial()->VaryingDensity())
+      if (solid_material()->varying_density())
       {
         /*
          If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
@@ -1325,7 +1323,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
          and read from the parameter list inside the element (this is a little ugly...). */
         double timintfac_dis = 0.0;
         double timintfac_vel = 0.0;
-        if (IsParamsInterface())
+        if (is_params_interface())
         {
           timintfac_dis = str_params_interface().get_tim_int_factor_disp();
           timintfac_vel = str_params_interface().get_tim_int_factor_vel();
@@ -1340,8 +1338,8 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> linmass(true);
 
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
-        SolidMaterial()->EvaluateNonLinMass(
-            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, gp, Id());
+        solid_material()->evaluate_non_lin_mass(
+            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, gp, id());
 
         // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time
         // integration factor
@@ -1406,10 +1404,10 @@ void Discret::ELEMENTS::SoPyramid5::sop5_lumpmass(
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned int c = 0; c < (*emass).numCols(); ++c)  // parse columns
+    for (unsigned int c = 0; c < (*emass).num_cols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned int r = 0; r < (*emass).numRows(); ++r)  // parse rows
+      for (unsigned int r = 0; r < (*emass).num_rows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -1543,10 +1541,10 @@ void Discret::ELEMENTS::SoPyramid5::sop5_shapederiv(
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoPyramid5Type::initialize(Core::FE::Discretization& dis)
 {
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoPyramid5*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoPyramid5*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_pyramid5* failed");
     actele->init_jacobian_mapping();
   }
@@ -1575,7 +1573,7 @@ void Discret::ELEMENTS::SoPyramid5::def_gradient(const std::vector<double>& disp
   {
     // get Jacobian mapping wrt to the stored deformed configuration
     Core::LinAlg::Matrix<3, 3> invJdef;
-    prestress.StoragetoMatrix(gp, invJdef, prestress.JHistory());
+    prestress.storageto_matrix(gp, invJdef, prestress.j_history());
 
     // by N_XYZ = J^-1 * N_rst
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_xyz;
@@ -1588,7 +1586,7 @@ void Discret::ELEMENTS::SoPyramid5::def_gradient(const std::vector<double>& disp
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
 
-    prestress.MatrixtoStorage(gp, defgrd, gpdefgrd);
+    prestress.matrixto_storage(gp, defgrd, gpdefgrd);
   }
   return;
 }
@@ -1610,7 +1608,7 @@ void Discret::ELEMENTS::SoPyramid5::get_temperature_for_structural_material(
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses             seitz 03/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5::GLtoEA(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>* glstrain,
+void Discret::ELEMENTS::SoPyramid5::g_lto_ea(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>* glstrain,
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* defgrd,
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* euler_almansi)
 {
@@ -1665,7 +1663,7 @@ void Discret::ELEMENTS::SoPyramid5::update_jacobian_mapping(
   for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
   {
     // get the invJ old state
-    prestress.StoragetoMatrix(gp, invJhist, prestress.JHistory());
+    prestress.storageto_matrix(gp, invJhist, prestress.j_history());
     // get derivatives wrt to invJhist
     N_xyz.multiply(invJhist, derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
@@ -1678,7 +1676,7 @@ void Discret::ELEMENTS::SoPyramid5::update_jacobian_mapping(
     // push-forward of Jinv
     invJnew.multiply_tn(defgrd, invJhist);
     // store new reference configuration
-    prestress.MatrixtoStorage(gp, invJnew, prestress.JHistory());
+    prestress.matrixto_storage(gp, invJnew, prestress.j_history());
   }  // for (int gp=0; gp<NUMGPT_SOP5; ++gp)
 
   return;

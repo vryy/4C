@@ -47,7 +47,8 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
   L2_projection_ = true;
 
   // safety check
-  if (NdsVel() >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on scatra discretization!");
+  if (nds_vel() >= discret_->num_dof_sets())
+    FOUR_C_THROW("Too few dofsets on scatra discretization!");
 
   if (multiflux->NumVectors() % nsd_ != 0)
     FOUR_C_THROW("Unexpected length of flux vector: %i", multiflux->NumVectors());
@@ -60,19 +61,19 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
   {
     // initialize velocity vectors
     Teuchos::RCP<Epetra_Vector> phaseflux =
-        Core::LinAlg::CreateVector(*discret_->dof_row_map(NdsVel()), true);
+        Core::LinAlg::CreateVector(*discret_->dof_row_map(nds_vel()), true);
 
     std::stringstream statename;
     statename << stateprefix << curphase;
 
     // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
     {
       // get the processor local node
-      Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
       // get dofs associated with current node
-      std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
+      std::vector<int> nodedofs = discret_->dof(nds_vel(), lnode);
 
       if ((int)nodedofs.size() != nsd_)
         FOUR_C_THROW(
@@ -94,7 +95,7 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
     }
 
     // provide scatra discretization with convective velocity
-    discret_->set_state(NdsVel(), statename.str(), phaseflux);
+    discret_->set_state(nds_vel(), statename.str(), phaseflux);
   }
 }  // ScaTraTimIntImpl::SetSolutionFields
 
@@ -104,12 +105,12 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
 void ScaTra::ScaTraTimIntPoroMulti::set_solution_field_of_multi_fluid(
     Teuchos::RCP<const Epetra_Vector> phinp_fluid, Teuchos::RCP<const Epetra_Vector> phin_fluid)
 {
-  if (NdsPressure() >= discret_->NumDofSets())
+  if (nds_pressure() >= discret_->num_dof_sets())
     FOUR_C_THROW("Too few dofsets on scatra discretization!");
 
   // provide scatra discretization with fluid primary variable field
-  discret_->set_state(NdsPressure(), "phinp_fluid", phinp_fluid);
-  discret_->set_state(NdsPressure(), "phin_fluid", phin_fluid);
+  discret_->set_state(nds_pressure(), "phinp_fluid", phinp_fluid);
+  discret_->set_state(nds_pressure(), "phin_fluid", phin_fluid);
 }
 
 /*----------------------------------------------------------------------*
@@ -134,26 +135,26 @@ void ScaTra::ScaTraTimIntPoroMulti::output_state()
   // displacement field
   if (isale_)
   {
-    const auto dispnp = discret_->GetState(NdsDisp(), "dispnp");
+    const auto dispnp = discret_->get_state(nds_disp(), "dispnp");
     if (dispnp == Teuchos::null)
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
-    const auto dispnp_multi = convert_dof_vector_to_componentwise_node_vector(dispnp, NdsDisp());
+    const auto dispnp_multi = convert_dof_vector_to_componentwise_node_vector(dispnp, nds_disp());
     output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
 
   if (has_external_force_)
   {
-    const int nds_vel = NdsVel();
+    const int nds_vel = ScaTraTimIntPoroMulti::nds_vel();
 
-    const auto external_force = discret_->GetState(nds_vel, "external_force");
-    const auto output_external_force =
-        convert_dof_vector_to_componentwise_node_vector(external_force, NdsVel());
+    const auto external_force = discret_->get_state(nds_vel, "external_force");
+    const auto output_external_force = convert_dof_vector_to_componentwise_node_vector(
+        external_force, ScaTraTimIntPoroMulti::nds_vel());
     output_->write_vector("external_force", output_external_force, Core::IO::nodevector);
 
-    const auto mobility = discret_->GetState(nds_vel, "intrinsic_mobility");
+    const auto mobility = discret_->get_state(nds_vel, "intrinsic_mobility");
     const auto output_intrinsic_mobility =
-        convert_dof_vector_to_componentwise_node_vector(mobility, NdsVel());
+        convert_dof_vector_to_componentwise_node_vector(mobility, ScaTraTimIntPoroMulti::nds_vel());
     output_->write_vector("intrinsic_mobility", output_intrinsic_mobility, Core::IO::nodevector);
   }
 }  // ScaTraTimIntImpl::output_state
@@ -176,14 +177,14 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
 {
   // extract conditions for oxygen partial pressure
   std::vector<Core::Conditions::Condition*> conditions;
-  discret_->GetCondition("PoroMultiphaseScatraOxyPartPressCalcCond", conditions);
+  discret_->get_condition("PoroMultiphaseScatraOxyPartPressCalcCond", conditions);
 
   // perform all following operations only if there is at least one condition for oxygen partial
   // pressure
   if (conditions.size() > 0)
   {
     const Teuchos::RCP<Epetra_Vector> oxypartpress =
-        Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
+        Teuchos::rcp(new Epetra_Vector(*discret_->node_row_map(), true));
 
     // this condition is supposed to be for output of oxygen partial pressure over whole domain
     // it does not make sense to have more than one condition
@@ -192,7 +193,7 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
           "Should have only one PoroMultiphaseScatraOxyPartPressCalcCond per discretization");
 
     // extract nodal cloud from condition
-    const std::vector<int>* nodegids = conditions[0]->GetNodes();
+    const std::vector<int>* nodegids = conditions[0]->get_nodes();
 
     // output
     double Pb = 0.0;
@@ -212,16 +213,16 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
       // extract global ID of current node
       const int nodegid((*nodegids)[inode]);
       // process only nodes stored by current processor
-      if (discret_->HaveGlobalNode(nodegid))
+      if (discret_->have_global_node(nodegid))
       {
         // extract current node
-        const Core::Nodes::Node* const node = discret_->gNode(nodegid);
+        const Core::Nodes::Node* const node = discret_->g_node(nodegid);
 
         // process only nodes owned by current processor
-        if (node->Owner() == discret_->Comm().MyPID())
+        if (node->owner() == discret_->get_comm().MyPID())
         {
           // get dof
-          int myoxydof = discret_->Dof(0, node, oxyscalar);
+          int myoxydof = discret_->dof(0, node, oxyscalar);
           const int lidoxydof = discret_->dof_row_map()->LID(myoxydof);
           if (lidoxydof < 0) FOUR_C_THROW("Couldn't extract local ID of oxygen dof!");
           // compute CaO2
@@ -230,7 +231,7 @@ void ScaTra::ScaTraTimIntPoroMulti::output_oxygen_partial_pressure()
           PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
               Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
           // replace value
-          oxypartpress->ReplaceGlobalValue(node->Id(), 0, Pb);
+          oxypartpress->ReplaceGlobalValue(node->id(), 0, Pb);
         }
       }
     }

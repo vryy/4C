@@ -86,12 +86,12 @@ void PostVtuWriterNode::write_geo()
 {
   using namespace FourC;
 
-  Teuchos::RCP<Core::FE::Discretization> dis = this->GetField()->discretization();
+  Teuchos::RCP<Core::FE::Discretization> dis = this->get_field()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
-  int nelements = dis->NumMyRowElements();
-  int nnodes = dis->NumMyRowNodes();
+  int nelements = dis->num_my_row_elements();
+  int nnodes = dis->num_my_row_nodes();
   std::vector<int32_t> connectivity;
   connectivity.reserve(nnodes);
   std::vector<double> coordinates;
@@ -105,12 +105,12 @@ void PostVtuWriterNode::write_geo()
   int outNodeId = 0;
   for (int e = 0; e < nelements; ++e)
   {
-    const Core::Elements::Element* ele = dis->lRowElement(e);
+    const Core::Elements::Element* ele = dis->l_row_element(e);
     // check for beam element that potentially needs special treatment due to Hermite interpolation
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    if (ele->IsNurbsElement())
+    if (ele->is_nurbs_element())
     {
       write_geo_nurbs_ele(ele, celltypes, outNodeId, celloffset, coordinates);
     }
@@ -120,13 +120,13 @@ void PostVtuWriterNode::write_geo()
     }
     else
     {
-      celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
+      celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).first);
       const std::vector<int>& numbering =
-          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      const Core::Nodes::Node* const* nodes = ele->Nodes();
+          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->shape()).second;
+      const Core::Nodes::Node* const* nodes = ele->nodes();
       for (int n = 0; n < ele->num_node(); ++n)
       {
-        connectivity.push_back(nodes[numbering[n]]->LID());
+        connectivity.push_back(nodes[numbering[n]]->lid());
       }
       outNodeId += ele->num_node();
       celloffset.push_back(outNodeId);
@@ -138,7 +138,7 @@ void PostVtuWriterNode::write_geo()
   {
     for (int d = 0; d < 3; ++d)
     {
-      coordinates.push_back(dis->lRowNode(n)->X()[d]);
+      coordinates.push_back(dis->l_row_node(n)->x()[d]);
       outNodeId++;
     }
   }
@@ -263,7 +263,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
   // For parallel computations, we need to access all dofs on the elements, including the
   // nodes owned by other processors. Therefore, we need to import that data here.
   const Epetra_BlockMap& vecmap = data->Map();
-  const Epetra_Map* colmap = dis->DofColMap(0);
+  const Epetra_Map* colmap = dis->dof_col_map(0);
 
   int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
@@ -293,7 +293,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
   if (numdf > 1 && numdf == field_->problem()->num_dim()) ncomponents = 3;
 
   // count number of nodes for each processor
-  int nnodes = dis->NumMyRowNodes();
+  int nnodes = dis->num_my_row_nodes();
   std::vector<double> solution;
 
   solution.reserve(ncomponents * nnodes);
@@ -305,7 +305,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
     nodedofs.clear();
 
     // local storage position of desired dof gid
-    dis->Dof(dis->lRowNode(i), nodedofs);
+    dis->dof(dis->l_row_node(i), nodedofs);
     for (int d = 0; d < numdf; ++d)
     {
       const int lid = ghostedData->Map().LID(nodedofs[d + from]);
@@ -359,7 +359,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
-  const Epetra_Map* colmap = dis->NodeColMap();
+  const Epetra_Map* colmap = dis->node_col_map();
   const Epetra_BlockMap& vecmap = data->Map();
 
   FOUR_C_ASSERT(
@@ -381,7 +381,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
 
 
   // count number of nodes for each processor
-  int nnodes = dis->NumMyRowNodes();
+  int nnodes = dis->num_my_row_nodes();
 
   std::vector<double> solution;
   solution.reserve(ncomponents * nnodes);

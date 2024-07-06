@@ -99,13 +99,13 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs()
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
 
-    const double* pos_j = container_j->GetPtrToState(PARTICLEENGINE::Position, particle_j);
-    const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+    const double* pos_j = container_j->get_ptr_to_state(PARTICLEENGINE::Position, particle_j);
+    const double* rad_j = container_j->get_ptr_to_state(PARTICLEENGINE::Radius, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
 
     // vector from particle i to j
     double r_ji[3];
@@ -177,14 +177,14 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
     const Core::LinAlg::Matrix<3, 1> pos_i(
-        container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
+        container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
     Core::Elements::Element* ele = potentialneighbors.second;
@@ -245,7 +245,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
       Core::LinAlg::Matrix<2, 1> elecoords(true);
       const Core::LinAlg::SerialDenseMatrix xyze(
           Core::Geo::getCurrentNodalPositions(ele, colelenodalpos));
-      Core::Geo::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
+      Core::Geo::CurrentToSurfaceElementCoordinates(ele->shape(), xyze, closestpos, elecoords);
 
       // set parameter space coordinates of wall contact point
       particlewallpair.elecoords_[0] = elecoords(0, 0);
@@ -281,7 +281,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
     // define tolerance dependent on the particle radius
     const double adaptedtol = 1.0e-7 * rad_i[0];
@@ -340,7 +340,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
           // mark particle-wall pair (slave) to be removed
           particlewallpairstoremove.insert(slave.second);
           // add global id of slave wall element for interaction history
-          masterpair.histeles_.insert(slavepair.ele_->Id());
+          masterpair.histeles_.insert(slavepair.ele_->id());
         }
       }
     }
@@ -390,13 +390,13 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs_adhesion(
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
 
-    const double* pos_j = container_j->GetPtrToState(PARTICLEENGINE::Position, particle_j);
-    const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+    const double* pos_j = container_j->get_ptr_to_state(PARTICLEENGINE::Position, particle_j);
+    const double* rad_j = container_j->get_ptr_to_state(PARTICLEENGINE::Radius, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
 
     // vector from particle i to j
     double r_ji[3];
@@ -470,14 +470,14 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
     const Core::LinAlg::Matrix<3, 1> pos_i(
-        container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
+        container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
     Core::Elements::Element* ele = potentialneighbors.second;
@@ -489,7 +489,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
     {
       // cast material to particle wall material
       const Teuchos::RCP<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
-          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->Material());
+          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
       if (particlewallmaterial == Teuchos::null)
         FOUR_C_THROW("cast to Mat::ParticleWallMaterialDEM failed!");
 
@@ -556,7 +556,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
       Core::LinAlg::Matrix<2, 1> elecoords(true);
       const Core::LinAlg::SerialDenseMatrix xyze(
           Core::Geo::getCurrentNodalPositions(ele, colelenodalpos));
-      Core::Geo::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
+      Core::Geo::CurrentToSurfaceElementCoordinates(ele->shape(), xyze, closestpos, elecoords);
 
       // set parameter space coordinates of wall contact point
       particlewallpair.elecoords_[0] = elecoords(0, 0);
@@ -592,7 +592,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
     // define tolerance dependent on the particle radius
     const double adaptedtol = 1.0e-7 * rad_i[0];
@@ -651,7 +651,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
           // mark particle-wall pair (slave) to be removed
           particlewallpairstoremove.insert(slave.second);
           // add global id of slave wall element for interaction history
-          masterpair.histeles_.insert(slavepair.ele_->Id());
+          masterpair.histeles_.insert(slavepair.ele_->id());
         }
       }
     }

@@ -93,7 +93,7 @@ namespace Core::IO
     /**
      * \brief Write the visualization files to disk
      */
-    void WriteToDisk(const double visualization_time, const int visualization_step);
+    void write_to_disk(const double visualization_time, const int visualization_step);
 
     /**
      * @brief Set geometry data from nodes based on reference configuration

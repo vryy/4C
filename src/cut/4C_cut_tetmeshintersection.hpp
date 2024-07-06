@@ -35,17 +35,17 @@ namespace Core::Geo
           const std::vector<std::vector<int>>& tets, const std::vector<int>& accept_tets,
           const std::vector<Point*>& points, const plain_side_set& cut_sides);
 
-      void Cut(Mesh& parent_mesh, Element* element, const plain_volumecell_set& parent_cells,
+      void cut(Mesh& parent_mesh, Element* element, const plain_volumecell_set& parent_cells,
           int count, bool tetcellsonly = false);
 
-      Mesh& NormalMesh() { return mesh_; }
+      Mesh& normal_mesh() { return mesh_; }
 
      private:
       struct ChildCell
       {
         ChildCell() : done_(false), parent_(nullptr) {}
 
-        bool ContainsChild(VolumeCell* vc) { return cells_.count(vc) > 0; }
+        bool contains_child(VolumeCell* vc) { return cells_.count(vc) > 0; }
 
         bool done_;
         VolumeCell* parent_;
@@ -55,9 +55,9 @@ namespace Core::Geo
 
       struct FacetMesh
       {
-        void Add(Facet* f)
+        void add(Facet* f)
         {
-          const std::vector<Point*>& points = f->Points();
+          const std::vector<Point*>& points = f->points();
           for (unsigned i = 0; i != points.size(); ++i)
           {
             Point* p1 = points[i];
@@ -69,9 +69,9 @@ namespace Core::Geo
           }
         }
 
-        void Erase(Facet* f)
+        void erase(Facet* f)
         {
-          const std::vector<Point*>& points = f->Points();
+          const std::vector<Point*>& points = f->points();
           for (unsigned i = 0; i != points.size(); ++i)
           {
             Point* p1 = points[i];

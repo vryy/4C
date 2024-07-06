@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
      * \brief Write all visualization writers to disc. After writing them, the data in the objects
      * will be deleted.
      */
-    void Write(const unsigned int timestep_number, const double time);
+    void write(const unsigned int timestep_number, const double time);
 
    private:
     //! Base name of the output files create from this object.

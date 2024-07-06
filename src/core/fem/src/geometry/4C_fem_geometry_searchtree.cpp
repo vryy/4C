@@ -29,14 +29,14 @@ Core::Geo::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), 
  | initialize or rebuild tree with possibly new              u.may 07/08|
  | discretization, elements are sorted according to the given map       |
  *----------------------------------------------------------------------*/
-void Core::Geo::SearchTree::initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
+void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
     const std::map<int, std::set<int>>& elementsByLabel, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
   tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // insert element map into tree root node
-  if (elementsByLabel.size() > 0) tree_root_->setElementList(elementsByLabel);
+  if (elementsByLabel.size() > 0) tree_root_->set_element_list(elementsByLabel);
 
   return;
 }
@@ -45,32 +45,32 @@ void Core::Geo::SearchTree::initializeTree(const Core::LinAlg::Matrix<3, 2>& nod
  | initialize or rebuild tree with possibly new              u.may 07/08|
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
-void Core::Geo::SearchTree::initializeTree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
+void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& nodeBox,
     const Core::FE::Discretization& dis, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
   tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // inserts all elements in a map with key -1 and global id
-  for (int i = 0; i < dis.NumMyColElements(); i++)
-    tree_root_->insertElement(-1, dis.lColElement(i)->Id());
+  for (int i = 0; i < dis.num_my_col_elements(); i++)
+    tree_root_->insert_element(-1, dis.l_col_element(i)->id());
 }
 
 /*----------------------------------------------------------------------*
  | initialize or rebuild tree with possibly new              u.may 07/08|
  | discretization, elements are taken unsorted from discretization      |
  *----------------------------------------------------------------------*/
-void Core::Geo::SearchTree::initializeTree(
+void Core::Geo::SearchTree::initialize_tree(
     const Core::LinAlg::Matrix<3, 2>& nodeBox, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
   tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 }
 
-void Core::Geo::SearchTree::insertElement(const int eid)
+void Core::Geo::SearchTree::insert_element(const int eid)
 {
   // inserts all elements in a map with key -1 and global id
-  tree_root_->insertElement(-1, eid);
+  tree_root_->insert_element(-1, eid);
 }
 
 /*----------------------------------------------------------------------*
@@ -85,7 +85,7 @@ void Core::Geo::SearchTree::initialize_tree_slide_ale(const Core::LinAlg::Matrix
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
-    tree_root_->insertElement(-1, elemiter->first);
+    tree_root_->insert_element(-1, elemiter->first);
   }
 }
 
@@ -103,7 +103,7 @@ std::map<int, std::set<int>> Core::Geo::SearchTree::search_elements_in_radius(
 
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!(tree_root_->getElementList().empty()))
+  if (!(tree_root_->get_element_list().empty()))
     nodeset = tree_root_->search_elements_in_radius(dis, currentpositions, point, radius, label);
   else
     FOUR_C_THROW("element list is empty");
@@ -122,7 +122,7 @@ void Core::Geo::SearchTree::build_static_search_tree(
 
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!tree_root_->getElementList().empty())
+  if (!tree_root_->get_element_list().empty())
   {
     tree_root_->build_static_search_tree(currentBVs);
   }
@@ -142,7 +142,7 @@ void Core::Geo::SearchTree::build_static_search_tree(
 
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!tree_root_->getElementList().empty())
+  if (!tree_root_->get_element_list().empty())
   {
     tree_root_->build_static_search_tree(currentBVs);
   }
@@ -156,7 +156,7 @@ void Core::Geo::SearchTree::build_static_search_tree(
  * detects collisions between query bounding volume and the bounding volumes of the elements      *
  * in the search tree                                                                 wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void Core::Geo::SearchTree::searchCollisions(
+void Core::Geo::SearchTree::search_collisions(
     const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
     const Core::LinAlg::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions)
 {
@@ -164,9 +164,9 @@ void Core::Geo::SearchTree::searchCollisions(
 
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!tree_root_->getElementList().empty())
+  if (!tree_root_->get_element_list().empty())
   {
-    tree_root_->searchCollisions(currentBVs, queryBV, label, collisions);
+    tree_root_->search_collisions(currentBVs, queryBV, label, collisions);
   }
   else
     FOUR_C_THROW("element list is empty");
@@ -178,7 +178,7 @@ void Core::Geo::SearchTree::searchCollisions(
  | returns contact elements for a given element              u.may 02/09|
  | for multibody contact                                                |
  *----------------------------------------------------------------------*/
-void Core::Geo::SearchTree::searchCollisions(
+void Core::Geo::SearchTree::search_collisions(
     const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs,
     const Core::LinAlg::Matrix<9, 2>& queryKDOP, const int label, std::set<int>& contactEleIds)
 {
@@ -186,8 +186,8 @@ void Core::Geo::SearchTree::searchCollisions(
 
   if (tree_root_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
-  if (!tree_root_->getElementList().empty())
-    tree_root_->searchCollisions(currentKDOPs, queryKDOP, label, contactEleIds);
+  if (!tree_root_->get_element_list().empty())
+    tree_root_->search_collisions(currentKDOPs, queryKDOP, label, contactEleIds);
   else
     return;
 
@@ -209,7 +209,7 @@ Core::Geo::SearchTree::TreeNode::TreeNode(const TreeNode* const parent, const in
       y_plane_coordinate_((node_box_(1, 0) + 0.5 * (node_box_(1, 1) - node_box_(1, 0)))),
       z_plane_coordinate_((node_box_(2, 0) + 0.5 * (node_box_(2, 1) - node_box_(2, 0))))
 {
-  children_.assign(getNumChildren(), Teuchos::null);
+  children_.assign(get_num_children(), Teuchos::null);
 }
 
 
@@ -253,19 +253,19 @@ Core::Geo::SearchTree::TreeNode::TreeNode(const TreeNode* const parent, const in
  */
 /*====================================================================*/
 
-void Core::Geo::SearchTree::TreeNode::setElementList(
+void Core::Geo::SearchTree::TreeNode::set_element_list(
     const std::map<int, std::set<int>>& elementsByLabel)
 {
   element_list_ = elementsByLabel;
 }
 
-void Core::Geo::SearchTree::TreeNode::setNearestObject(
+void Core::Geo::SearchTree::TreeNode::set_nearest_object(
     const Core::Geo::NearestObject& nearestObject)
 {
   nearest_object_ = nearestObject;
 }
 
-int Core::Geo::SearchTree::TreeNode::getNumChildren() const
+int Core::Geo::SearchTree::TreeNode::get_num_children() const
 {
   if (tree_type_ == OCTTREE)
     return 8;
@@ -277,7 +277,7 @@ int Core::Geo::SearchTree::TreeNode::getNumChildren() const
   return -1;
 }
 
-Teuchos::RCP<Core::Geo::SearchTree::TreeNode> Core::Geo::SearchTree::TreeNode::getChild(
+Teuchos::RCP<Core::Geo::SearchTree::TreeNode> Core::Geo::SearchTree::TreeNode::get_child(
     const int index) const
 {
   return children_[index];
@@ -386,7 +386,7 @@ void Core::Geo::SearchTree::TreeNode::get_child_node_box(
 }
 
 
-void Core::Geo::SearchTree::TreeNode::insertElement(const int label, const int eleId)
+void Core::Geo::SearchTree::TreeNode::insert_element(const int label, const int eleId)
 {
   element_list_[label].insert(eleId);
   return;
@@ -396,7 +396,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(const Core::FE::Discretiza
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   // create empty children
-  for (int index = 0; index < getNumChildren(); index++)
+  for (int index = 0; index < get_num_children(); index++)
     children_[index] =
         Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), get_child_node_box(index), tree_type_));
 
@@ -407,10 +407,10 @@ void Core::Geo::SearchTree::TreeNode::create_children(const Core::FE::Discretiza
          eleIter != (labelIter->second).end(); eleIter++)
     {
       std::vector<int> elementClassification =
-          classify_element(dis.gElement(*eleIter), currentpositions);
+          classify_element(dis.g_element(*eleIter), currentpositions);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
       {
-        children_[elementClassification[count]]->insertElement(labelIter->first, *eleIter);
+        children_[elementClassification[count]]->insert_element(labelIter->first, *eleIter);
       }
     }
 
@@ -424,7 +424,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
 {
   // create empty children
   Core::LinAlg::Matrix<3, 2> childNodeBox;
-  for (int index = 0; index < getNumChildren(); index++)
+  for (int index = 0; index < get_num_children(); index++)
   {
     get_child_node_box(index, childNodeBox);
     children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
@@ -439,7 +439,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
     {
       classify_xaabb(currentXAABBs.find(*eleIter)->second, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
-        children_[elementClassification[count]]->insertElement(labelIter->first, *eleIter);
+        children_[elementClassification[count]]->insert_element(labelIter->first, *eleIter);
     }
   }
   // this node becomes an inner tree node
@@ -455,7 +455,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
 {
   // create empty children
   static Core::LinAlg::Matrix<3, 2> childNodeBox;
-  for (int index = 0; index < getNumChildren(); index++)
+  for (int index = 0; index < get_num_children(); index++)
   {
     get_child_node_box(index, childNodeBox);
     children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
@@ -471,7 +471,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
     {
       classify_kdop(currentKDOPs.find(*eleIter)->second, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
-        children_[elementClassification[count]]->insertElement(labelIter->first, *eleIter);
+        children_[elementClassification[count]]->insert_element(labelIter->first, *eleIter);
     }
   }
   // this node becomes an inner tree node
@@ -1095,7 +1095,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
   Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
   Core::Geo::checkRoughGeoType(element, xyze, eleGeoType);
   const Core::LinAlg::Matrix<3, 2> elemXAABB(
-      Core::Geo::computeFastXAABB(element->Shape(), xyze, eleGeoType));
+      Core::Geo::computeFastXAABB(element->shape(), xyze, eleGeoType));
   return classify_xaabb(elemXAABB);
 }
 
@@ -1111,7 +1111,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
   Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
   Core::Geo::checkRoughGeoType(element, xyze, eleGeoType);
   const Core::LinAlg::Matrix<3, 2> elemXAABB(
-      Core::Geo::computeFastXAABB(element->Shape(), xyze, eleGeoType));
+      Core::Geo::computeFastXAABB(element->shape(), xyze, eleGeoType));
   return classify_xaabb(elemXAABB);
 }
 
@@ -1125,7 +1125,7 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
   Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
   Core::Geo::checkRoughGeoType(element, xyze_element, eleGeoType);
   const Core::LinAlg::Matrix<3, 2> elemXAABB(
-      Core::Geo::computeFastXAABB(element->Shape(), xyze_element, eleGeoType));
+      Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType));
   return classify_xaabb(elemXAABB);
 }
 
@@ -1226,7 +1226,7 @@ void Core::Geo::SearchTree::TreeNode::build_static_search_tree(
                              1)  // ************************* > 8 could be interesting
   {
     create_children(currentBVs);
-    for (int count = 0; count < getNumChildren(); count++)
+    for (int count = 0; count < get_num_children(); count++)
       children_[count]->build_static_search_tree(currentBVs);
     return;
   }
@@ -1245,7 +1245,7 @@ void Core::Geo::SearchTree::TreeNode::build_static_search_tree(
                              1)  // ************************* > 8 could be interesting
   {
     create_children(currentBVs);
-    for (int count = 0; count < getNumChildren(); count++)
+    for (int count = 0; count < get_num_children(); count++)
       children_[count]->build_static_search_tree(currentBVs);
     return;
   }
@@ -1255,7 +1255,7 @@ void Core::Geo::SearchTree::TreeNode::build_static_search_tree(
 /*------------------------------------------------------------------------------------------------*
  * search collisions at the leaf nodes                                                wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void Core::Geo::SearchTree::TreeNode::searchCollisions(
+void Core::Geo::SearchTree::TreeNode::search_collisions(
     const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
     const Core::LinAlg::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions)
 {
@@ -1266,7 +1266,7 @@ void Core::Geo::SearchTree::TreeNode::searchCollisions(
       std::vector<int> elementClassification;
       classify_xaabb(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
-        children_[elementClassification[count]]->searchCollisions(
+        children_[elementClassification[count]]->search_collisions(
             currentBVs, queryBV, label, collisions);
       return;
       break;
@@ -1287,7 +1287,7 @@ void Core::Geo::SearchTree::TreeNode::searchCollisions(
       std::vector<int> elementClassification;
       classify_xaabb(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
-        children_[elementClassification[count]]->searchCollisions(
+        children_[elementClassification[count]]->search_collisions(
             currentBVs, queryBV, label, collisions);
       return;
       break;
@@ -1301,7 +1301,7 @@ void Core::Geo::SearchTree::TreeNode::searchCollisions(
 /*------------------------------------------------------------------------------------------------*
  * search collisions at the leaf nodes                                                wirtz 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void Core::Geo::SearchTree::TreeNode::searchCollisions(
+void Core::Geo::SearchTree::TreeNode::search_collisions(
     const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentBVs,
     const Core::LinAlg::Matrix<9, 2>& queryBV, const int label, std::set<int>& collisions)
 {
@@ -1312,7 +1312,7 @@ void Core::Geo::SearchTree::TreeNode::searchCollisions(
       std::vector<int> elementClassification;
       classify_kdop(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
-        children_[elementClassification[count]]->searchCollisions(
+        children_[elementClassification[count]]->search_collisions(
             currentBVs, queryBV, label, collisions);
       return;
       break;
@@ -1333,7 +1333,7 @@ void Core::Geo::SearchTree::TreeNode::searchCollisions(
       std::vector<int> elementClassification;
       classify_kdop(queryBV, elementClassification);
       for (unsigned int count = 0; count < elementClassification.size(); count++)
-        children_[elementClassification[count]]->searchCollisions(
+        children_[elementClassification[count]]->search_collisions(
             currentBVs, queryBV, label, collisions);
       return;
       break;

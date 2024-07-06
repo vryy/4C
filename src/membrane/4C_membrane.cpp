@@ -17,14 +17,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneLine2Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneLine2Type::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneLine3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneLine3Type::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new MembraneLine( id, owner ) );
@@ -102,7 +102,7 @@ Discret::ELEMENTS::Membrane<distype>::Membrane(const Discret::ELEMENTS::Membrane
  |                                                           fbraeu 06/16 |
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::Membrane<distype>::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Membrane<distype>::clone() const
 {
   Discret::ELEMENTS::Membrane<distype>* newelement =
       new Discret::ELEMENTS::Membrane<distype>(*this);
@@ -114,7 +114,7 @@ Core::Elements::Element* Discret::ELEMENTS::Membrane<distype>::Clone() const
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::FE::CellType Discret::ELEMENTS::Membrane<distype>::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Membrane<distype>::shape() const
 {
   return distype;
 }
@@ -124,7 +124,7 @@ Core::FE::CellType Discret::ELEMENTS::Membrane<distype>::Shape() const
  |                                                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Membrane<distype>::NumLine() const
+int Discret::ELEMENTS::Membrane<distype>::num_line() const
 {
   return Core::FE::getNumberOfElementLines(distype);
 }
@@ -139,7 +139,7 @@ void Discret::ELEMENTS::Membrane<distype>::pack(Core::Communication::PackBuffer&
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // add base class Element
@@ -163,7 +163,7 @@ void Discret::ELEMENTS::Membrane<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -184,10 +184,11 @@ void Discret::ELEMENTS::Membrane<distype>::unpack(const std::vector<char>& data)
  |  return solid material (public)                         sfuchs 05/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Membrane<distype>::SolidMaterial(int nummat) const
+Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Membrane<distype>::solid_material(
+    int nummat) const
 {
   return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::Material(nummat), true);
+      Core::Elements::Element::material(nummat), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -205,7 +206,7 @@ void Discret::ELEMENTS::Membrane<distype>::set_params_interface_ptr(const Teucho
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Teuchos::RCP<Core::Elements::ParamsInterface>
-Discret::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
+Discret::ELEMENTS::Membrane<distype>::params_interface_ptr()
 {
   return interface_ptr_;
 }
@@ -215,7 +216,7 @@ Discret::ELEMENTS::Membrane<distype>::ParamsInterfacePtr()
 template <Core::FE::CellType distype>
 Solid::ELEMENTS::ParamsInterface& Discret::ELEMENTS::Membrane<distype>::str_params_interface()
 {
-  if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
+  if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(interface_ptr_, true));
 }
 
@@ -236,7 +237,7 @@ void Discret::ELEMENTS::Membrane<distype>::print(std::ostream& os) const
  |  get vector of lines (public)                           fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<distype>::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<distype>::lines()
 {
   return Core::Communication::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
       Core::Communication::buildLines, *this);
@@ -246,7 +247,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<d
  |  get vector of surfaces (public)                        fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<distype>::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<distype>::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

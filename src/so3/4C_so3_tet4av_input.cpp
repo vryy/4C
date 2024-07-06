@@ -12,17 +12,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoTet4av::ReadElement(
+bool Discret::ELEMENTS::SoTet4av::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  SolidMaterial()->setup(NUMGPT_SOTET4av, linedef);
+  solid_material()->setup(NUMGPT_SOTET4av, linedef);
 
   std::string buffer;
   linedef->extract_string("KINEM", buffer);
@@ -43,10 +43,10 @@ bool Discret::ELEMENTS::SoTet4av::ReadElement(
   }
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(kintype_);
+  solid_material()->valid_kinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
-  if (SolidMaterial()->UsesExtendedUpdate())
+  if (solid_material()->uses_extended_update())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;

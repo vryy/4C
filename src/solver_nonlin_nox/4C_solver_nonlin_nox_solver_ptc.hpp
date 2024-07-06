@@ -76,7 +76,7 @@ namespace NOX
         };
 
         //! Map pseudo time step control type stl_string to enum
-        inline enum TSCType String2TSCType(const std::string& name)
+        inline enum TSCType string2_tsc_type(const std::string& name)
         {
           TSCType type = tsc_ser;
           if (name == "SER" || name == "Switched Evolution Relaxation")
@@ -114,7 +114,7 @@ namespace NOX
         };
 
         //! Map build operator type stl_string to enum
-        inline enum BuildOpType String2BuildOpType(const std::string& name)
+        inline enum BuildOpType string2_build_op_type(const std::string& name)
         {
           BuildOpType type = build_op_everyiter;
           if (name == "every iter")
@@ -133,7 +133,7 @@ namespace NOX
         };
 
         //! Map scaling operator type stl_string to enum
-        inline enum ScaleOpType String2ScaleOpType(const std::string& name)
+        inline enum ScaleOpType string2_scale_op_type(const std::string& name)
         {
           ScaleOpType type = scale_op_identity;
           if (name == "Identity")
@@ -184,7 +184,7 @@ namespace NOX
         const double& get_inverse_pseudo_time_step() const;
 
         //! Returns the scaling factor
-        const double& getScalingFactor() const;
+        const double& get_scaling_factor() const;
 
         //! Returns the scaling operator type
         const enum ScaleOpType& get_scaling_operator_type() const;
@@ -196,7 +196,7 @@ namespace NOX
         bool use_pseudo_transient_residual() const;
 
         //! Returns the pseudo transient continuation status
-        bool isPtcSolve() const;
+        bool is_ptc_solve() const;
 
        protected:
         //! Initialize the PTC specific variables and call the init function of the base class

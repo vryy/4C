@@ -70,11 +70,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -82,7 +82,7 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override;
+      int unique_par_object_id() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -107,18 +107,18 @@ namespace Discret
       */
       void print(std::ostream& os) const override;
 
-      Core::Elements::ElementType& ElementType() const override;
+      Core::Elements::ElementType& element_type() const override;
 
       //! @name Input and Creation
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+      bool read_element(const std::string& eletype, const std::string& eledistype,
           Input::LineDefinition* linedef) override;
 
       /// @name params
       /// return ScaTra::ImplType
-      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
 
      private:
       //! scalar transport implementation type (physics)

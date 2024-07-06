@@ -55,7 +55,7 @@ namespace Adapter
      * Overloads RelaxationSolve of base class with an error message, because it is not implemented
      * for fluid-beam interaction yet
      */
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) override;
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// switch structure field to block matrix in fsi simulations
     void use_block_matrix() override { FOUR_C_THROW("Not yet implemented\n"); };
@@ -78,13 +78,13 @@ namespace Adapter
     void apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// rebuild FSI interface from structure side
-    void RebuildInterface() override;
+    void rebuild_interface() override;
 
     /// Setup the multi map extractor after ghosting of the structure discretization
     virtual void setup_multi_map_extractor();
 
     /// Get Runtime Output data
-    virtual Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> GetIOData();
+    virtual Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> get_io_data();
 
    private:
     /// Map extractor seperating the beam elements from the structure elements

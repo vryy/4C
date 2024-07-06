@@ -71,7 +71,7 @@ XFEM::CouplingBase::CouplingBase(
     const double time,      ///< time
     const int step          ///< time step
     )
-    : nsd_(Global::Problem::Instance()->NDim()),
+    : nsd_(Global::Problem::instance()->n_dim()),
       bg_dis_(bg_dis),
       cond_name_(cond_name),
       cond_dis_(cond_dis),
@@ -80,7 +80,7 @@ XFEM::CouplingBase::CouplingBase(
       coupl_dis_(Teuchos::null),
       coupl_name_(""),
       averaging_strategy_(Inpar::XFEM::invalid),
-      myrank_(bg_dis_->Comm().MyPID()),
+      myrank_(bg_dis_->get_comm().MyPID()),
       dt_(-1.0),
       time_(time),
       step_(step),
@@ -107,7 +107,7 @@ void XFEM::CouplingBase::init()
 
   if (dofset_coupling_map_.empty()) FOUR_C_THROW("Call set_dof_set_coupling_map() first!");
 
-  SetCouplingDofsets();
+  set_coupling_dofsets();
 
   // set the name of the coupling object to allow access from outside via the name
   set_coupling_name();
@@ -258,7 +258,7 @@ void XFEM::CouplingBase::init_configuration_map()
 void XFEM::CouplingBase::set_element_conditions()
 {
   // number of column cutter boundary elements
-  int nummycolele = cutter_dis_->NumMyColElements();
+  int nummycolele = cutter_dis_->num_my_col_elements();
 
   cutterele_conds_.clear();
   cutterele_conds_.reserve(nummycolele);
@@ -271,7 +271,7 @@ void XFEM::CouplingBase::set_element_conditions()
   // loop all column cutting elements on this processor
   for (int lid = 0; lid < nummycolele; lid++)
   {
-    Core::Elements::Element* cutele = cutter_dis_->lColElement(lid);
+    Core::Elements::Element* cutele = cutter_dis_->l_col_element(lid);
 
     // loop all possible XFEM-coupling conditions
     for (size_t cond = 0; cond < conditions_to_copy_.size(); cond++)
@@ -305,7 +305,7 @@ void XFEM::CouplingBase::set_element_conditions()
         FOUR_C_THROW(
             "%i conditions of the same name with coupling id %i, for element %i! %s "
             "coupling-condition not unique!",
-            mynewcond.size(), coupling_id_, cutele->Id(), conditions_to_copy_[cond].c_str());
+            mynewcond.size(), coupling_id_, cutele->id(), conditions_to_copy_[cond].c_str());
       }
 
       // non-unique conditions for one cutter element
@@ -314,7 +314,7 @@ void XFEM::CouplingBase::set_element_conditions()
         FOUR_C_THROW(
             "There are two different condition types for the same cutter dis element with id %i: "
             "1st %i, 2nd %i. Make the XFEM coupling conditions unique!",
-            cutele->Id(), cutterele_conds_[lid].first, cond_type);
+            cutele->id(), cutterele_conds_[lid].first, cond_type);
       }
 
       // store the unique condition pointer to the cutting element
@@ -347,7 +347,7 @@ void XFEM::CouplingBase::get_condition_by_coupling_id(
   }
 }
 
-void XFEM::CouplingBase::Status(const int coupling_idx, const int side_start_gid)
+void XFEM::CouplingBase::status(const int coupling_idx, const int side_start_gid)
 {
   // -------------------------------------------------------------------
   //                       output to screen
@@ -361,8 +361,8 @@ void XFEM::CouplingBase::Status(const int coupling_idx, const int side_start_gid
         "---+\n");
     printf("   | %8i | %9i | %27s | %7i | %27s | %27s | %27s | %27s |\n", coupling_idx,
         side_start_gid, type_to_string_for_print(CondType_stringToEnum(cond_name_)).c_str(),
-        coupling_id_, DisNameToString(cutter_dis_).c_str(), DisNameToString(cond_dis_).c_str(),
-        DisNameToString(coupl_dis_).c_str(),
+        coupling_id_, dis_name_to_string(cutter_dis_).c_str(),
+        dis_name_to_string(cond_dis_).c_str(), dis_name_to_string(coupl_dis_).c_str(),
         averaging_to_string_for_print(averaging_strategy_).c_str());
   }
 }
@@ -550,12 +550,12 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
   // get values and switches from the condition
   const auto* onoff = &cond->parameters().get<std::vector<int>>("onoff");
   const auto* val = &cond->parameters().get<std::vector<double>>("val");
-  const auto* functions = cond->parameters().GetIf<std::vector<int>>("funct");
+  const auto* functions = cond->parameters().get_if<std::vector<int>>("funct");
 
   // uniformly distributed random noise
 
   auto& secondary = const_cast<Core::Conditions::Condition&>(*cond);
-  const auto* percentage = secondary.parameters().GetIf<double>("randnoise");
+  const auto* percentage = secondary.parameters().get_if<double>("randnoise");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 
@@ -575,8 +575,8 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
 
     if (functnum > 0)
     {
-      functionfac = Global::Problem::Instance()
-                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+      functionfac = Global::Problem::instance()
+                        ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                         .evaluate(x, time, dof % numdof);
     }
 
@@ -588,9 +588,9 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
 
       if (fabs(perc) > 1e-14)
       {
-        const double randomnumber = Global::Problem::Instance()
-                                        ->Random()
-                                        ->Uni();  // uniformly distributed between -1.0, 1.0
+        const double randomnumber = Global::Problem::instance()
+                                        ->random()
+                                        ->uni();  // uniformly distributed between -1.0, 1.0
         noise = perc * randomnumber;
       }
     }
@@ -608,11 +608,11 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
 
   //---------------------------------------
   // get values and switches from the condition
-  const auto* function = cond->parameters().GetIf<int>("funct");
+  const auto* function = cond->parameters().get_if<int>("funct");
 
   // uniformly distributed random noise
   auto& secondary = const_cast<Core::Conditions::Condition&>(*cond);
-  const auto* percentage = secondary.parameters().GetIf<double>("randnoise");
+  const auto* percentage = secondary.parameters().get_if<double>("randnoise");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 
@@ -632,8 +632,8 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
 
     if (functnum > 0)
     {
-      functionfac = Global::Problem::Instance()
-                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+      functionfac = Global::Problem::instance()
+                        ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                         .evaluate(x, time, dof % numdof);
     }
 
@@ -645,9 +645,9 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
 
       if (fabs(perc) > 1e-14)
       {
-        const double randomnumber = Global::Problem::Instance()
-                                        ->Random()
-                                        ->Uni();  // uniformly distributed between -1.0, 1.0
+        const double randomnumber = Global::Problem::instance()
+                                        ->random()
+                                        ->uni();  // uniformly distributed between -1.0, 1.0
         noise = perc * randomnumber;
       }
     }
@@ -659,7 +659,7 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
 /*--------------------------------------------------------------------------*
  * get viscosity of the master fluid
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::GetViscosityMaster(Core::Elements::Element* xfele,  ///< xfluid ele
+void XFEM::CouplingBase::get_viscosity_master(Core::Elements::Element* xfele,  ///< xfluid ele
     double& visc_m)  ///< viscosity mastersided
 {
   // Get Materials of master
@@ -669,8 +669,8 @@ void XFEM::CouplingBase::GetViscosityMaster(Core::Elements::Element* xfele,  ///
   // into account
   // by an additional input parameter here (e.g. XFSI with TwoPhase)
   XFEM::UTILS::get_volume_cell_material(xfele, mat_m, Core::Geo::Cut::Point::outside);
-  if (mat_m->MaterialType() == Core::Materials::m_fluid)
-    visc_m = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_m)->Viscosity();
+  if (mat_m->material_type() == Core::Materials::m_fluid)
+    visc_m = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_m)->viscosity();
   else
     FOUR_C_THROW("get_coupling_specific_average_weights: Master Material not a fluid material?");
   return;
@@ -679,8 +679,8 @@ void XFEM::CouplingBase::GetViscosityMaster(Core::Elements::Element* xfele,  ///
 /*--------------------------------------------------------------------------*
  * get weighting paramters
  *--------------------------------------------------------------------------*/
-void XFEM::CouplingBase::GetAverageWeights(Core::Elements::Element* xfele,  ///< xfluid ele
-    Core::Elements::Element* coup_ele,                                      ///< coup_ele ele
+void XFEM::CouplingBase::get_average_weights(Core::Elements::Element* xfele,  ///< xfluid ele
+    Core::Elements::Element* coup_ele,                                        ///< coup_ele ele
     double& kappa_m,  ///< Weight parameter (parameter +/master side)
     double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
     bool& non_xfluid_coupling)
@@ -711,8 +711,8 @@ void XFEM::CouplingBase::get_visc_penalty_stabfac(Core::Elements::Element* xfele
 )
 {
   get_visc_penalty_stabfac(xfele, coup_ele, kappa_m, kappa_s, inv_h_k, NIT_visc_stab_fac,
-      NIT_visc_stab_fac_tang, params->NITStabScaling(), params->NITStabScalingTang(),
-      params->IsPseudo2D(), params->visc_stab_trac_estimate());
+      NIT_visc_stab_fac_tang, params->nit_stab_scaling(), params->nit_stab_scaling_tang(),
+      params->is_pseudo2_d(), params->visc_stab_trac_estimate());
 }
 
 /*--------------------------------------------------------------------------------
@@ -732,7 +732,7 @@ void XFEM::CouplingBase::get_visc_penalty_stabfac(Core::Elements::Element* xfele
   if (get_averaging_strategy() != Inpar::XFEM::Embedded_Sided)
   {
     double visc_m = 0.0;
-    GetViscosityMaster(
+    get_viscosity_master(
         xfele, visc_m);  // As long as mastersided we just have a fluid, directly use this ...
     penscaling = visc_m * kappa_m * inv_h_k;
   }
@@ -744,10 +744,10 @@ void XFEM::CouplingBase::get_visc_penalty_stabfac(Core::Elements::Element* xfele
     penscaling += penscaling_s * kappa_s * inv_h_k;
   }
 
-  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->Shape(), penscaling, NITStabScaling,
+  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->shape(), penscaling, NITStabScaling,
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac);
 
-  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->Shape(), penscaling, NITStabScalingTang,
+  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->shape(), penscaling, NITStabScalingTang,
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac_tang);
   return;
 }

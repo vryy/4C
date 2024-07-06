@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusNeoHookean::create_ma
 Mat::Maxwell0dAcinusNeoHookeanType Mat::Maxwell0dAcinusNeoHookeanType::instance_;
 
 
-Core::Communication::ParObject* Mat::Maxwell0dAcinusNeoHookeanType::Create(
+Core::Communication::ParObject* Mat::Maxwell0dAcinusNeoHookeanType::create(
     const std::vector<char>& data)
 {
   Mat::Maxwell0dAcinusNeoHookean* mxwll_0d_acin = new Mat::Maxwell0dAcinusNeoHookean();
@@ -77,13 +77,13 @@ void Mat::Maxwell0dAcinusNeoHookean::pack(Core::Communication::PackBuffer& data)
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // Pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
 
   add_to_pack(data, type);
 
   // Pack matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -94,23 +94,23 @@ void Mat::Maxwell0dAcinusNeoHookean::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // Extract matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::Maxwell0dAcinusNeoHookean*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -154,8 +154,8 @@ void Mat::Maxwell0dAcinusNeoHookean::evaluate(Core::LinAlg::SerialDenseVector& e
 
   // Linear branches of the Maxwell model (Stiffness2(), B=R_t, B_a=R_a), notation according to
   // interacinar dependency paper
-  const double Kp_np = 1.0 / (Stiffness1() * dt);
-  const double Kp_n = 1.0 / (Stiffness1() * dt);
+  const double Kp_np = 1.0 / (stiffness1() * dt);
+  const double Kp_n = 1.0 / (stiffness1() * dt);
 
   // Build the system matrix for \boldsymbol{K} * \boldsymbol{P} = \boldsymbol{Q}
   sysmat(0, 0) = -1.0 * (Kp_np)*NumOfAcini;

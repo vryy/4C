@@ -48,7 +48,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcLoma<distype>* Instance(
+      static ScaTraEleCalcLoma<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
@@ -184,14 +184,14 @@ namespace Discret
       }
 
       //! Set reaction / temperature term for rhs
-      void SetReaTempRhs(const double reatemprhs, const int k)
+      void set_rea_temp_rhs(const double reatemprhs, const int k)
       {
         reatemprhs_[k] = reatemprhs;
         return;
       }
 
       //! Return reaction / temperature term for rhs
-      double GetReaTempRhs(const int k) { return reatemprhs_[k]; }
+      double get_rea_temp_rhs(const int k) { return reatemprhs_[k]; }
 
      private:
       //! reaction / temperature term for rhs

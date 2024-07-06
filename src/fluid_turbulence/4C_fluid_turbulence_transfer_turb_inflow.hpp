@@ -57,7 +57,7 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    virtual void Transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
+    virtual void transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
         const double time);
 
    protected:
@@ -131,7 +131,7 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    void Transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
+    void transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
         const double time) override;
 
    private:
@@ -162,7 +162,7 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    void Transfer(const Teuchos::RCP<Epetra_Vector> invec, Teuchos::RCP<Epetra_Vector> outvec,
+    void transfer(const Teuchos::RCP<Epetra_Vector> invec, Teuchos::RCP<Epetra_Vector> outvec,
         const double time) override;
 
     bool is_active() { return active_; }

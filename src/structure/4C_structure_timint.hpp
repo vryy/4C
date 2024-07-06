@@ -133,7 +133,7 @@ namespace Solid
     //@{
 
     //! Print tea time logo
-    void Logo();
+    void logo();
 
     //! Constructor
     TimInt(const Teuchos::ParameterList& timeparams,
@@ -192,13 +192,13 @@ namespace Solid
     void setup() override;
 
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
-    virtual void CreateFields();
+    virtual void create_fields();
 
     //! Construct all solution vectors
     void create_all_solution_vectors();
 
     //! Resize \p TimIntMStep<T> multi-step quantities
-    virtual void ResizeMStep() = 0;
+    virtual void resize_m_step() = 0;
 
     //! Resize \p TimIntMStep<T> multi-step quantities, needed for fsi time adaptivity
     void resize_m_step_tim_ada() override;
@@ -215,7 +215,7 @@ namespace Solid
     //! of #tis with #this. Practically, this turns up with time
     //! adaptivity in which #tis is the marching integrator
     //! and #this is the auxiliary method, which shares the marching data.
-    void Merge(TimInt& tis  //!< existing integrator to merge against
+    void merge(TimInt& tis  //!< existing integrator to merge against
     )
     {
       // copy it
@@ -236,7 +236,7 @@ namespace Solid
 
     //! Clear mass matrix and evaluate mass matrix again.
     //! \note not implemented in base class.
-    virtual void DetermineMass();
+    virtual void determine_mass();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     //! (reimplemented in static time integrator)
@@ -258,7 +258,7 @@ namespace Solid
     void prepare_time_step() override = 0;
 
     //! Do time integration of multiple steps
-    int Integrate() override
+    int integrate() override
     {
       FOUR_C_THROW("time loop moved to separate adapter");
       return 0;
@@ -271,11 +271,11 @@ namespace Solid
     }
 
     //! do something in case nonlinear solution does not converge for some reason
-    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+    Inpar::Solid::ConvergenceStatus perform_error_action(
         Inpar::Solid::ConvergenceStatus nonlinsoldiv) override;
 
     //! Do time integration of single step
-    virtual int IntegrateStep() = 0;
+    virtual int integrate_step() = 0;
 
 
     /*! \brief Non-linear solve
@@ -283,7 +283,7 @@ namespace Solid
      *  Do the nonlinear solve, i.e. (multiple) corrector,
      *  for the time step. All boundary conditions have been set.
      */
-    Inpar::Solid::ConvergenceStatus Solve() override = 0;
+    Inpar::Solid::ConvergenceStatus solve() override = 0;
 
     //! Linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override = 0;
@@ -315,7 +315,7 @@ namespace Solid
     void update() override = 0;
 
     /// update at time step end in case of FSI time adaptivity
-    void Update(const double endtime) override = 0;
+    void update(const double endtime) override = 0;
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
@@ -331,17 +331,17 @@ namespace Solid
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awaiting the next
     //! time step.
-    virtual void UpdateStepState() = 0;
+    virtual void update_step_state() = 0;
 
     //! Update everything on element level after time step and after output
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awaiting the next
     //! time step.
-    virtual void UpdateStepElement() = 0;
+    virtual void update_step_element() = 0;
 
     //! Update time and step counter
-    void UpdateStepTime();
+    void update_step_time();
 
     //! Update step for contact / meshtying
     void update_step_contact_meshtying();
@@ -367,7 +367,7 @@ namespace Solid
     void reset_step() override;
 
     //! Set initial fields in structure (e.g. initial velocities)
-    void SetInitialFields();
+    void set_initial_fields();
 
     //@}
 
@@ -379,19 +379,19 @@ namespace Solid
     void prepare_output(bool force_prepare_timestep) override;
 
     //! Calculate stresses, strains on micro-scale
-    void PrepareOutputMicro();
+    void prepare_output_micro();
 
     //! Calculate stresses and strains
     void determine_stress_strain() override;
 
     //! Calculate kinetic, internal and external energy
-    virtual void DetermineEnergy();
+    virtual void determine_energy();
 
     //! Calculate an optional quantity
     void determine_optional_quantity();
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     //@}
 
@@ -407,7 +407,7 @@ namespace Solid
     //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
-    void OutputStep(const bool forced_writerestart = false  ///< [in] Force writing of restart data
+    void output_step(const bool forced_writerestart = false  ///< [in] Force writing of restart data
     );
 
     bool has_final_state_been_written() const override;
@@ -421,7 +421,7 @@ namespace Solid
     //! digits n to 5       digits 4 to 2            digits 1 to 0
     //! represent the       represent the            represent the
     //! time steps          Newton steps             line search steps
-    void OutputEveryIter(bool nw = false, bool ls = false);
+    void output_every_iter(bool nw = false, bool ls = false);
 
     //! write output of step to the Gmsh format
     void write_gmsh_struc_output_step() override;
@@ -462,27 +462,27 @@ namespace Solid
     void output_energy();
 
     //! Optional quantity output
-    void OutputOptQuantity(bool& datawritten  //!< (in/out) read and append if
-                                              //!< it was written at this time step
+    void output_opt_quantity(bool& datawritten  //!< (in/out) read and append if
+                                                //!< it was written at this time step
     );
 
     //! Active set, energy and momentum output for contact
-    void OutputContact();
+    void output_contact();
 
     //! Nodal positions output
     void output_nodal_positions();
 
     //! Output volume mass
-    void OutputVolumeMass();
+    void output_volume_mass();
 
     //! Output on the micro-scale (multi-scale analysis)
-    void OutputMicro();
+    void output_micro();
 
     //! Write internal and external forces (if necessary for restart)
-    virtual void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
+    virtual void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
 
     //! Check whether energy output file is attached
-    bool AttachedEnergyFile()
+    bool attached_energy_file()
     {
       if (not energyfile_.is_null())
         return true;
@@ -491,7 +491,7 @@ namespace Solid
     }
 
     //! Attach file handle for energy file #energyfile_
-    virtual void AttachEnergyFile();
+    virtual void attach_energy_file();
 
     //@}
 
@@ -545,7 +545,7 @@ namespace Solid
     //@{
 
     //! Return bool indicating if we have nonlinear inertia forces
-    int HaveNonlinearMass() const;
+    int have_nonlinear_mass() const;
 
     //! check whether the initial conditions are fulfilled */
     virtual void nonlinear_mass_sanity_check(
@@ -559,30 +559,30 @@ namespace Solid
     //@}
 
     //! Set forces due to interface with fluid, the force is expected external-force-like
-    void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
+    void set_force_interface(Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
         ) override;
 
     //! @name Attributes
     //@{
 
     //! Provide Name
-    virtual enum Inpar::Solid::DynamicType MethodName() const = 0;
+    virtual enum Inpar::Solid::DynamicType method_name() const = 0;
 
     //! Provide title
-    std::string MethodTitle() const { return Inpar::Solid::DynamicTypeString(MethodName()); }
+    std::string method_title() const { return Inpar::Solid::DynamicTypeString(method_name()); }
 
     //! Return true, if time integrator is implicit
-    virtual bool MethodImplicit() = 0;
+    virtual bool method_implicit() = 0;
 
     //! Return true, if time integrator is explicit
-    bool MethodExplicit() { return (not MethodImplicit()); }
+    bool method_explicit() { return (not method_implicit()); }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a \f$m\f$-multistep method returns \f$m\f$
-    virtual int MethodSteps() const = 0;
+    virtual int method_steps() const = 0;
 
     //! return time integration factor
-    double TimIntParam() const override = 0;
+    double tim_int_param() const override = 0;
 
     //! Give order of accuracy
     int method_order_of_accuracy() const
@@ -631,13 +631,13 @@ namespace Solid
     const Epetra_Map* dof_row_map_view() override;
 
     //! Access solver, one of these have to be removed (see below)
-    Teuchos::RCP<Core::LinAlg::Solver> Solver() { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> solver() { return solver_; }
 
     //! Access solver, one of these have to be removed (see above)
     Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; }
 
     //! Access solver for contact/meshtying problems
-    Teuchos::RCP<Core::LinAlg::Solver> ContactSolver() { return contactsolver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> contact_solver() { return contactsolver_; }
 
     //! Access output object
     Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override { return output_; }
@@ -663,18 +663,18 @@ namespace Solid
     }
 
     //! Read and set restart state
-    virtual void ReadRestartState();
+    virtual void read_restart_state();
 
     //! Set restart state
-    virtual void SetRestartState(Teuchos::RCP<Epetra_Vector> disn,  //!< restart displacements
-        Teuchos::RCP<Epetra_Vector> veln,                           //!< restart velocities
-        Teuchos::RCP<Epetra_Vector> accn,                           //!< restart accelerations
-        Teuchos::RCP<std::vector<char>> elementdata,                //!< restart element data
-        Teuchos::RCP<std::vector<char>> nodedata                    //!< restart element data
+    virtual void set_restart_state(Teuchos::RCP<Epetra_Vector> disn,  //!< restart displacements
+        Teuchos::RCP<Epetra_Vector> veln,                             //!< restart velocities
+        Teuchos::RCP<Epetra_Vector> accn,                             //!< restart accelerations
+        Teuchos::RCP<std::vector<char>> elementdata,                  //!< restart element data
+        Teuchos::RCP<std::vector<char>> nodedata                      //!< restart element data
     );
 
     //! Read and set restart forces
-    virtual void ReadRestartForce() = 0;
+    virtual void read_restart_force() = 0;
 
     //! Read and set restart values for constraints
     void read_restart_constraint();
@@ -698,10 +698,10 @@ namespace Solid
     Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
 
     //! right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
+    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
 
     /// set evaluation action
-    void SetActionType(const Core::Elements::ActionType& action) override
+    void set_action_type(const Core::Elements::ActionType& action) override
     {
       FOUR_C_THROW("new structural time integration only...");
     }
@@ -710,25 +710,25 @@ namespace Solid
     //@{
 
     //! unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp() const override { return disn_; }
+    Teuchos::RCP<const Epetra_Vector> dispnp() const override { return disn_; }
 
     //! known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn() const override { return (*dis_)(0); }
+    Teuchos::RCP<const Epetra_Vector> dispn() const override { return (*dis_)(0); }
 
     //! unknown velocity at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Velnp() const override { return veln_; }
+    Teuchos::RCP<const Epetra_Vector> velnp() const override { return veln_; }
 
     //! unknown velocity at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Veln() const override { return (*vel_)(0); }
+    Teuchos::RCP<const Epetra_Vector> veln() const override { return (*vel_)(0); }
 
     //! known velocity at \f$t_{n-1}\f$
-    Teuchos::RCP<const Epetra_Vector> Velnm() const override { return (*vel_)(-1); }
+    Teuchos::RCP<const Epetra_Vector> velnm() const override { return (*vel_)(-1); }
 
     //! unknown accelerations at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Accnp() const override { return accn_; }
+    Teuchos::RCP<const Epetra_Vector> accnp() const override { return accn_; }
 
     //! known accelerations at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Accn() const override { return (*acc_)(0); }
+    Teuchos::RCP<const Epetra_Vector> accn() const override { return (*acc_)(0); }
 
     //@}
 
@@ -737,34 +737,34 @@ namespace Solid
     //@{
 
     //! Return material displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Dismat() { return (*dismat_)(0); }
+    Teuchos::RCP<Epetra_Vector> dismat() { return (*dismat_)(0); }
 
     //! Return displacements \f$D_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> DisNew() { return disn_; }
+    Teuchos::RCP<Epetra_Vector> dis_new() { return disn_; }
 
     //! Return displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
+    Teuchos::RCP<Epetra_Vector> dis() { return (*dis_)(0); }
 
     //! Return velocities \f$V_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> VelNew() { return veln_; }
+    Teuchos::RCP<Epetra_Vector> vel_new() { return veln_; }
 
     //! Return velocities \f$V_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Vel() { return (*vel_)(0); }
+    Teuchos::RCP<Epetra_Vector> vel() { return (*vel_)(0); }
 
     //! Return accelerations \f$A_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> AccNew() { return accn_; }
+    Teuchos::RCP<Epetra_Vector> acc_new() { return accn_; }
 
     //! Return accelerations \f$A_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Acc() { return (*acc_)(0); }
+    Teuchos::RCP<Epetra_Vector> acc() { return (*acc_)(0); }
 
     //@}
 
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> fext() = 0;
 
     //! Return external force \f$F_{ext,n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> fext_new() = 0;
 
     //! Return reaction forces
     Teuchos::RCP<Epetra_Vector> freact() override = 0;
@@ -792,16 +792,16 @@ namespace Solid
         Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override = 0;
 
     //! Return sparse mass matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> MassMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix();
 
     //! domain map of system matrix
-    const Epetra_Map& DomainMap() const override;
+    const Epetra_Map& domain_map() const override;
 
     //! are there any algebraic constraints?
-    bool HaveConstraint() override = 0;
+    bool have_constraint() override = 0;
 
     //! are there any spring dashpot BCs?
-    bool HaveSpringDashpot() override = 0;
+    bool have_spring_dashpot() override = 0;
 
     //! get constraint manager defined in the structure
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override = 0;
@@ -822,43 +822,43 @@ namespace Solid
     //@{
 
     //! Return current time \f$t_{n}\f$
-    double TimeOld() const override { return (*time_)[0]; }
+    double time_old() const override { return (*time_)[0]; }
 
     //! Return target time \f$t_{n+1}\f$
-    double Time() const override { return timen_; }
+    double time() const override { return timen_; }
 
     //! Sets the current time \f$t_{n}\f$
     void set_time(const double time) override { (*time_)[0] = time; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
-    void SetTimen(const double time) override { timen_ = time; }
+    void set_timen(const double time) override { timen_ = time; }
 
     //! Sets the current step \f$n+1\f$
-    void SetStep(int step) override { step_ = step; }
+    void set_step(int step) override { step_ = step; }
 
     //! Sets the current step \f$n+1\f$
-    void SetStepn(int step) override { stepn_ = step; }
+    void set_stepn(int step) override { stepn_ = step; }
 
     //! Get upper limit of time range of interest
-    double GetTimeEnd() const override { return timemax_; }
+    double get_time_end() const override { return timemax_; }
 
     //! Set upper limit of time range of interest
-    void SetTimeEnd(double timemax) override { timemax_ = timemax; }
+    void set_time_end(double timemax) override { timemax_ = timemax; }
 
     //! Get time step size \f$\Delta t_n\f$
-    double Dt() const override { return (*dt_)[0]; }
+    double dt() const override { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
     void set_dt(const double dtnew) override { (*dt_)[0] = dtnew; }
 
     //! Return current step number $n$
-    int StepOld() const override { return step_; }
+    int step_old() const override { return step_; }
 
     //! Return current step number $n+1$
-    int Step() const override { return stepn_; }
+    int step() const override { return stepn_; }
 
     //! Get number of time steps
-    int NumStep() const override { return stepmax_; }
+    int num_step() const override { return stepmax_; }
 
 
     //! Return MapExtractor for Dirichlet boundary conditions
@@ -871,7 +871,7 @@ namespace Solid
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Return locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override { return locsysman_; }
 
     //@}
 
@@ -879,16 +879,16 @@ namespace Solid
     //@{
 
     /// write access to displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() override { return DisNew(); }
+    Teuchos::RCP<Epetra_Vector> write_access_dispnp() override { return dis_new(); }
 
     //! write access to velocities at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override { return VelNew(); }
+    Teuchos::RCP<Epetra_Vector> write_access_velnp() override { return vel_new(); }
 
     /// write access to displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessDispn() override { return Dis(); }
+    Teuchos::RCP<Epetra_Vector> write_access_dispn() override { return dis(); }
 
     //! write access to velocities at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> WriteAccessVeln() override { return Vel(); }
+    Teuchos::RCP<Epetra_Vector> write_access_veln() override { return vel(); }
 
     //@}
 
@@ -920,13 +920,13 @@ namespace Solid
     }
 
     /// do we have this model
-    bool HaveModel(Inpar::Solid::ModelType model) override
+    bool have_model(Inpar::Solid::ModelType model) override
     {
       FOUR_C_THROW("new structural time integration only");
       return false;
     }
 
-    Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override
+    Solid::MODELEVALUATOR::Generic& model_evaluator(Inpar::Solid::ModelType mtype) override
     {
       FOUR_C_THROW("new time integration only");
       exit(EXIT_FAILURE);
@@ -957,25 +957,25 @@ namespace Solid
     //! Prepare contact at the beginning of each new time step
     //! (call dynamic redistribution of contact interface(s) AND
     //! evaluate reference state for frictional contact at t=0)
-    void PrepareStepContact();
+    void prepare_step_contact();
 
     /// wrapper for things that should be done before prepare_time_step is called
-    void PrePredict() final{};
+    void pre_predict() final{};
 
     /// wrapper for things that should be done before solving the nonlinear iterations
-    void PreSolve() final{};
+    void pre_solve() final{};
 
     /// wrapper for things that should be done before updating
-    void PreUpdate() final{};
+    void pre_update() final{};
 
     /// wrapper for things that should be done after solving the update
     void post_update() final{};
 
     /// wrapper for things that should be done after convergence of Newton scheme
-    void PostOutput() final{};
+    void post_output() final{};
 
     /// wrapper for things that should be done after the actual time loop is finished
-    void PostTimeLoop() final;
+    void post_time_loop() final;
 
     //@}
 
@@ -983,14 +983,14 @@ namespace Solid
     //@{
 
     //! return bool indicating if beam contact is defined
-    bool HaveBeamContact() { return (beamcman_ != Teuchos::null); }
+    bool have_beam_contact() { return (beamcman_ != Teuchos::null); }
 
     //! return beam contact manager
-    Teuchos::RCP<CONTACT::Beam3cmanager> BeamContactManager() { return beamcman_; }
+    Teuchos::RCP<CONTACT::Beam3cmanager> beam_contact_manager() { return beamcman_; }
 
     //! Check if beam contact is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
-    void PrepareBeamContact(const Teuchos::ParameterList& sdynparams);
+    void prepare_beam_contact(const Teuchos::ParameterList& sdynparams);
 
     //@}
 
@@ -998,10 +998,10 @@ namespace Solid
     //@{
 
     //! material displacements (structure with ale)
-    Teuchos::RCP<Epetra_Vector> DispMat() override { return dismatn_; }
+    Teuchos::RCP<Epetra_Vector> disp_mat() override { return dismatn_; }
 
     //! apply material displacements to structure field (structure with ale)
-    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat) override;
+    void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) override;
 
     //@}
 
@@ -1012,9 +1012,9 @@ namespace Solid
     void reset() override;
 
     // set structure displacement vector due to biofilm growth
-    void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override;
+    void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override;
 
-    virtual bool HaveBiofilmGrowth() const { return (not strgrdisp_.is_null()); }
+    virtual bool have_biofilm_growth() const { return (not strgrdisp_.is_null()); }
 
     //@}
 
@@ -1022,16 +1022,16 @@ namespace Solid
     //@{
 
     //! bool indicating if micro material is used
-    bool HaveMicroMat() override { return havemicromat_; }
+    bool have_micro_mat() override { return havemicromat_; }
 
     //}
 
    protected:
     /// Expand the dbc map by dofs provided in Epetra_Map maptoadd
-    void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
+    void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
 
     /// Contract the dbc map by dofs provided in Epetra_Map maptoremove
-    void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
+    void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
 
     //! @name General purpose algorithm members
     //@{

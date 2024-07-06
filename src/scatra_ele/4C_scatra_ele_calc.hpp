@@ -88,7 +88,7 @@ namespace Discret
       /// since only derived child classes are free to be allocated!!
 
       /// Setup element evaluation
-      int SetupCalc(
+      int setup_calc(
           Core::Elements::Element* ele, Core::FE::Discretization& discretization) override;
 
       /// Evaluate the element
@@ -114,7 +114,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra);
 
       //! evaluate action for off-diagonal system matrix block
-      virtual int EvaluateActionOD(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_action_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const ScaTra::Action& action,
           Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -124,7 +124,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra);
 
       //! evaluate service routine
-      int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -1214,7 +1214,7 @@ namespace Discret
       virtual ~ScaTraEleDiffManager() = default;
 
       //! Set the isotropic diffusion coefficient
-      virtual void SetIsotropicDiff(const double& diff, const int& k)
+      virtual void set_isotropic_diff(const double& diff, const int& k)
       {
         //      if (diff < 0.0) FOUR_C_THROW("negative (physical) diffusivity: %f",0,diff);
 
@@ -1229,11 +1229,11 @@ namespace Discret
       }
 
       //! Return the stored isotropic diffusion coefficients
-      virtual std::vector<double> GetIsotropicDiff() { return diff_; }
-      virtual double GetIsotropicDiff(const int k) { return diff_[k]; }
+      virtual std::vector<double> get_isotropic_diff() { return diff_; }
+      virtual double get_isotropic_diff(const int k) { return diff_[k]; }
 
       //! Return the stored sub-grid diffusion coefficient
-      virtual double GetSubGrDiff(const int k) { return sgdiff_[k]; }
+      virtual double get_sub_gr_diff(const int k) { return sgdiff_[k]; }
 
      protected:
       //! scalar diffusion coefficient
@@ -1267,7 +1267,7 @@ namespace Discret
       //! @name set routines
 
       //! Clear everything and resize to length numscal
-      virtual void Clear(int numscal)
+      virtual void clear(int numscal)
       {
         // clear
         reacoeff_.resize(0);
@@ -1277,7 +1277,7 @@ namespace Discret
       }
 
       //! Set the reaction coefficient
-      void SetReaCoeff(const double reacoeff, const int k)
+      void set_rea_coeff(const double reacoeff, const int k)
       {
         // NOTE: it is important that this reaction coefficient set here does not depend on ANY
         // concentration. If so, use the advanced reaction framework to get a proper linearisation.
@@ -1288,7 +1288,7 @@ namespace Discret
       //! @name access routines
 
       //! Return the reaction coefficient
-      double GetReaCoeff(const int k) const { return reacoeff_[k]; }
+      double get_rea_coeff(const int k) const { return reacoeff_[k]; }
 
       //! Return the stabilization coefficient
       virtual double get_stabilization_coeff(const int k, const double phinp_k) const
@@ -1297,7 +1297,7 @@ namespace Discret
       }
 
       //! return flag: reaction activated
-      bool Active() const { return include_me_; }
+      bool active() const { return include_me_; }
 
      protected:
       //! flag for reaction
@@ -1388,34 +1388,37 @@ namespace Discret
       /*========================================================================*/
 
       //! return scalar values at t_(n+1) or t_(n+alpha_F)
-      virtual const std::vector<double>& Phinp() const { return phinp_; };
+      virtual const std::vector<double>& phinp() const { return phinp_; };
       //! return scalar value at t_(n+1) or t_(n+alpha_F)
-      virtual const double& Phinp(const int k) const { return phinp_[k]; };
+      virtual const double& phinp(const int k) const { return phinp_[k]; };
       //! return scalar values at t_(n)
-      virtual const std::vector<double>& Phin() const { return phin_; };
+      virtual const std::vector<double>& phin() const { return phin_; };
       //! return scalar value at t_(n)
-      virtual const double& Phin(const int k) const { return phin_[k]; };
+      virtual const double& phin(const int k) const { return phin_[k]; };
       //! return convective velocity
-      [[nodiscard]] virtual const Core::LinAlg::Matrix<nsd, 1>& ConVel(const int k) const
+      [[nodiscard]] virtual const Core::LinAlg::Matrix<nsd, 1>& con_vel(const int k) const
       {
         return convelint_[k];
       };
       //! return convective part in convective form
-      [[nodiscard]] virtual const Core::LinAlg::Matrix<nen, 1>& Conv(const int k) const
+      [[nodiscard]] virtual const Core::LinAlg::Matrix<nen, 1>& conv(const int k) const
       {
         return conv_[k];
       };
       //! return spatial gradient of all scalar values
-      virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>& GradPhi() const { return gradphi_; };
+      virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>& grad_phi() const
+      {
+        return gradphi_;
+      };
       //! return spatial gradient of current scalar value
-      virtual const Core::LinAlg::Matrix<nsd, 1>& GradPhi(const int k) const
+      virtual const Core::LinAlg::Matrix<nsd, 1>& grad_phi(const int k) const
       {
         return gradphi_[k];
       };
       //! return convective term of current scalar value
-      virtual const double& ConvPhi(const int k) const { return conv_phi_[k]; };
+      virtual const double& conv_phi(const int k) const { return conv_phi_[k]; };
       //! return history term of current scalar value
-      virtual const double& Hist(const int k) const { return hist_[k]; };
+      virtual const double& hist(const int k) const { return hist_[k]; };
 
       /*========================================================================*/
       //! @name set methods for internal variables
@@ -1428,18 +1431,18 @@ namespace Discret
       // TODO: reduce number of set methods
 
       //! set spatial gradient of current scalar value
-      virtual void SetGradPhi(const int k, Core::LinAlg::Matrix<nsd, 1>& gradphi)
+      virtual void set_grad_phi(const int k, Core::LinAlg::Matrix<nsd, 1>& gradphi)
       {
         gradphi_[k] = gradphi;
       };
       //! set convective term of current scalar value
-      virtual void SetConvPhi(const int k, double conv_phi) { conv_phi_[k] = conv_phi; };
+      virtual void set_conv_phi(const int k, double conv_phi) { conv_phi_[k] = conv_phi; };
       //! set convective term of current scalar value
-      virtual void AddToConvPhi(const int k, double conv_phi) { conv_phi_[k] += conv_phi; };
+      virtual void add_to_conv_phi(const int k, double conv_phi) { conv_phi_[k] += conv_phi; };
       //! set convective term of current scalar value
-      virtual void ScaleConvPhi(const int k, double scale) { conv_phi_[k] *= scale; };
+      virtual void scale_conv_phi(const int k, double scale) { conv_phi_[k] *= scale; };
       //! set whether current scalar reacts to external force
-      virtual void SetReactsToForce(const bool reacts_to_force, const int k)
+      virtual void set_reacts_to_force(const bool reacts_to_force, const int k)
       {
         reacts_to_force_[k] = reacts_to_force;
       };

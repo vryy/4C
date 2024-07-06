@@ -158,20 +158,20 @@ void ParticleInteraction::DEMContact::check_critical_time_step() const
   double minmass = std::numeric_limits<double>::max();
 
   // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    const int particlestored = container->ParticlesStored();
+    const int particlestored = container->particles_stored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
 
     // get minimum stored value of state
-    double currminmass = container->GetMinValueOfState(PARTICLEENGINE::Mass);
+    double currminmass = container->get_min_value_of_state(PARTICLEENGINE::Mass);
 
     // update value of minimum mass
     minmass = std::min(minmass, currminmass);
@@ -350,7 +350,7 @@ double ParticleInteraction::DEMContact::get_max_density_of_all_materials() const
   double maxdensity(0.0);
 
   // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
   {
     // get material for current particle type
     const Mat::PAR::ParticleMaterialBase* material =
@@ -404,32 +404,32 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get global ids of particle
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
-    const int* globalid_j = container_j->GetPtrToGlobalID(particle_j);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
+    const int* globalid_j = container_j->get_ptr_to_global_id(particle_j);
 
     // get pointer to particle states
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    double* force_i = container_i->get_ptr_to_state(PARTICLEENGINE::Force, particle_i);
 
     const double* angvel_i = nullptr;
     double* moment_i = nullptr;
     if (contacttangential_ or contactrolling_)
     {
-      angvel_i = container_i->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
-      moment_i = container_i->GetPtrToState(PARTICLEENGINE::Moment, particle_i);
+      angvel_i = container_i->get_ptr_to_state(PARTICLEENGINE::AngularVelocity, particle_i);
+      moment_i = container_i->get_ptr_to_state(PARTICLEENGINE::Moment, particle_i);
     }
 
-    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
-    const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
-    double* force_j = container_j->GetPtrToState(PARTICLEENGINE::Force, particle_j);
+    const double* vel_j = container_j->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_j);
+    const double* rad_j = container_j->get_ptr_to_state(PARTICLEENGINE::Radius, particle_j);
+    double* force_j = container_j->get_ptr_to_state(PARTICLEENGINE::Force, particle_j);
 
     const double* angvel_j = nullptr;
     double* moment_j = nullptr;
     if (contacttangential_ or contactrolling_)
     {
-      angvel_j = container_j->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_j);
-      moment_j = container_j->GetPtrToState(PARTICLEENGINE::Moment, particle_j);
+      angvel_j = container_j->get_ptr_to_state(PARTICLEENGINE::AngularVelocity, particle_j);
+      moment_j = container_j->get_ptr_to_state(PARTICLEENGINE::Moment, particle_j);
     }
 
     // compute vectors from particle i and j to contact point c
@@ -460,7 +460,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
 
     // calculate normal contact force
     double normalcontactforce(0.0);
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         particlepair.gap_, rad_i, rad_j, vel_rel_normal, particlepair.m_eff_, normalcontactforce);
 
     // evaluate tension cutoff of normal contact force
@@ -582,7 +582,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
-      particlewallinterface_->GetWallDataState();
+      particlewallinterface_->get_wall_data_state();
 
   // get reference to particle-wall pair data
   const DEMParticleWallPairData& particlewallpairdata =
@@ -629,21 +629,21 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+    const double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    double* force_i = container_i->get_ptr_to_state(PARTICLEENGINE::Force, particle_i);
 
     const double* angvel_i = nullptr;
     double* moment_i = nullptr;
     if (contacttangential_ or contactrolling_)
     {
-      angvel_i = container_i->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
-      moment_i = container_i->GetPtrToState(PARTICLEENGINE::Moment, particle_i);
+      angvel_i = container_i->get_ptr_to_state(PARTICLEENGINE::AngularVelocity, particle_i);
+      moment_i = container_i->get_ptr_to_state(PARTICLEENGINE::Moment, particle_i);
     }
 
     // get pointer to column wall element
@@ -656,18 +656,18 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->GetVelCol() != Teuchos::null or
-        walldatastate->GetForceCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null or
+        walldatastate->get_force_col() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2D(
-          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->shape());
 
       // get location vector of wall element
       lmele.reserve(numnodes * 3);
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      ele->LocationVector(
+      ele->location_vector(
           *particlewallinterface_->get_wall_discretization(), lmele, lmowner, lmstride);
     }
 
@@ -680,15 +680,15 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     {
       // cast material to particle wall material
       const Teuchos::RCP<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
-          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->Material());
+          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
       if (particlewallmaterial == Teuchos::null)
         FOUR_C_THROW("cast to Mat::ParticleWallMaterialDEM failed!");
 
       // get tangential contact friction coefficient
-      if (contacttangential_) mu_tangential = particlewallmaterial->MuTangential();
+      if (contacttangential_) mu_tangential = particlewallmaterial->mu_tangential();
 
       // get rolling contact friction coefficient
-      if (contactrolling_) mu_rolling = particlewallmaterial->MuRolling();
+      if (contactrolling_) mu_rolling = particlewallmaterial->mu_rolling();
     }
 
     // declare zero radius for wall contact point j
@@ -697,11 +697,11 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     // velocity of wall contact point j
     double vel_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->GetVelCol() != Teuchos::null)
+    if (walldatastate->get_vel_col() != Teuchos::null)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
-      Core::FE::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
+      Core::FE::ExtractMyValues(*walldatastate->get_vel_col(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)
@@ -723,7 +723,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
 
     // calculate normal contact force
     double normalcontactforce(0.0);
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         particlewallpair.gap_, rad_i, &rad_j, vel_rel_normal, mass_i[0], normalcontactforce);
 
     // evaluate tension cutoff of normal contact force
@@ -738,7 +738,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     {
       // get reference to touched tangential history
       TouchedDEMHistoryPairTangential& touchedtangentialhistory_ij =
-          tangentialhistorydata[globalid_i[0]][ele->Id()];
+          tangentialhistorydata[globalid_i[0]][ele->id()];
 
       // mark tangential history as touched
       touchedtangentialhistory_ij.first = true;
@@ -773,7 +773,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     {
       // get reference to touched rolling history
       TouchedDEMHistoryPairRolling& touchedrollinghistory_ij =
-          rollinghistorydata[globalid_i[0]][ele->Id()];
+          rollinghistorydata[globalid_i[0]][ele->id()];
 
       // mark rolling history as touched
       touchedrollinghistory_ij.first = true;
@@ -805,7 +805,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
 
     // calculation of wall contact force
     double wallcontactforce[3] = {0.0, 0.0, 0.0};
-    if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
+    if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
     {
       UTILS::VecSetScale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);
       UTILS::VecSub(wallcontactforce, tangentialcontactforce);
@@ -826,7 +826,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     }
 
     // assemble contact force acting on wall element
-    if (walldatastate->GetForceCol() != Teuchos::null)
+    if (walldatastate->get_force_col() != Teuchos::null)
     {
       // determine nodal forces
       std::vector<double> nodal_force(numnodes * 3);
@@ -835,7 +835,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
           nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
 
       // assemble nodal forces
-      const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
+      const int err = walldatastate->get_force_col()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
     }
@@ -849,11 +849,11 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     auto& visualization_data = visualization_manager->get_visualization_data();
 
     // set wall attack points
-    visualization_data.GetPointCoordinates() = attackpoints;
+    visualization_data.get_point_coordinates() = attackpoints;
 
     // append states
-    visualization_data.SetPointDataVector<double>("contact force", contactforces, 3);
-    visualization_data.SetPointDataVector<double>("normal direction", normaldirection, 3);
+    visualization_data.set_point_data_vector<double>("contact force", contactforces, 3);
+    visualization_data.set_point_data_vector<double>("normal direction", normaldirection, 3);
   }
 }
 
@@ -893,8 +893,8 @@ void ParticleInteraction::DEMContact::evaluate_particle_elastic_potential_energy
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get global ids of particle
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
-    const int* globalid_j = container_j->GetPtrToGlobalID(particle_j);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
+    const int* globalid_j = container_j->get_ptr_to_global_id(particle_j);
 
     // calculate normal potential energy
     double normalpotentialenergy(0.0);
@@ -974,7 +974,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_elastic_potential_e
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
 
     // get pointer to column wall element
     Core::Elements::Element* ele = particlewallpair.ele_;
@@ -991,7 +991,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_elastic_potential_e
     {
       // get reference to touched tangential history
       TouchedDEMHistoryPairTangential& touchedtangentialhistory_ij =
-          tangentialhistorydata[globalid_i[0]][ele->Id()];
+          tangentialhistorydata[globalid_i[0]][ele->id()];
 
       // get reference to tangential history
       DEMHistoryPairTangential& tangentialhistory_ij = touchedtangentialhistory_ij.second;
@@ -1010,7 +1010,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_elastic_potential_e
     {
       // get reference to touched rolling history
       TouchedDEMHistoryPairRolling& touchedrollinghistory_ij =
-          rollinghistorydata[globalid_i[0]][ele->Id()];
+          rollinghistorydata[globalid_i[0]][ele->id()];
 
       // get reference to rolling history
       DEMHistoryPairRolling& rollinghistory_ij = touchedrollinghistory_ij.second;

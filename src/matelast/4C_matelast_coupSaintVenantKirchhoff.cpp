@@ -31,7 +31,7 @@ Mat::Elastic::PAR::CoupSVK::CoupSVK(const Core::Mat::PAR::Parameter::Data& matda
 
 Mat::Elastic::CoupSVK::CoupSVK(Mat::Elastic::PAR::CoupSVK* params) : params_(params) {}
 
-void Mat::Elastic::CoupSVK::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+void Mat::Elastic::CoupSVK::add_strain_energy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
     const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
@@ -65,7 +65,7 @@ void Mat::Elastic::CoupSVK::add_third_derivatives_principal_iso(
   // do nothing
 }
 
-void Mat::Elastic::CoupSVK::AddCoupDerivVol(
+void Mat::Elastic::CoupSVK::add_coup_deriv_vol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
   const double lambda = params_->lambda_;

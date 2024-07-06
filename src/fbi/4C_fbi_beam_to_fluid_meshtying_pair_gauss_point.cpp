@@ -81,34 +81,35 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
   for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
   {
     // Factor to account for the integration segment length.
-    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].get_segment_length();
 
     // Gauss point loop.
     for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+         i_gp < this->line_to_3D_segments_[i_segment].get_projection_points().size(); i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
+          projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and fluid.
-      GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<Fluid>(projected_gauss_point.GetXi(), this->ele2pos_, r_fluid);
+      GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.get_eta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Fluid>(
+          projected_gauss_point.get_xi(), this->ele2pos_, r_fluid);
 
       N_beam.clear();
       N_fluid.clear();
 
       // Evaluate the chapefunctions at the current gauss point
       GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
-          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<Fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
+          N_beam, projected_gauss_point.get_eta(), this->ele1pos_.shape_function_data_);
+      GEOMETRYPAIR::EvaluateShapeFunction<Fluid>::evaluate(N_fluid, projected_gauss_point.get_xi());
 
       // assemble fluid mass matrix
       if (stiffmat22 != nullptr)
@@ -121,7 +122,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
                   (*stiffmat22)(i_fluid_node1 * Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
                       i_fluid_node2 * Fluid::n_val_ * 3 + i_fluid_val2 * 3 + i_dir) +=
                       N_fluid(i_fluid_node1) * N_fluid(i_fluid_node2) *
-                      projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                      projected_gauss_point.get_gauss_weight() * segment_jacobian;
       }
 
       // assemble beam mass matrix
@@ -136,7 +137,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
                       i_beam_node2 * Beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
                       N_beam(i_beam_node1 * Beam::n_val_ + i_beam_val1) *
                       N_beam(i_beam_node2 * Beam::n_val_ + i_beam_val2) *
-                      projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                      projected_gauss_point.get_gauss_weight() * segment_jacobian;
       }
 
       // assemble fluid beam coupling matrix
@@ -150,7 +151,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
                   (*stiffmat21)(i_fluid_node1 * Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
                       i_beam_node2 * Beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
                       N_fluid(i_fluid_node1) * N_beam(i_beam_node2 * Beam::n_val_ + i_beam_val2) *
-                      projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                      projected_gauss_point.get_gauss_weight() * segment_jacobian;
       }
 
       // assemble fluid beam coupling matrix
@@ -164,7 +165,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
                   (*stiffmat12)(i_beam_node1 * Beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
                       i_fluid_node2 * Fluid::n_val_ * 3 + 3 * i_fluid_val2 + i_dir) +=
                       N_fluid(i_fluid_node2) * N_beam(i_beam_node1 * Beam::n_val_ + i_beam_val1) *
-                      projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                      projected_gauss_point.get_gauss_weight() * segment_jacobian;
       }
     }
   }
@@ -189,7 +190,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
     // assemble fluid force vector
     if (forcevec2 != nullptr)
     {
-      if (!Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->Params(), true)
+      if (!Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->params(), true)
                ->get_weak_dirichlet_flag())
 
       {

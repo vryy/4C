@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoTet4avType Discret::ELEMENTS::SoTet4avType::instance_;
 
-Discret::ELEMENTS::SoTet4avType& Discret::ELEMENTS::SoTet4avType::Instance() { return instance_; }
+Discret::ELEMENTS::SoTet4avType& Discret::ELEMENTS::SoTet4avType::instance() { return instance_; }
 
 //------------------------------------------------------------------------
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet4avType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoTet4avType::create(
     const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::SoTet4av(-1, -1);
@@ -39,7 +39,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4avType::Create(
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4avType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4avType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4avType::Create(
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4avType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4avType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -72,7 +72,7 @@ void Discret::ELEMENTS::SoTet4avType::nodal_block_information(
 }
 
 //------------------------------------------------------------------------
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoTet4avType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoTet4avType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -104,11 +104,11 @@ void Discret::ELEMENTS::SoTet4avType::setup_element_definition(
 Discret::ELEMENTS::SoTet4av::SoTet4av(int id, int owner) : SoBase(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -127,7 +127,7 @@ Discret::ELEMENTS::SoTet4av::SoTet4av(const Discret::ELEMENTS::SoTet4av& old) : 
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoTet4av::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoTet4av::clone() const
 {
   auto* newelement = new Discret::ELEMENTS::SoTet4av(*this);
   return newelement;
@@ -137,7 +137,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoTet4av::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoTet4av::Shape() const { return Core::FE::CellType::tet4; }
+Core::FE::CellType Discret::ELEMENTS::SoTet4av::shape() const { return Core::FE::CellType::tet4; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
@@ -148,7 +148,7 @@ void Discret::ELEMENTS::SoTet4av::pack(Core::Communication::PackBuffer& data) co
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   SoBase::pack(data);
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::SoTet4av::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::SoTet4av::print(std::ostream& os) const
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4av::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4av::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -229,7 +229,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4av::
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4av::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4av::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -238,9 +238,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4av::
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                 st 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4av::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoTet4av::vis_names(std::map<std::string, int>& names)
 {
-  SolidMaterial()->VisNames(names);
+  solid_material()->vis_names(names);
 
   return;
 }
@@ -248,12 +248,12 @@ void Discret::ELEMENTS::SoTet4av::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                          st 01/10|
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoTet4av::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoTet4av::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (Core::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::vis_data(name, data)) return true;
 
-  return SolidMaterial()->VisData(name, data, NUMGPT_SOTET4av, this->Id());
+  return solid_material()->vis_data(name, data, NUMGPT_SOTET4av, this->id());
 }
 
 FOUR_C_NAMESPACE_CLOSE

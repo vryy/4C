@@ -46,7 +46,7 @@ namespace Discret
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcElchDiffCond<distype, probdim>* Instance(
+      static ScaTraEleCalcElchDiffCond<distype, probdim>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:
@@ -467,13 +467,13 @@ namespace Discret
       /*========================================================================*/
 
       //! set valence and related parameters for single ionic species
-      void SetValence(const double valence, const int k) override
+      void set_valence(const double valence, const int k) override
       {
         // call base class routine
-        dmelch::SetValence(valence, k);
+        dmelch::set_valence(valence, k);
 
         const double faraday =
-            Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
 
         // set additional parameters involving inverse of valence
         invval_[k] = 1. / valence;
@@ -481,37 +481,41 @@ namespace Discret
       };
 
       //! Set transference numbers with respect to single ionic species
-      virtual void SetTransNum(const double transnum, const int k) { transnum_[k] = transnum; };
+      virtual void set_trans_num(const double transnum, const int k) { transnum_[k] = transnum; };
 
       //! Access routine for transference numbers with respect to single ionic species
-      double GetTransNum(const int k) { return transnum_[k]; };
+      double get_trans_num(const int k) { return transnum_[k]; };
 
       //! Set derivative of transference numbers with respect to concentrations
-      virtual void SetDerivTransNum(const double derivtransnum, const int k, const int iscal)
+      virtual void set_deriv_trans_num(const double derivtransnum, const int k, const int iscal)
       {
         (derivtransnum_[k])[iscal] = derivtransnum;
       };
 
       //! Access routine for derivative of transference numbers with respect to concentrations
-      double GetDerivTransNum(const int k, const int iscal) { return (derivtransnum_[k])[iscal]; };
+      double get_deriv_trans_num(const int k, const int iscal)
+      {
+        return (derivtransnum_[k])[iscal];
+      };
 
       //! Set thermodynamic factor for a specific electrolyte solution
-      void SetThermFac(const double thermfac) { thermfac_ = thermfac; };
+      void set_therm_fac(const double thermfac) { thermfac_ = thermfac; };
 
       //! Access routine for the thermodynamic factor for a specific electrolyte solution
-      double GetThermFac() { return thermfac_; };
+      double get_therm_fac() { return thermfac_; };
 
       //! Set derivative of thermodynamic factor with respect to concentrations
-      void SetDerivThermFac(const double derivthermfac, const int k)
+      void set_deriv_therm_fac(const double derivthermfac, const int k)
       {
         derivthermfac_[k] = derivthermfac;
       };
 
       //! Access routine for derivative of thermodynamic factor with respect to concentrations
-      double GetDerivThermFac(const int k) { return derivthermfac_[k]; };
+      double get_deriv_therm_fac(const int k) { return derivthermfac_[k]; };
 
       //! Calculate conductivity based on diffusion coefficients
-      void CalcConductivity(const int numscal, const double ffrt, const std::vector<double>& conint)
+      void calc_conductivity(
+          const int numscal, const double ffrt, const std::vector<double>& conint)
       {
         double cond = 0.0;
         for (int ispec = 0; ispec < numscal; ++ispec)
@@ -526,7 +530,7 @@ namespace Discret
       };
 
       //! Calculate transference numbers based on diffusion coefficients
-      void CalcTransNum(const int numscal, const std::vector<double>& conint)
+      void calc_trans_num(const int numscal, const std::vector<double>& conint)
       {
         // conductivity without ffrt
         double sum = 0.0;
@@ -559,23 +563,23 @@ namespace Discret
         }
       };
 
-      double InvFVal(const int k) const { return invfval_[k]; };
-      const std::vector<double>& InvFVal() const { return invfval_; };
+      double inv_f_val(const int k) const { return invfval_[k]; };
+      const std::vector<double>& inv_f_val() const { return invfval_; };
 
       /*========================================================================*/
       //! @name access methods for geometrical parameter
       /*========================================================================*/
 
       //! Set transference numbers with respect to single ionic species
-      virtual void SetPhasePoro(const double eps, const int phase) { eps_[phase] = eps; }
+      virtual void set_phase_poro(const double eps, const int phase) { eps_[phase] = eps; }
 
-      double GetPhasePoro(const int phase) const { return eps_[phase]; };
+      double get_phase_poro(const int phase) const { return eps_[phase]; };
 
       //! Set transference numbers with respect to single ionic species
-      virtual void SetPhaseTort(const double tort, const int phase) { tort_[phase] = tort; }
+      virtual void set_phase_tort(const double tort, const int phase) { tort_[phase] = tort; }
 
       // get geometrical parameter: porosity*tortuosity
-      double GetPhasePoroTort(const int phase) const
+      double get_phase_poro_tort(const int phase) const
       {
         double epstort = eps_[phase] * tort_[phase];
         return epstort;
@@ -704,9 +708,9 @@ namespace Discret
         rtf_ = 1.0 / vmelch::frt_;
 
         // set constant parameter RT/(F^2*Newman_const_C)
-        rtffc_ = rtf_ * vmelectrode::invf_ / diffcondparams_->NewmanConstC();
+        rtffc_ = rtf_ * vmelectrode::invf_ / diffcondparams_->newman_const_c();
 
-        if (diffcondparams_->CurSolVar())
+        if (diffcondparams_->cur_sol_var())
           for (unsigned idim = 0; idim < nsd; ++idim)
             curint_(idim, 0) = ephinp[vm::numscal_ + 1 + idim].dot(funct);
       };
@@ -715,15 +719,15 @@ namespace Discret
       //! @name return constant internal variables
       /*========================================================================*/
 
-      double RTF() const { return rtf_; };
-      double RTFFC() const { return rtffc_; };
+      double rtf() const { return rtf_; };
+      double rtffc() const { return rtffc_; };
 
       /*========================================================================*/
       //! @name return methods for GP values
       /*========================================================================*/
 
       //! return current density at GP
-      const Core::LinAlg::Matrix<nsd, 1>& CurInt() { return curint_; };
+      const Core::LinAlg::Matrix<nsd, 1>& cur_int() { return curint_; };
 
      protected:
       //! parameter class for diffusion-conduction formulation

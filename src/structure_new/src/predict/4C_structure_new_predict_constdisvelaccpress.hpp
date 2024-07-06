@@ -32,7 +32,7 @@ namespace Solid
       void setup() override;
 
       //! do the class specific predictor step
-      void Compute(::NOX::Abstract::Group& grp) override;
+      void compute(::NOX::Abstract::Group& grp) override;
 
      private:
       Teuchos::RCP<Solid::Predict::Generic> tangdis_ptr_;

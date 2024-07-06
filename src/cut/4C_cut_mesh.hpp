@@ -96,25 +96,25 @@ namespace Core::Geo
       /*========================================================================*/
       /// @{
       /// creates a new line2 element based on element id and node ids
-      Element* CreateLine2(int eid, const std::vector<int>& nids);
+      Element* create_line2(int eid, const std::vector<int>& nids);
 
       /// creates a new tri3 element based on element id and node ids
-      Element* CreateTri3(int eid, const std::vector<int>& nids);
+      Element* create_tri3(int eid, const std::vector<int>& nids);
 
       /// creates a new quad4 element based on element id and node ids
-      Element* CreateQuad4(int eid, const std::vector<int>& nids);
+      Element* create_quad4(int eid, const std::vector<int>& nids);
 
       /// creates a new tet4 element based on element id and node ids
-      Element* CreateTet4(int eid, const std::vector<int>& nids);
+      Element* create_tet4(int eid, const std::vector<int>& nids);
 
       /// creates a new pyramid5 element based on element id and node ids
-      Element* CreatePyramid5(int eid, const std::vector<int>& nids);
+      Element* create_pyramid5(int eid, const std::vector<int>& nids);
 
       /// creates a new wedge6 element based on element id and node ids
-      Element* CreateWedge6(int eid, const std::vector<int>& nids);
+      Element* create_wedge6(int eid, const std::vector<int>& nids);
 
       /// creates a new hex8 element based on element id and node ids
-      Element* CreateHex8(int eid, const std::vector<int>& nids);
+      Element* create_hex8(int eid, const std::vector<int>& nids);
       /// @}
 
       /*========================================================================*/
@@ -122,10 +122,10 @@ namespace Core::Geo
       /*========================================================================*/
       /// @{
       /// creates a new tri3 side based on side id and node ids
-      Side* CreateTri3Side(int sid, const std::vector<int>& nids);
+      Side* create_tri3_side(int sid, const std::vector<int>& nids);
 
       /// creates a new quad4 side based on side id and node ids
-      Side* CreateQuad4Side(int sid, const std::vector<int>& nids);
+      Side* create_quad4_side(int sid, const std::vector<int>& nids);
       /// @}
 
       /*========================================================================*/
@@ -135,22 +135,22 @@ namespace Core::Geo
       /// creates a new point, optional information about cut-edge and cut-side, and whether this is
       /// hapenning during
       // loading of the mesh
-      Point* NewPoint(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
+      Point* new_point(const double* x, Edge* cut_edge, Side* cut_side, double tolerance,
           double tol_scale = 1.0);
 
       /// creates a new line
-      void NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element,
+      void new_line(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element,
           std::vector<Line*>* newlines = nullptr);
 
       /// ?
-      bool NewLinesBetween(const std::vector<Point*>& line, Side* cut_side1, Side* cut_side2,
+      bool new_lines_between(const std::vector<Point*>& line, Side* cut_side1, Side* cut_side2,
           Element* cut_element, std::vector<Line*>* newlines = nullptr);
 
       /// creates a new facet, consists of points, additional bool if it is a facet on a cutsurface
-      Facet* NewFacet(const std::vector<Point*>& points, Side* side, bool cutsurface);
+      Facet* new_facet(const std::vector<Point*>& points, Side* side, bool cutsurface);
 
       /// creates a new volumecell, consists of facets
-      VolumeCell* NewVolumeCell(const plain_facet_set& facets,
+      VolumeCell* new_volume_cell(const plain_facet_set& facets,
           const std::map<std::pair<Point*, Point*>, plain_facet_set>& volume_lines,
           Element* element);
 
@@ -159,14 +159,14 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// creates a new point1 boundary cell
-      Point1BoundaryCell* NewPoint1Cell(
+      Point1BoundaryCell* new_point1_cell(
           VolumeCell* volume, Facet* facet, const std::vector<Point*>& points);
 
       /*========================================================================*/
       //! @name Create-routines for 1D boundary cells
       /*========================================================================*/
 
-      Line2BoundaryCell* NewLine2Cell(
+      Line2BoundaryCell* new_line2_cell(
           VolumeCell* volume, Facet* facet, const std::vector<Point*>& points);
 
       /*========================================================================*/
@@ -174,15 +174,15 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// creates a new tri3 boundary cell
-      Tri3BoundaryCell* NewTri3Cell(
+      Tri3BoundaryCell* new_tri3_cell(
           VolumeCell* volume, Facet* facet, const std::vector<Point*>& points);
 
       /// creates a new quad4 boundary cell
-      Quad4BoundaryCell* NewQuad4Cell(
+      Quad4BoundaryCell* new_quad4_cell(
           VolumeCell* volume, Facet* facet, const std::vector<Point*>& points);
 
       /// creates a new ??? boundary cell
-      ArbitraryBoundaryCell* NewArbitraryCell(VolumeCell* volume, Facet* facet,
+      ArbitraryBoundaryCell* new_arbitrary_cell(VolumeCell* volume, Facet* facet,
           const std::vector<Point*>& points, const Core::FE::GaussIntegration& gaussRule,
           const Core::LinAlg::Matrix<3, 1>& normal);
 
@@ -192,7 +192,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// creates a new line2 integration cell
-      Line2IntegrationCell* NewLine2Cell(
+      Line2IntegrationCell* new_line2_cell(
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
       /*========================================================================*/
@@ -200,11 +200,11 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// creates a new tri3 integration cell
-      Tri3IntegrationCell* NewTri3Cell(
+      Tri3IntegrationCell* new_tri3_cell(
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
       /// creates a new tri3 integration cell
-      Quad4IntegrationCell* NewQuad4Cell(
+      Quad4IntegrationCell* new_quad4_cell(
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
 
@@ -213,23 +213,23 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// creates a new hex8 integration cell
-      Hex8IntegrationCell* NewHex8Cell(
+      Hex8IntegrationCell* new_hex8_cell(
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
       /// creates a new tet4 integration cell, based on points
-      Tet4IntegrationCell* NewTet4Cell(
+      Tet4IntegrationCell* new_tet4_cell(
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
       /// creates a new hex8 integration cell, based on xyz coordinates
-      Tet4IntegrationCell* NewTet4Cell(Point::PointPosition position,
+      Tet4IntegrationCell* new_tet4_cell(Point::PointPosition position,
           const Core::LinAlg::SerialDenseMatrix& xyz, VolumeCell* cell);
 
       /// creates a new wedge6 integration cell
-      Wedge6IntegrationCell* NewWedge6Cell(
+      Wedge6IntegrationCell* new_wedge6_cell(
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
       /// creates a new pyramid5 integration cell
-      Pyramid5IntegrationCell* NewPyramid5Cell(
+      Pyramid5IntegrationCell* new_pyramid5_cell(
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
 
@@ -238,13 +238,13 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// build the static search tree for the collision detection in the self cut
-      void BuildSelfCutTree();
+      void build_self_cut_tree();
 
       /// build the static search tree for the collision detection
       void build_static_search_tree();
 
       /// detects if a side of the cut mesh possibly collides with an element of the background mesh
-      void SearchCollisions(Mesh& cutmesh);
+      void search_collisions(Mesh& cutmesh);
 
 
       /*========================================================================*/
@@ -252,16 +252,16 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// Cuts the background elements of the mesh with all the cut sides
-      void Cut(Mesh& mesh, plain_element_set& elements_done);
+      void cut(Mesh& mesh, plain_element_set& elements_done);
 
       /// Cuts the background elements with this considered side
-      void Cut(Side& side, const plain_element_set& done, plain_element_set& elements_done);
+      void cut(Side& side, const plain_element_set& done, plain_element_set& elements_done);
 
       /// Cuts the background elements with this levelset side
-      void Cut(Side& side);
+      void cut(Side& side);
 
       /// Used in TetMeshIntersection, however, unclear for what use??!
-      void RectifyCutNumerics();
+      void rectify_cut_numerics();
 
       /// finds intersections between sides and edges
       void find_cut_points();
@@ -271,13 +271,13 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// create cut lines based on the point cloud
-      void MakeCutLines();
+      void make_cut_lines();
 
       /// create facets based on the cut lines
-      void MakeFacets();
+      void make_facets();
 
       /// create volumecells based on created facets
-      void MakeVolumeCells();
+      void make_volume_cells();
 
 
       /*========================================================================*/
@@ -285,14 +285,14 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// find node positions and propagate the positions to facets, points and volumecells
-      void FindNodePositions();
+      void find_node_positions();
 
       /// ?
-      void FindLSNodePositions();
+      void find_ls_node_positions();
 
       /// find facet positions for remaining facets, points, volumecells that have not been found
       /// using FindNodePositions()
-      void FindFacetPositions();
+      void find_facet_positions();
 
       /// Check if there are nodes whose position is undecided (often the case in parallel), return
       /// whether undecided node positions available
@@ -305,7 +305,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// still used???
-      void FindNodalDOFSets(bool include_inner);
+      void find_nodal_dof_sets(bool include_inner);
 
 
       /*========================================================================*/
@@ -334,13 +334,13 @@ namespace Core::Geo
 
       /// test if for all elements the element volume is equal to the volume of all integration
       /// cells
-      void TestElementVolume(bool fatal, VCellGaussPts VCellGP = VCellGaussPts_Tessellation);
+      void test_element_volume(bool fatal, VCellGaussPts VCellGP = VCellGaussPts_Tessellation);
 
       /*!
       \brief Find the difference between the volume of background element and the sum of volume of
       all integration cells. There should be no difference between these two
        */
-      void TestElementVolume(
+      void test_element_volume(
           Core::FE::CellType shape, Element& e, bool fatal, VCellGaussPts VCellGP);
 
 
@@ -352,7 +352,7 @@ namespace Core::Geo
       void print_cell_stats();
 
       /// print all facets
-      void PrintFacets();
+      void print_facets();
 
 
       /*========================================================================*/
@@ -360,7 +360,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// Write full Gmsh Output
-      void DumpGmsh(std::string name);
+      void dump_gmsh(std::string name);
 
       /*!
       \brief Output information about the volume cell.
@@ -379,7 +379,7 @@ namespace Core::Geo
       void dump_gmsh_volume_cells(std::string name);
 
       /// DebugDump to call before runtime error!!!
-      void DebugDump(Core::Geo::Cut::Element* ele, std::string file = "", int line = -1);
+      void debug_dump(Core::Geo::Cut::Element* ele, std::string file = "", int line = -1);
 
 
       /*========================================================================*/
@@ -387,29 +387,29 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// ? -> used in cut_tetmeshintersection
-      void NewNodesFromPoints(std::map<Point*, Node*>& nodemap);
+      void new_nodes_from_points(std::map<Point*, Node*>& nodemap);
 
       /// get a map of node id and the pointer to the node
-      void GetNodeMap(std::map<int, Node*>& nodemap);
+      void get_node_map(std::map<int, Node*>& nodemap);
 
       /// Returns the node with given id
-      Node* GetNode(int nid) const;
+      Node* get_node(int nid) const;
 
       /*!
       \brief Returns the unique shadow node
       identified by given nids of a quad8 boundary side or all nodes of hex20 element
       for the inner shadow node
        */
-      Node* GetNode(const plain_int_set& nids) const;
+      Node* get_node(const plain_int_set& nids) const;
 
       /*!
       \brief If node with the given id exists return the node, else create a new node with
       given coordinates and levelset value
        */
-      Node* GetNode(int nid, const double* xyz, double lsv = 0.0, double tolerance = 0.0);
+      Node* get_node(int nid, const double* xyz, double lsv = 0.0, double tolerance = 0.0);
 
       /// ?
-      Node* GetNode(const plain_int_set& nids, const double* xyz, double lsv = 0.0);
+      Node* get_node(const plain_int_set& nids, const double* xyz, double lsv = 0.0);
 
       /// get the edge with begin node and end node
       Edge* get_edge(Node* begin, Node* end);
@@ -424,19 +424,19 @@ namespace Core::Geo
       Side* get_side(int sid, const std::vector<Node*>& nodes, const CellTopologyData* top_data);
 
       /// Returns the element with given id
-      Element* GetElement(int eid);
+      Element* get_element(int eid);
 
       /*!
       \brief  If element with the given id exists return the element, else create a new element
       with given node ids and details given in cell topology data
        */
-      Element* GetElement(int eid, const std::vector<int>& nids, const CellTopologyData& top_data,
+      Element* get_element(int eid, const std::vector<int>& nids, const CellTopologyData& top_data,
           bool active = true);
 
       /*! \brief Create a new element 1D/2D/3D element with given nodes.
        *
        *  All details of the element are in cell topology data. */
-      Core::Geo::Cut::Element* GetElement(
+      Core::Geo::Cut::Element* get_element(
           int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
 
       /*! \brief Create a new element with desired element dimension
@@ -457,7 +457,7 @@ namespace Core::Geo
        *  This routine creates also the corresponding edges (1-D) and sides (2-D) for
        *  3-dimensional elements. */
       template <unsigned dim>
-      Element* GetElement(int eid, const std::vector<Node*>& nodes,
+      Element* get_element(int eid, const std::vector<Node*>& nodes,
           const CellTopologyData& top_data, bool active = true);
 
       /*========================================================================*/
@@ -465,13 +465,13 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// get the octTree based PointPool that contains all points of the current mesh
-      Teuchos::RCP<PointPool> Points() { return pp_; }
+      Teuchos::RCP<PointPool> points() { return pp_; }
 
       /// get a list of all volumecells
-      const std::list<Teuchos::RCP<VolumeCell>>& VolumeCells() const { return cells_; }
+      const std::list<Teuchos::RCP<VolumeCell>>& volume_cells() const { return cells_; }
 
       /// ???
-      const std::map<plain_int_set, Teuchos::RCP<Edge>>& Edges() const { return edges_; }
+      const std::map<plain_int_set, Teuchos::RCP<Edge>>& edges() const { return edges_; }
 
 
       /*========================================================================*/
@@ -479,10 +479,10 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// check if xyz-coordinates lie within the mesh's bounding box
-      bool WithinBB(const Core::LinAlg::SerialDenseMatrix& xyz);
+      bool within_bb(const Core::LinAlg::SerialDenseMatrix& xyz);
 
       /// check if the element lies within the bounding box
-      bool WithinBB(Element& element);
+      bool within_bb(Element& element);
 
       //     Only used in cut_test_volume.cpp
       void create_side_ids_cut_test(int lastid = 0);
@@ -494,17 +494,17 @@ namespace Core::Geo
       void assign_other_volume_cells_cut_test(const Mesh& other);
 
       /// return the options
-      Options& CreateOptions() { return options_; }
+      Options& create_options() { return options_; }
 
       /// return the options
-      Options& GetOptions() const { return options_; }
+      Options& get_options() const { return options_; }
 
       /// ???
-      void TestVolumeSurface();
+      void test_volume_surface();
 
       /// Test if the area of a cut facet is covered by the same area of boundary cells on both
       /// sides.
-      void TestFacetArea(bool istetmeshintersection = false);
+      void test_facet_area(bool istetmeshintersection = false);
 
 
       /*========================================================================*/
@@ -512,44 +512,44 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// Returns all sides of the cutmesh
-      const std::map<plain_int_set, Teuchos::RCP<Side>>& Sides() const { return sides_; }
+      const std::map<plain_int_set, Teuchos::RCP<Side>>& sides() const { return sides_; }
 
       /// Returns of search tree all sides of the cutmesh
-      const Teuchos::RCP<Core::Geo::SearchTree>& SelfCutTree() const { return selfcuttree_; }
+      const Teuchos::RCP<Core::Geo::SearchTree>& self_cut_tree() const { return selfcuttree_; }
 
       /// Returns the bounding volumes of all sides of the cutmesh
-      const std::map<int, Core::LinAlg::Matrix<3, 2>>& SelfCutBvs() const { return selfcutbvs_; }
+      const std::map<int, Core::LinAlg::Matrix<3, 2>>& self_cut_bvs() const { return selfcutbvs_; }
 
       /// Returns the map of all sides of the cutmesh
-      const std::map<int, Side*>& ShadowSides() const { return shadow_sides_; }
+      const std::map<int, Side*>& shadow_sides() const { return shadow_sides_; }
 
       /// Returns all nodes of the cutmesh
-      const std::map<int, Teuchos::RCP<Node>>& Nodes() const { return nodes_; }
+      const std::map<int, Teuchos::RCP<Node>>& nodes() const { return nodes_; }
 
       /// Creates a new node in the cutmesh
-      void GetNode(int nid, Node* node) { nodes_[nid] = Teuchos::rcp(node); }
+      void get_node(int nid, Node* node) { nodes_[nid] = Teuchos::rcp(node); }
 
       /// Creates a new edge in the cutmesh
       void get_edge(plain_int_set eid, const Teuchos::RCP<Edge>& edge) { edges_[eid] = edge; }
 
       /// Erases a side of the cutmesh
-      void EraseSide(plain_int_set sid) { sides_.erase(sid); }
+      void erase_side(plain_int_set sid) { sides_.erase(sid); }
 
       /// Erases a edge of the cutmesh
-      void EraseEdge(plain_int_set eid) { edges_.erase(eid); }
+      void erase_edge(plain_int_set eid) { edges_.erase(eid); }
 
       /// Erases a node of the cutmesh
-      void EraseNode(int nid) { nodes_.erase(nid); }
+      void erase_node(int nid) { nodes_.erase(nid); }
 
       /// Move this Side from to the Storage container of the Mesh
-      void MoveSidetoStorage(plain_int_set sid)
+      void move_sideto_storage(plain_int_set sid)
       {
         storagecontainer_sides_[sid] = sides_[sid];
         sides_.erase(sid);
       }
 
       /// Move this Node from to the Storage container of the Mesh
-      void MoveNodetoStorage(int nid)
+      void move_nodeto_storage(int nid)
       {
         storagecontainer_nodes_[nid] = nodes_[nid];
         nodes_.erase(nid);
@@ -665,13 +665,13 @@ namespace Core::Geo
 
     // instantiation of the function template specializations
     template <>
-    Element* Mesh::GetElement<1>(
+    Element* Mesh::get_element<1>(
         int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
     template <>
-    Element* Mesh::GetElement<2>(
+    Element* Mesh::get_element<2>(
         int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
     template <>
-    Element* Mesh::GetElement<3>(
+    Element* Mesh::get_element<3>(
         int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active);
 
 

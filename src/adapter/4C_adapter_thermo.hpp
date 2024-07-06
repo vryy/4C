@@ -117,13 +117,13 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Vector> initial_guess() = 0;
 
     /// RHS of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> rhs() = 0;
 
     /// unknown temperatures at t(n+1)
-    virtual Teuchos::RCP<const Epetra_Vector> Tempnp() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> tempnp() = 0;
 
     /// unknown temperatures at t(n)
-    virtual Teuchos::RCP<const Epetra_Vector> Tempn() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> tempn() = 0;
 
     //@}
 
@@ -137,10 +137,10 @@ namespace Adapter
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// domain map of system matrix (do we really need this?)
-    virtual const Epetra_Map& DomainMap() = 0;
+    virtual const Epetra_Map& domain_map() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
@@ -153,37 +153,37 @@ namespace Adapter
     //! @name Time step helpers
     //@{
     //! Return current time \f$t_{n}\f$
-    virtual double TimeOld() const = 0;
+    virtual double time_old() const = 0;
 
     //! Return target time \f$t_{n+1}\f$
-    virtual double Time() const = 0;
+    virtual double time() const = 0;
 
     /// Get upper limit of time range of interest
-    virtual double GetTimeEnd() const = 0;
+    virtual double get_time_end() const = 0;
 
     /// Get time step size \f$\Delta t_n\f$
-    virtual double Dt() const = 0;
+    virtual double dt() const = 0;
 
     /// Return current step number $n$
-    virtual int StepOld() const = 0;
+    virtual int step_old() const = 0;
 
     /// Return current step number $n+1$
-    virtual int Step() const = 0;
+    virtual int step() const = 0;
 
     /// Get number of time steps
-    virtual int NumStep() const = 0;
+    virtual int num_step() const = 0;
 
     /// Set time step size for the current step
     virtual void set_dt(double timestepsize) = 0;
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
-    virtual void SetTimen(const double time) = 0;
+    virtual void set_timen(const double time) = 0;
 
     /// Take the time and integrate (time loop)
-    void Integrate();
+    void integrate();
 
     /// tests if there are more time steps to do
-    virtual bool NotFinished() const = 0;
+    virtual bool not_finished() const = 0;
 
     /// start new time step
     virtual void prepare_time_step() = 0;
@@ -195,16 +195,16 @@ namespace Adapter
     virtual void evaluate() = 0;
 
     /// update temperature increment after Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
+    virtual void update_newton(Teuchos::RCP<const Epetra_Vector> tempi) = 0;
 
     /// update at time step end
     virtual void update() = 0;
 
     /// print info about finished time step
-    virtual void PrintStep() = 0;
+    virtual void print_step() = 0;
 
     //! Access to output object
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() = 0;
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() = 0;
 
     /// prepare output
     virtual void prepare_output() = 0;
@@ -226,7 +226,7 @@ namespace Adapter
     virtual void set_nitsche_contact_parameters(Teuchos::RCP<CONTACT::ParamsInterface> params) = 0;
 
     /// apply interface loads on the thermal field
-    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
+    virtual void set_force_interface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
 
 
     //@}
@@ -242,20 +242,20 @@ namespace Adapter
      *
      * @return status of the solve, which can be used for adaptivity
      */
-    virtual Inpar::THR::ConvergenceStatus Solve() = 0;
+    virtual Inpar::THR::ConvergenceStatus solve() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
 
     //@}
 
     //! @name Extract temperature values needed for TSI
     //@{
     /// extract temperatures for inserting in structure field
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTempn() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> write_access_tempn() = 0;
 
     /// extract current temperatures for inserting in structure field
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTempnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> write_access_tempnp() = 0;
     //@}
 
     /// Identify residual
@@ -267,7 +267,7 @@ namespace Adapter
     virtual void prepare_partition_step() = 0;
 
     /// create result test for encapulated thermo algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
   };
 
 
@@ -283,11 +283,11 @@ namespace Adapter
     virtual ~ThermoBaseAlgorithm() = default;
 
     /// thermal field solver
-    Thermo& ThermoField() { return *thermo_; }
+    Thermo& thermo_field() { return *thermo_; }
     /// const version of thermal field solver
-    const Thermo& ThermoField() const { return *thermo_; }
+    const Thermo& thermo_field() const { return *thermo_; }
     /// Teuchos::rcp version of thermal field solver
-    Teuchos::RCP<Thermo> ThermoFieldrcp() { return thermo_; }
+    Teuchos::RCP<Thermo> thermo_fieldrcp() { return thermo_; }
 
    private:
     /// setup thermo algorithm

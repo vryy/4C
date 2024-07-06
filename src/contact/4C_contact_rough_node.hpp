@@ -18,11 +18,11 @@ namespace CONTACT
   class RoughNodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const final { return "RoughNodeType"; }
+    std::string name() const final { return "RoughNodeType"; }
 
-    static RoughNodeType& Instance() { return instance_; };
+    static RoughNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static RoughNodeType instance_;
@@ -73,7 +73,10 @@ namespace CONTACT
      top of lib/parobject.H.
 
      */
-    int UniqueParObjectId() const override { return RoughNodeType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return RoughNodeType::instance().unique_par_object_id();
+    }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -93,7 +96,7 @@ namespace CONTACT
 
     // //! @name Access methods
 
-    Core::LinAlg::SerialDenseMatrix* GetTopology() { return &topology_; };
+    Core::LinAlg::SerialDenseMatrix* get_topology() { return &topology_; };
     double get_max_topology_height() { return maxTopologyHeight_; };
 
    protected:

@@ -43,7 +43,7 @@ namespace SSI
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! actual time loop (implemented by derived class)
-    void Timeloop() override = 0;
+    void timeloop() override = 0;
 
    protected:
     //! prepare time step for single fields
@@ -85,7 +85,7 @@ namespace SSI
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! actual time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! prepare time step for single fields
     void prepare_time_step(bool printheader = true) override;
@@ -117,13 +117,13 @@ namespace SSI
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! actual time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! prepare time step for single fields
     void prepare_time_step(bool printheader = true) override;
 
     //! return, if time loop has finished
-    bool Finished() const;
+    bool finished() const;
   };
 
 }  // namespace SSI

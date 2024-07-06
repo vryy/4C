@@ -45,14 +45,14 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 {
   tmp_vector_ptr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
 
-  jac_type_ = getOperatorType(*jac_ptr_);
+  jac_type_ = get_operator_type(*jac_ptr_);
 
   reset(linearSolverParams);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::FSI::LinearSystem::OperatorType NOX::FSI::LinearSystem::getOperatorType(
+NOX::FSI::LinearSystem::OperatorType NOX::FSI::LinearSystem::get_operator_type(
     const Epetra_Operator& Op)
 {
   // check via dynamic cast, which type of Jacobian was broadcast
@@ -128,14 +128,14 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(&(result.getEpetraVector()), false);
 
   // get the hopefully adaptive linear solver convergence tolerance
-  solver_->Params()
+  solver_->params()
       .sublist("Belos Parameters")
       .set("Convergence Tolerance", p.get("Tolerance", 1.0e-10));
 
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = callcount_ == 0;
-  solver_->Solve(jac_ptr_, disi, fres, solver_params);
+  solver_->solve(jac_ptr_, disi, fres, solver_params);
 
   callcount_ += 1;
 
@@ -266,7 +266,7 @@ void NOX::FSI::LinearSystem::setJacobianOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
   jac_ptr_ = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
-  jac_type_ = getOperatorType(*solveJacOp);
+  jac_type_ = get_operator_type(*solveJacOp);
 }
 
 

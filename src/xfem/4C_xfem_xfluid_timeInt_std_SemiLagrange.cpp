@@ -150,7 +150,7 @@ void XFEM::XfluidSemiLagrange::compute(
               true);  // local transformed coordinates of x w.r.t found ele
 
           // set the element pointer where the initial point lies in!
-          elementSearch(initial_ele, data->initialpoint_, initial_xi, initial_elefound);
+          element_search(initial_ele, data->initialpoint_, initial_xi, initial_elefound);
 
           if (!initial_elefound)
           {
@@ -168,7 +168,7 @@ void XFEM::XfluidSemiLagrange::compute(
               FOUR_C_THROW(
                   "<<< WARNING! Initial point for node %d for finding the Lagrangean origin not in "
                   "domain! >>>",
-                  data->node_.Id());
+                  data->node_.id());
             }
           }
           else
@@ -183,12 +183,12 @@ void XFEM::XfluidSemiLagrange::compute(
 
             if (nds_curr.size() == 0) FOUR_C_THROW("no valid nds-vector for initial point found");
             if (data->last_valid_vc_ != nullptr and  // not an uncut element
-                data->last_valid_vc_->Position() != Core::Geo::Cut::Point::outside)
+                data->last_valid_vc_->position() != Core::Geo::Cut::Point::outside)
             {
               FOUR_C_THROW("initial point does not lie in the fluid");
             }
 
-            data->initial_eid_ = initial_ele->Id();
+            data->initial_eid_ = initial_ele->id();
             data->startpoint_ =
                 data->initialpoint_;  // start with the initial point as startpoint approximation
             data->initial_ele_owner_ = myrank_;
@@ -220,7 +220,7 @@ void XFEM::XfluidSemiLagrange::compute(
           Core::LinAlg::Matrix<nsd, 1> vel(true);  // velocity of the start point approximation
 
           // search for an element where the current startpoint lies in
-          elementSearch(ele, data->startpoint_, xi, elefound);
+          element_search(ele, data->startpoint_, xi, elefound);
 
           //------------------------------------
           // if element is found on this proc, the newton iteration to find a better startpoint can
@@ -235,7 +235,7 @@ void XFEM::XfluidSemiLagrange::compute(
             //----------------------------------------------
             Core::Elements::Element* initial_ele = nullptr;
 
-            if (!discret_->HaveGlobalElement(data->initial_eid_))
+            if (!discret_->have_global_element(data->initial_eid_))
             {
               // ChangedSide check for intersections with all sides in the boundary-dis
               // this is not so efficient but should not be called so often
@@ -243,7 +243,7 @@ void XFEM::XfluidSemiLagrange::compute(
             }
             else
             {
-              initial_ele = discret_->gElement(data->initial_eid_);
+              initial_ele = discret_->g_element(data->initial_eid_);
             }
 
             data->changedside_ = changed_side(
@@ -268,7 +268,7 @@ void XFEM::XfluidSemiLagrange::compute(
             {
               // this set is a valid fluid set on the right side of the interface
               data->last_valid_nds_ = nds_curr;
-              data->last_valid_ele_ = ele->Id();
+              data->last_valid_ele_ = ele->id();
               data->nds_ = nds_curr;
             }
 
@@ -295,7 +295,7 @@ void XFEM::XfluidSemiLagrange::compute(
             Core::LinAlg::Matrix<1, nsd> pres_deriv(
                 true);  // dummy matrix for the pressure derivatives
 
-            getGPValues(
+            get_gp_values(
                 ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 #ifdef DEBUG_SEMILAGRANGE
@@ -345,12 +345,12 @@ void XFEM::XfluidSemiLagrange::compute(
 
                   proj_x = data->initialpoint_;
 
-                  elementSearch(ele, proj_x, xi, elefound);
+                  element_search(ele, proj_x, xi, elefound);
 
                   if (elefound)
                   {
                     // check if the projected point still remains in the same element
-                    if (ele->Id() == data->last_valid_ele_)
+                    if (ele->id() == data->last_valid_ele_)
                     {
                       // TODO: check if the point lies on Boundary of the last valid vc
 
@@ -469,7 +469,7 @@ void XFEM::XfluidSemiLagrange::compute(
    *-----------------------------------------------------------*/
   // send the computed startvalues for every node which needs
   // new start data to the processor where the node is
-  exportFinalData();
+  export_final_data();
 
   // now every proc has the whole data for the nodes and so the data can be set to the right place
   // now
@@ -505,7 +505,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
 
   // coordinates of endpoint of Lagrangian characteristics
   Core::LinAlg::Matrix<nsd, 1> origNodeCoords(true);
-  for (int i = 0; i < nsd; i++) origNodeCoords(i) = data->node_.X()[i] + data->dispnp_(i);
+  for (int i = 0; i < nsd; i++) origNodeCoords(i) = data->node_.x()[i] + data->dispnp_(i);
 
   //-------------------------------------------------------
   // initialize residual (Theta = 0 at predictor step)
@@ -545,7 +545,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
 
       Core::Elements::Element* initial_ele = nullptr;
 
-      if (!discret_->HaveGlobalElement(data->initial_eid_))
+      if (!discret_->have_global_element(data->initial_eid_))
       {
         // TODO: modify the ChangedSide check for intersections with all sides in the boundary-dis
         // this is not so efficient but should not be called not so often
@@ -555,7 +555,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
       }
       else
       {
-        initial_ele = discret_->gElement(data->initial_eid_);
+        initial_ele = discret_->g_element(data->initial_eid_);
       }
 
       data->changedside_ =
@@ -576,7 +576,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
       {
         // this set is a valid fluid set on the right side of the interface
         data->last_valid_nds_ = nds_curr;
-        data->last_valid_ele_ = ele->Id();
+        data->last_valid_ele_ = ele->id();
         data->nds_ = nds_curr;
       }
 
@@ -591,7 +591,8 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
       double pres = 0.0;                               // dummy variable for pressure
       Core::LinAlg::Matrix<1, nsd> pres_deriv(true);   // dummy matrix for the pressure derivatives
 
-      getGPValues(ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
+      get_gp_values(
+          ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 
 #ifdef DEBUG_SEMILAGRANGE
@@ -730,7 +731,7 @@ void XFEM::XfluidSemiLagrange::newton_iter(
   Core::LinAlg::Matrix<nsd, nsd> sysmat(true);  // matrix for the newton system
 
   // compute the velocity derivatives at startpoint
-  getGPValues(
+  get_gp_values(
       ele, xi, data->nds_, *dofset_old_, vel_dummy, vel_deriv, pres_dummy, pres_deriv, veln_, true);
 
   // build sysmat
@@ -756,7 +757,7 @@ void XFEM::XfluidSemiLagrange::newton_iter(
 #endif
 
   // find the element the new approximation lies in
-  elementSearch(ele, data->startpoint_, xi, elefound);
+  element_search(ele, data->startpoint_, xi, elefound);
 
 
   return;
@@ -796,7 +797,7 @@ bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
   // maybe the newton turns back to the right interface side
 
 
-  if (nds_curr == data->last_valid_nds_ and ele->Id() == data->last_valid_ele_)
+  if (nds_curr == data->last_valid_nds_ and ele->id() == data->last_valid_ele_)
   {
     // the new newton step is within the same element and has the same nds-vector(same cell set)
     // but changed the side, then we are at the tip of a thin structure -> failed
@@ -821,7 +822,7 @@ bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
 
     return false;
   }
-  else if (nds_curr != data->last_valid_nds_ and ele->Id() == data->last_valid_ele_)
+  else if (nds_curr != data->last_valid_nds_ and ele->id() == data->last_valid_ele_)
   {
     // the new newton step is within the same element but has a different nds-vector
     // we are within the structure or changed the side completely
@@ -832,7 +833,7 @@ bool XFEM::XfluidSemiLagrange::continue_for_changing_side(
 
     return true;
   }
-  else if (ele->Id() != data->last_valid_ele_)
+  else if (ele->id() != data->last_valid_ele_)
   {
     // within the newton the element and the side have changed
 #ifdef DEBUG_SEMILAGRANGE
@@ -882,7 +883,7 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
       bool elefound = false;  // true if an element for a point was found on the processor
 
       // search for an element where the current startpoint lies in
-      elementSearch(ele, data->initialpoint_, xi, elefound);
+      element_search(ele, data->initialpoint_, xi, elefound);
 
       // if found, give out all data at the startpoint
       if (elefound)
@@ -941,7 +942,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
 
   for (size_t index = 0; index < newRowVectors.size(); index++)
   {
-    const Epetra_Map* newdofcolmap = discret_->DofColMap();
+    const Epetra_Map* newdofcolmap = discret_->dof_col_map();
 
     Teuchos::RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(*newdofcolmap, true));
     newColVectors.push_back(tmpColVector);
@@ -980,13 +981,13 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     std::vector<std::vector<int>> eles_avg_nds;
 
 
-    Core::Geo::Cut::Node* n = wizard_new_->GetNode(node->Id());
+    Core::Geo::Cut::Node* n = wizard_new_->get_node(node->id());
 
     if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
       const std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>& cellset =
-          n->GetNodalDofSet(0)->VolumeCellComposite();  // always the standard dofset
+          n->get_nodal_dof_set(0)->volume_cell_composite();  // always the standard dofset
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent
       // element is used for the reconstruction REMARK: adjacent elements for that no elementhandle
@@ -997,15 +998,15 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
       {
         // the first vc representing the set
         Core::Geo::Cut::VolumeCell* vc = *((*cellset_it).begin());
-        int peid = vc->parent_element()->GetParentId();
+        int peid = vc->parent_element()->get_parent_id();
 
-        if (!discret_->HaveGlobalElement(peid))
+        if (!discret_->have_global_element(peid))
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
-        Core::Elements::Element* e = discret_->gElement(peid);
+        Core::Elements::Element* e = discret_->g_element(peid);
         // get the vc's nds vector
-        const std::vector<int> e_nds = vc->NodalDofSet();
+        const std::vector<int> e_nds = vc->nodal_dof_set();
 
         // add the element and the nds vector
         eles_avg.push_back(e);
@@ -1014,13 +1015,13 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     }
 
     // check all surrounding elements
-    int numele = node->NumElement();
-    Core::Elements::Element** eles = node->Elements();
+    int numele = node->num_element();
+    Core::Elements::Element** eles = node->elements();
 
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
     {
-      Core::Geo::Cut::ElementHandle* eh = wizard_new_->GetElement(eles[i]);
+      Core::Geo::Cut::ElementHandle* eh = wizard_new_->get_element(eles[i]);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
@@ -1052,7 +1053,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     std::vector<int> lm;
     std::vector<int> dofs;
 
-    dofset_new_->Dof(dofs, node, 0);  // dofs for standard dofset
+    dofset_new_->dof(dofs, node, 0);  // dofs for standard dofset
 
     for (int j = 0; j < 4; ++j)
     {
@@ -1194,7 +1195,7 @@ void XFEM::XfluidSemiLagrange::call_back_tracking(
     const char* backTrackingType     /// type of back_tracking
 )
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::hex8:
     {
@@ -1275,7 +1276,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     Core::IO::cout << "\n\tWARNING: Proc " << myrank_
                    << ": SEMI-LAGRANGEAN algorithm: used the initial-guess instead of the real "
                       "Lagrangean origin for node "
-                   << data->node_.Id() << Core::IO::endl;
+                   << data->node_.id() << Core::IO::endl;
   }
   else
     FOUR_C_THROW("backTrackingType not implemented");
@@ -1345,9 +1346,9 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
   for (int inode = 0; inode < numnode; inode++)
   {
-    Core::Nodes::Node* node = ele->Nodes()[inode];
+    Core::Nodes::Node* node = ele->nodes()[inode];
     std::vector<int> dofs;
-    dofset_old_->Dof(dofs, node, data->nds_[inode]);
+    dofset_old_->dof(dofs, node, data->nds_[inode]);
 
 
     for (int j = 0; j < 4; ++j)
@@ -1391,7 +1392,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   // Reconstruct nodal gradients
   for (int inode = 0; inode < numnode; inode++)
   {
-    Core::Nodes::Node* node = (ele->Nodes())[inode];
+    Core::Nodes::Node* node = (ele->nodes())[inode];
 
     // determine the elements used for the nodal gradient computation
     // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
@@ -1399,13 +1400,13 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     std::vector<std::vector<int>> eles_avg_nds;
 
 
-    Core::Geo::Cut::Node* n = wizard_old_->GetNode(node->Id());
+    Core::Geo::Cut::Node* n = wizard_old_->get_node(node->id());
 
     if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
       const std::set<Core::Geo::Cut::plain_volumecell_set, Core::Geo::Cut::Cmp>& cellset =
-          n->GetNodalDofSet(data->nds_[inode])->VolumeCellComposite();
+          n->get_nodal_dof_set(data->nds_[inode])->volume_cell_composite();
 
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent
@@ -1417,15 +1418,15 @@ void XFEM::XfluidSemiLagrange::back_tracking(
       {
         // the first vc representing the set
         Core::Geo::Cut::VolumeCell* vc = *((*cellset_it).begin());
-        int peid = vc->parent_element()->GetParentId();
+        int peid = vc->parent_element()->get_parent_id();
 
-        if (!discret_->HaveGlobalElement(peid))
+        if (!discret_->have_global_element(peid))
           FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
-        Core::Elements::Element* e = discret_->gElement(peid);
+        Core::Elements::Element* e = discret_->g_element(peid);
         // get the vc's nds vector
-        const std::vector<int> e_nds = vc->NodalDofSet();
+        const std::vector<int> e_nds = vc->nodal_dof_set();
 
         // add the element and the nds vector
         eles_avg.push_back(e);
@@ -1434,13 +1435,13 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     }
 
     // check all surrounding elements
-    int numele = node->NumElement();
-    Core::Elements::Element** eles = node->Elements();
+    int numele = node->num_element();
+    Core::Elements::Element** eles = node->elements();
 
     // add surrounding std uncut elements for that no elementhandle is available
     for (int i = 0; i < numele; i++)
     {
-      Core::Geo::Cut::ElementHandle* eh = wizard_old_->GetElement(eles[i]);
+      Core::Geo::Cut::ElementHandle* eh = wizard_old_->get_element(eles[i]);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
@@ -1476,7 +1477,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   // if it is not, deltaT estimates the time x needs to move to node)
   if (data->type_ == TimeIntData::predictor_)
   {
-    Core::LinAlg::Matrix<nsd, 1> diff(data->node_.X().data());
+    Core::LinAlg::Matrix<nsd, 1> diff(data->node_.x().data());
     for (int i = 0; i < nsd; ++i) diff(i) += data->dispnp_(i);
     diff -= lagrangeanOrigin;  // diff = x_Node - x_Appr
 
@@ -1565,17 +1566,17 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 
   Teuchos::RCP<Core::Geo::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
 
-  Core::Geo::Cut::ElementHandle* e = wizard->GetElement(ele);
+  Core::Geo::Cut::ElementHandle* e = wizard->get_element(ele);
 
   bool inside_structure = false;
 
   if (e != nullptr)  // element in cut involved
   {
     Core::Geo::Cut::plain_volumecell_set cells;
-    e->GetVolumeCells(cells);
+    e->get_volume_cells(cells);
 
     if (cells.size() == 0)
-      FOUR_C_THROW("Core::Geo::Cut::Element %d does not contain any volume cell", ele->Id());
+      FOUR_C_THROW("Core::Geo::Cut::Element %d does not contain any volume cell", ele->id());
 
     for (Core::Geo::Cut::plain_volumecell_set::iterator cell_it = cells.begin();
          cell_it != cells.end(); cell_it++)
@@ -1584,16 +1585,16 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
       //      if(cell->Contains(x))
       // cell contains the point inside or on one of its boundaries and the cell is an outside
       // (fluid) cell
-      if (((cell->IsThisPointInside(x) == "inside") or
-              (cell->IsThisPointInside(x) == "onBoundary")) and
-          cell->Position() == Core::Geo::Cut::Point::outside)
+      if (((cell->is_this_point_inside(x) == "inside") or
+              (cell->is_this_point_inside(x) == "onBoundary")) and
+          cell->position() == Core::Geo::Cut::Point::outside)
       {
 #ifdef DEBUG_SEMILAGRANGE
         Core::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
                        << cell->IsThisPointInside(x) << " \t cell pos = " << cell->Position()
                        << Core::IO::endl;
 #endif
-        nds = cell->NodalDofSet();
+        nds = cell->nodal_dof_set();
 
         if ((int)nds.size() != ele->num_node())
           FOUR_C_THROW(
@@ -1614,9 +1615,9 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
         return;
       }
       // point lies within the structure or on Boundary
-      else if ((cell->IsThisPointInside(x) == "inside" or
-                   cell->IsThisPointInside(x) == "onBoundary") and
-               (cell->Position() == Core::Geo::Cut::Point::inside))
+      else if ((cell->is_this_point_inside(x) == "inside" or
+                   cell->is_this_point_inside(x) == "onBoundary") and
+               (cell->position() == Core::Geo::Cut::Point::inside))
       {
 #ifdef DEBUG_SEMILAGRANGE
         Core::IO::cout << "\n\t\t\t -> Position of point w.r.t volumecell is "
@@ -1640,14 +1641,14 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
     if (!inside_structure and (int)(nds.size()) != ele->num_node())
     {
       Core::Geo::Cut::plain_volumecell_set cells;
-      e->GetVolumeCells(cells);
+      e->get_volume_cells(cells);
 
       Core::IO::cout << "point: " << x << Core::IO::endl;
       for (Core::Geo::Cut::plain_volumecell_set::iterator cell_it = cells.begin();
            cell_it != cells.end(); cell_it++)
       {
         Core::Geo::Cut::VolumeCell* cell = *cell_it;
-        Core::IO::cout << "vc-pos: " << cell->Position() << Core::IO::endl;
+        Core::IO::cout << "vc-pos: " << cell->position() << Core::IO::endl;
       }
 
       FOUR_C_THROW(
@@ -1673,7 +1674,7 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
     FOUR_C_THROW(
         "there is no volume cell in element %d which contains point with coordinates (%f,%f,%f) -> "
         "void element???",
-        ele->Id(), x(0), x(1), x(2));
+        ele->id(), x(0), x(1), x(2));
   }
   else  // standard element, all its nodes have dofset 0
   {
@@ -1728,7 +1729,7 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
     bool indomain = false;  // dummy variable
 
     // xyz coordinates of the node
-    Core::LinAlg::Matrix<nsd, 1> x_node(node->X().data());
+    Core::LinAlg::Matrix<nsd, 1> x_node(node->x().data());
 
     // get the local coordinates of the node w.r.t current element
     // Comment to the configuration:
@@ -1744,7 +1745,7 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
       double pres = 0.0;
       Core::LinAlg::Matrix<1, nsd> pres_deriv(true);
 
-      getGPValues(e, tmp_xi, ele_nds[iele], dofset, vel, vel_deriv, pres, pres_deriv,
+      get_gp_values(e, tmp_xi, ele_nds[iele], dofset, vel, vel_deriv, pres, pres_deriv,
           colVectors[tmp_index], true);
 
       // add the current gradients
@@ -1892,7 +1893,7 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     }                                    // end loop over number of nodes to get
 
     // processors wait for each other
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
   }  // end loop over processors
 }  // end export_alternativ_algo_data
 
@@ -1942,7 +1943,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     if (allProcsDone == 0) procDone = 0;
 
     // processors wait for each other
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
   }
 
   /*--------------------------------------*
@@ -2020,7 +2021,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     }  // end loop over number of points to get
 
     // processors wait for each other
-    discret_->Comm().Barrier();
+    discret_->get_comm().Barrier();
   }  // end if procfinished == false
 }  // end export_iter_data
 

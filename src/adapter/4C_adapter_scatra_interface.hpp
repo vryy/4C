@@ -57,16 +57,16 @@ namespace Adapter
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
 
     //! return number of dofset associated with displacement dofs
-    virtual int NdsDisp() const = 0;
+    virtual int nds_disp() const = 0;
 
     //! return rcp ptr to neumann loads vector
-    virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> get_neumann_loads_ptr() = 0;
 
     //! return meshtying strategy (includes standard case without meshtying)
-    virtual const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& Strategy() const = 0;
+    virtual const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& strategy() const = 0;
 
     //! return scalar field phi at time n
-    virtual Teuchos::RCP<Epetra_Vector> Phin() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> phin() = 0;
 
   };  // class ScatraInterface
 }  // namespace Adapter

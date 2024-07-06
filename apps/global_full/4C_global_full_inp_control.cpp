@@ -29,11 +29,11 @@ void ntainp_ccadiscret(
 {
   using namespace FourC;
 
-  Global::Problem* problem = Global::Problem::Instance();
-  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
-  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
-  int group = problem->GetCommunicators()->GroupId();
-  Core::Communication::NestedParallelismType npType = problem->GetCommunicators()->NpType();
+  Global::Problem* problem = Global::Problem::instance();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->get_communicators()->local_comm();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->get_communicators()->global_comm();
+  int group = problem->get_communicators()->group_id();
+  Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
 
 
 
@@ -45,7 +45,7 @@ void ntainp_ccadiscret(
   SetupParallelOutput(outputfile_kenner, lcomm, group);
 
   // create control file for output and read restart data if required
-  problem->OpenControlFile(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
+  problem->open_control_file(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
 
   // input of materials
   Global::ReadMaterials(*problem, reader);
@@ -59,8 +59,8 @@ void ntainp_ccadiscret(
   {
     Core::UTILS::FunctionManager function_manager;
     GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
-    function_manager.ReadInput(reader);
-    problem->SetFunctionManager(std::move(function_manager));
+    function_manager.read_input(reader);
+    problem->set_function_manager(std::move(function_manager));
   }
 
   // input of particles
@@ -106,7 +106,7 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
   using namespace FourC;
 
   // configure the parallel output environment
-  const Teuchos::ParameterList& io = Global::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& io = Global::Problem::instance()->io_params();
   bool screen = Core::UTILS::IntegralValue<int>(io, "WRITE_TO_SCREEN");
   bool file = Core::UTILS::IntegralValue<int>(io, "WRITE_TO_FILE");
   bool preGrpID = Core::UTILS::IntegralValue<int>(io, "PREFIX_GROUP_ID");

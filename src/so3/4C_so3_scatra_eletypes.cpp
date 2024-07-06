@@ -18,12 +18,12 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoHex8ScatraType Discret::ELEMENTS::SoHex8ScatraType::instance_;
 
-Discret::ELEMENTS::SoHex8ScatraType& Discret::ELEMENTS::SoHex8ScatraType::Instance()
+Discret::ELEMENTS::SoHex8ScatraType& Discret::ELEMENTS::SoHex8ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ScatraType::create(
     const std::vector<char>& data)
 {
   auto* object =
@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ScatraType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -45,7 +45,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ScatraType::Creat
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
@@ -74,14 +74,14 @@ int Discret::ELEMENTS::SoHex8ScatraType::initialize(Core::FE::Discretization& di
 {
   SoHex8Type::initialize(dis);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
         Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
-        dis.lColElement(i));
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8_scatra* failed");
-    actele->InitElement();
+    actele->init_element();
   }
 
   return 0;
@@ -93,12 +93,12 @@ int Discret::ELEMENTS::SoHex8ScatraType::initialize(Core::FE::Discretization& di
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoHex8fbarScatraType Discret::ELEMENTS::SoHex8fbarScatraType::instance_;
 
-Discret::ELEMENTS::SoHex8fbarScatraType& Discret::ELEMENTS::SoHex8fbarScatraType::Instance()
+Discret::ELEMENTS::SoHex8fbarScatraType& Discret::ELEMENTS::SoHex8fbarScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarScatraType::create(
     const std::vector<char>& data)
 {
   auto* object =
@@ -108,7 +108,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarScatraType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -121,7 +121,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarScatraType::C
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
@@ -151,14 +151,14 @@ int Discret::ELEMENTS::SoHex8fbarScatraType::initialize(Core::FE::Discretization
 {
   SoHex8fbarType::initialize(dis);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
         Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*>(
-        dis.lColElement(i));
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8fbar_scatra* failed");
-    actele->InitElement();
+    actele->init_element();
   }
 
   return 0;
@@ -169,12 +169,12 @@ int Discret::ELEMENTS::SoHex8fbarScatraType::initialize(Core::FE::Discretization
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoHex27ScatraType Discret::ELEMENTS::SoHex27ScatraType::instance_;
 
-Discret::ELEMENTS::SoHex27ScatraType& Discret::ELEMENTS::SoHex27ScatraType::Instance()
+Discret::ELEMENTS::SoHex27ScatraType& Discret::ELEMENTS::SoHex27ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ScatraType::create(
     const std::vector<char>& data)
 {
   auto* object =
@@ -184,7 +184,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ScatraType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -197,7 +197,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ScatraType::Crea
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
@@ -228,14 +228,14 @@ int Discret::ELEMENTS::SoHex27ScatraType::initialize(Core::FE::Discretization& d
 {
   SoHex27Type::initialize(dis);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
         Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>*>(
-        dis.lColElement(i));
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex27_scatra* failed");
-    actele->InitElement();
+    actele->init_element();
   }
 
   return 0;
@@ -248,12 +248,12 @@ int Discret::ELEMENTS::SoHex27ScatraType::initialize(Core::FE::Discretization& d
 
 Discret::ELEMENTS::SoTet4ScatraType Discret::ELEMENTS::SoTet4ScatraType::instance_;
 
-Discret::ELEMENTS::SoTet4ScatraType& Discret::ELEMENTS::SoTet4ScatraType::Instance()
+Discret::ELEMENTS::SoTet4ScatraType& Discret::ELEMENTS::SoTet4ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ScatraType::create(
     const std::vector<char>& data)
 {
   auto* object =
@@ -262,7 +262,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ScatraType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -275,7 +275,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ScatraType::Creat
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
@@ -304,14 +304,14 @@ int Discret::ELEMENTS::SoTet4ScatraType::initialize(Core::FE::Discretization& di
 {
   SoTet4Type::initialize(dis);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
         Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>*>(
-        dis.lColElement(i));
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet4_scatra* failed");
-    actele->InitElement();
+    actele->init_element();
   }
 
   return 0;
@@ -324,12 +324,12 @@ int Discret::ELEMENTS::SoTet4ScatraType::initialize(Core::FE::Discretization& di
 
 Discret::ELEMENTS::SoTet10ScatraType Discret::ELEMENTS::SoTet10ScatraType::instance_;
 
-Discret::ELEMENTS::SoTet10ScatraType& Discret::ELEMENTS::SoTet10ScatraType::Instance()
+Discret::ELEMENTS::SoTet10ScatraType& Discret::ELEMENTS::SoTet10ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ScatraType::create(
     const std::vector<char>& data)
 {
   auto* object =
@@ -339,7 +339,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ScatraType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -352,7 +352,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ScatraType::Crea
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
@@ -383,14 +383,14 @@ int Discret::ELEMENTS::SoTet10ScatraType::initialize(Core::FE::Discretization& d
 {
   SoTet10Type::initialize(dis);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
         Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>*>(
-        dis.lColElement(i));
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet10_scatra* failed");
-    actele->InitElement();
+    actele->init_element();
   }
 
   return 0;
@@ -403,12 +403,12 @@ int Discret::ELEMENTS::SoTet10ScatraType::initialize(Core::FE::Discretization& d
 
 Discret::ELEMENTS::SoWeg6ScatraType Discret::ELEMENTS::SoWeg6ScatraType::instance_;
 
-Discret::ELEMENTS::SoWeg6ScatraType& Discret::ELEMENTS::SoWeg6ScatraType::Instance()
+Discret::ELEMENTS::SoWeg6ScatraType& Discret::ELEMENTS::SoWeg6ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6ScatraType::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6ScatraType::create(
     const std::vector<char>& data)
 {
   auto* object =
@@ -418,7 +418,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoWeg6ScatraType::Create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -431,7 +431,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6ScatraType::Creat
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6ScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
@@ -462,14 +462,14 @@ int Discret::ELEMENTS::SoWeg6ScatraType::initialize(Core::FE::Discretization& di
 {
   SoWeg6Type::initialize(dis);
 
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
+    if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
         Discret::ELEMENTS::So3Scatra<Discret::ELEMENTS::SoWeg6, Core::FE::CellType::wedge6>*>(
-        dis.lColElement(i));
+        dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_weg6_scatra* failed");
-    actele->InitElement();
+    actele->init_element();
   }
 
   return 0;

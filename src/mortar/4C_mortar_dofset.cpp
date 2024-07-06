@@ -38,14 +38,14 @@ int Mortar::DofSet::assign_degrees_of_freedom(
   std::vector<int> mycol(nummycol);
 
   // now we loop all nodes in the interface discretization and create the new DOF vectors
-  const int numMyColumnNodes = dis.NumMyColNodes();
+  const int numMyColumnNodes = dis.num_my_col_nodes();
   for (int i = 0; i < numMyColumnNodes; ++i)
   {
-    Core::Nodes::Node* node = dis.lColNode(i);
+    Core::Nodes::Node* node = dis.l_col_node(i);
     if (!node) FOUR_C_THROW("Cannot find local column node %d", i);
 
     // get dofs of node as created by base class DofSet
-    std::vector<int> gdofs = Dof(node);
+    std::vector<int> gdofs = dof(node);
     const std::size_t numDofsOfNode = gdofs.size();
 
     // get dofs of node as we want them
@@ -56,7 +56,7 @@ int Mortar::DofSet::assign_degrees_of_freedom(
         dynamic_cast<Mortar::Node*>(node);
     if (!mrtrnode) FOUR_C_THROW("dynamic_cast Core::Nodes::Node -> Mortar::Node failed");
 #endif
-    const auto& newdofs = mrtrnode->Dofs();
+    const auto& newdofs = mrtrnode->dofs();
     for (std::size_t j = 0; j < numDofsOfNode; ++j)
     {
       // build dof column map
@@ -100,7 +100,7 @@ int Mortar::DofSet::assign_degrees_of_freedom(
   numdfcolfaces_ = numdfcolelements_;
 
   // tell all proxies (again!)
-  NotifyAssigned();
+  notify_assigned();
 
   return count;
 }

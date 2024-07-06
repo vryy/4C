@@ -32,16 +32,16 @@ namespace Discret
     class WallQuad4PoroType : public Discret::ELEMENTS::Wall1Type
     {
      public:
-      std::string Name() const override { return "WallQuad4PoroType"; }
+      std::string name() const override { return "WallQuad4PoroType"; }
 
-      static WallQuad4PoroType& Instance();
+      static WallQuad4PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -59,16 +59,16 @@ namespace Discret
     class WallQuad9PoroType : public Discret::ELEMENTS::Wall1Type
     {
      public:
-      std::string Name() const override { return "WallQuad9PoroType"; }
+      std::string name() const override { return "WallQuad9PoroType"; }
 
-      static WallQuad9PoroType& Instance();
+      static WallQuad9PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -86,16 +86,16 @@ namespace Discret
     class WallNurbs4PoroType : public Discret::ELEMENTS::Wall1Type
     {
      public:
-      std::string Name() const override { return "WallNurbs4PoroType"; }
+      std::string name() const override { return "WallNurbs4PoroType"; }
 
-      static WallNurbs4PoroType& Instance();
+      static WallNurbs4PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -113,16 +113,16 @@ namespace Discret
     class WallNurbs9PoroType : public Discret::ELEMENTS::Wall1Type
     {
      public:
-      std::string Name() const override { return "WallNurbs9PoroType"; }
+      std::string name() const override { return "WallNurbs9PoroType"; }
 
-      static WallNurbs9PoroType& Instance();
+      static WallNurbs9PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -140,16 +140,16 @@ namespace Discret
     class WallTri3PoroType : public Discret::ELEMENTS::Wall1Type
     {
      public:
-      std::string Name() const override { return "WallTri3PoroType"; }
+      std::string name() const override { return "WallTri3PoroType"; }
 
-      static WallTri3PoroType& Instance();
+      static WallTri3PoroType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 

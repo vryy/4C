@@ -84,11 +84,11 @@ void PARTICLEENGINE::ParticleContainerBundle::get_packed_particle_objects_of_all
     ParticleContainer* container = (containers_[type])[Owned].get();
 
     // loop over particles in container
-    for (int index = 0; index < container->ParticlesStored(); ++index)
+    for (int index = 0; index < container->particles_stored(); ++index)
     {
       int globalid(0);
       ParticleStates states;
-      container->GetParticle(index, globalid, states);
+      container->get_particle(index, globalid, states);
 
       ParticleObjShrdPtr particleobject = std::make_shared<ParticleObject>(type, globalid, states);
 
@@ -110,11 +110,11 @@ void PARTICLEENGINE::ParticleContainerBundle::get_vector_of_particle_objects_of_
     ParticleContainer* container = (containers_[type])[Owned].get();
 
     // loop over particles in container
-    for (int index = 0; index < container->ParticlesStored(); ++index)
+    for (int index = 0; index < container->particles_stored(); ++index)
     {
       int globalid(0);
       ParticleStates states;
-      container->GetParticle(index, globalid, states);
+      container->get_particle(index, globalid, states);
 
       particlesstored.emplace_back(std::make_shared<ParticleObject>(type, globalid, states));
     }

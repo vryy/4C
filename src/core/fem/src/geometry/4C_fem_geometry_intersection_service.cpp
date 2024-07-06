@@ -29,7 +29,7 @@ void Core::Geo::checkGeoType(const Core::Elements::Element* element,
   bool cartesian = true;
   int CartesianCount = 0;
   const int dimCoord = 3;
-  const Core::FE::CellType distype = element->Shape();
+  const Core::FE::CellType distype = element->shape();
   const int eleDim = Core::FE::getDimension(distype);
 
   if (Core::FE::getOrder(distype) == 1)
@@ -45,8 +45,8 @@ void Core::Geo::checkGeoType(const Core::Elements::Element* element,
     const std::vector<std::vector<int>> eleNodeNumbering =
         Core::FE::getEleNodeNumberingSurfaces(distype);
     std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces =
-        (const_cast<Core::Elements::Element*>(element))->Surfaces();
-    for (int i = 0; i < element->NumSurface(); i++)
+        (const_cast<Core::Elements::Element*>(element))->surfaces();
+    for (int i = 0; i < element->num_surface(); i++)
     {
       CartesianCount = 0;
       const Core::Elements::Element* surfaceP = surfaces[i].get();
@@ -108,16 +108,16 @@ std::map<int, Core::LinAlg::Matrix<3, 2>> Core::Geo::getCurrentXAABBs(
 {
   std::map<int, Core::LinAlg::Matrix<3, 2>> currentXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
-  for (int j = 0; j < dis.NumMyColElements(); ++j)
+  for (int j = 0; j < dis.num_my_col_elements(); ++j)
   {
-    const Core::Elements::Element* element = dis.lColElement(j);
+    const Core::Elements::Element* element = dis.l_col_element(j);
     const Core::LinAlg::SerialDenseMatrix xyze_element(
         Core::Geo::getCurrentNodalPositions(element, currentpositions));
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
     Core::Geo::checkGeoType(element, xyze_element, eleGeoType);
     const Core::LinAlg::Matrix<3, 2> xaabbEle =
-        Core::Geo::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
-    currentXAABBs[element->Id()] = xaabbEle;
+        Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType);
+    currentXAABBs[element->id()] = xaabbEle;
   }
   return currentXAABBs;
 }

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterStd* Discret::ELEMENTS::ScaTraEleParameterStd::Instance(
+Discret::ELEMENTS::ScaTraEleParameterStd* Discret::ELEMENTS::ScaTraEleParameterStd::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -35,7 +35,7 @@ Discret::ELEMENTS::ScaTraEleParameterStd* Discret::ELEMENTS::ScaTraEleParameterS
       Core::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterStd>(new ScaTraEleParameterStd(disname)); });
 
-  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 /*----------------------------------------------------------------------*
@@ -79,7 +79,7 @@ Discret::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       mat_gp_(false),
       tau_value_(0.),
       // we have to know the time parameters here to check for illegal combinations
-      scatraparatimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
+      scatraparatimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(disname))
 {
 }
 
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_nodeset_parameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::ParameterList& parameters)
 {
   // set ale case
   is_ale_ = parameters.get<bool>("isale", false);
@@ -128,7 +128,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterL
 
   // set correct stationary definition for stabilization parameter automatically
   // and ensure that exact stabilization parameter is only used in stationary case
-  if (scatraparatimint_->IsStationary())
+  if (scatraparatimint_->is_stationary())
   {
     if (whichtau_ == Inpar::ScaTra::tau_taylor_hughes_zarins)
       whichtau_ = Inpar::ScaTra::tau_taylor_hughes_zarins_wo_dt;
@@ -245,7 +245,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterL
   has_external_force_ = parameters.get<bool>("has_external_force", false);
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsDisp() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_disp() const
 {
   FOUR_C_ASSERT(nds_disp_ != -1,
       "You try to access the number of dofset associated with displacement dofs without "
@@ -253,7 +253,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::NdsDisp() const
   return nds_disp_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsGrowth() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_growth() const
 {
   FOUR_C_ASSERT(nds_growth_ != -1,
       "You try to access the number of dofset associated with interface growth dofs without "
@@ -261,7 +261,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::NdsGrowth() const
   return nds_growth_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsMicro() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_micro() const
 {
   FOUR_C_ASSERT(nds_micro_ != -1,
       "You try to access the number of dofset to write micro scale values on without having "
@@ -269,7 +269,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::NdsMicro() const
   return nds_micro_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsPres() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_pres() const
 {
   FOUR_C_ASSERT(nds_pres_ != -1,
       "You try to access the number of dofset associated with pressure dofs without having "
@@ -277,7 +277,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::NdsPres() const
   return nds_pres_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsScaTra() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_sca_tra() const
 {
   FOUR_C_ASSERT(nds_scatra_ != -1,
       "You try to access the number of dofset associated with scalar transport dofs without having "
@@ -285,7 +285,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::NdsScaTra() const
   return nds_scatra_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsThermo() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_thermo() const
 {
   FOUR_C_ASSERT(nds_thermo_ != -1,
       "You try to access the number of dofset associated with temperature dofs without having "
@@ -301,7 +301,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_two_tensor_quantity() const
   return nds_two_tensor_quantitiy_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsVel() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_vel() const
 {
   FOUR_C_ASSERT(nds_vel_ != -1,
       "You try to access the number of dofset associated with velocity related dofs without "
@@ -309,7 +309,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::NdsVel() const
   return nds_vel_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::NdsWss() const
+int Discret::ELEMENTS::ScaTraEleParameterStd::nds_wss() const
 {
   FOUR_C_ASSERT(nds_wss_ != -1,
       "You try to access the number of dofset associated with wall shear stress dofs without "

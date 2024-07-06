@@ -127,7 +127,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
         visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
 
     // Get the lambda GIDs of this pair.
-    const auto& [lambda_row_pos, _] = mortar_manager->LocationVector(*this);
+    const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
 
     std::vector<double> lambda_pair;
     Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
@@ -141,26 +141,27 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
       Teuchos::RCP<std::unordered_set<int>> beam_tracker =
           visualization_params.get<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker");
 
-      auto it = beam_tracker->find(this->Element1()->Id());
+      auto it = beam_tracker->find(this->element1()->id());
       if (it == beam_tracker->end())
       {
         // Only do something if this beam element did not write any output yet.
 
         // Add this element Id to the tracker.
-        beam_tracker->insert(this->Element1()->Id());
+        beam_tracker->insert(this->element1()->id());
 
         // Get the visualization vectors.
         auto& visualization_data = visualization_discret->get_visualization_data();
-        std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
-        std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
-        std::vector<double>& lambda_vis = visualization_data.GetPointData<double>("lambda");
+        std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+        std::vector<double>& displacement =
+            visualization_data.get_point_data<double>("displacement");
+        std::vector<double>& lambda_vis = visualization_data.get_point_data<double>("lambda");
 
         std::vector<double>* pair_beam_id = nullptr;
         std::vector<double>* pair_solid_id = nullptr;
         if (write_unique_ids)
         {
-          pair_beam_id = &(visualization_data.GetPointData<double>("uid_0_pair_beam_id"));
-          pair_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
+          pair_beam_id = &(visualization_data.get_point_data<double>("uid_0_pair_beam_id"));
+          pair_solid_id = &(visualization_data.get_point_data<double>("uid_1_pair_solid_id"));
         }
 
         for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
@@ -188,8 +189,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
 
           if (write_unique_ids)
           {
-            pair_beam_id->push_back(this->Element1()->Id());
-            pair_solid_id->push_back(this->Element2()->Id());
+            pair_beam_id->push_back(this->element1()->id());
+            pair_solid_id->push_back(this->element2()->id());
           }
         }
       }
@@ -206,14 +207,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
               ->get_mortar_lambda_continuous_segments();
       double xi;
       auto& visualization_data = visualization_continuous->get_visualization_data();
-      std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(
+      std::vector<double>& point_coordinates = visualization_data.get_point_coordinates(
           (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& displacement = visualization_data.GetPointData<double>(
+      std::vector<double>& displacement = visualization_data.get_point_data<double>(
           "displacement", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& lambda_vis = visualization_data.GetPointData<double>(
+      std::vector<double>& lambda_vis = visualization_data.get_point_data<double>(
           "lambda", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<uint8_t>& cell_types = visualization_data.GetCellTypes();
-      std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsets();
+      std::vector<uint8_t>& cell_types = visualization_data.get_cell_types();
+      std::vector<int32_t>& cell_offsets = visualization_data.get_cell_offsets();
 
       std::vector<double>* pair_point_beam_id = nullptr;
       std::vector<double>* pair_point_solid_id = nullptr;
@@ -221,10 +222,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
       std::vector<double>* pair_cell_solid_id = nullptr;
       if (write_unique_ids)
       {
-        pair_point_beam_id = &(visualization_data.GetPointData<double>("uid_0_pair_beam_id"));
-        pair_point_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
-        pair_cell_beam_id = &(visualization_data.GetCellData<double>("uid_0_pair_beam_id"));
-        pair_cell_solid_id = &(visualization_data.GetCellData<double>("uid_1_pair_solid_id"));
+        pair_point_beam_id = &(visualization_data.get_point_data<double>("uid_0_pair_beam_id"));
+        pair_point_solid_id = &(visualization_data.get_point_data<double>("uid_1_pair_solid_id"));
+        pair_cell_beam_id = &(visualization_data.get_cell_data<double>("uid_0_pair_beam_id"));
+        pair_cell_solid_id = &(visualization_data.get_cell_data<double>("uid_1_pair_solid_id"));
       }
 
       for (const auto& segment : this->line_to_3D_segments_)
@@ -233,8 +234,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
              i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
-          xi = segment.GetEtadata() + i_curve_segment * (segment.GetEtaB() - segment.GetEtadata()) /
-                                          (double)mortar_segments;
+          xi = segment.get_etadata() + i_curve_segment *
+                                           (segment.get_eta_b() - segment.get_etadata()) /
+                                           (double)mortar_segments;
           GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1pos_, r);
           GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1posref_, X);
           u = r;
@@ -256,13 +258,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
 
         if (write_unique_ids)
         {
-          pair_cell_beam_id->push_back(this->Element1()->Id());
-          pair_cell_solid_id->push_back(this->Element2()->Id());
+          pair_cell_beam_id->push_back(this->element1()->id());
+          pair_cell_solid_id->push_back(this->element2()->id());
           for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
                i_curve_segment++)
           {
-            pair_point_beam_id->push_back(this->Element1()->Id());
-            pair_point_solid_id->push_back(this->Element2()->Id());
+            pair_point_beam_id->push_back(this->element1()->id());
+            pair_point_solid_id->push_back(this->element2()->id());
           }
         }
       }
@@ -304,19 +306,19 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
     // Factor to account for the integration segment length.
-    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].get_segment_length();
 
     // Gauss point loop.
-    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].GetProjectionPoints().size();
+    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].get_projection_points().size();
     for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+          this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the jacobian in the reference configuration.
       GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
+          projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
@@ -326,11 +328,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
       N_beam.clear();
       N_solid.clear();
       GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
-          N_mortar, projected_gauss_point.GetEta());
+          N_mortar, projected_gauss_point.get_eta());
       GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
-          N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
+          N_beam, projected_gauss_point.get_eta(), this->ele1pos_.shape_function_data_);
       GEOMETRYPAIR::EvaluateShapeFunction<Solid>::evaluate(
-          N_solid, projected_gauss_point.GetXi(), this->ele2pos_.shape_function_data_);
+          N_solid, projected_gauss_point.get_xi(), this->ele2pos_.shape_function_data_);
 
       // Fill in the local templated mortar matrix D.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -342,7 +344,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
                     i_beam_node * Beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                     N_beam(i_beam_node * Beam::n_val_ + i_beam_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                    projected_gauss_point.get_gauss_weight() * segment_jacobian;
 
       // Fill in the local templated mortar matrix M.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -354,7 +356,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
                     i_solid_node * Solid::n_val_ * 3 + i_solid_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                     N_solid(i_solid_node * Solid::n_val_ + i_solid_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                    projected_gauss_point.get_gauss_weight() * segment_jacobian;
 
       // Fill in the local templated mortar scaling vector kappa.
       for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
@@ -362,7 +364,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             local_kappa(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
                 N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
-                projected_gauss_point.GetGaussWeight() * segment_jacobian;
+                projected_gauss_point.get_gauss_weight() * segment_jacobian;
     }
   }
 

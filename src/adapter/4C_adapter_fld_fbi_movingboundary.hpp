@@ -49,7 +49,7 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override;
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override;
 
     //@}
 
@@ -78,7 +78,7 @@ namespace Adapter
         Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> relaxation_solve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
     //@}
 
@@ -106,10 +106,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// get the maximum number of iterations from the fluid field
-    int Itemax() const override;
+    int itemax() const override;
 
     /// set the maximum number of iterations for the fluid field
-    void SetItemax(int itemax) override;
+    void set_itemax(int itemax) override;
 
     //@}
 
@@ -121,12 +121,12 @@ namespace Adapter
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     /// Get velocity at timestep n+1
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp();
+    virtual Teuchos::RCP<const Epetra_Vector> velnp();
 
-    virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
+    virtual Teuchos::RCP<const FLD::Meshtying> get_meshtying();
 
     /** \brief Pass in additional contributions from coupling terms for the system matrix
      *
@@ -154,7 +154,7 @@ namespace Adapter
     /**
      * \brief Resets the external forces acting on the fluid to zero
      */
-    virtual void ResetExternalForces();
+    virtual void reset_external_forces();
 
    private:
     /// fluid base algorithm object

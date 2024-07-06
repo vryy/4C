@@ -91,7 +91,7 @@ namespace FLD
     global vectors. This method allows to do the time average of the
     nodal values after a certain amount of timesteps.
     */
-    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp);
 
     /*!
     \brief Dump the result to file.
@@ -100,13 +100,13 @@ namespace FLD
     statistic to the file
     */
 
-    void DumpStatistics(int step);
+    void dump_statistics(int step);
 
     /*!
     \brief Reset sums and number of samples to 0
     */
 
-    void ClearStatistics();
+    void clear_statistics();
 
 
    protected:

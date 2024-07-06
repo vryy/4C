@@ -93,12 +93,12 @@ namespace ScaTra
      * @param scatratimint  scalar transport time integrator
      * @return bool indicating if convergence is met
      */
-    bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint) const
+    bool abort_outer_iter(const ScaTraTimIntImpl& scatratimint) const
     {
       if (convcheckstrategy_ == Teuchos::null)
         FOUR_C_THROW("Strategy for outer convergence check has not been instantiated!");
 
-      return convcheckstrategy_->AbortOuterIter(scatratimint);
+      return convcheckstrategy_->abort_outer_iter(scatratimint);
     }
 
     //! provide global state vectors for element evaluation
@@ -125,7 +125,8 @@ namespace ScaTra
      * @param residual            residual vector
      * @param calcinittimederiv   flag for calculation of initial time derivative
      */
-    virtual void CondenseMatAndRHS(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
+    virtual void condense_mat_and_rhs(
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual, const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
@@ -168,7 +169,7 @@ namespace ScaTra
     };
 
     //! compute meshtying residual terms and their linearizations
-    virtual void EvaluateMeshtying() = 0;
+    virtual void evaluate_meshtying() = 0;
 
     //! evaluate coupling between two points/nodes. Does not need to be evaluated on element level
     virtual void evaluate_point_coupling(){};
@@ -180,7 +181,7 @@ namespace ScaTra
     virtual void include_dirichlet_in_condensation() const { return; };
 
     //! init meshtying objects
-    virtual void InitMeshtying() = 0;
+    virtual void init_meshtying() = 0;
 
     // flag returning whether this meshtying strategy needs to initialize the system matrix due to
     // special requirements
@@ -190,7 +191,7 @@ namespace ScaTra
     virtual Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const = 0;
 
     //! return interface map extractor
-    virtual Teuchos::RCP<Core::LinAlg::MultiMapExtractor> InterfaceMaps() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const = 0;
 
     //! output solution for post-processing
     virtual void output() const { return; };
@@ -215,7 +216,7 @@ namespace ScaTra
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
-    virtual void SetOldPartOfRHS() const { return; };
+    virtual void set_old_part_of_rhs() const { return; };
 
     /*!
     \brief Set state on an discretization hidden in any MeshtyingStrategy.
@@ -255,14 +256,14 @@ namespace ScaTra
      * @param iteration     number of current Newton-Raphson iteration
      * @param projector     Krylov projector
      */
-    virtual void Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
+    virtual void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const = 0;
 
     //! return linear solver for global system of linear equations
-    virtual const Core::LinAlg::Solver& Solver() const = 0;
+    virtual const Core::LinAlg::Solver& solver() const = 0;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     virtual void update() const { return; };

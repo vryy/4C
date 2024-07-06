@@ -60,16 +60,16 @@ namespace Core::Geo
           int n_dim, const Core::IO::OutputControl& output_control);
 
       /// get edge length
-      double EdgeLength(int dim) const { return edgelength_[dim]; }
+      double edge_length(int dim) const { return edgelength_[dim]; }
 
       /// get box
-      Core::LinAlg::Matrix<3, 2> const& Box() const { return box_; }
+      Core::LinAlg::Matrix<3, 2> const& box() const { return box_; }
 
       /// get flag indicating if periodic boundary conditions are active
-      bool HavePBC() const { return haveperiodicbc_; }
+      bool have_pbc() const { return haveperiodicbc_; }
 
       /// get const bounding box discretization
-      Core::FE::Discretization const& BoundingBoxDiscret() const { return *boxdiscret_; }
+      Core::FE::Discretization const& bounding_box_discret() const { return *boxdiscret_; }
 
       /// get corner points
       double operator()(int i, int j) const { return box_(i, j); }
@@ -81,7 +81,7 @@ namespace Core::Geo
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
       */
-      bool Shift3D(Core::LinAlg::Matrix<3, 1>& d,
+      bool shift3_d(Core::LinAlg::Matrix<3, 1>& d,
           Core::LinAlg::Matrix<3, 1> const X = Core::LinAlg::Matrix<3, 1>(true)) const;
 
       /*!
@@ -106,7 +106,7 @@ namespace Core::Geo
        * Note: this should be equivalent to the previously applied criterion
        *       that the distance between given point and reference point
        *       decreases by either adding or subtracting the period length. */
-      void UnShift3D(Core::LinAlg::Matrix<3, 1>& d, Core::LinAlg::Matrix<3, 1> const& ref,
+      void un_shift3_d(Core::LinAlg::Matrix<3, 1>& d, Core::LinAlg::Matrix<3, 1> const& ref,
           Core::LinAlg::Matrix<3, 1> const X = Core::LinAlg::Matrix<3, 1>(true)) const;
 
       bool check_if_shift_between_points(Core::LinAlg::Matrix<3, 1>& d,
@@ -116,31 +116,31 @@ namespace Core::Geo
       /*!
       \brief get random position inside box
       */
-      void RandomPosWithin(Core::LinAlg::Matrix<3, 1>& pos, Core::UTILS::Random* random) const;
+      void random_pos_within(Core::LinAlg::Matrix<3, 1>& pos, Core::UTILS::Random* random) const;
 
       /*!
        \brief If necessary make the boundingbox larger to include this point as one of the corners
        of the box
        */
-      void AddPoint(double const* x);
+      void add_point(double const* x);
 
       /*!
        \brief Check whether "b" is within this boundingbox
        */
-      bool Within(const BoundingBox& b) const;
+      bool within(const BoundingBox& b) const;
 
       /*!
        \brief Check if the point is within this boundingbox
        */
-      bool Within(const double* x, std::vector<bool>& within_in_dir) const;
-      bool Within(Core::LinAlg::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const;
-      bool Within(Core::LinAlg::Matrix<3, 2> const& box, Core::LinAlg::Matrix<3, 1> const& x,
+      bool within(const double* x, std::vector<bool>& within_in_dir) const;
+      bool within(Core::LinAlg::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const;
+      bool within(Core::LinAlg::Matrix<3, 2> const& box, Core::LinAlg::Matrix<3, 1> const& x,
           std::vector<bool>& within_in_dir) const;
 
       /*!
        \brief Check these points are within this boundingbox
        */
-      bool Within(const Core::LinAlg::SerialDenseMatrix& xyz) const;
+      bool within(const Core::LinAlg::SerialDenseMatrix& xyz) const;
 
       /*!
        \brief Print the corner points of boundingbox on the screen
@@ -187,12 +187,12 @@ namespace Core::Geo
       /*!
        \brief Apply dirichlet condition according to input file
       */
-      void ApplyDirichlet(double timen, const Core::UTILS::FunctionManager& function_manager);
+      void apply_dirichlet(double timen, const Core::UTILS::FunctionManager& function_manager);
 
       /*!
        \brief init runtime output object for bounding box discretization
       */
-      void InitRuntimeOutput(
+      void init_runtime_output(
           const Teuchos::ParameterList& io_params, const Core::IO::OutputControl& output_control);
 
       //! @name public function dealing with mapping of positions in case of a deforming bounding

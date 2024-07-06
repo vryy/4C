@@ -68,7 +68,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
 
       //! Internal implementation class for thermo elements
-      static TemperBoundaryImplInterface* Impl(const Core::Elements::Element* ele);
+      static TemperBoundaryImplInterface* impl(const Core::Elements::Element* ele);
 
     };  // TemperBoundaryImplInterface
 

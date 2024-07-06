@@ -28,12 +28,12 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::NStet5Type Discret::ELEMENTS::NStet5Type::instance_;
 
-Discret::ELEMENTS::NStet5Type& Discret::ELEMENTS::NStet5Type::Instance() { return instance_; }
+Discret::ELEMENTS::NStet5Type& Discret::ELEMENTS::NStet5Type::instance() { return instance_; }
 
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Core::Communication::ParObject* Discret::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::NStet5Type::create(const std::vector<char>& data)
 {
   auto* object = new Discret::ELEMENTS::NStet5(-1, -1);
   object->unpack(data);
@@ -43,7 +43,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::NStet5Type::Create(const std:
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::NStet5Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::NStet5Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
@@ -58,7 +58,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::NStet5Type::Create(
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::NStet5Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::NStet5Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -80,7 +80,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_block_information(
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::NStet5Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::NStet5Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   // TODO: switch to correct data container!
@@ -153,7 +153,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::NStet5Type::ComputeNullSpace(
         "vectors per node, however the current node carries %d vectors.",
         dimnsp);
 
-  Discret::ELEMENTS::NStet5* nstet = dynamic_cast<Discret::ELEMENTS::NStet5*>(node.Elements()[0]);
+  Discret::ELEMENTS::NStet5* nstet = dynamic_cast<Discret::ELEMENTS::NStet5*>(node.elements()[0]);
   if (!nstet) FOUR_C_THROW("Cannot cast to NStet5");
   const double* x = nstet->mid_x();
 
@@ -234,14 +234,14 @@ Discret::ELEMENTS::NStet5::NStet5(int id, int owner)
   sublm_[15] = 4;
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      Global::Problem::Instance()->getParameterList();
+      Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
     pstype_ = Prestress::GetType();
     pstime_ = Prestress::GetPrestressTime();
 
     Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+        Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(4, 4, true));
@@ -275,7 +275,7 @@ void Discret::ELEMENTS::NStet5::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -305,7 +305,7 @@ void Discret::ELEMENTS::NStet5::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -395,7 +395,7 @@ void Discret::ELEMENTS::NStet5::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
 |  get vector of surfaces (public)                             gee 03/12|
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::NStet5::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::NStet5::surfaces()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -404,7 +404,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::NStet5::Su
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gee 03/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::NStet5::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::NStet5::lines()
 {
   return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -421,25 +421,25 @@ void Discret::ELEMENTS::NStet5Type::init_elementsand_maps(
     std::map<int, Discret::ELEMENTS::NStet5*>& elecids, std::map<int, Core::Nodes::Node*>& noderids,
     const int myrank, const int numproc, Core::FE::Discretization& dis)
 {
-  const int numele = dis.NumMyColElements();
+  const int numele = dis.num_my_col_elements();
 
   for (int i = 0; i < numele; ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::NStet5*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::NStet5*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to NStet5* failed");
 
     // init the element
     actele->init_element();
 
     // register element in list of column nstet elements
-    elecids[actele->Id()] = actele;
+    elecids[actele->id()] = actele;
 
     // compute a map of all row nodes adjacent to a NStet5 element
     for (int j = 0; j < actele->num_node(); ++j)
     {
-      Core::Nodes::Node* node = actele->Nodes()[j];
-      if (myrank == node->Owner()) noderids[node->Id()] = node;
+      Core::Nodes::Node* node = actele->nodes()[j];
+      if (myrank == node->owner()) noderids[node->id()] = node;
     }
   }  // i
 
@@ -463,14 +463,14 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
   for (node = noderids.begin(); node != noderids.end(); ++node)
   {
     Core::Nodes::Node* nodeL = node->second;
-    const int nodeidL = nodeL->Id();
+    const int nodeidL = nodeL->id();
 
     //-----------------------------------------------------------------
     // list of adjacent elements
     std::vector<Discret::ELEMENTS::NStet5*> myadjele(0);
-    for (int j = 0; j < nodeL->NumElement(); ++j)
+    for (int j = 0; j < nodeL->num_element(); ++j)
     {
-      const int eleid = node->second->Elements()[j]->Id();
+      const int eleid = node->second->elements()[j]->id();
       auto ele = elecids_.find(eleid);
       if (ele == elecids_.end()) continue;
       myadjele.push_back(ele->second);
@@ -482,8 +482,8 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
     std::map<int, Core::Nodes::Node*> nodepatch;
     for (auto& j : myadjele)
     {
-      Core::Nodes::Node** nodes = j->Nodes();
-      for (int k = 0; k < j->num_node(); ++k) nodepatch[nodes[k]->Id()] = nodes[k];
+      Core::Nodes::Node** nodes = j->nodes();
+      for (int k = 0; k < j->num_node(); ++k) nodepatch[nodes[k]->id()] = nodes[k];
     }
     adjnode[nodeidL] = nodepatch;
 
@@ -498,14 +498,14 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
     // add dofs of nodes
     for (pnode = nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
     {
-      const std::vector<int>& dofs = dis.Dof(pnode->second);
+      const std::vector<int>& dofs = dis.dof(pnode->second);
       for (int dof : dofs) lm[count++] = dof;
     }
 
     // add dofs of center nodes from elements. These appear as element dofs
     for (auto& j : myadjele)
     {
-      const std::vector<int>& dofs = dis.Dof(j);
+      const std::vector<int>& dofs = dis.dof(j);
       for (int dof : dofs) lm[count++] = dof;
     }
 
@@ -519,7 +519,7 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
       bool foundit = false;
       for (int i = 0; i < ele->num_node(); ++i)
       {
-        if (ele->Nodes()[i]->Id() == nodeL->Id())
+        if (ele->nodes()[i]->id() == nodeL->id())
         {
           // found the center node on the element
           // local to the element, its node i
@@ -539,7 +539,7 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
           }
           if ((int)subele.size() != 3) FOUR_C_THROW("Node not attached to exactly 3 subelements");
 
-          masterele[ele->Id()] = subele;
+          masterele[ele->id()] = subele;
 
           // no longer need to look at this element
           break;
@@ -557,7 +557,7 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
     for (unsigned j = 0; j < myadjele.size(); ++j)
     {
       Discret::ELEMENTS::NStet5* ele = myadjele[j];
-      std::vector<int>& subele = masterele[ele->Id()];
+      std::vector<int>& subele = masterele[ele->id()];
       lmlm[j].resize((int)subele.size());
       for (unsigned k = 0; k < subele.size(); ++k)
       {
@@ -568,12 +568,12 @@ void Discret::ELEMENTS::NStet5Type::init_adjacency(
         {
           if (sublm[l] != 4)  // node 4 is center node owned by the element
           {
-            std::vector<int> dofs = dis.Dof(ele->Nodes()[sublm[l]]);
+            std::vector<int> dofs = dis.dof(ele->nodes()[sublm[l]]);
             for (int dof : dofs) elelm.push_back(dof);
           }
           else
           {
-            std::vector<int> dofs = dis.Dof(ele);
+            std::vector<int> dofs = dis.dof(ele);
             for (int dof : dofs) elelm.push_back(dof);
           }
         }
@@ -603,8 +603,8 @@ int Discret::ELEMENTS::NStet5Type::initialize(Core::FE::Discretization& dis)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::Initialize");
 
-  const int myrank = dis.Comm().MyPID();
-  const int numproc = dis.Comm().NumProc();
+  const int myrank = dis.get_comm().MyPID();
+  const int numproc = dis.get_comm().NumProc();
 
   //----------------------------------------------------------------------
   // init elements, make maps of column elements and row nodes

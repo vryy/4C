@@ -89,7 +89,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendTriadField(Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+  void append_triad_field(Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append discplacement state
    *
@@ -115,7 +115,7 @@ class BeamDiscretizationRuntimeOutputWriter
   /**
    * \brief Append the 4C interal GIDs to all beam elements.
    */
-  void AppendElementGID();
+  void append_element_gid();
 
   /**
    * \brief Append the element ghosting information.
@@ -210,12 +210,12 @@ class BeamDiscretizationRuntimeOutputWriter
   /**
    * \brief append the reference element length of the beam for the Hermitian interpolation.
    */
-  void AppendRefLength();
+  void append_ref_length();
 
   /**
    * \brief Write the visualization files to disk
    */
-  void WriteToDisk(const double visualization_time, const int visualization_step);
+  void write_to_disk(const double visualization_time, const int visualization_step);
 
   /** \brief determine and set geometry data from beam elements based on given displacement state
    *

@@ -29,10 +29,10 @@ namespace EHL
         const std::string lubrication_disname);  // Problem builder
 
     /// setup of single fields (if needed)
-    void SetupSystem() override{};
+    void setup_system() override{};
 
     /// time loop of coupled problem
-    void Timeloop() override;
+    void timeloop() override;
 
    protected:
     /// prepare time step of single fields

@@ -82,7 +82,7 @@ namespace
     const double normalcontactforce_ref = contactnormal_->get_normal_contact_stiffness() * gap;
 
     double normalcontactforce = 0.0;
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
     EXPECT_NEAR(normalcontactforce, normalcontactforce_ref, 1.0e-12);
@@ -183,7 +183,7 @@ namespace
     const double normalcontactforce_ref = k_normal * gap - d_normal * v_rel_normal;
 
     double normalcontactforce = 0.0;
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
     EXPECT_NEAR(normalcontactforce, normalcontactforce_ref, 1.0e-12);
@@ -194,7 +194,7 @@ namespace
     const double normalcontactforce_ezero_ref = k_normal * gap - d_ezero_normal * v_rel_normal;
 
     double normalcontactforce_ezero = 0.0;
-    contactnormal_ezero_->NormalContactForce(
+    contactnormal_ezero_->normal_contact_force(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce_ezero);
 
     EXPECT_NEAR(normalcontactforce_ezero, normalcontactforce_ezero_ref, 1.0e-12);
@@ -264,7 +264,7 @@ namespace
         -contactnormal_->get_normal_contact_stiffness() * std::pow(-gap, 1.5);
 
     double normalcontactforce = 0.0;
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
     EXPECT_NEAR(normalcontactforce, normalcontactforce_ref, 1.0e-12);
@@ -351,7 +351,7 @@ namespace
         m_eff * d_normal_ * v_rel_normal;
 
     double normalcontactforce = 0.0;
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
     EXPECT_NEAR(normalcontactforce, normalcontactforce_ref, 1.0e-12);
@@ -424,7 +424,7 @@ namespace
         d_normal_ * v_rel_normal * std::pow(-gap, 0.5);
 
     double normalcontactforce = 0.0;
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
     EXPECT_NEAR(normalcontactforce, normalcontactforce_ref, 1.0e-12);
@@ -496,7 +496,7 @@ namespace
         d_normal_ * v_rel_normal * std::pow(-gap, 0.25);
 
     double normalcontactforce = 0.0;
-    contactnormal_->NormalContactForce(
+    contactnormal_->normal_contact_force(
         gap, &rad_i, &rad_j, v_rel_normal, m_eff, normalcontactforce);
 
     EXPECT_NEAR(normalcontactforce, normalcontactforce_ref, 1.0e-12);

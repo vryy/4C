@@ -36,7 +36,7 @@ namespace
 
   TEST_F(SPHDensityCorrectionInteriorTest, ComputeDensityBC)
   {
-    EXPECT_FALSE(densitycorrection_->ComputeDensityBC());
+    EXPECT_FALSE(densitycorrection_->compute_density_bc());
   }
 
   TEST_F(SPHDensityCorrectionInteriorTest, corrected_density_interior)
@@ -86,7 +86,7 @@ namespace
 
   TEST_F(SPHDensityCorrectionNormalizedTest, ComputeDensityBC)
   {
-    EXPECT_FALSE(densitycorrection_->ComputeDensityBC());
+    EXPECT_FALSE(densitycorrection_->compute_density_bc());
   }
   TEST_F(SPHDensityCorrectionNormalizedTest, corrected_density_interior)
   {
@@ -134,7 +134,7 @@ namespace
   };
   TEST_F(SPHDensityCorrectionRandlesTest, ComputeDensityBC)
   {
-    EXPECT_TRUE(densitycorrection_->ComputeDensityBC());
+    EXPECT_TRUE(densitycorrection_->compute_density_bc());
   }
 
   TEST_F(SPHDensityCorrectionRandlesTest, corrected_density_interior)

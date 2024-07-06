@@ -26,20 +26,20 @@ FOUR_C_NAMESPACE_OPEN
 void pasi_dyn()
 {
   // get pointer to global problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
 
   // create a communicator
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print pasi logo to screen
   if (comm.MyPID() == 0) PaSI::UTILS::Logo();
 
   // get parameter list
-  const Teuchos::ParameterList& params = problem->PASIDynamicParams();
+  const Teuchos::ParameterList& params = problem->pasi_dynamic_params();
 
   // modification of time parameters of subproblems
   PaSI::UTILS::ChangeTimeParameter(comm, params,
-      const_cast<Teuchos::ParameterList&>(problem->ParticleParams()),
+      const_cast<Teuchos::ParameterList&>(problem->particle_params()),
       const_cast<Teuchos::ParameterList&>(problem->structural_dynamic_params()));
 
   // create particle structure interaction algorithm
@@ -89,10 +89,10 @@ void pasi_dyn()
   algo->setup();
 
   // solve partitioned particle structure interaction
-  algo->Timeloop();
+  algo->timeloop();
 
   // perform result tests
-  algo->TestResults(comm);
+  algo->test_results(comm);
 
   // print summary statistics for all timers
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =

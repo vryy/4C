@@ -43,18 +43,18 @@ void Adapter::FBIConstraintBridgePenalty::evaluate(
   Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
       assembly_manager =
           BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
-              discretization1, discretization2, *(GetPairs()), GetParams(), assemblystrategy_);
+              discretization1, discretization2, *(get_pairs()), get_params(), assemblystrategy_);
   // compute and assembly the coupling matrices and vectors
   assembly_manager->evaluate_force_stiff(
       *discretization1, *discretization2, ff_, fs_, cff_, css_, csf_, cfs_, fluid_vel, beam_vel);
-  cff_->Complete();
+  cff_->complete();
 
   // Unset the dirichlet flag in case we were doing a fluid solve
   unset_weak_dirichlet_flag();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FBIConstraintBridgePenalty::ResetBridge()
+void Adapter::FBIConstraintBridgePenalty::reset_bridge()
 {
   fs_->PutScalar(0.0);
   cff_->reset();
@@ -81,7 +81,7 @@ void Adapter::FBIConstraintBridgePenalty::scale_penalty_structure_contributions(
 {
   if (!structure_scaled_)
   {
-    if (fs_->Scale(GetParams()->GetPenaltyParameter()))
+    if (fs_->Scale(get_params()->get_penalty_parameter()))
       FOUR_C_THROW("Scaling of the penalty force was unsuccessful!\n");
     structure_scaled_ = true;
   }
@@ -93,8 +93,8 @@ void Adapter::FBIConstraintBridgePenalty::scale_penalty_fluid_contributions()
 {
   if (!fluid_scaled_)
   {
-    if (cff_->Scale(GetParams()->GetPenaltyParameter()) ||
-        ff_->Scale(GetParams()->GetPenaltyParameter()))
+    if (cff_->scale(get_params()->get_penalty_parameter()) ||
+        ff_->Scale(get_params()->get_penalty_parameter()))
       FOUR_C_THROW("Scaling of the penalty force was unsuccessful!\n");
     fluid_scaled_ = true;
   }

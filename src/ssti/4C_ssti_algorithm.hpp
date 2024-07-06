@@ -72,17 +72,17 @@ namespace SSTI
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) = 0;
     virtual void setup();
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
     //@}
 
     //! increment the counter for Newton-Raphson iterations (monolithic algorithm)
-    void IncrementIter() { ++iter_; }
+    void increment_iter() { ++iter_; }
 
     //! return the counter for Newton-Raphson iterations (monolithic algorithm)
-    unsigned int Iter() const { return iter_; }
+    unsigned int iter() const { return iter_; }
 
     //! reset the counter for Newton-Raphson iterations (monolithic algorithm)
-    void ResetIter() { iter_ = 0; }
+    void reset_iter() { iter_ = 0; }
 
     //! return coupling
     //@{
@@ -103,10 +103,10 @@ namespace SSTI
     //! return subproblems
     //@{
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure_field() const { return structure_; };
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() const;
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ThermoField() const;
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> ThermoFieldBase() { return thermo_; };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> sca_tra_field() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() const;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> sca_tra_field_base() { return scatra_; };
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_field_base() { return thermo_; };
     //@}
 
     //! get bool indicating if we have at least one ssi interface meshtying condition
@@ -116,10 +116,10 @@ namespace SSTI
     void read_restart(int restart) override;
 
     //! timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     //! test results (if necessary)
-    virtual void TestResults(const Epetra_Comm& comm) const;
+    virtual void test_results(const Epetra_Comm& comm) const;
 
    protected:
     //! clone scatra from structure and then thermo from scatra

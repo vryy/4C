@@ -105,14 +105,14 @@ Core::LinAlg::SolverParams NOX::Nln::MeshTying::LinearSystem::set_solver_options
   {
     // TODO: maps for merged meshtying and contact problem !!!
     // feed Belos based solvers with contact information
-    if (solverPtr->Params().isSublist("Belos Parameters"))
+    if (solverPtr->params().isSublist("Belos Parameters"))
     {
       if (i_constr_prec_.size() > 1)
         FOUR_C_THROW(
             "Currently only one constraint preconditioner interface can be handled! \n "
             "Needs to be extended!");
 
-      Teuchos::ParameterList& mueluParams = solverPtr->Params().sublist("Belos Parameters");
+      Teuchos::ParameterList& mueluParams = solverPtr->params().sublist("Belos Parameters");
 
       // vector entries:
       // (0) masterDofMap

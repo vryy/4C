@@ -38,7 +38,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
 
   // initialize proc0map_ correctly
   const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
-  const Epetra_Map* noderowmap = dis->NodeRowMap();
+  const Epetra_Map* noderowmap = dis->node_row_map();
   proc0map_ = Core::LinAlg::AllreduceEMap(*noderowmap, 0);
 
   // sort proc0map_ so that we can loop it and get nodes in ascending order.
@@ -83,7 +83,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteFiles(PostFilterBase& filter)
+void EnsightWriter::write_files(PostFilterBase& filter)
 {
   PostResult result(field_);
 
@@ -137,7 +137,7 @@ void EnsightWriter::WriteFiles(PostFilterBase& filter)
     ///////////////////////////////////
     //  write solution fields files  //
     ///////////////////////////////////
-    filter.WriteAllResults(field_);
+    filter.write_all_results(field_);
 
     // prepare the time sets and file sets for case file creation
     int setcounter = 0;
@@ -292,7 +292,7 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
     }
 
     // get number of patches
-    int npatches = (nurbsdis->GetKnotVector())->ReturnNP();
+    int npatches = (nurbsdis->get_knot_vector())->return_np();
 
     int totalnumvisp = 0;
 
@@ -388,14 +388,14 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
 {
   using namespace FourC;
 
-  const Epetra_Map* elementmap = dis->ElementRowMap();
+  const Epetra_Map* elementmap = dis->element_row_map();
 
   std::vector<int> nodevector;
   if (myrank_ > 0)
   {
     // reserve sufficient memory for storing the node connectivity
     //(ghosted nodes included)
-    nodevector.reserve(dis->NumMyColNodes());
+    nodevector.reserve(dis->num_my_col_nodes());
   }
 
   // for each found distype write block of the same typed elements
@@ -420,11 +420,11 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
     // loop all available elements
     for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
     {
-      Core::Elements::Element* const actele = dis->gElement(elementmap->GID(iele));
-      if (actele->Shape() == distypeiter)
+      Core::Elements::Element* const actele = dis->g_element(elementmap->GID(iele));
+      if (actele->shape() == distypeiter)
       {
-        Core::Nodes::Node** const nodes = actele->Nodes();
-        switch (actele->Shape())
+        Core::Nodes::Node** const nodes = actele->nodes();
+        switch (actele->shape())
         {
           case Core::FE::CellType::point1:
           case Core::FE::CellType::line2:
@@ -446,9 +446,9 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             for (int inode = 0; inode < numnp; ++inode)
             {
               if (myrank_ == 0)  // proc0 can write its elements immediately
-                write(geofile, proc0map->LID(nodes[inode]->Id()) + 1);
+                write(geofile, proc0map->LID(nodes[inode]->id()) + 1);
               else  // elements on other procs have to store their global node ids
-                nodevector.push_back(nodes[inode]->Id());
+                nodevector.push_back(nodes[inode]->id());
             }
             break;
           }
@@ -459,9 +459,9 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             for (int inode = 0; inode < numnp; ++inode)
             {
               if (myrank_ == 0)  // proc0 can write its elements immediately
-                write(geofile, proc0map->LID(nodes[Hex20_FourCToEnsightGold[inode]]->Id()) + 1);
+                write(geofile, proc0map->LID(nodes[Hex20_FourCToEnsightGold[inode]]->id()) + 1);
               else  // elements on other procs have to store their global node ids
-                nodevector.push_back(nodes[Hex20_FourCToEnsightGold[inode]]->Id());
+                nodevector.push_back(nodes[Hex20_FourCToEnsightGold[inode]]->id());
             }
             break;
           }
@@ -471,9 +471,9 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex16); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
-                  nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->Id());
+                  nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->id());
             break;
           }
           case Core::FE::CellType::hex18:
@@ -482,9 +482,9 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex18); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subhex18map[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
-                  nodevector.push_back(nodes[subhex18map[isubele][isubnode]]->Id());
+                  nodevector.push_back(nodes[subhex18map[isubele][isubnode]]->id());
             break;
           }
           case Core::FE::CellType::hex27:
@@ -493,9 +493,9 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex27); ++isubele)
               for (int isubnode = 0; isubnode < 8; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
-                  nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
+                  nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->id());
             break;
           }
           case Core::FE::CellType::quad9:
@@ -504,9 +504,9 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::quad9); ++isubele)
               for (int isubnode = 0; isubnode < 4; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
-                  nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
+                  nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->id());
             break;
           }
           case Core::FE::CellType::line3:
@@ -515,15 +515,15 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
             for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::line3); ++isubele)
               for (int isubnode = 0; isubnode < 2; ++isubnode)
                 if (myrank_ == 0)  // proc0 can write its elements immidiately
-                  write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[sublinemap[isubele][isubnode]]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
-                  nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->Id());
+                  nodevector.push_back(nodes[sublinemap[isubele][isubnode]]->id());
             break;
           }
           case Core::FE::CellType::nurbs4:
           {
             if (!writecp_)
-              write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, dis, proc0map);
             else
             {
               // standard case with direct support
@@ -531,9 +531,9 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
               for (int inode = 0; inode < numnp; ++inode)
               {
                 if (myrank_ == 0)  // proc0 can write its elements immediately
-                  write(geofile, proc0map->LID(nodes[inode]->Id()) + 1);
+                  write(geofile, proc0map->LID(nodes[inode]->id()) + 1);
                 else  // elements on other procs have to store their global node ids
-                  nodevector.push_back(nodes[inode]->Id());
+                  nodevector.push_back(nodes[inode]->id());
               }
             }
             break;
@@ -541,32 +541,32 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
           case Core::FE::CellType::nurbs9:
           {
             if (!writecp_)
-              write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
               for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::quad9); ++isubele)
                 for (int isubnode = 0; isubnode < 4; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
-                    write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->Id()) + 1);
+                    write(geofile, proc0map->LID(nodes[subquadmap[isubele][isubnode]]->id()) + 1);
                   else  // elements on other procs have to store their global node ids
-                    nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
+                    nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->id());
             }
             break;
           }
           case Core::FE::CellType::nurbs27:
           {
             if (!writecp_)
-              write_nurbs_cell(actele->Shape(), actele->Id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, dis, proc0map);
             else
             {
               // write subelements
               for (int isubele = 0; isubele < get_num_sub_ele(Core::FE::CellType::hex27); ++isubele)
                 for (int isubnode = 0; isubnode < 8; ++isubnode)
                   if (myrank_ == 0)  // proc0 can write its elements immidiately
-                    write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->Id()) + 1);
+                    write(geofile, proc0map->LID(nodes[subhexmap[isubele][isubnode]]->id()) + 1);
                   else  // elements on other procs have to store their global node ids
-                    nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->Id());
+                    nodevector.push_back(nodes[subhexmap[isubele][isubnode]]->id());
             }
             break;
           }
@@ -605,7 +605,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   std::vector<char> rblock;  // recieving block
 
   // create an exporter for communication
-  Core::Communication::Exporter exporter(dis->Comm());
+  Core::Communication::Exporter exporter(dis->get_comm());
 
   // pack my node ids into sendbuffer
   sblock.clear();
@@ -615,7 +615,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   swap(sblock, data());
 
   // now we start the communication
-  for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis->Comm().NumProc()); ++pid)
+  for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis->get_comm().NumProc()); ++pid)
   {
     MPI_Request request;
     int tag = 0;
@@ -635,16 +635,16 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     rblock.clear();
     if (myrank_ == 0)
     {
-      exporter.ReceiveAny(frompid, tag, rblock, length);
+      exporter.receive_any(frompid, tag, rblock, length);
       if (tag != 0)
       {
         FOUR_C_THROW("Proc 0 received wrong message (ReceiveAny)");
       }
-      exporter.Wait(request);
+      exporter.wait(request);
     }
 
     // for safety
-    exporter.Comm().Barrier();
+    exporter.get_comm().Barrier();
 
     //--------------------------------------------------
     // Unpack received block and write the data
@@ -668,7 +668,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     }  // end unpack
 
     // for safety
-    exporter.Comm().Barrier();
+    exporter.get_comm().Barrier();
 
   }  // for pid
 
@@ -686,13 +686,13 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
 {
   using namespace FourC;
 
-  const Epetra_Map* elementmap = dis->ElementRowMap();
+  const Epetra_Map* elementmap = dis->element_row_map();
 
   NumElePerDisType numElePerDisType;
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    Core::Elements::Element* actele = dis->gElement(elementmap->GID(iele));
-    const Core::FE::CellType distype = actele->Shape();
+    Core::Elements::Element* actele = dis->g_element(elementmap->GID(iele));
+    const Core::FE::CellType distype = actele->shape();
     // update counter for current distype
     numElePerDisType[distype]++;
   }
@@ -713,11 +713,12 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
   }
 
   // wait for all procs before communication is started
-  (dis->Comm()).Barrier();
+  (dis->get_comm()).Barrier();
 
   // form the global sum
   std::vector<int> globalnumeleperdistype(numeledistypes);
-  (dis->Comm()).SumAll(myNumElePerDisType.data(), globalnumeleperdistype.data(), numeledistypes);
+  (dis->get_comm())
+      .SumAll(myNumElePerDisType.data(), globalnumeleperdistype.data(), numeledistypes);
 
   // create return argument containing the global element numbers per distype
   NumElePerDisType globalNumElePerDisType;
@@ -778,7 +779,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
 {
   using namespace FourC;
 
-  const Epetra_Map* elementmap = dis->ElementRowMap();
+  const Epetra_Map* elementmap = dis->element_row_map();
 
   EleGidPerDisType eleGidPerDisType;
 
@@ -792,8 +793,8 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     const int gid = elementmap->GID(iele);
-    Core::Elements::Element* actele = dis->gElement(gid);
-    const Core::FE::CellType distype = actele->Shape();
+    Core::Elements::Element* actele = dis->g_element(gid);
+    const Core::FE::CellType distype = actele->shape();
     // update counter for current distype
     eleGidPerDisType[distype].push_back(gid);
   }
@@ -805,14 +806,14 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
   for (iterator = numElePerDisType_.begin(); iterator != numElePerDisType_.end(); ++iterator)
   {
     // wait for all procs before communication is started
-    (dis->Comm()).Barrier();
+    (dis->get_comm()).Barrier();
 
     // no we have to communicate everything from proc 1...proc n to proc 0
     std::vector<char> sblock;  // sending block
     std::vector<char> rblock;  // recieving block
 
     // create an exporter for communication
-    Core::Communication::Exporter exporter(dis->Comm());
+    Core::Communication::Exporter exporter(dis->get_comm());
 
     // pack my element gids of this discretization type into sendbuffer
     sblock.clear();
@@ -822,7 +823,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
     swap(sblock, data());
 
     // now we start the communication
-    for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis->Comm().NumProc()); ++pid)
+    for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis->get_comm().NumProc()); ++pid)
     {
       MPI_Request request;
       int tag = 0;
@@ -842,16 +843,16 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
       rblock.clear();
       if (myrank_ == 0)
       {
-        exporter.ReceiveAny(frompid, tag, rblock, length);
+        exporter.receive_any(frompid, tag, rblock, length);
         if (tag != 0)
         {
           FOUR_C_THROW("Proc 0 received wrong message (ReceiveAny)");
         }
-        exporter.Wait(request);
+        exporter.wait(request);
       }
 
       // for safety
-      exporter.Comm().Barrier();
+      exporter.get_comm().Barrier();
 
       //--------------------------------------------------
       // Unpack received block and write the data
@@ -911,7 +912,7 @@ std::string EnsightWriter::get_ensight_string(const Core::FE::CellType distype) 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteResult(const std::string groupname, const std::string name,
+void EnsightWriter::write_result(const std::string groupname, const std::string name,
     const ResultType restype, const int numdf, const int from /*=0*/,
     const bool fillzeros /*=false*/)
 {
@@ -1307,7 +1308,7 @@ void EnsightWriter::write_result_one_time_step(PostResult& result, const std::st
 
 
 
-void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult& result,
+void EnsightWriter::write_special_field(SpecialFieldInterface& special, PostResult& result,
     const ResultType restype, const std::string& groupname,
     const std::vector<std::string>& fieldnames, const std::string& outinfo)
 {
@@ -1404,7 +1405,7 @@ void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult
   }
   // store information for later case file creation
 
-  const std::vector<int> numdfmap = special.NumDfMap();
+  const std::vector<int> numdfmap = special.num_df_map();
   FOUR_C_ASSERT(
       static_cast<int>(numdfmap.size()) == numfiles, "Wrong number of components in NumDfMap.");
   for (int i = 0; i < numfiles; ++i)
@@ -1504,7 +1505,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   write(file, "coordinates");
 
   const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
-  const Epetra_Map* nodemap = dis->NodeRowMap();  // local node row map
+  const Epetra_Map* nodemap = dis->node_row_map();  // local node row map
   const int numnp = nodemap->NumGlobalElements();
 
   const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
@@ -1537,8 +1538,8 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   int min_gid_glob_epetradatamap = std::numeric_limits<int>::max();
   int min_gid_glob_dofrowmap = std::numeric_limits<int>::max();
 
-  dis->Comm().MinAll(&min_gid_my_epetradatamap, &min_gid_glob_epetradatamap, 1);
-  dis->Comm().MinAll(&min_gid_my_dofrowmap, &min_gid_glob_dofrowmap, 1);
+  dis->get_comm().MinAll(&min_gid_my_epetradatamap, &min_gid_glob_epetradatamap, 1);
+  dis->get_comm().MinAll(&min_gid_my_dofrowmap, &min_gid_glob_dofrowmap, 1);
 
   // get offset in dofs
   const int offset = min_gid_glob_epetradatamap - min_gid_glob_dofrowmap;
@@ -1584,9 +1585,9 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     {
       for (int inode = 0; inode < mynumnp; inode++)
       {
-        Core::Nodes::Node* n = dis->lRowNode(inode);
+        Core::Nodes::Node* n = dis->l_row_node(inode);
 
-        const double dofgid = (double)dis->Dof(n, frompid + idf) + offset;
+        const double dofgid = (double)dis->dof(n, frompid + idf) + offset;
         if (dofgid > -1.0)
         {
           dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
@@ -1812,7 +1813,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   write(file, field_->field_pos() + 1);
 
   const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
-  const Epetra_Map* elementmap = dis->ElementRowMap();  // local node row map
+  const Epetra_Map* elementmap = dis->element_row_map();  // local node row map
 
   const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
@@ -1850,8 +1851,8 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   {
     for (int ielem = 0; ielem < nummyelem; ielem++)
     {
-      Core::Elements::Element* n = dis->lRowElement(ielem);
-      const double dofgid = (double)dis->Dof(n, from + idof);
+      Core::Elements::Element* n = dis->l_row_element(ielem);
+      const double dofgid = (double)dis->dof(n, from + idof);
       if (dofgid > -1.0)
       {
         dofgidperelementlid->ReplaceMyValue(ielem, idof, dofgid);
@@ -2345,7 +2346,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
 
   const int NSD = 3;  // number of space dimensions
 
-  const Epetra_Map* nodemap = dis->NodeRowMap();
+  const Epetra_Map* nodemap = dis->node_row_map();
   const int numnp = nodemap->NumMyElements();
   nodecoords = Teuchos::rcp(new Epetra_MultiVector(*nodemap, 3));
 
@@ -2353,10 +2354,10 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   for (int inode = 0; inode < numnp; inode++)
   {
     int gid = nodemap->GID(inode);
-    const Core::Nodes::Node* actnode = dis->gNode(gid);
+    const Core::Nodes::Node* actnode = dis->g_node(gid);
     for (int isd = 0; isd < NSD; ++isd)
     {
-      double val = ((actnode->X())[isd]);
+      double val = ((actnode->x())[isd]);
       nodecoords->ReplaceMyValue(inode, isd, val);
     }
   }

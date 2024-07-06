@@ -26,7 +26,7 @@ be set in problem specific parameter lists derived from this class.
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::FluidEleParameterIntFace* Discret::ELEMENTS::FluidEleParameterIntFace::Instance(
+Discret::ELEMENTS::FluidEleParameterIntFace* Discret::ELEMENTS::FluidEleParameterIntFace::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -36,7 +36,7 @@ Discret::ELEMENTS::FluidEleParameterIntFace* Discret::ELEMENTS::FluidEleParamete
             new Discret::ELEMENTS::FluidEleParameterIntFace());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 //----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ Discret::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
       is_ghost_penalty_reconstruction_step_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::Instance();
+  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
 }
 
 //----------------------------------------------------------------------*
@@ -189,7 +189,7 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_paramet
 
 
   // set correct stationary definition of stabilization parameter automatically
-  if (fldparatimint_->IsStationary())
+  if (fldparatimint_->is_stationary())
   {
     if (EOS_whichtau_ == Inpar::FLUID::EOS_tau_burman_fernandez_hansbo)
       EOS_whichtau_ = Inpar::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt;
@@ -231,7 +231,7 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_xfem_paramete
   ghost_penalty_press_2nd_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.0);
 
   // safety check
-  if (fldparatimint_->IsStationary() and ghost_penalty_trans_)
+  if (fldparatimint_->is_stationary() and ghost_penalty_trans_)
     FOUR_C_THROW("Do not use transient ghost penalties for stationary problems");
 
   ghost_penalty_u_p_2nd_ =
@@ -275,66 +275,66 @@ bool Discret::ELEMENTS::FluidEleParameterIntFace::set_face_specific_fluid_xfem_p
   EOS_whichtau_actual_ = EOS_whichtau_;
   if (face_type == Inpar::XFEM::face_type_std)
   {
-    Set_Face_EOS_Pres((EOS_Pres() == Inpar::FLUID::EOS_PRES_std_eos));
-    set_face_eos_conv_stream((EOS_Conv_Stream() == Inpar::FLUID::EOS_CONV_STREAM_std_eos));
-    set_face_eos_conv_cross((EOS_Conv_Cross() == Inpar::FLUID::EOS_CONV_CROSS_std_eos));
-    set_face_eos_div_vel_jump((EOS_Div() == Inpar::FLUID::EOS_DIV_vel_jump_std_eos));
-    set_face_eos_div_div_jump((EOS_Div() == Inpar::FLUID::EOS_DIV_div_jump_std_eos));
+    set_face_eos_pres((eos_pres() == Inpar::FLUID::EOS_PRES_std_eos));
+    set_face_eos_conv_stream((eos_conv_stream() == Inpar::FLUID::EOS_CONV_STREAM_std_eos));
+    set_face_eos_conv_cross((eos_conv_cross() == Inpar::FLUID::EOS_CONV_CROSS_std_eos));
+    set_face_eos_div_vel_jump((eos_div() == Inpar::FLUID::EOS_DIV_vel_jump_std_eos));
+    set_face_eos_div_div_jump((eos_div() == Inpar::FLUID::EOS_DIV_div_jump_std_eos));
 
-    Set_Face_GP_visc(false);
-    Set_Face_GP_trans(false);
-    Set_Face_GP_u_p_2nd(false);
+    set_face_gp_visc(false);
+    set_face_gp_trans(false);
+    set_face_gp_u_p_2nd(false);
   }
   else if (face_type == Inpar::XFEM::face_type_ghost_penalty)
   {
-    Set_Face_EOS_Pres((EOS_Pres() != Inpar::FLUID::EOS_PRES_none));
-    set_face_eos_conv_stream((EOS_Conv_Stream() != Inpar::FLUID::EOS_CONV_STREAM_none));
-    set_face_eos_conv_cross((EOS_Conv_Cross() != Inpar::FLUID::EOS_CONV_CROSS_none));
-    set_face_eos_div_vel_jump((EOS_Div() == Inpar::FLUID::EOS_DIV_vel_jump_std_eos or
-                               EOS_Div() == Inpar::FLUID::EOS_DIV_vel_jump_xfem_gp));
-    set_face_eos_div_div_jump((EOS_Div() == Inpar::FLUID::EOS_DIV_div_jump_std_eos or
-                               EOS_Div() == Inpar::FLUID::EOS_DIV_div_jump_xfem_gp));
+    set_face_eos_pres((eos_pres() != Inpar::FLUID::EOS_PRES_none));
+    set_face_eos_conv_stream((eos_conv_stream() != Inpar::FLUID::EOS_CONV_STREAM_none));
+    set_face_eos_conv_cross((eos_conv_cross() != Inpar::FLUID::EOS_CONV_CROSS_none));
+    set_face_eos_div_vel_jump((eos_div() == Inpar::FLUID::EOS_DIV_vel_jump_std_eos or
+                               eos_div() == Inpar::FLUID::EOS_DIV_vel_jump_xfem_gp));
+    set_face_eos_div_div_jump((eos_div() == Inpar::FLUID::EOS_DIV_div_jump_std_eos or
+                               eos_div() == Inpar::FLUID::EOS_DIV_div_jump_xfem_gp));
 
-    Set_Face_GP_visc(is_general_ghost_penalty_visc());
-    Set_Face_GP_trans(is_general_ghost_penalty_trans());
-    Set_Face_GP_u_p_2nd(is_general_ghost_penalty_u_p_2nd());
+    set_face_gp_visc(is_general_ghost_penalty_visc());
+    set_face_gp_trans(is_general_ghost_penalty_trans());
+    set_face_gp_u_p_2nd(is_general_ghost_penalty_u_p_2nd());
   }
   else if (face_type == Inpar::XFEM::face_type_boundary_ghost_penalty)
   {
     // TODO: this can be improved if only pressure is assembled later on
 
-    Set_Face_EOS_Pres((EOS_Pres() == Inpar::FLUID::EOS_PRES_xfem_gp));
+    set_face_eos_pres((eos_pres() == Inpar::FLUID::EOS_PRES_xfem_gp));
     set_face_eos_conv_stream(false);
     set_face_eos_conv_cross(false);
     set_face_eos_div_vel_jump(false);
     set_face_eos_div_div_jump(false);
 
-    Set_Face_GP_visc(false);
-    Set_Face_GP_trans(false);
-    Set_Face_GP_u_p_2nd(false);
+    set_face_gp_visc(false);
+    set_face_gp_trans(false);
+    set_face_gp_u_p_2nd(false);
   }
   else if (face_type == Inpar::XFEM::face_type_ghost)
   {
-    Set_Face_EOS_Pres(false);
+    set_face_eos_pres(false);
     set_face_eos_conv_stream(false);
     set_face_eos_conv_cross(false);
     set_face_eos_div_vel_jump(false);
     set_face_eos_div_div_jump(false);
-    Set_Face_GP_visc(false);
-    Set_Face_GP_trans(false);
-    Set_Face_GP_u_p_2nd(false);
+    set_face_gp_visc(false);
+    set_face_gp_trans(false);
+    set_face_gp_u_p_2nd(false);
   }
   else if (face_type == Inpar::XFEM::face_type_porof)
   {
     EOS_whichtau_actual_ = Inpar::FLUID::EOS_tau_poroelast_fluid;
-    Set_Face_EOS_Pres(true);
+    set_face_eos_pres(true);
     set_face_eos_conv_stream(false);
     set_face_eos_conv_cross(false);
     set_face_eos_div_vel_jump(false);
     set_face_eos_div_div_jump(true);
-    Set_Face_GP_visc(false);
-    Set_Face_GP_trans(false);
-    Set_Face_GP_u_p_2nd(false);
+    set_face_gp_visc(false);
+    set_face_gp_trans(false);
+    set_face_gp_u_p_2nd(false);
   }
   else
     FOUR_C_THROW("unknown face_type!!!");
@@ -352,9 +352,9 @@ bool Discret::ELEMENTS::FluidEleParameterIntFace::set_face_specific_fluid_xfem_p
   }
 
   // return false if no stabilization is required
-  if (!Face_EOS_Pres() and !face_eos_conv_stream() and !Face_EOS_Conv_Cross() and
-      !face_eos_div_vel_jump() and !face_eos_div_div_jump() and !Face_GP_visc() and
-      !Face_GP_trans() and !Face_GP_u_p_2nd())
+  if (!face_eos_pres() and !face_eos_conv_stream() and !face_eos_conv_cross() and
+      !face_eos_div_vel_jump() and !face_eos_div_div_jump() and !face_gp_visc() and
+      !face_gp_trans() and !face_gp_u_p_2nd())
   {
     return false;
   }

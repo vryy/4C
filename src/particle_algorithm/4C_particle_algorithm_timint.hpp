@@ -106,7 +106,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    virtual void SetInitialStates();
+    virtual void set_initial_states();
 
     /*!
      * \brief set current time
@@ -258,7 +258,7 @@ namespace PARTICLEALGORITHM
      *
      * \author Sebastian Fuchs \date 07/2018
      */
-    void SetInitialStates() override;
+    void set_initial_states() override;
 
     /*!
      * \brief time integration scheme specific pre-interaction routine

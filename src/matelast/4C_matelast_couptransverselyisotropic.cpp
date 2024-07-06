@@ -61,7 +61,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::setup(int numgp, Input::LineDefini
       // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
       Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      SetFiberVecs(-1.0, Id, Id);
+      set_fiber_vecs(-1.0, Id, Id);
 
       break;
     }
@@ -76,17 +76,17 @@ void Mat::Elastic::CoupTransverselyIsotropic::setup(int numgp, Input::LineDefini
       {
         // Read in of data
         Core::LinAlg::Matrix<3, 3> locsys(true);
-        ReadRadAxiCir(linedef, locsys);
+        read_rad_axi_cir(linedef, locsys);
         Core::LinAlg::Matrix<3, 3> Id(true);
         for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
         // final setup of fiber data
-        SetFiberVecs(0.0, locsys, Id);
+        set_fiber_vecs(0.0, locsys, Id);
       }
       // FIBERi nomenclature
       else if (linedef->has_named(fibername))
       {
         // Read in of data
-        ReadFiber(linedef, fibername, a_);
+        read_fiber(linedef, fibername, a_);
         params_->structural_tensor_strategy()->setup_structural_tensor(a_, aa_);
       }
       // error path
@@ -105,27 +105,27 @@ void Mat::Elastic::CoupTransverselyIsotropic::setup(int numgp, Input::LineDefini
   }
 }
 
-void Mat::Elastic::CoupTransverselyIsotropic::PackSummand(
+void Mat::Elastic::CoupTransverselyIsotropic::pack_summand(
     Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, a_);
   add_to_pack(data, aa_);
 }
 
-void Mat::Elastic::CoupTransverselyIsotropic::UnpackSummand(
+void Mat::Elastic::CoupTransverselyIsotropic::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   extract_from_pack(position, data, a_);
   extract_from_pack(position, data, aa_);
 }
 
-void Mat::Elastic::CoupTransverselyIsotropic::GetFiberVecs(
+void Mat::Elastic::CoupTransverselyIsotropic::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
 {
   fibervecs.push_back(a_);
 }
 
-void Mat::Elastic::CoupTransverselyIsotropic::SetFiberVecs(const double newangle,
+void Mat::Elastic::CoupTransverselyIsotropic::set_fiber_vecs(const double newangle,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if ((params_->angle_ < -90) || (params_->angle_ > 90))
@@ -150,7 +150,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::SetFiberVecs(const double newangle
   params_->structural_tensor_strategy()->setup_structural_tensor(a_, aa_);
 }
 
-void Mat::Elastic::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
+void Mat::Elastic::CoupTransverselyIsotropic::add_strain_energy(double& psi,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
     const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {

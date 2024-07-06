@@ -33,7 +33,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::Para
 {
   boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
   // Initialize Boxfilter
-  boxf_->InitializeVreman();
+  boxf_->initialize_vreman();
 
   return;
 }
@@ -42,7 +42,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::Para
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::Vreman::AddScatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
+void FLD::Vreman::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -65,7 +65,7 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
     const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle)
 {
-  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  const Epetra_Map* nodecolmap = discret_->node_col_map();
 
 
   col_filtered_strainrate_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
@@ -75,13 +75,13 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
 
 
   // perform filtering
-  boxf_->ApplyFilter(velocity, scalar, thermpress, dirichtoggle);
+  boxf_->apply_filter(velocity, scalar, thermpress, dirichtoggle);
 
   // get fitered fields
   boxf_->get_filtered_vreman_strainrate(col_filtered_strainrate_);
   boxf_->get_filtered_vreman_alphaij(col_filtered_alphaij_);
-  boxf_->GetExpression(col_filtered_expression_);
-  boxf_->GetAlpha2(col_filtered_alpha2_);
+  boxf_->get_expression(col_filtered_expression_);
+  boxf_->get_alpha2(col_filtered_alpha2_);
 
   // compute Cv
   Cv_ = dyn_vreman_compute_cv();
@@ -94,7 +94,7 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle, Teuchos::ParameterList& extraparams,
     const int ndsvel)
 {
-  const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
+  const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
 
   col_filtered_phi_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   col_filtered_phi2_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
@@ -103,9 +103,9 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
 
 
   // perform filtering
-  boxfsc_->ApplyFilterScatra(scalar, thermpress, dirichtoggle, ndsvel);
-  boxfsc_->GetFilteredPhi(col_filtered_phi_);
-  boxfsc_->GetFilteredPhi2(col_filtered_phi2_);
+  boxfsc_->apply_filter_scatra(scalar, thermpress, dirichtoggle, ndsvel);
+  boxfsc_->get_filtered_phi(col_filtered_phi_);
+  boxfsc_->get_filtered_phi2(col_filtered_phi2_);
   boxfsc_->get_filtered_phiexpression(col_filtered_phiexpression_);
   boxfsc_->get_filtered_vreman_alphaijsc(col_filtered_alphaijsc_);
   dyn_vreman_compute_dt(extraparams);
@@ -123,9 +123,9 @@ double FLD::Vreman::dyn_vreman_compute_cv()
   double Cv = 0.0;
   double cv_numerator_volumeav = 0.0;
   double cv_denominator_volumeav = 0.0;
-  int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
+  int id = Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_fluid);
   const Core::Mat::PAR::Parameter* mat =
-      Global::Problem::Instance()->Materials()->ParameterById(id);
+      Global::Problem::instance()->materials()->parameter_by_id(id);
   const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double visc = actmat->viscosity_ / dens;
@@ -147,8 +147,8 @@ double FLD::Vreman::dyn_vreman_compute_cv()
 
 
   // call loop over elements (assemble nothing)
-  discret_->EvaluateScalars(calc_vreman_params, Cv_num_denom);
-  discret_->ClearState();
+  discret_->evaluate_scalars(calc_vreman_params, Cv_num_denom);
+  discret_->clear_state();
 
 
   cv_numerator_volumeav = (*Cv_num_denom)[0];
@@ -163,7 +163,7 @@ double FLD::Vreman::dyn_vreman_compute_cv()
   if (Cv < 0.0)
   {
     Cv = 0.0;
-    if (discret_->Comm().MyPID() == 0)
+    if (discret_->get_comm().MyPID() == 0)
       std::cout << "!!   Vreman constant negative --> clipping: Cv=0.0   !!" << std::endl;
   }
 
@@ -180,12 +180,13 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
   double Dt = 0.0;
   double dt_numerator_volumeav = 0.0;
   double dt_denominator_volumeav = 0.0;
-  int idscatra = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_scatra);
+  int idscatra =
+      Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_scatra);
   const Core::Mat::PAR::Parameter* matscatra =
-      Global::Problem::Instance()->Materials()->ParameterById(idscatra);
+      Global::Problem::instance()->materials()->parameter_by_id(idscatra);
   const Mat::PAR::ScatraMat* actmatscatra = static_cast<const Mat::PAR::ScatraMat*>(matscatra);
   double diffus = Mat::PAR::ScatraMat(*actmatscatra)
-                      .GetParameter(actmatscatra->diff, -1);  // actmatscatra->diffusivity_;
+                      .get_parameter(actmatscatra->diff, -1);  // actmatscatra->diffusivity_;
 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
@@ -199,8 +200,8 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> Dt_num_denom =
       Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
   // call loop over elements (assemble nothing)
-  scatradiscret_->EvaluateScalars(calc_vreman_params_scatra, Dt_num_denom);
-  scatradiscret_->ClearState();
+  scatradiscret_->evaluate_scalars(calc_vreman_params_scatra, Dt_num_denom);
+  scatradiscret_->clear_state();
   dt_numerator_volumeav = (*Dt_num_denom)[0];
   dt_denominator_volumeav = (*Dt_num_denom)[1];
   if (sqrt(dt_denominator_volumeav * dt_denominator_volumeav) <

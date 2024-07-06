@@ -41,7 +41,7 @@ namespace XFEM
     XFEMDofSet(
         Core::Geo::CutWizard& wizard, int numMyReservedDofsperNode, Core::FE::Discretization& dis)
         : FixedSizeDofSet(numMyReservedDofsperNode,
-              dis.NodeRowMap()->MaxAllGID() - dis.NodeRowMap()->MinAllGID() + 1),
+              dis.node_row_map()->MaxAllGID() - dis.node_row_map()->MinAllGID() + 1),
           wizard_(wizard),
           dis_(dis)
     {
@@ -51,12 +51,12 @@ namespace XFEM
     /// all nodes
     bool operator==(XFEMDofSet const& other) const
     {
-      const int numnode = dis_.NumMyRowNodes();
+      const int numnode = dis_.num_my_row_nodes();
       for (int lid = 0; lid < numnode; lid++)
       {
-        int gid = dis_.NodeRowMap()->GID(lid);
-        Core::Nodes::Node* node = dis_.gNode(gid);
-        if (NumDofPerNode(*node) != other.NumDofPerNode(*node))
+        int gid = dis_.node_row_map()->GID(lid);
+        Core::Nodes::Node* node = dis_.g_node(gid);
+        if (num_dof_per_node(*node) != other.num_dof_per_node(*node))
           return false;  // dofsets not equal if at least one node has a different number of nodal
                          // dofsets
       }
@@ -83,12 +83,12 @@ namespace XFEM
     \param node            (in) : the node
     \param nodal_dofset_id (in) : id of the nodal dofset
     */
-    void Dof(std::vector<int>& dofs, const Core::Nodes::Node* node,
+    void dof(std::vector<int>& dofs, const Core::Nodes::Node* node,
         unsigned nodal_dofset_id) const override;
 
    protected:
     /// get number of nodal dofs for this element at this node
-    int NumDofPerNode(const Core::Nodes::Node& node) const override;
+    int num_dof_per_node(const Core::Nodes::Node& node) const override;
 
    private:
     /// the cut wizard, holds information about the number of XFEM dofsets per node

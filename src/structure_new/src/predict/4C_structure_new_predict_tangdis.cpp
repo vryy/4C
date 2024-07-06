@@ -61,7 +61,7 @@ void Solid::Predict::TangDis::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
+void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
   NOX::Nln::Group* grp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
@@ -204,11 +204,11 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
       tang_predict_ptr_->global_state().get_jacobian_displ_block();
 
   // check if the jacobian is filled
-  if (not stiff_ptr->Filled()) FOUR_C_THROW("The jacobian is not yet filled!");
+  if (not stiff_ptr->filled()) FOUR_C_THROW("The jacobian is not yet filled!");
 
   Teuchos::RCP<Epetra_Vector> freact_ptr =
       Teuchos::rcp(new Epetra_Vector(*tang_predict_ptr_->global_state().dof_row_map_view()));
-  if (stiff_ptr->Multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
+  if (stiff_ptr->multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
   Core::LinAlg::AssembleMyVector(1.0, F, 1.0, *freact_ptr);

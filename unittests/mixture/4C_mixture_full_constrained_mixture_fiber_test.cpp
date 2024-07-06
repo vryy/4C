@@ -31,9 +31,9 @@ namespace
     const MIXTURE::PAR::RemodelFiberMaterialExponential<Number>* create_material()
     {
       Core::IO::InputParameterContainer container;
-      container.Add("K1", 1.3);
-      container.Add("K2", 1.3);
-      container.Add("COMPRESSION", true);
+      container.add("K1", 1.3);
+      container.add("K2", 1.3);
+      container.add("COMPRESSION", true);
       static auto params = std::make_shared<MIXTURE::PAR::RemodelFiberMaterialExponential<Number>>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 

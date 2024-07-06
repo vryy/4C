@@ -48,7 +48,7 @@ void Solid::Predict::ConstDisVelAccPress::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Predict::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
+void Solid::Predict::ConstDisVelAccPress::compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
@@ -93,7 +93,7 @@ void Solid::Predict::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
 
   // If the const predictors failed e.g. due to too little history information,
   // we use the tangdis predictor as fallback predictor.
-  if (not ok) tangdis_ptr_->Compute(grp);
+  if (not ok) tangdis_ptr_->compute(grp);
 }
 
 FOUR_C_NAMESPACE_CLOSE

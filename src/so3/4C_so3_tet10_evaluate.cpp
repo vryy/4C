@@ -122,8 +122,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -145,8 +145,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -173,11 +173,11 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       // need current velocities and accelerations (for non constant mass matrix)
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-      Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
+      Teuchos::RCP<const Epetra_Vector> acc = discretization.get_state("acceleration");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
@@ -204,8 +204,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       Teuchos::RCP<std::vector<char>> stressdata =
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
@@ -242,8 +242,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       }
 
       // output of rotation matrix R with F = U*R
-      if (Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_ROT") ==
-          true)
+      if (Core::UTILS::IntegralValue<bool>(
+              Global::Problem::instance()->io_params(), "OUTPUT_ROT") == true)
       {
         Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
         Discret::ELEMENTS::UTILS::CalcR<Core::FE::CellType::tet10>(this, mydisp, R);
@@ -267,18 +267,18 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_update_istep:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
-      update_element(mydisp, params, Material());
+      update_element(mydisp, params, material());
     }
     break;
 
     case prestress_update:
     {
       time_ = params.get<double>("total time");
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -297,19 +297,19 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
           Core::LinAlg::Matrix<3, 3> Fnew;
           for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
           {
-            prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
-            prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+            prestress_->storageto_matrix(gp, deltaF, gpdefgrd);
+            prestress_->storageto_matrix(gp, Fhist, prestress_->f_history());
             Fnew.multiply(deltaF, Fhist);
-            prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
+            prestress_->matrixto_storage(gp, Fnew, prestress_->f_history());
           }
 
           // push-forward invJ for every gaussian point
           update_jacobian_mapping(mydisp, *prestress_);
 
           // Update constraintmixture material
-          if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
+          if (material()->material_type() == Core::Materials::m_constraintmixture)
           {
-            SolidMaterial()->update();
+            solid_material()->update();
           }
           break;
         }
@@ -324,7 +324,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
     //==================================================================================
@@ -340,7 +340,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       const static std::vector<double> gpweights_4gp = so_tet10_4gp_weights();
 
       // get displacements of this processor
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
@@ -351,7 +351,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-      UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(Nodes(), xrefe);
+      UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
       UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(mydisp, xdisp);
       UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
@@ -380,7 +380,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
         {
           // get Jacobian mapping wrt to the stored configuration
           Core::LinAlg::Matrix<3, 3> invJdef;
-          prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
+          prestress_->storageto_matrix(gp, invJdef, prestress_->j_history());
           // get derivatives wrt to last spatial configuration
           Core::LinAlg::Matrix<3, 10> N_xyz;
           N_xyz.multiply(invJdef, derivs_4gp[gp]);
@@ -393,7 +393,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 
           // get stored old incremental F
           Core::LinAlg::Matrix<3, 3> Fhist;
-          prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+          prestress_->storageto_matrix(gp, Fhist, prestress_->f_history());
 
           // build total defgrd = delta F * F_old
           Core::LinAlg::Matrix<3, 3> Fnew;
@@ -422,13 +422,13 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 
         // call material for evaluation of strain energy function
         double psi = 0.0;
-        SolidMaterial()->StrainEnergy(glstrain, psi, gp, Id());
+        solid_material()->strain_energy(glstrain, psi, gp, id());
 
         // sum up GP contribution to internal energy
         intenergy += fac * psi;
       }
 
-      if (IsParamsInterface())  // new structural time integration
+      if (is_params_interface())  // new structural time integration
       {
         str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
@@ -447,10 +447,10 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     case calc_global_gpstresses_map:
     {
       // nothing to do for ghost elements
-      if (discretization.Comm().MyPID() == Owner())
+      if (discretization.get_comm().MyPID() == owner())
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+        Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
         Teuchos::RCP<std::vector<char>> stressdata =
             params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         Teuchos::RCP<std::vector<char>> straindata =
@@ -497,7 +497,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
         }
         // add stresses to global map
         // get EleID Id()
-        int gid = Id();
+        int gid = id();
         Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
             Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
         gpstress->shape(NUMGPT_SOTET10, Mat::NUM_STRESS_3D);
@@ -547,7 +547,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     break;
     case struct_init_gauss_point_data_output:
     {
-      FOUR_C_ASSERT(IsParamsInterface(),
+      FOUR_C_ASSERT(is_params_interface(),
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
@@ -559,7 +559,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       std::unordered_map<std::string, int> quantities_map{};
 
       // Ask material for the output quantity names and sizes
-      SolidMaterial()->register_output_data_names(quantities_map);
+      solid_material()->register_output_data_names(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
       str_params_interface().gauss_point_data_output_manager_ptr()->merge_quantities(
@@ -568,7 +568,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
     break;
     case struct_gauss_point_data_output:
     {
-      FOUR_C_ASSERT(IsParamsInterface(),
+      FOUR_C_ASSERT(is_params_interface(),
           "This action type should only be called from the new time integration framework!");
 
       // Collection and assembly of gauss point data
@@ -580,7 +580,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 
         // Step 1: Collect the data for each Gauss point for the material
         Core::LinAlg::SerialDenseMatrix gp_data(NUMGPT_SOTET10, quantity_size, true);
-        bool data_available = SolidMaterial()->EvaluateOutputData(quantity_name, gp_data);
+        bool data_available = solid_material()->evaluate_output_data(quantity_name, gp_data);
 
         // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
         // point)
@@ -667,7 +667,7 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
   const double time = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
@@ -704,7 +704,7 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
 
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
@@ -741,8 +741,8 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? Global::Problem::Instance()
-                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            (functnum > 0) ? Global::Problem::instance()
+                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -770,7 +770,7 @@ void Discret::ELEMENTS::SoTet10::init_jacobian_mapping()
       so_tet10_11gp_derivs();
 
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
 
   // Initialize for stiffness integration with 4 GPs
   invJ_.resize(NUMGPT_SOTET10);
@@ -786,7 +786,7 @@ void Discret::ELEMENTS::SoTet10::init_jacobian_mapping()
 
     if (Prestress::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->is_init()))
-        prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
+        prestress_->matrixto_storage(gp, invJ_[gp], prestress_->j_history());
   }
 
   if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
@@ -841,7 +841,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(Nodes(), xrefe);
+  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
   UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
   UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
@@ -868,7 +868,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
     {
       // get Jacobian mapping wrt to the stored configuration
       Core::LinAlg::Matrix<3, 3> invJdef;
-      prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
+      prestress_->storageto_matrix(gp, invJdef, prestress_->j_history());
       // get derivatives wrt to last spatial configuration
       Core::LinAlg::Matrix<3, 10> N_xyz;
       N_xyz.multiply(invJdef, derivs_4gp[gp]);
@@ -881,7 +881,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
 
       // get stored old incremental F
       Core::LinAlg::Matrix<3, 3> Fhist;
-      prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
+      prestress_->storageto_matrix(gp, Fhist, prestress_->f_history());
 
       // build total defgrd = delta F * F_old
       Core::LinAlg::Matrix<3, 3> Fnew;
@@ -1005,8 +1005,8 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == Core::Materials::m_constraintmixture ||
-        Material()->MaterialType() == Core::Materials::m_mixture)
+    if (material()->material_type() == Core::Materials::m_constraintmixture ||
+        material()->material_type() == Core::Materials::m_mixture)
     {
       // gp reference coordinates
       Core::LinAlg::Matrix<NUMNOD_SOTET10, 1> funct(true);
@@ -1018,7 +1018,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
 
     UTILS::get_temperature_for_structural_material<Core::FE::CellType::tet10>(
         shapefcts_4gp[gp], params);
-    SolidMaterial()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -1125,7 +1125,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
     for (int gp4 = 0; gp4 < NUMGPT_SOTET10; ++gp4)
     {
       vol += gpweights_4gp[gp4];
-      density += gpweights_4gp[gp4] * Material()->Density(gp4);
+      density += gpweights_4gp[gp4] * material()->density(gp4);
     }
     density /= vol;
 
@@ -1150,7 +1150,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
       }
 
       // check for non constant mass matrix
-      if (SolidMaterial()->VaryingDensity())
+      if (solid_material()->varying_density())
       {
         /*
          If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
@@ -1163,7 +1163,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
 
         double timintfac_dis = 0.0;
         double timintfac_vel = 0.0;
-        if (IsParamsInterface())
+        if (is_params_interface())
         {
           timintfac_dis = str_params_interface().get_tim_int_factor_disp();
           timintfac_vel = str_params_interface().get_tim_int_factor_vel();
@@ -1238,8 +1238,8 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
         glstrain(5) = cauchygreen(2, 0);
 
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
-        SolidMaterial()->EvaluateNonLinMass(
-            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, gp, Id());
+        solid_material()->evaluate_non_lin_mass(
+            &defgrd, &glstrain, params, &linmass_disp, &linmass_vel, gp, id());
 
         // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time
         // integration factor
@@ -1304,10 +1304,10 @@ void Discret::ELEMENTS::SoTet10::so_tet10_lumpmass(
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned c = 0; c < (*emass).numCols(); ++c)  // parse columns
+    for (unsigned c = 0; c < (*emass).num_cols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned r = 0; r < (*emass).numRows(); ++r)  // parse rows
+      for (unsigned r = 0; r < (*emass).num_rows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -1460,10 +1460,10 @@ const std::vector<double>& Discret::ELEMENTS::SoTet10::so_tet10_11gp_weights()
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoTet10Type::initialize(Core::FE::Discretization& dis)
 {
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoTet10*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoTet10*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet10* failed");
     actele->init_jacobian_mapping();
   }
@@ -1487,7 +1487,7 @@ void Discret::ELEMENTS::SoTet10::def_gradient(const std::vector<double>& disp,
   {
     // get Jacobian mapping wrt to the stored deformed configuration
     Core::LinAlg::Matrix<3, 3> invJdef;
-    prestress.StoragetoMatrix(gp, invJdef, prestress.JHistory());
+    prestress.storageto_matrix(gp, invJdef, prestress.j_history());
 
     // by N_XYZ = J^-1 * N_rst
     Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> N_xyz;
@@ -1500,7 +1500,7 @@ void Discret::ELEMENTS::SoTet10::def_gradient(const std::vector<double>& disp,
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
 
-    prestress.MatrixtoStorage(gp, defgrd, gpdefgrd);
+    prestress.matrixto_storage(gp, defgrd, gpdefgrd);
   }
   return;
 }
@@ -1527,7 +1527,7 @@ void Discret::ELEMENTS::SoTet10::update_jacobian_mapping(
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
   {
     // get the invJ old state
-    prestress.StoragetoMatrix(gp, invJhist, prestress.JHistory());
+    prestress.storageto_matrix(gp, invJhist, prestress.j_history());
     // get derivatives wrt to invJhist
     N_xyz.multiply(invJhist, derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
@@ -1540,7 +1540,7 @@ void Discret::ELEMENTS::SoTet10::update_jacobian_mapping(
     // push-forward of Jinv
     invJnew.multiply_tn(defgrd, invJhist);
     // store new reference configuration
-    prestress.MatrixtoStorage(gp, invJnew, prestress.JHistory());
+    prestress.matrixto_storage(gp, invJnew, prestress.j_history());
   }  // for (int gp=0; gp<NUMGPT_SOTET10; ++gp)
 
   return;
@@ -1552,7 +1552,7 @@ void Discret::ELEMENTS::SoTet10::update_jacobian_mapping(
 void Discret::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
     Teuchos::ParameterList& params, const Teuchos::RCP<Core::Mat::Material>& mat)
 {
-  if (SolidMaterial()->UsesExtendedUpdate())
+  if (solid_material()->uses_extended_update())
   {
     // in a first step ommit everything with prestress and EAS!!
     /* ============================================================================*
@@ -1566,7 +1566,7 @@ void Discret::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
     Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
     Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
     Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-    UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(Nodes(), xrefe);
+    UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
     UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
     UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
@@ -1591,14 +1591,14 @@ void Discret::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update
       // inelastic deformation gradient)
-      if (SolidMaterial()->UsesExtendedUpdate())
+      if (solid_material()->uses_extended_update())
       {
-        SolidMaterial()->update(defgrd, gp, params, Id());
+        solid_material()->update(defgrd, gp, params, id());
       }
     }
   }
   // Update of history for materials
-  SolidMaterial()->update();
+  solid_material()->update();
 }
 
 FOUR_C_NAMESPACE_CLOSE

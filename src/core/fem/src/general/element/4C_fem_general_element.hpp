@@ -120,7 +120,7 @@ namespace Core::Elements
       }
 
       /// return number of dofs collected
-      int Size() const { return lm_.size(); }
+      int size() const { return lm_.size(); }
 
       /// global dof numbers of elemental dofs
       std::vector<int> lm_;
@@ -164,7 +164,7 @@ namespace Core::Elements
       const LocationData& operator[](int i) const { return data_[i]; }
 
       /// number of location entries, that is number of dofsets in discretization
-      int Size() const { return data_.size(); }
+      int size() const { return data_.size(); }
 
      private:
       std::vector<LocationData> data_;
@@ -200,7 +200,7 @@ namespace Core::Elements
     actually is using the base class Element.
 
     */
-    virtual Element* Clone() const = 0;
+    virtual Element* clone() const = 0;
 
 
     /*!
@@ -209,7 +209,7 @@ namespace Core::Elements
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    int UniqueParObjectId() const override = 0;
+    int unique_par_object_id() const override = 0;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -228,7 +228,7 @@ namespace Core::Elements
     void unpack(const std::vector<char>& data) override;
 
     /// return ElementType instance
-    virtual Core::Elements::ElementType& ElementType() const = 0;
+    virtual Core::Elements::ElementType& element_type() const = 0;
 
     //@}
 
@@ -237,22 +237,22 @@ namespace Core::Elements
     /*!
     \brief Return global id of this element
     */
-    int Id() const { return id_; }
+    int id() const { return id_; }
 
     /*!
     \brief Return processor local col map id
     */
-    virtual int LID() const { return lid_; }
+    virtual int lid() const { return lid_; }
 
     /*!
     \brief Return owner of this element
     */
-    virtual int Owner() const { return owner_; }
+    virtual int owner() const { return owner_; }
 
     /*!
     \brief Get shape type of element
     */
-    virtual Core::FE::CellType Shape() const = 0;
+    virtual Core::FE::CellType shape() const = 0;
 
     /*!
     \brief Return number of nodes to this element
@@ -266,22 +266,22 @@ namespace Core::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual int NumPoint() const { return nodeid_.size(); }
+    virtual int num_point() const { return nodeid_.size(); }
 
     /*!
     \brief Return number of lines to this element
     */
-    virtual int NumLine() const { return 0; }
+    virtual int num_line() const { return 0; }
 
     /*!
     \brief Return number of surfaces to this element
     */
-    virtual int NumSurface() const { return 0; }
+    virtual int num_surface() const { return 0; }
 
     /*!
     \brief Return number of volumes to this element
     */
-    virtual int NumVolume() const { return 0; }
+    virtual int num_volume() const { return 0; }
 
     /*!
      * \brief Return the number of faces to the element.
@@ -289,12 +289,12 @@ namespace Core::Elements
      * As opposed to NumLine(), NumSurface(), etc which have fixed dimension,
      * this is always the object one dimension less than the element dimension.
      */
-    virtual int NumFace() const;
+    virtual int num_face() const;
 
     /*!
     \brief Return id's of nodes adjacent to this element
     */
-    virtual const int* NodeIds() const
+    virtual const int* node_ids() const
     {
       if (nodeid_.size())
         return nodeid_.data();
@@ -314,7 +314,7 @@ namespace Core::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual Core::Nodes::Node** Nodes()
+    virtual Core::Nodes::Node** nodes()
     {
       if (node_.size())
         return node_.data();
@@ -338,7 +338,7 @@ namespace Core::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual const Core::Nodes::Node* const* Nodes() const
+    virtual const Core::Nodes::Node* const* nodes() const
     {
       if (node_.size())
         return (const Core::Nodes::Node* const*)(node_.data());
@@ -353,7 +353,7 @@ namespace Core::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual const int* PointIds() const { return NodeIds(); }
+    virtual const int* point_ids() const { return node_ids(); }
 
     /*!
      * \brief Get vector of ptrs to points forming the geometry of this element
@@ -362,7 +362,7 @@ namespace Core::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual Core::Nodes::Node** Points() { return Nodes(); }
+    virtual Core::Nodes::Node** points() { return nodes(); }
 
     /*!
      * \brief Get const vector of ptrs to points forming the geometry of this element
@@ -371,7 +371,7 @@ namespace Core::Elements
      * discretization where the integration cell (i.e. the "element") is not
      * formed by the nodes and many more nodes can have influence.
      */
-    virtual const Core::Nodes::Node* const* Points() const { return Nodes(); }
+    virtual const Core::Nodes::Node* const* points() const { return nodes(); }
 
 
     /*!
@@ -391,7 +391,7 @@ namespace Core::Elements
     \note Do not store line elements inside parent elements since the nodes
 might become invalid after a redistribution of the discretization.
     */
-    virtual std::vector<Teuchos::RCP<Element>> Lines()
+    virtual std::vector<Teuchos::RCP<Element>> lines()
     {
       return std::vector<Teuchos::RCP<Element>>(0);
     }
@@ -416,7 +416,7 @@ might become invalid after a redistribution of the discretization.
     \note Do not store surface elements inside parent elements since the nodes
 might become invalid after a redistribution of the discretization.
     */
-    virtual std::vector<Teuchos::RCP<Element>> Surfaces()
+    virtual std::vector<Teuchos::RCP<Element>> surfaces()
     {
       return std::vector<Teuchos::RCP<Element>>(0);
     }
@@ -424,31 +424,31 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Set whether the given element is a nurbs element
     */
-    virtual bool& SetNurbsElement() { return is_nurbs_; }
+    virtual bool& set_nurbs_element() { return is_nurbs_; }
 
 
     /*!
     \brief Get whether the given element is a nurbs element
     */
-    virtual bool IsNurbsElement() const { return is_nurbs_; }
+    virtual bool is_nurbs_element() const { return is_nurbs_; }
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom
     living there
     */
-    virtual bool IsFaceElement() const { return false; }
+    virtual bool is_face_element() const { return false; }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<FaceElement>* Faces() { return face_.empty() ? nullptr : face_.data(); }
+    Teuchos::RCP<FaceElement>* faces() { return face_.empty() ? nullptr : face_.data(); }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<FaceElement> const* Faces() const
+    Teuchos::RCP<FaceElement> const* faces() const
     {
       return face_.empty() ? nullptr : face_.data();
     }
@@ -457,7 +457,7 @@ might become invalid after a redistribution of the discretization.
     \brief Get a pointer to the neighboring element behind the given face. Returns 0 if at boundary
     or faces are not created
     */
-    Element* Neighbor(const int face) const;
+    Element* neighbor(const int face) const;
 
     /*!
     \brief Construct a face element between this element and the given slave element
@@ -473,7 +473,7 @@ might become invalid after a redistribution of the discretization.
 
     \author schott 03/12
     */
-    virtual Teuchos::RCP<Element> CreateFaceElement(
+    virtual Teuchos::RCP<Element> create_face_element(
         Element* parent_slave,                 //!< parent slave element
         int nnode,                             //!< number of nodes
         const int* nodeids,                    //!< node ids
@@ -498,7 +498,7 @@ might become invalid after a redistribution of the discretization.
     nodes \param nodeweights (out): A Core::LinAlg::SerialDenseVector containing weights of all
     nodes
     */
-    virtual void NodalConnectivity(
+    virtual void nodal_connectivity(
         Core::LinAlg::SerialDenseMatrix& edgeweights, Core::LinAlg::SerialDenseVector& nodeweights);
 
     /*!
@@ -506,7 +506,7 @@ might become invalid after a redistribution of the discretization.
 
     \param double (out): cost to evaluate this element
     */
-    virtual double EvaluationCost() { return 10.0; }
+    virtual double evaluation_cost() { return 10.0; }
 
     /*!
     \brief Get number of degrees of freedom of a certain node
@@ -521,7 +521,7 @@ might become invalid after a redistribution of the discretization.
     method.
 
     */
-    virtual int NumDofPerNode(const Core::Nodes::Node& node) const
+    virtual int num_dof_per_node(const Core::Nodes::Node& node) const
     {
       FOUR_C_THROW("not implemented");
       return -1;
@@ -556,7 +556,7 @@ might become invalid after a redistribution of the discretization.
     components. HDG face elements overwrite this function and return the number of scalar
     dofs.
     */
-    virtual int NumDofPerComponent(const unsigned /* face */) const { return num_node(); }
+    virtual int num_dof_per_component(const unsigned /* face */) const { return num_node(); }
 
     /*!
     \brief Get the degree of an element
@@ -565,7 +565,7 @@ might become invalid after a redistribution of the discretization.
     HDG elements implement this functions, standard elements return the degree
     depending on their discretization type and assuming isoparametric concept.
     */
-    virtual int Degree() const;
+    virtual int degree() const;
 
 
     /*!
@@ -606,7 +606,7 @@ might become invalid after a redistribution of the discretization.
 
     \param nummat (in): number of requested material
     */
-    virtual Teuchos::RCP<Core::Mat::Material> Material(int nummat = 0) const
+    virtual Teuchos::RCP<Core::Mat::Material> material(int nummat = 0) const
     {
       FOUR_C_ASSERT(nummat < (int)mat_.size(), "invalid material number");
       return mat_[nummat];
@@ -623,7 +623,7 @@ might become invalid after a redistribution of the discretization.
 
     \param mypid (in): id of calling processor
     */
-    virtual bool HasOnlyGhostNodes(const int mypid) const;
+    virtual bool has_only_ghost_nodes(const int mypid) const;
 
     /*!
     \brief Query names of element data to be visualized using BINIO
@@ -645,14 +645,14 @@ might become invalid after a redistribution of the discretization.
                         key names of data it wants to visualize and with int dimensions
                         of that data.
     */
-    virtual void VisNames(std::map<std::string, int>& names) { return; }
+    virtual void vis_names(std::map<std::string, int>& names) { return; }
 
     /*!
     \brief Visuzalize the owner of the element using BINIO
 
     \param names (out): Owner is added to the key names
     */
-    virtual void VisOwner(std::map<std::string, int>& names)
+    virtual void vis_owner(std::map<std::string, int>& names)
     {
       names.insert(std::pair<std::string, int>("Owner", 1));
       // names.insert(std::pair<string,int>("EleGId",1));
@@ -674,18 +674,18 @@ might become invalid after a redistribution of the discretization.
     \param name (in):   Name of data that is currently processed for visualization
     \param data (out):  data to be filled by element if it recognizes the name
     */
-    virtual bool VisData(const std::string& name, std::vector<double>& data)
+    virtual bool vis_data(const std::string& name, std::vector<double>& data)
     {
       if (name == "Owner")
       {
         if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
-        data[0] = Owner();
+        data[0] = owner();
         return true;
       }
       if (name == "EleGId")
       {
         if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
-        data[0] = Id();
+        data[0] = id();
         return true;
       }
       return false;
@@ -698,12 +698,12 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief Set global id of this element
     */
-    void SetId(const int id) { id_ = id; }
+    void set_id(const int id) { id_ = id; }
 
     /*!
     \brief Read input for this element
     */
-    virtual bool ReadElement(
+    virtual bool read_element(
         const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef);
 
     /*!
@@ -711,7 +711,7 @@ might become invalid after a redistribution of the discretization.
 
       \param lid: processor local col id
      */
-    void SetLID(int lid) { lid_ = lid; }
+    void set_lid(int lid) { lid_ = lid; }
 
     /*!
     \brief Set ownership
@@ -726,7 +726,7 @@ might become invalid after a redistribution of the discretization.
              the Core::FE::Discretization the element is stored in.
 
     */
-    void SetOwner(const int owner) { owner_ = owner; }
+    void set_owner(const int owner) { owner_ = owner; }
 
     /*!
     \brief Set a list of node ids this element is connected to
@@ -740,14 +740,14 @@ might become invalid after a redistribution of the discretization.
     \param nodes : list of unique global nodal ids
 
     */
-    void SetNodeIds(const int nnode, const int* nodes);
+    void set_node_ids(const int nnode, const int* nodes);
 
     /*!
     \brief Set a list of node ids this element is connected to
 
     Here the node ids are directly taken from an input line.
     */
-    void SetNodeIds(const std::string& distype, Input::LineDefinition* linedef);
+    void set_node_ids(const std::string& distype, Input::LineDefinition* linedef);
 
     /*!
     \brief Set a the face with index faceindex this element is connected to
@@ -763,7 +763,7 @@ might become invalid after a redistribution of the discretization.
     \param faceindex   : index of the given face
     \param faceelement : face object
     */
-    void SetFace(const int faceindex, FaceElement* faceelement);
+    void set_face(const int faceindex, FaceElement* faceelement);
 
     /*!
     \brief Set a the face with index faceindex this element is connected to
@@ -777,7 +777,7 @@ might become invalid after a redistribution of the discretization.
     \param faceindex   : index of the given face
     \param faceelement : face object
     */
-    void SetFace(const int faceindex, Teuchos::RCP<FaceElement> faceelement);
+    void set_face(const int faceindex, Teuchos::RCP<FaceElement> faceelement);
 
     /// @brief Set specific element material
     /*!
@@ -788,7 +788,7 @@ might become invalid after a redistribution of the discretization.
       @param index index in material list
       @param mat pointer to the Material instance to set
      */
-    virtual void SetMaterial(const int index, Teuchos::RCP<Core::Mat::Material> mat);
+    virtual void set_material(const int index, Teuchos::RCP<Core::Mat::Material> mat);
 
     /// Add element material
     /*!
@@ -799,7 +799,7 @@ might become invalid after a redistribution of the discretization.
       \param mat: material to be added
       \param nummat (out):  number of materials the element holds
      */
-    int AddMaterial(Teuchos::RCP<Core::Mat::Material> mat);
+    int add_material(Teuchos::RCP<Core::Mat::Material> mat);
 
     /// Number of materials of the element
     /*!
@@ -809,7 +809,7 @@ might become invalid after a redistribution of the discretization.
 
       \param nummat (out):  number of materials the element holds
      */
-    int NumMaterial() const { return mat_.size(); };
+    int num_material() const { return mat_.size(); };
 
     //@}
 
@@ -829,7 +829,7 @@ might become invalid after a redistribution of the discretization.
              NOT be overwritten but stored twice in the element
 
     */
-    void SetCondition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    void set_condition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
     {
       condition_.insert(
           std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
@@ -847,7 +847,7 @@ might become invalid after a redistribution of the discretization.
     \param out  (out): vector of pointers to all conditions with that name
 
     */
-    virtual void GetCondition(
+    virtual void get_condition(
         const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
 
     /*!
@@ -863,12 +863,12 @@ might become invalid after a redistribution of the discretization.
 
     \return Returns nullptr if condition with that name does not exist
     */
-    virtual Core::Conditions::Condition* GetCondition(const std::string& name) const;
+    virtual Core::Conditions::Condition* get_condition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this element
     */
-    virtual void ClearConditions()
+    virtual void clear_conditions()
     {
       condition_.clear();
       return;
@@ -902,7 +902,7 @@ might become invalid after a redistribution of the discretization.
     \param doDirichlet (in): whether to get the Dirichlet flags
 
     */
-    virtual void LocationVector(const Core::FE::Discretization& dis, const std::vector<int>& nds,
+    virtual void location_vector(const Core::FE::Discretization& dis, const std::vector<int>& nds,
         LocationArray& la, bool doDirichlet) const;
 
     /*!
@@ -929,7 +929,7 @@ might become invalid after a redistribution of the discretization.
     \param doDirichlet (in): whether to get the Dirichlet flags
 
     */
-    virtual void LocationVector(
+    virtual void location_vector(
         const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const;
 
 
@@ -964,7 +964,7 @@ might become invalid after a redistribution of the discretization.
     \param condstring (in): Name of condition to be evaluated
     \param condstring (in):  List of parameters for use at element level
     */
-    virtual void LocationVector(const Core::FE::Discretization& dis, LocationArray& la,
+    virtual void location_vector(const Core::FE::Discretization& dis, LocationArray& la,
         bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const;
     /*!
     \brief Return the location vector of this element
@@ -995,7 +995,7 @@ might become invalid after a redistribution of the discretization.
                            matches dofs in lm.
 
     */
-    virtual void LocationVector(const Core::FE::Discretization& dis, std::vector<int>& lm,
+    virtual void location_vector(const Core::FE::Discretization& dis, std::vector<int>& lm,
         std::vector<int>& lmdirich, std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
     /*!
@@ -1024,7 +1024,7 @@ might become invalid after a redistribution of the discretization.
                            matches dofs in lm.
 
     */
-    virtual void LocationVector(const Core::FE::Discretization& dis, std::vector<int>& lm,
+    virtual void location_vector(const Core::FE::Discretization& dis, std::vector<int>& lm,
         std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
     /*!
@@ -1130,7 +1130,7 @@ might become invalid after a redistribution of the discretization.
 
     \param nodes (in): A map of all nodes of a discretization
     */
-    virtual bool BuildNodalPointers(std::map<int, Teuchos::RCP<Core::Nodes::Node>>& nodes);
+    virtual bool build_nodal_pointers(std::map<int, Teuchos::RCP<Core::Nodes::Node>>& nodes);
 
     /*!
     \brief Build pointer vector from vector of nodal pointers
@@ -1144,7 +1144,7 @@ might become invalid after a redistribution of the discretization.
                        is implicitly expected to be of length num_node() and contain pointers
                        to nodes in the correct element local ordering scheme.
     */
-    virtual bool BuildNodalPointers(Core::Nodes::Node** nodes);
+    virtual bool build_nodal_pointers(Core::Nodes::Node** nodes);
 
     /*!
     \brief Build pointer vector from map of elements
@@ -1182,7 +1182,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief returns true if the interface is defined and initialized, otherwise false
     */
-    virtual inline bool IsParamsInterface() const
+    virtual inline bool is_params_interface() const
     {
       // dummy implementation
       return false;
@@ -1191,7 +1191,7 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief get access to the interface pointer
     */
-    virtual Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr()
+    virtual Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr()
     {
       FOUR_C_THROW(
           "This is a dummy function. Please implement the function in the derived classes, if "
@@ -1236,7 +1236,7 @@ might become invalid after a redistribution of the discretization.
     /**
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
-    virtual Core::GeometricSearch::BoundingVolume GetBoundingVolume(
+    virtual Core::GeometricSearch::BoundingVolume get_bounding_volume(
         const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
         const Core::GeometricSearch::GeometricSearchParams& params) const;
     /// @}
@@ -1337,7 +1337,7 @@ might become invalid after a redistribution of the discretization.
     \brief Returns whether the given element actually is a face element with degrees of freedom
     living there
     */
-    bool IsFaceElement() const override { return true; }
+    bool is_face_element() const override { return true; }
 
     /*!
     \brief Return the parent element id the face element is connected to (for interior faces, the
@@ -1347,7 +1347,7 @@ might become invalid after a redistribution of the discretization.
 
     This Id is also available, if the calling processor is not owner of the parent_element()!
     */
-    int ParentElementId() const { return parent_id_; }
+    int parent_element_id() const { return parent_id_; }
 
     /*!
     \brief Return the parent element the face element is connected to (for interior faces, the
@@ -1362,7 +1362,7 @@ might become invalid after a redistribution of the discretization.
 
     If no parent master has been assigned, nullptr is returned (e.g. on non-face discretizations)
     */
-    Element* ParentMasterElement() const { return parent_master_; }
+    Element* parent_master_element() const { return parent_master_; }
 
     /*!
     \brief Return the slave element the face element is connected to
@@ -1370,12 +1370,12 @@ might become invalid after a redistribution of the discretization.
     If no parent slave has been assigned, nullptr is returned (non-face discretizations, boundary
     faces)
     */
-    Element* ParentSlaveElement() const { return parent_slave_; }
+    Element* parent_slave_element() const { return parent_slave_; }
 
     /*!
      \brief Get the index of a face element within the parent element
      */
-    int FaceParentNumber() const
+    int face_parent_number() const
     {
       FOUR_C_ASSERT(lface_master_ != -1,
           "Face information has not been filled or this is not a face element");
@@ -1385,7 +1385,7 @@ might become invalid after a redistribution of the discretization.
     /*!
      \brief Get the index of a face element within the parent master element
      */
-    int FaceMasterNumber() const
+    int face_master_number() const
     {
       FOUR_C_ASSERT(lface_master_ != -1,
           "Face information has not been filled or this is not a face element");
@@ -1395,7 +1395,7 @@ might become invalid after a redistribution of the discretization.
     /*!
      \brief Get the index of a face element within the parent slave element
      */
-    int FaceSlaveNumber() const
+    int face_slave_number() const
     {
       FOUR_C_ASSERT(lface_slave_ != -1,
           "Face information has not been filled or this is not a face element with slave parent");
@@ -1409,7 +1409,7 @@ might become invalid after a redistribution of the discretization.
 
     Only filled for interior faces, otherwise zero length-vector (empty).
     */
-    const std::vector<int>& GetLocalTrafoMap() const { return localtrafomap_; }
+    const std::vector<int>& get_local_trafo_map() const { return localtrafomap_; }
 
     /*!
     \brief Set the master element this face element is connected to
@@ -1426,7 +1426,7 @@ might become invalid after a redistribution of the discretization.
     {
       parent_master_ = master;
       lface_master_ = lface_master;
-      if (master != nullptr) parent_id_ = master->Id();
+      if (master != nullptr) parent_id_ = master->id();
     }
 
     /*!

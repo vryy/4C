@@ -231,7 +231,7 @@ void Core::LinAlg::apply_dirichlet_to_system(
 void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
 {
-  A.ApplyDirichlet(dbctoggle);
+  A.apply_dirichlet(dbctoggle);
   apply_dirichlet_to_system(x, b, dbcval, dbctoggle);
 }
 
@@ -240,7 +240,7 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Ep
 void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
-  A.ApplyDirichlet(dbcmap);
+  A.apply_dirichlet(dbcmap);
   apply_dirichlet_to_system(x, b, dbcval, dbcmap);
 }
 

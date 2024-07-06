@@ -99,7 +99,7 @@ void Solid::IMPLICIT::GenAlpha::setup()
      * at the end-point t_{n+1} of each time interval, but never explicitly at
      * some generalized midpoint, such as t_{n+1-\alpha_f}. Thus, any cumbersome
      * extrapolation of history variables, etc. becomes obsolete. */
-    const enum Inpar::Solid::MidAverageEnum& midavg = genalpha_sdyn.GetMidAverageType();
+    const enum Inpar::Solid::MidAverageEnum& midavg = genalpha_sdyn.get_mid_average_type();
     if (midavg != Inpar::Solid::midavg_trlike)
       FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
     else
@@ -125,7 +125,7 @@ void Solid::IMPLICIT::GenAlpha::setup()
   // set initial displacement
   // -------------------------------------------------------------------
   set_initial_displacement(
-      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().StartFuncNo());
+      tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().start_func_no());
 
   // Has to be set before the post_setup() routine is called!
   issetup_ = true;
@@ -141,14 +141,14 @@ void Solid::IMPLICIT::GenAlpha::post_setup()
   // check for applicability of classical GenAlpha scheme
   // ---------------------------------------------------------------------------
   // set the constant parameters for the element evaluation
-  if (tim_int().get_data_sdyn().GetMassLinType() == Inpar::Solid::ml_rotations)
+  if (tim_int().get_data_sdyn().get_mass_lin_type() == Inpar::Solid::ml_rotations)
   {
     FOUR_C_THROW(
         "MASSLIN=ml_rotations is not supported by classical GenAlpha! "
         "Choose GenAlphaLieGroup instead!");
   }
 
-  if (not sdyn().NeglectInertia())
+  if (not sdyn().neglect_inertia())
   {
     equilibrate_initial_state();
   }
@@ -168,11 +168,11 @@ void Solid::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& 
       dynamic_cast<const Solid::TimeInt::GenAlphaDataSDyn&>(tim_int().get_data_sdyn());
 
   // get a copy of the input parameters
-  coeffs.beta_ = genalpha_sdyn.GetBeta();
-  coeffs.gamma_ = genalpha_sdyn.GetGamma();
-  coeffs.alphaf_ = genalpha_sdyn.GetAlphaF();
-  coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
-  coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
+  coeffs.beta_ = genalpha_sdyn.get_beta();
+  coeffs.gamma_ = genalpha_sdyn.get_gamma();
+  coeffs.alphaf_ = genalpha_sdyn.get_alpha_f();
+  coeffs.alpham_ = genalpha_sdyn.get_alpha_m();
+  coeffs.rhoinf_ = genalpha_sdyn.get_rho_inf();
 
   Solid::ComputeGeneralizedAlphaParameters(coeffs);
 }
@@ -197,10 +197,10 @@ double Solid::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
   Teuchos::RCP<const Core::LinAlg::SparseOperator> mass_ptr = global_state().get_mass_matrix();
   const Core::LinAlg::SparseMatrix& mass =
       dynamic_cast<const Core::LinAlg::SparseMatrix&>(*mass_ptr);
-  Epetra_Vector tmp(mass.RangeMap(), true);
+  Epetra_Vector tmp(mass.range_map(), true);
 
   double kin_energy_incr = 0.0;
-  mass.Multiply(false, accm, tmp);
+  mass.multiply(false, accm, tmp);
   tmp.Dot(accm, &kin_energy_incr);
 
   kin_energy_incr *= 0.5 * beta_ * dt * dt / (1 - alpham_);
@@ -329,7 +329,7 @@ bool Solid::IMPLICIT::GenAlpha::apply_stiff(
 
   if (not ok) return ok;
 
-  jac.Complete();
+  jac.complete();
 
   return ok;
 }
@@ -349,7 +349,7 @@ bool Solid::IMPLICIT::GenAlpha::apply_force_stiff(
 
   if (not ok) return ok;
 
-  jac.Complete();
+  jac.complete();
 
   return ok;
 }
@@ -397,11 +397,11 @@ void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   const double& dt = (*global_state().get_delta_time())[0];
   // add inertial contributions and scale the structural stiffness block
-  stiff_ptr->Add(
+  stiff_ptr->add(
       *global_state().get_mass_matrix(), false, (1.0 - alpham_) / (beta_ * dt * dt), 1.0);
   // add Rayleigh damping contributions
   if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
-    stiff_ptr->Add(
+    stiff_ptr->add(
         *global_state().get_damp_matrix(), false, (1.0 - alphaf_) * gamma_ / (beta_ * dt), 1.0);
 }
 

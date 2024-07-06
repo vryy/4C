@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
     };
 
     /// whether to write output for gaps
-    bool IsWriteGaps() const
+    bool is_write_gaps() const
     {
       throw_error_if_not_init_and_setup();
       return output_gaps_;

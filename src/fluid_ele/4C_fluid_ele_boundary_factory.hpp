@@ -34,7 +34,7 @@ namespace Discret
       virtual ~FluidBoundaryFactory() = default;
 
       //! ProvideImpl
-      static FluidBoundaryInterface* ProvideImpl(Core::FE::CellType distype, std::string problem);
+      static FluidBoundaryInterface* provide_impl(Core::FE::CellType distype, std::string problem);
 
      private:
       //! define FluidEleBoundaryCalc instances dependent on problemtype

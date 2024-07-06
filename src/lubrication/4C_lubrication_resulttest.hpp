@@ -60,7 +60,7 @@ namespace LUBRICATION
     void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity not associated with a particular element or node
-    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_special(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    protected:
     //! get nodal result to be tested

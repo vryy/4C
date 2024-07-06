@@ -35,7 +35,7 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcElchElectrode<distype, probdim>* Instance(
+      static ScaTraEleCalcElchElectrode<distype, probdim>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 
@@ -298,28 +298,28 @@ namespace Discret
       };
 
       //! Set conductivity of the electrolyte solution and electrode
-      void SetCond(const double cond) { cond_ = cond; };
+      void set_cond(const double cond) { cond_ = cond; };
 
       //! Access routine for conductivity of the electrolyte solution and electrode
-      double GetCond() { return cond_; };
+      double get_cond() { return cond_; };
 
       //! Set derivative of the conductivity with respect to concentrations
-      void SetConcDerivCond(const double concderivcond, const int k)
+      void set_conc_deriv_cond(const double concderivcond, const int k)
       {
         concderivcond_[k] = concderivcond;
       };
 
       //! Access routine for derivative of the conductivity with respect to concentrations
-      double GetConcDerivCond(const int k) { return concderivcond_[k]; };
+      double get_conc_deriv_cond(const int k) { return concderivcond_[k]; };
 
       //! Set derivative of the conductivity with respect to temperature
-      void SetTempDerivCond(const double tempderivcond, const int k)
+      void set_temp_deriv_cond(const double tempderivcond, const int k)
       {
         tempderivcond_[k] = tempderivcond;
       };
 
       //! Access routine for derivative of the conductivity with respect to temperature
-      double GetTempDerivCond(const int k) { return tempderivcond_[k]; };
+      double get_temp_deriv_cond(const int k) { return tempderivcond_[k]; };
 
       /*========================================================================*/
       //! @name output
@@ -392,7 +392,7 @@ namespace Discret
       ScaTraEleInternalVariableManagerElchElectrode(
           int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
           : ScaTraEleInternalVariableManagerElch<nsd, nen>(numscal, elchpara),
-            invf_(1. / vmelch::parameters_->Faraday())
+            invf_(1. / vmelch::parameters_->faraday())
       {
       }
 
@@ -440,7 +440,7 @@ namespace Discret
       };
 
       //! return constant parameter 1./F
-      double InvF() { return invf_; };
+      double inv_f() { return invf_; };
 
      protected:
       //! constant parameter 1./F

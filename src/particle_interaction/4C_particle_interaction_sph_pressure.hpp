@@ -57,7 +57,7 @@ namespace ParticleInteraction
         const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle);
 
     //! compute pressure using equation of state and density
-    void ComputePressure() const;
+    void compute_pressure() const;
 
    protected:
     //! interface to particle engine

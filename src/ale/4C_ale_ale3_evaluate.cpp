@@ -23,34 +23,34 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::Impl(
+Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::impl(
     Discret::ELEMENTS::Ale3* ele)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::hex8:
     {
-      return Ale3Impl<Core::FE::CellType::hex8>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex8>::instance(Core::UTILS::SingletonAction::create);
     }
     case Core::FE::CellType::hex20:
     {
-      return Ale3Impl<Core::FE::CellType::hex20>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex20>::instance(Core::UTILS::SingletonAction::create);
     }
     case Core::FE::CellType::hex27:
     {
-      return Ale3Impl<Core::FE::CellType::hex27>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex27>::instance(Core::UTILS::SingletonAction::create);
     }
     case Core::FE::CellType::tet4:
     {
-      return Ale3Impl<Core::FE::CellType::tet4>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::tet4>::instance(Core::UTILS::SingletonAction::create);
     }
     case Core::FE::CellType::tet10:
     {
-      return Ale3Impl<Core::FE::CellType::tet10>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::tet10>::instance(Core::UTILS::SingletonAction::create);
     }
     case Core::FE::CellType::wedge6:
     {
-      return Ale3Impl<Core::FE::CellType::wedge6>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::wedge6>::instance(Core::UTILS::SingletonAction::create);
     }
       /*  case Core::FE::CellType::wedge15:
         {
@@ -59,25 +59,25 @@ Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::Impl
         }*/
     case Core::FE::CellType::pyramid5:
     {
-      return Ale3Impl<Core::FE::CellType::pyramid5>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::pyramid5>::instance(Core::UTILS::SingletonAction::create);
     }
     case Core::FE::CellType::nurbs8:
     {
-      return Ale3Impl<Core::FE::CellType::nurbs8>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::nurbs8>::instance(Core::UTILS::SingletonAction::create);
     }
     case Core::FE::CellType::nurbs27:
     {
-      return Ale3Impl<Core::FE::CellType::nurbs27>::Instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::nurbs27>::instance(Core::UTILS::SingletonAction::create);
     }
     default:
-      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->num_node());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->shape(), ele->num_node());
       break;
   }
   return nullptr;
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::Instance(
+Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
@@ -87,7 +87,7 @@ Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::Inst
             new Discret::ELEMENTS::Ale3Impl<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 
@@ -127,18 +127,18 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     FOUR_C_THROW("Unknown type of action for Ale3");
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = material();
 
   switch (act)
   {
     case calc_ale_laplace_material:
     {
       std::vector<double> my_dispnp;
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       my_dispnp.resize(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3ImplInterface::Impl(this)->static_ke_laplace(
+      Ale3ImplInterface::impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, false);
 
       break;
@@ -146,64 +146,64 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     case calc_ale_laplace_spatial:
     {
       std::vector<double> my_dispnp;
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       my_dispnp.resize(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3ImplInterface::Impl(this)->static_ke_laplace(
+      Ale3ImplInterface::impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, true);
 
       break;
     }
     case calc_ale_solid:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3ImplInterface::Impl(this)->static_ke_nonlinear(
+      Ale3ImplInterface::impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, true);
 
       break;
     }
     case calc_ale_solid_linear:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3ImplInterface::Impl(this)->static_ke_nonlinear(
+      Ale3ImplInterface::impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, false);
 
       break;
     }
     case calc_ale_springs_material:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3ImplInterface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, false);
+      Ale3ImplInterface::impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, false);
 
       break;
     }
     case calc_ale_springs_spatial:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3ImplInterface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, true);
+      Ale3ImplInterface::impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, true);
 
       break;
     }
     case calc_ale_node_normal:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
-      Ale3ImplInterface::Impl(this)->ElementNodeNormal(this, elevec1, my_dispnp);
+      Ale3ImplInterface::impl(this)->element_node_normal(this, elevec1, my_dispnp);
 
       break;
     }
@@ -213,8 +213,8 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<Mat::So3Material> so3mat =
           Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
 
-      if (so3mat->MaterialType() != Core::Materials::m_elasthyper and
-          so3mat->MaterialType() !=
+      if (so3mat->material_type() != Core::Materials::m_elasthyper and
+          so3mat->material_type() !=
               Core::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
         FOUR_C_THROW(
@@ -223,7 +223,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
             "element line definition.");
       }
 
-      if (so3mat->MaterialType() == Core::Materials::m_elasthyper)
+      if (so3mat->material_type() == Core::Materials::m_elasthyper)
       {
         so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
         so3mat->setup(0, nullptr);
@@ -255,7 +255,7 @@ int Discret::ELEMENTS::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
+inline void Discret::ELEMENTS::Ale3Impl<distype>::element_node_normal(
     Ale3* ele, Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
 {
   if (distype == Core::FE::CellType::nurbs8 or distype == Core::FE::CellType::nurbs27)
@@ -266,10 +266,10 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
   Core::LinAlg::Matrix<3, iel> xyze;
 
   // get node coordinates
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   for (int i = 0; i < iel; i++)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     xyze(0, i) = x[0];
     xyze(1, i) = x[1];
     xyze(2, i) = x[2];
@@ -930,10 +930,10 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
 
   // get node coordinates
   Core::LinAlg::Matrix<3, iel> xyze;
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   for (int i = 0; i < iel; i++)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     xyze(0, i) = x[0];
     xyze(1, i) = x[1];
     xyze(2, i) = x[2];
@@ -1365,9 +1365,9 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
   Core::LinAlg::Matrix<iel, NUMDIM_ALE3> xcurr;  // current  coord. of element
   for (int i = 0; i < iel; ++i)
   {
-    xrefe(i, 0) = ele->Nodes()[i]->X()[0];
-    xrefe(i, 1) = ele->Nodes()[i]->X()[1];
-    xrefe(i, 2) = ele->Nodes()[i]->X()[2];
+    xrefe(i, 0) = ele->nodes()[i]->x()[0];
+    xrefe(i, 1) = ele->nodes()[i]->x()[1];
+    xrefe(i, 2) = ele->nodes()[i]->x()[2];
 
     xcurr(i, 0) = xrefe(i, 0);
     xcurr(i, 1) = xrefe(i, 1);
@@ -1391,7 +1391,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
         dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
     myknots.resize(3);
-    bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
+    bool zero_size = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, ele->id());
 
     if (zero_size)
     {
@@ -1401,8 +1401,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     for (int inode = 0; inode < iel; ++inode)
     {
       Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
-      weights(inode) = cp->W();
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(ele->nodes()[inode]);
+      weights(inode) = cp->w();
     }
   }
   /*----------------------------------------- declaration of variables ---*/
@@ -1530,8 +1530,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     // QUICK HACK until so_disp exclusively uses Core::LinAlg::Matrix!!!!!
     Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
     Teuchos::RCP<Mat::So3Material> so3mat =
-        Teuchos::rcp_dynamic_cast<Mat::So3Material>(ele->Material());
-    so3mat->evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->Id());
+        Teuchos::rcp_dynamic_cast<Mat::So3Material>(ele->material());
+    so3mat->evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -1588,17 +1588,17 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
   Core::LinAlg::Matrix<nd, nd> sys_mat(sys_mat_epetra.values(), true);
 
   //  get material using class StVenantKirchhoff
-  //  if (material->MaterialType()!=Core::Materials::m_stvenant)
-  //    FOUR_C_THROW("stvenant material expected but got type %d", material->MaterialType());
+  //  if (material->material_type()!=Core::Materials::m_stvenant)
+  //    FOUR_C_THROW("stvenant material expected but got type %d", material->material_type());
   //  Mat::StVenantKirchhoff* actmat = static_cast<Mat::StVenantKirchhoff*>(material.get());
 
   Core::LinAlg::Matrix<3, iel> xyze;
 
   // get node coordinates
-  Core::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->nodes();
   for (int i = 0; i < iel; i++)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes[i]->x();
     xyze(0, i) = x[0];
     xyze(1, i) = x[1];
     xyze(2, i) = x[2];
@@ -1625,16 +1625,16 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
     Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
         dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
-    bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
+    bool zero_size = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, ele->id());
 
     if (zero_size) return;
 
     for (int inode = 0; inode < iel; ++inode)
     {
       Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
+          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(ele->nodes()[inode]);
 
-      weights(inode) = cp->W();
+      weights(inode) = cp->w();
     }
   }
 

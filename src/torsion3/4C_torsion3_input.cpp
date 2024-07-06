@@ -17,13 +17,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Torsion3::ReadElement(
+bool Discret::ELEMENTS::Torsion3::read_element(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read type of material model
-  int material = 0;
-  linedef->extract_int("MAT", material);
-  SetMaterial(0, Mat::Factory(material));
+  int material_id = 0;
+  linedef->extract_int("MAT", material_id);
+  set_material(0, Mat::Factory(material_id));
 
   // read type of bending potential
   std::string buffer;

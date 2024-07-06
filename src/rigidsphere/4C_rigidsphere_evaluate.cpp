@@ -56,7 +56,7 @@ int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
 
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -95,13 +95,13 @@ int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::ExtractMyValues(*vel, myvel, lm);
@@ -334,13 +334,13 @@ int Discret::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::GetBoundingVolume(
+Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::get_bounding_volume(
     const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   // Get the element displacements.
   std::vector<int> lm, lmowner, lmstride;
-  this->LocationVector(discret, lm, lmowner, lmstride);
+  this->location_vector(discret, lm, lmowner, lmstride);
   std::vector<double> mydisp(lm.size());
   Core::FE::ExtractMyValues(result_data_dofbased, mydisp, lm);
 
@@ -349,15 +349,15 @@ Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::GetBoundin
     FOUR_C_THROW("Got unexpected number of DOFs. Expected 3, but received %d", mydisp.size());
   Core::LinAlg::Matrix<3, 1, double> sphere_center;
   for (unsigned int i_dof = 0; i_dof < 3; i_dof++)
-    sphere_center(i_dof) = mydisp[i_dof] + Nodes()[0]->X()[i_dof];
+    sphere_center(i_dof) = mydisp[i_dof] + nodes()[0]->x()[i_dof];
 
   Core::GeometricSearch::BoundingVolume bounding_volume;
-  bounding_volume.AddPoint(sphere_center);
+  bounding_volume.add_point(sphere_center);
 
   // Add the radius times a safety factor.
   const double safety_factor = params.get_sphere_bounding_volume_scaling();
-  const double radius = Radius();
-  bounding_volume.ExtendBoundaries(radius * safety_factor);
+  const double radius = Rigidsphere::radius();
+  bounding_volume.extend_boundaries(radius * safety_factor);
 
   return bounding_volume;
 }
@@ -404,7 +404,7 @@ void Discret::ELEMENTS::Rigidsphere::calc_stochastic_force(
   {
     for (unsigned int k = 0; k < 3; ++k)
     {
-      (*force)(k) -= sqrt(gamma) * (*randomnumbers)[k][LID()];
+      (*force)(k) -= sqrt(gamma) * (*randomnumbers)[k][lid()];
     }
   }
 

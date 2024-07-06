@@ -71,7 +71,7 @@ namespace PARTICLEALGORITHM
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_special(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! interface to particle engine

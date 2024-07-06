@@ -42,10 +42,10 @@ namespace Discret
       //! dtor
       virtual ~FluidFactory() = default;
       //! ProvideImpl
-      static FluidEleInterface* ProvideImpl(Core::FE::CellType distype, std::string problem);
+      static FluidEleInterface* provide_impl(Core::FE::CellType distype, std::string problem);
 
       //! special ProvideImpl for XFEM problems to reduce created template combinations
-      static FluidEleInterface* ProvideImplXFEM(Core::FE::CellType distype, std::string problem);
+      static FluidEleInterface* provide_impl_xfem(Core::FE::CellType distype, std::string problem);
 
      private:
       //! define FluidEle instances dependent on problem

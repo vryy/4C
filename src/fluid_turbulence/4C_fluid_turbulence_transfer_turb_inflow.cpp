@@ -41,7 +41,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
   std::vector<Core::Conditions::Condition*> nodecloudstocouple;
 
   // get surfaces to couple
-  dis_->GetCondition("TransferTurbulentInflow", nodecloudstocouple);
+  dis_->get_condition("TransferTurbulentInflow", nodecloudstocouple);
 
   if (not nodecloudstocouple.empty())
   {
@@ -96,13 +96,14 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           // get global master node Ids
           const std::vector<int>* masteridstoadd;
 
-          masteridstoadd = (*cond)->GetNodes();
+          masteridstoadd = (*cond)->get_nodes();
 
           for (int idtoadd : *masteridstoadd)
           {
             // we construct the local octree only with nodes owned by this proc
-            if (dis_->HaveGlobalNode(idtoadd))
-              if (dis_->gNode(idtoadd)->Owner() == dis_->Comm().MyPID()) masterset.insert(idtoadd);
+            if (dis_->have_global_node(idtoadd))
+              if (dis_->g_node(idtoadd)->owner() == dis_->get_comm().MyPID())
+                masterset.insert(idtoadd);
           }
 
           break;
@@ -113,14 +114,15 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           // get global slave node Ids
           const std::vector<int>* slaveidstoadd;
 
-          slaveidstoadd = (*cond)->GetNodes();
+          slaveidstoadd = (*cond)->get_nodes();
 
           for (std::vector<int>::const_iterator idtoadd = (*slaveidstoadd).begin();
                idtoadd != (*slaveidstoadd).end(); ++idtoadd)
           {
             // we only try to match owned nodes of each proc
-            if (dis_->HaveGlobalNode(*idtoadd))
-              if (dis_->gNode(*idtoadd)->Owner() == dis_->Comm().MyPID()) slaveset.insert(*idtoadd);
+            if (dis_->have_global_node(*idtoadd))
+              if (dis_->g_node(*idtoadd)->owner() == dis_->get_comm().MyPID())
+                slaveset.insert(*idtoadd);
           }
 
           break;
@@ -196,7 +198,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowCondition::Transfer(
+void FLD::TransferTurbulentInflowCondition::transfer(
     const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp, const double time)
 {
   const Epetra_Map* dofrowmap = dis_->dof_row_map();
@@ -213,9 +215,9 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       // time factor for the intermediate step
       if (time >= 0.0)
       {
-        curvefac =
-            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).evaluate(
-                time);
+        curvefac = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfTime>(curve_)
+                       .evaluate(time);
       }
       else
       {
@@ -235,13 +237,13 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
     {
       int gid = pair->first;
 
-      if (dis_->HaveGlobalNode(gid))
+      if (dis_->have_global_node(gid))
       {
         mymasters.push_back(gid);
 
-        Core::Nodes::Node* master = dis_->gNode(gid);
+        Core::Nodes::Node* master = dis_->g_node(gid);
 
-        std::vector<int> masterdofs = dis_->Dof(master);
+        std::vector<int> masterdofs = dis_->dof(master);
 
         for (int rr = 0; rr < 3; ++rr)
         {
@@ -257,7 +259,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
     }
 
     // create an exporter for point to point comunication
-    Core::Communication::Exporter exporter(dis_->Comm());
+    Core::Communication::Exporter exporter(dis_->get_comm());
 
     // necessary variables
     MPI_Request request;
@@ -267,7 +269,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = dis_->Comm().NumProc();
+    int numproc = dis_->get_comm().NumProc();
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop
@@ -352,7 +354,7 @@ void FLD::TransferTurbulentInflowCondition::get_data(
   // find out whether we will use a time curve
   if (curve_ == -1)
   {
-    const auto* curve = cond->parameters().GetIf<int>("curve");
+    const auto* curve = cond->parameters().get_if<int>("curve");
 
     // set curve number
     if (curve) curve_ = *curve;
@@ -374,8 +376,8 @@ void FLD::TransferTurbulentInflowCondition::receive_block(
     std::vector<char>& rblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
-  int numproc = dis_->Comm().NumProc();
-  int myrank = dis_->Comm().MyPID();
+  int numproc = dis_->get_comm().NumProc();
+  int myrank = dis_->get_comm().MyPID();
 
   // necessary variables
 
@@ -391,17 +393,17 @@ void FLD::TransferTurbulentInflowCondition::receive_block(
   }
 
   // receive from predecessor
-  exporter.ReceiveAny(frompid, tag, rblock, length);
+  exporter.receive_any(frompid, tag, rblock, length);
 
   if (tag != (myrank + numproc - 1) % numproc)
   {
     FOUR_C_THROW("received wrong message (ReceiveAny)");
   }
 
-  exporter.Wait(request);
+  exporter.wait(request);
 
   // for safety
-  exporter.Comm().Barrier();
+  exporter.get_comm().Barrier();
 
   return;
 }  // TransferTurbulentInflowCondition::receive_block
@@ -421,8 +423,8 @@ void FLD::TransferTurbulentInflowCondition::send_block(
     std::vector<char>& sblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
-  int numproc = dis_->Comm().NumProc();
-  int myrank = dis_->Comm().MyPID();
+  int numproc = dis_->get_comm().NumProc();
+  int myrank = dis_->get_comm().MyPID();
 
   // Send block to next proc.
   int tag = myrank;
@@ -433,7 +435,7 @@ void FLD::TransferTurbulentInflowCondition::send_block(
 
 
   // for safety
-  exporter.Comm().Barrier();
+  exporter.get_comm().Barrier();
 
   return;
 }  // TransferTurbulentInflowCondition::send_block
@@ -642,12 +644,12 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
       for (std::vector<int>::iterator sid = myslaves.begin(); sid != myslaves.end(); ++sid)
       {
         // is this slave id on this proc?
-        if (dis_->NodeRowMap()->MyGID(*sid))
+        if (dis_->node_row_map()->MyGID(*sid))
         {
-          Core::Nodes::Node* slave = dis_->gNode(*sid);
+          Core::Nodes::Node* slave = dis_->g_node(*sid);
 
           // get dofs
-          std::vector<int> slavedofs = dis_->Dof(slave);
+          std::vector<int> slavedofs = dis_->dof(slave);
 
           for (int rr = 0; rr < numveldof_; ++rr)
           {
@@ -662,11 +664,11 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
             }
             else
             {
-              int id = slave->Id();
+              int id = slave->id();
 
-              double x = slave->X()[0];
-              double y = slave->X()[1];
-              double z = slave->X()[2];
+              double x = slave->x()[0];
+              double y = slave->x()[1];
+              double z = slave->x()[2];
 
               FOUR_C_THROW(
                   "Dirichlet condition required on slave node (%12.5e,%12.5e,%12.5e), id %d, dof "
@@ -709,7 +711,7 @@ FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowConditionXW::Transfer(
+void FLD::TransferTurbulentInflowConditionXW::transfer(
     const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp, const double time)
 {
   const Epetra_Map* dofrowmap = dis_->dof_row_map();
@@ -727,9 +729,9 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       // time factor for the intermediate step
       if (time >= 0.0)
       {
-        curvefac =
-            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).evaluate(
-                time);
+        curvefac = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfTime>(curve_)
+                       .evaluate(time);
       }
       else
       {
@@ -749,13 +751,13 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
     {
       int gid = pair->first;
 
-      if (dis_->HaveGlobalNode(gid))
+      if (dis_->have_global_node(gid))
       {
         mymasters.push_back(gid);
 
-        Core::Nodes::Node* master = dis_->gNode(gid);
+        Core::Nodes::Node* master = dis_->g_node(gid);
 
-        std::vector<int> masterdofs = dis_->Dof(master);
+        std::vector<int> masterdofs = dis_->dof(master);
 
         for (int rr = 0; rr < 3; ++rr)
         {
@@ -765,7 +767,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         }
 
         // in xwall, we have another virtual node right after this node
-        if (dis_->NumDof(master) == 8)
+        if (dis_->num_dof(master) == 8)
         {
           for (int rr = 4; rr < 7; ++rr)
           {
@@ -787,7 +789,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
     }
 
     // create an exporter for point to point comunication
-    Core::Communication::Exporter exporter(dis_->Comm());
+    Core::Communication::Exporter exporter(dis_->get_comm());
 
     // necessary variables
     MPI_Request request;
@@ -797,7 +799,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = dis_->Comm().NumProc();
+    int numproc = dis_->get_comm().NumProc();
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop
@@ -859,12 +861,12 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
       for (std::vector<int>::iterator sid = myslaves.begin(); sid != myslaves.end(); ++sid)
       {
         // is this slave id on this proc?
-        if (dis_->NodeRowMap()->MyGID(*sid))
+        if (dis_->node_row_map()->MyGID(*sid))
         {
-          Core::Nodes::Node* slave = dis_->gNode(*sid);
+          Core::Nodes::Node* slave = dis_->g_node(*sid);
 
           // get dofs
-          std::vector<int> slavedofs = dis_->Dof(slave);
+          std::vector<int> slavedofs = dis_->dof(slave);
 
           for (int rr = 0; rr < 3; ++rr)
           {
@@ -879,11 +881,11 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
             }
             else
             {
-              int id = slave->Id();
+              int id = slave->id();
 
-              double x = slave->X()[0];
-              double y = slave->X()[1];
-              double z = slave->X()[2];
+              double x = slave->x()[0];
+              double y = slave->x()[1];
+              double z = slave->x()[2];
 
               FOUR_C_THROW(
                   "Dirichlet condition required on slave node (%12.5e,%12.5e,%12.5e), id %d, dof "
@@ -893,7 +895,7 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
           }
 
           // and treat xwall dofs
-          if (dis_->NumDof(slave) == 8)
+          if (dis_->num_dof(slave) == 8)
             for (int rr = 4; rr < 7; ++rr)
             {
               int gid = slavedofs[rr];
@@ -942,7 +944,7 @@ FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNoda
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::TransferTurbulentInflowConditionNodal::Transfer(
+void FLD::TransferTurbulentInflowConditionNodal::transfer(
     const Teuchos::RCP<Epetra_Vector> invec, Teuchos::RCP<Epetra_Vector> outvec, const double time)
 {
   std::vector<int> mymasters;
@@ -956,16 +958,16 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
     {
       int gid = pair->first;
 
-      if (dis_->HaveGlobalNode(gid))
+      if (dis_->have_global_node(gid))
       {
         mymasters.push_back(gid);
 
-        Core::Nodes::Node* master = dis_->gNode(gid);
+        Core::Nodes::Node* master = dis_->g_node(gid);
 
-        std::vector<int> masterdofs = dis_->Dof(master);
+        std::vector<int> masterdofs = dis_->dof(master);
 
         // and the 7th value is filled with the wall shear stress
-        int lnodeid = dis_->NodeRowMap()->LID(gid);
+        int lnodeid = dis_->node_row_map()->LID(gid);
         (mymasters_vec[0]).push_back((*invec)[lnodeid]);
       }
       else
@@ -975,7 +977,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
     }
 
     // create an exporter for point to point comunication
-    Core::Communication::Exporter exporter(dis_->Comm());
+    Core::Communication::Exporter exporter(dis_->get_comm());
 
     // necessary variables
     MPI_Request request;
@@ -985,7 +987,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
     std::vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc = dis_->Comm().NumProc();
+    int numproc = dis_->get_comm().NumProc();
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop
@@ -1045,7 +1047,7 @@ void FLD::TransferTurbulentInflowConditionNodal::set_values_available_on_this_pr
       for (std::vector<int>::iterator sid = myslaves.begin(); sid != myslaves.end(); ++sid)
       {
         // is this slave id on this proc?
-        if (dis_->NodeRowMap()->MyGID(*sid))
+        if (dis_->node_row_map()->MyGID(*sid))
           outvec->ReplaceGlobalValue(*sid, 0, (mymasters_vec[0])[nn]);
       }
     }

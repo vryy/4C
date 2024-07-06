@@ -69,16 +69,16 @@ namespace Solid
       const Inpar::Solid::PredEnum& get_type() const { return type_; };
 
       //! returns the name of the used predictor
-      virtual std::string Name() const;
+      virtual std::string name() const;
 
       //! Preprocess the predictor step
       virtual void pre_predict(::NOX::Abstract::Group& grp);
 
       //! Pre-/Postprocess the specific predictor step
-      void Predict(::NOX::Abstract::Group& grp);
+      void predict(::NOX::Abstract::Group& grp);
 
       //! Calculate the specific predictor step
-      virtual void Compute(::NOX::Abstract::Group& grp) = 0;
+      virtual void compute(::NOX::Abstract::Group& grp) = 0;
 
       //! Postprocess the predictor step
       virtual void post_predict(::NOX::Abstract::Group& grp);

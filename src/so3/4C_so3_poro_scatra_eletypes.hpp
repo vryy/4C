@@ -31,16 +31,16 @@ namespace Discret
     class SoHex8PoroScatraType : public SoHex8PoroType
     {
      public:
-      std::string Name() const override { return "So_hex8PoroScatraType"; }
+      std::string name() const override { return "So_hex8PoroScatraType"; }
 
-      static SoHex8PoroScatraType& Instance();
+      static SoHex8PoroScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -58,16 +58,16 @@ namespace Discret
     class SoTet4PoroScatraType : public SoTet4PoroType
     {
      public:
-      std::string Name() const override { return "So_tet4PoroScatraType"; }
+      std::string name() const override { return "So_tet4PoroScatraType"; }
 
-      static SoTet4PoroScatraType& Instance();
+      static SoTet4PoroScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -86,16 +86,16 @@ namespace Discret
     class SoHex27PoroScatraType : public SoHex27PoroType
     {
      public:
-      std::string Name() const override { return "So_hex27PoroScatraType"; }
+      std::string name() const override { return "So_hex27PoroScatraType"; }
 
-      static SoHex27PoroScatraType& Instance();
+      static SoHex27PoroScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -113,16 +113,16 @@ namespace Discret
     class SoTet10PoroScatraType : public SoTet10PoroType
     {
      public:
-      std::string Name() const override { return "So_tet10PoroScatraType"; }
+      std::string name() const override { return "So_tet10PoroScatraType"; }
 
-      static SoTet10PoroScatraType& Instance();
+      static SoTet10PoroScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -140,16 +140,16 @@ namespace Discret
     class SoNurbs27PoroScatraType : public SoNurbs27PoroType
     {
      public:
-      std::string Name() const override { return "So_nurbs27PoroScatraType"; }
+      std::string name() const override { return "So_nurbs27PoroScatraType"; }
 
-      static SoNurbs27PoroScatraType& Instance();
+      static SoNurbs27PoroScatraType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)

@@ -24,18 +24,18 @@ namespace CONTACT
   class ElementType : public Core::Elements::ElementType
   {
    public:
-    std::string Name() const override { return "CONTACT::ElementType"; }
+    std::string name() const override { return "CONTACT::ElementType"; }
 
-    static ElementType& Instance();
+    static ElementType& instance();
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
     void nodal_block_information(
         Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+    Core::LinAlg::SerialDenseMatrix compute_null_space(
         Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
@@ -80,7 +80,7 @@ namespace CONTACT
      \brief Deep copy the derived class and return pointer to it
 
      */
-    Core::Elements::Element* Clone() const override;
+    Core::Elements::Element* clone() const override;
 
     /*!
      \brief Return unique ParObject id
@@ -89,7 +89,10 @@ namespace CONTACT
      top of parobject.H
 
      */
-    int UniqueParObjectId() const override { return ElementType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return ElementType::instance().unique_par_object_id();
+    }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -107,7 +110,7 @@ namespace CONTACT
      */
     void unpack(const std::vector<char>& data) override;
 
-    CONTACT::ElementType& ElementType() const override { return ElementType::Instance(); }
+    CONTACT::ElementType& element_type() const override { return ElementType::instance(); }
 
     //@}
 
@@ -120,7 +123,7 @@ namespace CONTACT
      standard Node objects!
 
      */
-    int NumDofPerNode(const Core::Nodes::Node& node) const override;
+    int num_dof_per_node(const Core::Nodes::Node& node) const override;
 
     /*!
      \brief Print this element
@@ -192,43 +195,44 @@ namespace CONTACT
     /*!
      \brief Build element normal derivative at node passed in
      */
-    virtual void DerivNormalAtNode(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens,
+    virtual void deriv_normal_at_node(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens,
         std::vector<Core::Gen::Pairedvector<int, double>>& derivn);
 
-    virtual void OldUnitNormalAtXi(const double* xi, Core::LinAlg::Matrix<3, 1>& n_old,
+    virtual void old_unit_normal_at_xi(const double* xi, Core::LinAlg::Matrix<3, 1>& n_old,
         Core::LinAlg::Matrix<3, 2>& d_n_old_dxi);
 
     /*!
      \brief Evaluate derivative J,xi of Jacobian determinant
      */
-    virtual void DJacDXi(
+    virtual void d_jac_d_xi(
         double* djacdxi, double* xi, const Core::LinAlg::SerialDenseMatrix& secderiv);
 
     /*! \brief Evaluate derivative J,xi of Jacobian determinant
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode>
-    inline void DJacDXi(double* djacdxi, double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv)
+    inline void d_jac_d_xi(
+        double* djacdxi, double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv)
     {
       Core::LinAlg::SerialDenseMatrix sdm_secderiv(
           Teuchos::View, secderiv.data(), elenumnode, elenumnode, 3);
-      DJacDXi(djacdxi, xi, sdm_secderiv);
+      d_jac_d_xi(djacdxi, xi, sdm_secderiv);
     }
 
     /*!
      \brief Prepare D-Matrix deriv integration of contribution of one slave element
      */
-    virtual void PrepareDderiv(const std::vector<Mortar::Element*>& meles);
+    virtual void prepare_dderiv(const std::vector<Mortar::Element*>& meles);
 
     /*!
      \brief Prepare D-Matrix deriv integration of contribution of one slave element
      */
-    virtual void PrepareMderiv(const std::vector<Mortar::Element*>& meles, const int m);
+    virtual void prepare_mderiv(const std::vector<Mortar::Element*>& meles, const int m);
 
     /*!
      \brief Access to D-Matrix deriv to add Gauss point contribution
      */
-    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& GetDderiv()
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& get_dderiv()
     {
       if (d_matrix_deriv_ == Teuchos::null)
         FOUR_C_THROW("trying to get Dderiv, but not initialized");
@@ -238,7 +242,7 @@ namespace CONTACT
     /*!
      \brief Access to M-Matrix deriv to add Gauss point contribution
      */
-    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& GetMderiv()
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& get_mderiv()
     {
       if (m_matrix_deriv_ == Teuchos::null)
         FOUR_C_THROW("trying to get Mderiv, but not initialized");

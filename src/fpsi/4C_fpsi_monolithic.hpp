@@ -109,7 +109,7 @@ namespace FPSI
 
    public:
     //! FPSI coupling object (does the interface evaluations)
-    Teuchos::RCP<FPSI::FpsiCoupling>& FPSICoupl() { return fpsicoupl_; }
+    Teuchos::RCP<FPSI::FpsiCoupling>& fpsi_coupl() { return fpsicoupl_; }
 
     //! @name Access General Couplings
     Core::Adapter::Coupling& fluid_ale_coupling() { return *coupfa_; }
@@ -188,22 +188,22 @@ namespace FPSI
         const Teuchos::ParameterList& poroelastdynparams);
 
     //! setup fpsi system
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! setup fsi part of the system
-    virtual void SetupSystem_FSI();
+    virtual void setup_system_fsi();
 
     //! perform time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! prepare time loop
-    void PrepareTimeloop();
+    void prepare_timeloop();
 
     //! solve one time step
-    virtual void TimeStep();
+    virtual void time_step();
 
     //! perform result test
-    void TestResults(const Epetra_Comm& comm) override;
+    void test_results(const Epetra_Comm& comm) override;
 
     //! build RHS vector from sub fields
     virtual void setup_rhs(bool firstcall = false) = 0;
@@ -211,13 +211,13 @@ namespace FPSI
     //! build system matrix form sub fields + coupling
     virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) = 0;
     //! build system matrix form sub fields + coupling
-    virtual void setup_system_matrix() { setup_system_matrix(*SystemMatrix()); }
+    virtual void setup_system_matrix() { setup_system_matrix(*system_matrix()); }
 
     //! access system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const = 0;
 
     /// setup solver
-    void SetupSolver() override;
+    void setup_solver() override;
 
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
     virtual void recover_lagrange_multiplier()
@@ -237,16 +237,16 @@ namespace FPSI
         Teuchos::RCP<const Epetra_Vector> stepinc);  ///< increment between time step n and n+1
 
     //! setup of newton scheme
-    void SetupNewton();
+    void setup_newton();
 
     //! finite difference check for fpsi systemmatrix
-    void FPSIFDCheck();
+    void fpsifd_check();
 
     //! solve linear system
     void linear_solve();
 
     //! solve using line search method
-    void LineSearch(Teuchos::RCP<Core::LinAlg::SparseMatrix>& sparse);
+    void line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& sparse);
 
     //! create linear solver (setup of parameter lists, etc...)
     void create_linear_solver();
@@ -264,22 +264,22 @@ namespace FPSI
     void print_newton_iter_text(FILE* ofile);
 
     //! perform convergence check
-    bool Converged();
+    bool converged();
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
 
     //! map of all dofs on Dirichlet-Boundary
     virtual Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    const Core::LinAlg::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //! set conductivity (for fps3i)
-    void SetConductivity(double conduct);
+    void set_conductivity(double conduct);
 
     //! external acces to rhs vector (used by xfpsi)
-    Teuchos::RCP<Epetra_Vector>& RHS() { return rhs_; }  // TodoAge: will be removed again!
+    Teuchos::RCP<Epetra_Vector>& rhs() { return rhs_; }  // TodoAge: will be removed again!
 
    protected:
     //! block systemmatrix

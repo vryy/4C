@@ -41,10 +41,10 @@ namespace CONTACT
       Teuchos::RCP<ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the parameters of a cubic polynomial
-      double Getdata() { return a_; }
-      double GetB() { return b_; }
-      double GetC() { return c_; }
-      double GetD() { return d_; }
+      double getdata() { return a_; }
+      double get_b() { return b_; }
+      double get_c() { return c_; }
+      double get_d() { return d_; }
       //@}
 
      private:
@@ -76,13 +76,13 @@ namespace CONTACT
         return Inpar::CONTACT::ConstitutiveLawType::colaw_cubic;
       }
 
-      double Getdata() { return params_->Getdata(); }
-      double GetB() { return params_->GetB(); }
-      double GetC() { return params_->GetC(); }
-      double GetD() { return params_->GetD(); }
+      double getdata() { return params_->getdata(); }
+      double get_b() { return params_->get_b(); }
+      double get_c() { return params_->get_c(); }
+      double get_d() { return params_->get_d(); }
 
       /// Return quick accessible constitutive law parameter data
-      CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const override { return params_; }
+      CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return params_; }
 
       //@}
 
@@ -91,7 +91,7 @@ namespace CONTACT
       /// evaluate contact constitutive law
       double evaluate(double gap, CONTACT::Node* cnode) override;
       /// evaluate derivative of the contact constitutive law
-      double EvaluateDeriv(double gap, CONTACT::Node* cnode) override;
+      double evaluate_deriv(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

@@ -43,7 +43,7 @@ namespace Core::IO
     virtual ~RestartManager() = default;
 
     /// setup of restart manager
-    void SetupRestartManager(const double restartinterval, const int restartevry);
+    void setup_restart_manager(const double restartinterval, const int restartevry);
 
     /// return whether it is time for a restart
     /// \param step [in] : current time step for multi-field syncronisation

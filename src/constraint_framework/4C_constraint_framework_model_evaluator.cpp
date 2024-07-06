@@ -57,9 +57,9 @@ void Solid::MODELEVALUATOR::Constraints::set_sub_model_types()
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation;
 
-  discret_ptr()->GetCondition("LinePeriodicRve", linePeriodicRve);
-  discret_ptr()->GetCondition("SurfacePeriodicRve", surfPeriodicRve);
-  discret_ptr()->GetCondition("PointLinearCoupledEquation", pointLinearCoupledEquation);
+  discret_ptr()->get_condition("LinePeriodicRve", linePeriodicRve);
+  discret_ptr()->get_condition("SurfacePeriodicRve", surfPeriodicRve);
+  discret_ptr()->get_condition("PointLinearCoupledEquation", pointLinearCoupledEquation);
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
@@ -109,7 +109,7 @@ void Solid::MODELEVALUATOR::Constraints::reset(const Epetra_Vector& x)
   {
     sme_iter->reset();
   }
-  constraint_stiff_ptr_->Zero();
+  constraint_stiff_ptr_->zero();
 }
 
 /*----------------------------------------------------------------------------*
@@ -131,12 +131,12 @@ bool Solid::MODELEVALUATOR::Constraints::evaluate_stiff()
 {
   pre_evaluate();
 
-  constraint_stiff_ptr_->UnComplete();
+  constraint_stiff_ptr_->un_complete();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
     sme_iter->evaluate_force_stiff(constraint_stiff_ptr_, Teuchos::null);
   }
-  if (not constraint_stiff_ptr_->Filled()) constraint_stiff_ptr_->Complete();
+  if (not constraint_stiff_ptr_->filled()) constraint_stiff_ptr_->complete();
   return true;
 }
 
@@ -146,12 +146,12 @@ bool Solid::MODELEVALUATOR::Constraints::evaluate_force_stiff()
 {
   pre_evaluate();
 
-  constraint_stiff_ptr_->UnComplete();
+  constraint_stiff_ptr_->un_complete();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
     sme_iter->evaluate_force_stiff(constraint_stiff_ptr_, constraint_force_ptr_);
   }
-  if (not constraint_stiff_ptr_->Filled()) constraint_stiff_ptr_->Complete();
+  if (not constraint_stiff_ptr_->filled()) constraint_stiff_ptr_->complete();
 
   return true;
 }
@@ -181,9 +181,9 @@ bool Solid::MODELEVALUATOR::Constraints::assemble_jacobian(
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
 
-  jac_dd_ptr->Add(*constraint_stiff_ptr_, false, timefac_np, 1.0);
+  jac_dd_ptr->add(*constraint_stiff_ptr_, false, timefac_np, 1.0);
 
-  constraint_stiff_ptr_->Zero();
+  constraint_stiff_ptr_->zero();
   return true;
 }
 
@@ -203,7 +203,7 @@ void Solid::MODELEVALUATOR::Constraints::read_restart(Core::IO::DiscretizationRe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MODELEVALUATOR::Constraints::Predict(const Inpar::Solid::PredEnum& pred_type) {}
+void Solid::MODELEVALUATOR::Constraints::predict(const Inpar::Solid::PredEnum& pred_type) {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

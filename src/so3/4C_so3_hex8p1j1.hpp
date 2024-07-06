@@ -31,23 +31,23 @@ namespace Discret
     class SoHex8P1J1Type : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "So_Hex8P1J1Type"; }
+      std::string name() const override { return "So_Hex8P1J1Type"; }
 
-      static SoHex8P1J1Type& Instance();
+      static SoHex8P1J1Type& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -111,11 +111,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -123,9 +123,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return SoHex8P1J1Type::Instance().UniqueParObjectId();
+        return SoHex8P1J1Type::instance().unique_par_object_id();
       }
 
       /*!
@@ -157,11 +157,11 @@ namespace Discret
       \param D_T_bar (out): current reference moduli
       \param t (in): current volume theta
       */
-      void ConvertMat(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& cmat,
+      void convert_mat(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& cmat,
           const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
           Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& D_T_bar, const double t);
 
-      SoHex8P1J1Type& ElementType() const override { return SoHex8P1J1Type::Instance(); }
+      SoHex8P1J1Type& element_type() const override { return SoHex8P1J1Type::instance(); }
 
       //@}
 
@@ -170,10 +170,10 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
-      void InitKpt()
+      void init_kpt()
       {
         // K_pt = N_p * N_t * detJ * w(gp)
 
@@ -242,7 +242,7 @@ namespace Discret
       );
 
       /// Return stress at Gauss point
-      void Stress(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
+      void stress(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
                       elestress,                    ///< store the stress herein
           const Inpar::Solid::StressType iostress,  ///< stress type
           const int gp,                             ///< Gauss point index
@@ -253,7 +253,7 @@ namespace Discret
       );
 
       /// Return strain at Gauss point
-      void Strain(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
+      void strain(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
                       elestrain,                    ///< store the strain herein
           const Inpar::Solid::StrainType iostrain,  ///< strain type to store for post-proc
           const int gp,                             ///< Gauss point index
@@ -264,8 +264,8 @@ namespace Discret
       );
 
       /// Push-pull-operator
-      static void PushPullOperator(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>&
-                                       g,  ///< (G_ab^AB or G_AB^ab) or (G^ab_AB or G^AB_ab)
+      static void push_pull_operator(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>&
+                                         g,  ///< (G_ab^AB or G_AB^ab) or (G^ab_AB or G^AB_ab)
           const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
               f,                  ///< [F^-1]=[F^B_b] or [F]=[F^b_B]
           const bool& transpose,  ///< co-variant if true

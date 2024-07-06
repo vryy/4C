@@ -39,7 +39,7 @@ namespace Discret
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcSTIDiffCond<distype>* Instance(
+      static ScaTraEleCalcSTIDiffCond<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
 
@@ -57,7 +57,7 @@ namespace Discret
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(Core::Elements::Element* ele,    //!< current element
+      int evaluate_action_od(Core::Elements::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                   //!< parameter list
           Core::FE::Discretization& discretization,         //!< discretization
           const ScaTra::Action& action,                     //!< action parameter

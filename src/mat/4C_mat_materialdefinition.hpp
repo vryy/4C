@@ -79,7 +79,7 @@ namespace Mat
     void add_component(const Teuchos::RCP<Input::LineComponent>& c);
 
     /// Try to read all lines that fit the current material definition.
-    std::vector<std::pair<int, Core::IO::InputParameterContainer>> Read(Core::IO::DatFileReader&
+    std::vector<std::pair<int, Core::IO::InputParameterContainer>> read(Core::IO::DatFileReader&
             reader  ///< the actual dat file reader that has access to the dat file
     );
 
@@ -88,16 +88,16 @@ namespace Mat
         const Core::FE::Discretization* dis = nullptr);
 
     /// my material name
-    std::string Name() const { return materialname_; }
+    std::string name() const { return materialname_; }
 
     // my material type
-    Core::Materials::MaterialType Type() const { return mattype_; }
+    Core::Materials::MaterialType type() const { return mattype_; }
 
     /// my material description
-    std::string Description() const { return description_; }
+    std::string description() const { return description_; }
 
     /// my material inputline
-    std::vector<Teuchos::RCP<Input::LineComponent>> Inputline() const { return inputline_; }
+    std::vector<Teuchos::RCP<Input::LineComponent>> inputline() const { return inputline_; }
 
    private:
     /// name of material

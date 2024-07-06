@@ -41,8 +41,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
     case ScaTra::Action::calc_mat_and_rhs_lsreinit_correction_step:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phizero = discretization.get_state("phizero");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
@@ -78,8 +78,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
     case ScaTra::Action::calc_node_based_reinit_velocity:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phizero = discretization.get_state("phizero");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
@@ -108,7 +108,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
  | setup element evaluation                                  fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
-int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::SetupCalc(
+int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::setup_calc(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
@@ -123,7 +123,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::SetupCalc(
   my::eprenp_.clear();
 
   // call base class routine
-  return my::SetupCalc(ele, discretization);
+  return my::setup_calc(ele, discretization);
 }
 
 
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correct
   // integration points and weights
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -186,11 +186,11 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correct
     Teuchos::rcp_dynamic_cast<
         Discret::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
-        ->SetPhinp(0, phinp);
+        ->set_phinp(0, phinp);
     Teuchos::rcp_dynamic_cast<
         Discret::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
-        ->SetHist(0, 0.0);
+        ->set_hist(0, 0.0);
 
     //------------------------------------------------
     // element matrix
@@ -204,7 +204,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correct
 
     // predictor for phinp
     // caution: this function can be used here, since gen-alpha is excluded
-    if (my::scatraparatimint_->IsGenAlpha()) FOUR_C_THROW("Not supported by this implementation!");
+    if (my::scatraparatimint_->is_gen_alpha())
+      FOUR_C_THROW("Not supported by this implementation!");
     // note: this function computes phinp at integration point
     my::calc_rhs_lin_mass(erhs, 0, 0.0, -fac, 1.0, 1.0);  // sign has to be changed!!!!
 
@@ -225,7 +226,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penal
     double& penalty)
 {
   // safety check
-  if (lsreinitparams_->SignType() != Inpar::ScaTra::signtype_SussmanFatemi1999)
+  if (lsreinitparams_->sign_type() != Inpar::ScaTra::signtype_SussmanFatemi1999)
     FOUR_C_THROW("Penalty method only for smoothed sign function: SussmanFatemi1999!");
 
   // denominator
@@ -261,7 +262,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penal
   // integration points and weights
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -299,7 +300,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penal
     // add Gauss point contribution to denominator
     // TODO: mit norm_gradphizero Sussman-Style
     ele_dom += (fac * deriv_sign * deriv_sign * norm_gradphizero);
-    ele_nom -= (fac * deriv_sign * (phinp - phizero) / my::scatraparatimint_->Time());
+    ele_nom -= (fac * deriv_sign * (phinp - phizero) / my::scatraparatimint_->time());
     //    ele_nom -= (fac * deriv_sign * (-conv_phi + signphi)); // gecheckt
   }  // end: loop all Gauss points
 
@@ -318,7 +319,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_rhs_penal
     Core::LinAlg::SerialDenseVector& erhs, const double fac, const double penalty,
     const double deriv_sign, const double norm_gradphizero)
 {
-  double vpenalty = fac * my::scatraparatimint_->Dt() * penalty * deriv_sign * norm_gradphizero;
+  double vpenalty = fac * my::scatraparatimint_->dt() * penalty * deriv_sign * norm_gradphizero;
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -369,7 +370,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
   // integration points and weights
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -401,7 +402,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
 
     // get velocity at element center
     Core::LinAlg::Matrix<nsd_, 1> convelint(true);
-    if (lsreinitparams_->ReinitType() == Inpar::ScaTra::reinitaction_sussman)
+    if (lsreinitparams_->reinit_type() == Inpar::ScaTra::reinitaction_sussman)
     {
       // get sign function
       double signphi = 0.0;
@@ -420,10 +421,10 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
     //------------------------------------------------
     // should not be used together with lumping
     // prevented by FOUR_C_THROW in lsreinit parameters
-    if (lsreinitparams_->ProjectDiff() > 0.0)
+    if (lsreinitparams_->project_diff() > 0.0)
     {
-      const double diff = (lsreinitparams_->ProjectDiff()) * charelelength * charelelength;
-      my::diffmanager_->SetIsotropicDiff(diff, 0);
+      const double diff = (lsreinitparams_->project_diff()) * charelelength * charelelength;
+      my::diffmanager_->set_isotropic_diff(diff, 0);
       my::calc_mat_diff(emat, 0, fac);
     }
 
@@ -431,7 +432,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
     // element rhs
     //------------------------------------------------
     // distinguish reinitialization
-    switch (lsreinitparams_->ReinitType())
+    switch (lsreinitparams_->reinit_type())
     {
       case Inpar::ScaTra::reinitaction_sussman:
       {
@@ -449,7 +450,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
   }  // loop Gauss points
 
   // do lumping: row sum
-  if (lsreinitparams_->Lumping())
+  if (lsreinitparams_->lumping())
   {
     for (unsigned vi = 0; vi < nen_; ++vi)
     {

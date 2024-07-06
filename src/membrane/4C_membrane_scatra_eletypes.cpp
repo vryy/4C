@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneScatraTri3Type Discret::ELEMENTS::MembraneScatraTri3Type::instance_;
 
-Discret::ELEMENTS::MembraneScatraTri3Type& Discret::ELEMENTS::MembraneScatraTri3Type::Instance()
+Discret::ELEMENTS::MembraneScatraTri3Type& Discret::ELEMENTS::MembraneScatraTri3Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri3Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri3Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>* object =
@@ -34,7 +34,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri3Type::Creat
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA3" && eledistype == "TRI3")
@@ -46,7 +46,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri3Type:
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -73,12 +73,12 @@ void Discret::ELEMENTS::MembraneScatraTri3Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneScatraTri6Type Discret::ELEMENTS::MembraneScatraTri6Type::instance_;
 
-Discret::ELEMENTS::MembraneScatraTri6Type& Discret::ELEMENTS::MembraneScatraTri6Type::Instance()
+Discret::ELEMENTS::MembraneScatraTri6Type& Discret::ELEMENTS::MembraneScatraTri6Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri6Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri6Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>* object =
@@ -87,7 +87,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri6Type::Creat
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri6Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA6" && eledistype == "TRI6")
@@ -99,7 +99,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri6Type:
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri6Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -126,12 +126,12 @@ void Discret::ELEMENTS::MembraneScatraTri6Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneScatraQuad4Type Discret::ELEMENTS::MembraneScatraQuad4Type::instance_;
 
-Discret::ELEMENTS::MembraneScatraQuad4Type& Discret::ELEMENTS::MembraneScatraQuad4Type::Instance()
+Discret::ELEMENTS::MembraneScatraQuad4Type& Discret::ELEMENTS::MembraneScatraQuad4Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad4Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad4Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>* object =
@@ -140,7 +140,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad4Type::Crea
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad4Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad4Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA4" && eledistype == "QUAD4")
@@ -152,7 +152,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad4Type
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad4Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad4Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
@@ -179,12 +179,12 @@ void Discret::ELEMENTS::MembraneScatraQuad4Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::MembraneScatraQuad9Type Discret::ELEMENTS::MembraneScatraQuad9Type::instance_;
 
-Discret::ELEMENTS::MembraneScatraQuad9Type& Discret::ELEMENTS::MembraneScatraQuad9Type::Instance()
+Discret::ELEMENTS::MembraneScatraQuad9Type& Discret::ELEMENTS::MembraneScatraQuad9Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad9Type::Create(
+Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad9Type::create(
     const std::vector<char>& data)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>* object =
@@ -193,7 +193,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad9Type::Crea
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad9Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad9Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MEMBRANESCATRA9" && eledistype == "QUAD9")
@@ -205,7 +205,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad9Type
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad9Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad9Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =

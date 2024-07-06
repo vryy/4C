@@ -39,29 +39,29 @@ class SimpleWrapper
 
   ~SimpleWrapper();
 
-  void CreateHex8(const Core::LinAlg::SerialDenseMatrix& xyze);
-  void CreateTet4(const Core::LinAlg::SerialDenseMatrix& xyze);
-  void CreatePyramid5(const Core::LinAlg::SerialDenseMatrix& xyze);
-  void CreateWedge6(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_hex8(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_tet4(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_pyramid5(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_wedge6(const Core::LinAlg::SerialDenseMatrix& xyze);
 
-  void CreateHex8Sides(const Core::LinAlg::SerialDenseMatrix& xyze);
-  void CreateTet4Sides(const Core::LinAlg::SerialDenseMatrix& xyze);
-  void CreatePyramid5Sides(const Core::LinAlg::SerialDenseMatrix& xyze);
-  void CreateWedge6Sides(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_hex8_sides(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_tet4_sides(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_pyramid5_sides(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_wedge6_sides(const Core::LinAlg::SerialDenseMatrix& xyze);
 
-  void CreateTri3(const Core::LinAlg::SerialDenseMatrix& xyze);
-  void CreateQuad4(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_tri3(const Core::LinAlg::SerialDenseMatrix& xyze);
+  void create_quad4(const Core::LinAlg::SerialDenseMatrix& xyze);
 
-  void CreateHex8(double dx = 0, double dy = 0, double dz = 0);
+  void create_hex8(double dx = 0, double dy = 0, double dz = 0);
 
-  void CreateHex8Sides(double dx = 0, double dy = 0, double dz = 0);
-  void CreateTet4Sides();
+  void create_hex8_sides(double dx = 0, double dy = 0, double dz = 0);
+  void create_tet4_sides();
 
-  void CreateQuad4Mesh(int rows, int cols);
+  void create_quad4_mesh(int rows, int cols);
 
-  void CutTest_Cut(bool include_inner = true, bool do_Cut_Positions_Dofsets = false);
+  void cut_test_cut(bool include_inner = true, bool do_Cut_Positions_Dofsets = false);
 
-  void AssumeVolumeCells(unsigned num);
+  void assume_volume_cells(unsigned num);
 
  private:
   void create_element(Core::FE::CellType distype, const Core::LinAlg::SerialDenseMatrix& xyze);

@@ -67,13 +67,13 @@ namespace FS3I
     virtual void setup();
 
     /// setup
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     /// timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     /// test results (if necessary)
-    virtual void TestResults(const Epetra_Comm& comm) = 0;
+    virtual void test_results(const Epetra_Comm& comm) = 0;
 
     /// read restart
     virtual void read_restart() = 0;
@@ -86,16 +86,16 @@ namespace FS3I
     void check_interface_dirichlet_bc();
 
     //! Check FS3I specific inputs
-    void CheckFS3IInputs();
+    void check_f_s3_i_inputs();
 
     //! output of scalars and mean scalars
-    void ScatraOutput();
+    void scatra_output();
 
     //! increment step and time
     void increment_time_and_step();
 
     //! update ScaTra solution vectors (new time step)
-    void UpdateScatraFields();
+    void update_scatra_fields();
 
     //! evaluate, solve and iteratively update coupled ScaTra problem
     void scatra_evaluate_solve_iter_update();
@@ -125,15 +125,15 @@ namespace FS3I
     //! set-up of global matrix of the monolithic ScaTra problem
     void setup_coupled_scatra_matrix();
 
-    Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> scatra2_to_scatra1(Teuchos::RCP<const Epetra_Vector> iv) const;
 
-    Teuchos::RCP<Epetra_Vector> Scatra1ToScatra2(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> scatra1_to_scatra2(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //! linear solution of monolithic ScaTra problem
-    void LinearSolveScatra();
+    void linear_solve_scatra();
 
     //! iterative update of ScaTra solution vectors
-    void ScatraIterUpdate();
+    void scatra_iter_update();
 
     //! extraction of field-specific vectors from global ScaTra vector
     void extract_scatra_field_vectors(

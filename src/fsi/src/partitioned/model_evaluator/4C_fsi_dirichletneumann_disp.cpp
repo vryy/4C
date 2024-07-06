@@ -34,7 +34,7 @@ void FSI::DirichletNeumannDisp::setup()
 {
   // call setup of base class
   FSI::DirichletNeumann::setup();
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   set_kinematic_coupling(
       Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
@@ -49,7 +49,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::fluid_op(
   if (fillFlag == User)
   {
     // SD relaxation calculation
-    return fluid_to_struct(MBFluidField()->RelaxationSolve(struct_to_fluid(idisp), Dt()));
+    return fluid_to_struct(mb_fluid_field()->relaxation_solve(struct_to_fluid(idisp), dt()));
   }
   else
   {
@@ -59,14 +59,14 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::fluid_op(
     const Teuchos::RCP<Epetra_Vector> ivel = interface_velocity(idisp);
 
     // A rather simple hack. We need something better!
-    const int itemax = MBFluidField()->Itemax();
-    if (fillFlag == MF_Res and mfresitemax_ > 0) MBFluidField()->SetItemax(mfresitemax_ + 1);
+    const int itemax = mb_fluid_field()->itemax();
+    if (fillFlag == MF_Res and mfresitemax_ > 0) mb_fluid_field()->set_itemax(mfresitemax_ + 1);
 
-    MBFluidField()->nonlinear_solve(struct_to_fluid(idisp), struct_to_fluid(ivel));
+    mb_fluid_field()->nonlinear_solve(struct_to_fluid(idisp), struct_to_fluid(ivel));
 
-    MBFluidField()->SetItemax(itemax);
+    mb_fluid_field()->set_itemax(itemax);
 
-    return fluid_to_struct(MBFluidField()->extract_interface_forces());
+    return fluid_to_struct(mb_fluid_field()->extract_interface_forces());
   }
 }
 /*----------------------------------------------------------------------*/
@@ -79,7 +79,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::struct_op(
   if (fillFlag == User)
   {
     // SD relaxation calculation
-    return structure_field()->RelaxationSolve(iforce);
+    return structure_field()->relaxation_solve(iforce);
   }
   else
   {
@@ -89,7 +89,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::struct_op(
     else
       structure_field()->apply_interface_forces_temporary_deprecated(
           iforce);  // todo remove this line as soon as possible!
-    structure_field()->Solve();
+    structure_field()->solve();
     structure_field()->write_gmsh_struc_output_step();
     return structure_field()->extract_interface_dispnp();
   }
@@ -105,7 +105,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::initial_guess()
   }
   else
   {
-    const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (Core::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {

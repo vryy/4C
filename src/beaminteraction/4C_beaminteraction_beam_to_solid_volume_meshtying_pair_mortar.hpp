@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
      * \brief This pair enforces constraints via a mortar-type method, which requires an own
      * assembly method (provided by the mortar manager).
      */
-    inline bool IsAssemblyDirect() const override { return false; };
+    inline bool is_assembly_direct() const override { return false; };
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer.

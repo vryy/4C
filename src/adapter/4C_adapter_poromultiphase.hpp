@@ -54,19 +54,19 @@ namespace Adapter
     virtual void read_restart(int restart) = 0;
 
     /// test results (if necessary)
-    virtual void CreateFieldTest() = 0;
+    virtual void create_field_test() = 0;
 
     /// setup
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     /// setup the solver (only for monolithic system)
-    virtual bool SetupSolver() = 0;
+    virtual bool setup_solver() = 0;
 
     /// perform relaxation (only for partitioned system)
-    virtual void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) = 0;
+    virtual void perform_relaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) = 0;
 
     /// get relaxed fluid solution (only for partitioned system)
-    virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> relaxed_fluid_phinp() const = 0;
 
     /// set relaxed fluid solution on structure (only for partitioned system)
     virtual void set_relaxed_fluid_solution() = 0;
@@ -75,10 +75,10 @@ namespace Adapter
     virtual void prepare_time_loop() = 0;
 
     /// timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    virtual void timeloop() = 0;
 
     /// time step of coupled problem
-    virtual void TimeStep() = 0;
+    virtual void time_step() = 0;
 
     /// time step of coupled problem
     virtual void prepare_time_step() = 0;
@@ -91,37 +91,37 @@ namespace Adapter
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     /// set scatra solution on fluid field
-    virtual void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars) = 0;
+    virtual void set_scatra_solution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars) = 0;
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> StructDofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> struct_dof_row_map() const = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> StructDispnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> struct_dispnp() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> StructVelnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> struct_velnp() const = 0;
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> FluidDofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> fluid_dof_row_map() const = 0;
 
     /// dof map of vector of unknowns of artery field
-    virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
 
     /// return fluid flux
-    virtual Teuchos::RCP<const Epetra_MultiVector> FluidFlux() const = 0;
+    virtual Teuchos::RCP<const Epetra_MultiVector> fluid_flux() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> FluidPhinp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> fluid_phinp() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> FluidSaturation() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> fluid_saturation() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> FluidPressure() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> fluid_pressure() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> SolidPressure() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> solid_pressure() const = 0;
 
     //! unique map of all dofs that should be constrained with DBC
     virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map() const = 0;
@@ -131,7 +131,7 @@ namespace Adapter
         Teuchos::RCP<const Epetra_Vector> fx, const bool firstcall) = 0;
 
     //! access to monolithic right-hand side vector
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> rhs() const = 0;
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
@@ -139,10 +139,10 @@ namespace Adapter
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) = 0;
 
     //! get the extractor
-    virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const = 0;
 
     //! get the monolithic system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() const = 0;
 
     //! get structure field
     virtual const Teuchos::RCP<Adapter::Structure>& structure_field() = 0;

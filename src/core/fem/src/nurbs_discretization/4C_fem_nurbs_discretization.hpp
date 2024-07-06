@@ -70,7 +70,7 @@ namespace Core::FE
       \author gammi
 
       */
-      virtual void SetKnotVector(Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots);
+      virtual void set_knot_vector(Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots);
 
       /*!
       \brief get a pointer to the knotvector from the discretization
@@ -80,8 +80,8 @@ namespace Core::FE
       \author gammi
 
       */
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> GetKnotVector();
-      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> GetKnotVector() const;
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> get_knot_vector();
+      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> get_knot_vector() const;
 
       /*!
       \brief return number of knots in each direction
@@ -94,9 +94,9 @@ namespace Core::FE
       \author gammi
 
       */
-      virtual std::vector<int> Return_n_x_m_x_l(const int npatch)
+      virtual std::vector<int> return_n_x_m_x_l(const int npatch)
       {
-        return (knots_->Return_n_x_m_x_l(npatch));
+        return (knots_->return_n_x_m_x_l(npatch));
       }
 
       /*!
@@ -110,9 +110,9 @@ namespace Core::FE
       \author gammi
 
       */
-      virtual std::vector<int> Return_degree(const int npatch)
+      virtual std::vector<int> return_degree(const int npatch)
       {
-        return (knots_->ReturnDegree(npatch));
+        return (knots_->return_degree(npatch));
       }
 
       /*!
@@ -123,7 +123,7 @@ namespace Core::FE
       \author gammi
 
       */
-      virtual std::vector<int> Return_Offsets() { return (knots_->ReturnOffsets()); }
+      virtual std::vector<int> return_offsets() { return (knots_->return_offsets()); }
 
       /*!
       \brief return number of elements in each direction

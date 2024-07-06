@@ -86,10 +86,10 @@ namespace LowMach
     void setup() override;
 
     /// LOMA time loop
-    void TimeLoop() override;
+    void time_loop() override;
 
     /// read restart for preceding turbulent inflow simulation
-    void ReadInflowRestart(int restart);
+    void read_inflow_restart(int restart);
 
    protected:
     /// do initial calculations

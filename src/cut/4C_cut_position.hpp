@@ -85,7 +85,7 @@ namespace Core::Geo
        *                        point lies inside / on it.
        *  \param point   (in) : Given global point object.
        *  \param floattype (in) : Floattype to compute geometric operations. */
-      static Teuchos::RCP<Position> Create(
+      static Teuchos::RCP<Position> create(
           const Element& element, const Point& point, CutFloatType floattype = floattype_double);
 
       /** \brief build variant #2
@@ -97,7 +97,7 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim>
-      static Teuchos::RCP<Position> Create(const Element& element,
+      static Teuchos::RCP<Position> create(const Element& element,
           const Core::LinAlg::Matrix<rdim, 1>& xyz, CutFloatType floattype = floattype_double);
       /** \brief build variant #3
        *
@@ -108,13 +108,13 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim, unsigned cdim, unsigned rdim_2>
-      static Teuchos::RCP<Position> Create(const Core::LinAlg::Matrix<rdim, cdim>& xyze,
+      static Teuchos::RCP<Position> create(const Core::LinAlg::Matrix<rdim, cdim>& xyze,
           const Core::LinAlg::Matrix<rdim_2, 1>& xyz, const Core::FE::CellType& distype,
           CutFloatType floattype = floattype_double);
 
       /// \brief build variant #3-1 (Core::LinAlg::SerialDenseMatrix)
       template <unsigned rdim>
-      static Teuchos::RCP<Position> Create(const Core::LinAlg::SerialDenseMatrix& xyze,
+      static Teuchos::RCP<Position> create(const Core::LinAlg::SerialDenseMatrix& xyze,
           const Core::LinAlg::Matrix<rdim, 1>& xyz, const Core::FE::CellType& distype,
           CutFloatType floattype = floattype_double);
 
@@ -127,7 +127,7 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim>
-      static Teuchos::RCP<Position> Create(const std::vector<Node*> nodes,
+      static Teuchos::RCP<Position> create(const std::vector<Node*> nodes,
           const Core::LinAlg::Matrix<rdim, 1>& xyz,
           Core::FE::CellType distype = Core::FE::CellType::dis_none,
           CutFloatType floattype = floattype_double);
@@ -140,11 +140,11 @@ namespace Core::Geo
       /// destructor
       virtual ~Position() = default;
 
-      virtual unsigned Dim() const = 0;
+      virtual unsigned n_dim() const = 0;
 
-      virtual unsigned ProbDim() const = 0;
+      virtual unsigned n_prob_dim() const = 0;
 
-      virtual enum Status Status() const = 0;
+      virtual enum Status status() const = 0;
 
       /** \brief Default Compute method
        *
@@ -152,30 +152,30 @@ namespace Core::Geo
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
-      bool Compute() { return Compute(POSITIONTOL); }
-      virtual bool Compute(const double& tol) = 0;
-      bool Compute(const bool& allow_dist) { return Compute(POSITIONTOL, allow_dist); }
-      virtual bool Compute(const double& tol, const bool& allow_dist) = 0;
+      bool compute() { return compute(POSITIONTOL); }
+      virtual bool compute(const double& tol) = 0;
+      bool compute(const bool& allow_dist) { return compute(POSITIONTOL, allow_dist); }
+      virtual bool compute(const double& tol, const bool& allow_dist) = 0;
 
       virtual bool is_given_point_within_element() = 0;
 
-      virtual const double& NewtonTolerance() const = 0;
+      virtual const double& newton_tolerance() const = 0;
 
       /*! \brief Return the local coordinates of the given point \c px_ */
       template <class T>
       void local_coordinates(T& rst)
       {
-        if (rst.m() < Dim())
-          FOUR_C_THROW(
-              "rst has the wrong row number! ( DIM = %d ( rst.m() = %d < DIM ) )", Dim(), rst.m());
+        if (rst.m() < n_dim())
+          FOUR_C_THROW("rst has the wrong row number! ( DIM = %d ( rst.m() = %d < DIM ) )", n_dim(),
+              rst.m());
         local_coordinates(rst.data());
 
-        std::fill(rst.data() + Dim(), rst.data() + rst.m(), 0.0);
+        std::fill(rst.data() + n_dim(), rst.data() + rst.m(), 0.0);
       }
 
       /*! \brief Return the scalar signed perpendicular distance between
        *         given point and embedded element */
-      virtual double Distance() const
+      virtual double distance() const
       {
         FOUR_C_THROW("Unsupported for the standard case!");
         exit(EXIT_FAILURE);
@@ -194,24 +194,27 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 01/17 */
       template <class T>
-      void Distance(T& d) const
+      void distance(T& d) const
       {
-        if (d.m() < (ProbDim() - Dim()))
+        if (d.m() < (n_prob_dim() - n_dim()))
           FOUR_C_THROW(
               "The distance vector has the wrong row number! "
               "( DIM = %d ( rst.m() = %d < DIM ) )",
-              Dim(), d.m());
+              n_dim(), d.m());
 
         distance(d.data());
       }
 
-      bool within_limits() const { return WithinLimitsTol(POSITIONTOL); }
-      virtual bool WithinLimitsTol(const double& Tol) const { return WithinLimitsTol(Tol, false); }
+      bool within_limits() const { return within_limits_tol(POSITIONTOL); }
+      virtual bool within_limits_tol(const double& Tol) const
+      {
+        return within_limits_tol(Tol, false);
+      }
       bool within_limits(const bool& allow_dist) const
       {
-        return WithinLimitsTol(POSITIONTOL, allow_dist);
+        return within_limits_tol(POSITIONTOL, allow_dist);
       }
-      virtual bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const
+      virtual bool within_limits_tol(const double& Tol, const bool& allow_dist) const
       {
         FOUR_C_THROW("Unsupported for the standard case!");
         exit(EXIT_FAILURE);
@@ -278,12 +281,12 @@ namespace Core::Geo
        * methods, instead. */
      protected:
       /// return the element dimension
-      unsigned Dim() const override { return dim; }
+      unsigned n_dim() const override { return dim; }
 
       /// return the problem dimension
-      unsigned ProbDim() const override { return probdim; }
+      unsigned n_prob_dim() const override { return probdim; }
 
-      enum Status Status() const override { return pos_status_; }
+      enum Status status() const override { return pos_status_; }
 
       /*! \brief Return the local coordinates of the given point \c px_
        *
@@ -312,11 +315,11 @@ namespace Core::Geo
 
       void distance(double* distance) const override = 0;
 
-      bool Compute(const double& tol) override = 0;
+      bool compute(const double& tol) override = 0;
 
       bool is_given_point_within_element() override = 0;
 
-      const double& NewtonTolerance() const override
+      const double& newton_tolerance() const override
       {
         if (compute_tolerance_ < 0.0) FOUR_C_THROW("Call the Compute() routine first!");
         if (compute_tolerance_ > 1.0)
@@ -421,16 +424,16 @@ namespace Core::Geo
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
-      bool Compute(const double& Tol, const bool& allow_dist) override
+      bool compute(const double& Tol, const bool& allow_dist) override
       {
         if (allow_dist) FOUR_C_THROW("Compute: allow_dist for ComputePosition not possible!");
-        return Compute(Tol);
+        return compute(Tol);
       }
-      bool Compute(const double& Tol) override;
+      bool compute(const double& Tol) override;
 
-      bool is_given_point_within_element() override { return Position::Compute(); }
+      bool is_given_point_within_element() override { return Position::compute(); }
 
-      bool WithinLimitsTol(const double& Tol) const override
+      bool within_limits_tol(const double& Tol) const override
       {
         return Kernel::within_limits<eletype>(this->xsi_, Tol);
       }
@@ -464,13 +467,13 @@ namespace Core::Geo
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
-      bool Compute(const double& tol) override { return Compute(tol, false); }
-      bool Compute(const double& Tol, const bool& allow_dist) override;
+      bool compute(const double& tol) override { return compute(tol, false); }
+      bool compute(const double& Tol, const bool& allow_dist) override;
 
       bool is_given_point_within_element() override;
 
       /*! \brief Return the perpendicular distance between given point to the side */
-      double Distance() const override
+      double distance() const override
       {
         if (this->pos_status_ < Position::position_distance_valid)
         {
@@ -505,7 +508,7 @@ namespace Core::Geo
         std::copy(xsi_aug_.data() + dim, xsi_aug_.data() + probdim, distance);
       }
 
-      bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const override
+      bool within_limits_tol(const double& Tol, const bool& allow_dist) const override
       {
         double tol2 = Tol;
         double tol_xyze = this->xyze_.norm_inf();
@@ -538,7 +541,7 @@ namespace Core::Geo
       PositionFactory();
 
       /// get the current problem dimension
-      unsigned ProbDim() const { return probdim_; }
+      unsigned n_prob_dim() const { return probdim_; }
 
       /** \brief build variant #1
        *
@@ -546,7 +549,7 @@ namespace Core::Geo
        *                        point lies inside / on it.
        *  \param point   (in) : Given global point
        *  \param floattype (in) : Floattype to compute geometric operations. */
-      Teuchos::RCP<Position> CreatePosition(const Element& element, const Point& point,
+      Teuchos::RCP<Position> create_position(const Element& element, const Point& point,
           CutFloatType floattype = floattype_double) const;
 
       /** \brief build variant #2
@@ -555,7 +558,7 @@ namespace Core::Geo
        *                        point lies inside / on it.
        *  \param xyz     (in) : Global coordinates of the given point
        *  *  \param floattype (in) : Floattype to compute geometric operations. */
-      Teuchos::RCP<Position> CreatePosition(const Element& element, const double* xyz,
+      Teuchos::RCP<Position> create_position(const Element& element, const double* xyz,
           CutFloatType floattype = floattype_double) const;
 
       /** \brief build variant #3
@@ -564,7 +567,7 @@ namespace Core::Geo
        *  \param xyz     (in) : Global coordinates of the given point.
        *  \param distype (in) : element discretization type.
        *  \param floattype (in) : Floattype to compute geometric operations. */
-      Teuchos::RCP<Position> CreatePosition(const double* xyze, const double* xyz,
+      Teuchos::RCP<Position> create_position(const double* xyze, const double* xyz,
           const Core::FE::CellType& distype, CutFloatType floattype = floattype_double) const;
 
       /** \brief build variant #4
@@ -573,7 +576,7 @@ namespace Core::Geo
        *  \param xyz     (in) : Global coordinates of the given point.
        *  \param distype (in) : element discretization type. (optional)
        *  \param floattype (in) : Floattype to compute geometric operations. */
-      Teuchos::RCP<Position> CreatePosition(const std::vector<Node*> nodes, const double* xyz,
+      Teuchos::RCP<Position> create_position(const std::vector<Node*> nodes, const double* xyz,
           Core::FE::CellType distype = Core::FE::CellType::dis_none,
           CutFloatType floattype = floattype_double) const;
 
@@ -594,7 +597,7 @@ namespace Core::Geo
       class PositionCreator
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           return nullptr;
@@ -609,7 +612,7 @@ namespace Core::Geo
       class PositionCreator<true, dim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<dim, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<dim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<dim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -623,7 +626,7 @@ namespace Core::Geo
       class PositionCreator<true, 1, 2, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<1, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<1, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<1, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -637,7 +640,7 @@ namespace Core::Geo
       class PositionCreator<true, 1, 3, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<1, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<1, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<1, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -651,7 +654,7 @@ namespace Core::Geo
       class PositionCreator<true, 2, 3, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<2, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<2, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<2, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -666,7 +669,7 @@ namespace Core::Geo
       class PositionCreator<false, probdim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -684,7 +687,7 @@ namespace Core::Geo
       class PositionCreator<true, probdim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           switch (use_dist_floattype(floattype))
@@ -713,7 +716,7 @@ namespace Core::Geo
       class PositionCreator<false, dim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<dim, num_nodes_element>& xyze,
+        static Position* create(const Core::LinAlg::Matrix<dim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<dim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           switch (use_pos_floattype(floattype))
@@ -756,19 +759,19 @@ namespace Core::Geo
           CutFloatType floattype = floattype_double) const
       {
         Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
-        element.Coordinates(xyze);
+        element.coordinates(xyze);
         Core::LinAlg::Matrix<probdim, 1> px;
-        point.Coordinates(px.data());
+        point.coordinates(px.data());
 
         if (probdim > dim)
         {
           return Teuchos::rcp(
-              PositionCreator<true, probdim, dim, eletype>::Create(xyze, px, floattype));
+              PositionCreator<true, probdim, dim, eletype>::create(xyze, px, floattype));
         }
         else if (probdim == dim)
         {
           return Teuchos::rcp(
-              PositionCreator<false, probdim, dim, eletype>::Create(xyze, px, floattype));
+              PositionCreator<false, probdim, dim, eletype>::create(xyze, px, floattype));
         }
         else
           FOUR_C_THROW(
@@ -824,17 +827,17 @@ namespace Core::Geo
           const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
       {
         Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
-        element.Coordinates(xyze);
+        element.coordinates(xyze);
 
         if (probdim > dim)
         {
           return Teuchos::rcp(
-              PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz, floattype));
+              PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
         }
         else if (probdim == dim)
         {
           return Teuchos::rcp(
-              PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
+              PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
         }
         else
           FOUR_C_THROW(
@@ -899,12 +902,12 @@ namespace Core::Geo
         if (probdim > dim)
         {
           return Teuchos::rcp(
-              PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz, floattype));
+              PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
         }
         else if (probdim == dim)
         {
           return Teuchos::rcp(
-              PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
+              PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
         }
         else
           FOUR_C_THROW(
@@ -971,18 +974,18 @@ namespace Core::Geo
         for (unsigned i = 0; i < num_nodes_element; ++i)
         {
           Node* n = nodes[i];
-          n->Coordinates(&xyze(0, i));
+          n->coordinates(&xyze(0, i));
         }
 
         if (probdim > dim)
         {
           return Teuchos::rcp(
-              PositionCreator<true, probdim, dim, eletype>::Create(xyze, xyz, floattype));
+              PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
         }
         else if (probdim == dim)
         {
           return Teuchos::rcp(
-              PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
+              PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
         }
         else
           FOUR_C_THROW(

@@ -32,13 +32,13 @@ namespace PoroElast
     void do_time_step() override;
 
     //! initialise system
-    void SetupSystem() override;
+    void setup_system() override;
 
     //! dof row map of Structure field
-    Teuchos::RCP<const Epetra_Map> DofRowMapStructure() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map_structure() override;
 
     //! dof row map of Fluid field
-    Teuchos::RCP<const Epetra_Map> DofRowMapFluid() override;
+    Teuchos::RCP<const Epetra_Map> dof_row_map_fluid() override;
 
    protected:
     //! prepare new time step
@@ -51,7 +51,7 @@ namespace PoroElast
     void do_fluid_step();
 
     //! solve one time step (iteration between fields)
-    void Solve() override;
+    void solve() override;
 
     //! update and write output to screen and files after solved time step
     void update_and_output();

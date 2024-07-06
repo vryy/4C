@@ -39,7 +39,7 @@ void EleMag::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int mati
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
   Core::Materials::MaterialType mtype =
-      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+      Global::Problem::instance()->materials()->parameter_by_id(matid)->type();
   if (mtype != Core::Materials::m_scatra)
     FOUR_C_THROW("Material with ID %d is not admissible for TRANSP elements", matid);
 }
@@ -54,18 +54,18 @@ void EleMag::UTILS::ScatraCloneStrategy<sft>::set_element_data(
   auto Transport = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (Transport != nullptr)
   {
-    Transport->SetDisType(oldele->Shape());
-    Transport->SetMaterial(0, Mat::Factory(matid));
+    Transport->set_dis_type(oldele->shape());
+    Transport->set_material(0, Mat::Factory(matid));
     if (sft == Core::FE::ShapeFunctionType::hdg)
     {
       auto scatraele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(Transport);
-      scatraele->SetImplType(Inpar::ScaTra::impltype_std_hdg);
-      scatraele->SetDegree(oldele->Degree());
+      scatraele->set_impl_type(Inpar::ScaTra::impltype_std_hdg);
+      scatraele->set_degree(oldele->degree());
       scatraele->set_complete_polynomial_space(false);
     }
     else
     {
-      Transport->SetImplType(Inpar::ScaTra::impltype_std);
+      Transport->set_impl_type(Inpar::ScaTra::impltype_std);
     }
   }
   else

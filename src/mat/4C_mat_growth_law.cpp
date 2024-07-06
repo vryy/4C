@@ -75,7 +75,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
 
   // calculate growth part F_g of the deformation gradient F
   Core::LinAlg::Matrix<3, 3> F_g(true);
-  CalcFg(theta, thetaold, gp, defgrd, refdir, curdir, histdefgrd, F_g);
+  calc_fg(theta, thetaold, gp, defgrd, refdir, curdir, histdefgrd, F_g);
   // calculate F_g^(-1)
   Core::LinAlg::Matrix<3, 3> F_ginv(true);
   F_ginv.invert(F_g);
@@ -95,7 +95,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
   glstraindachvec -= Id;
   glstraindachvec.scale(0.5);
   // elastic 2 PK stress and constitutive matrix
-  matgrowth.EvaluateElastic(
+  matgrowth.evaluate_elastic(
       &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, gp, eleGID);
 
   // the growth trigger (i.e. stress, strain, ...)
@@ -116,7 +116,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
   int maxstep = 30;
 
   // local Newton iteration to obtain exact theta
-  while (abs(residual) > Parameter()->abstol_ && localistep < maxstep)
+  while (abs(residual) > parameter()->abstol_ && localistep < maxstep)
   {
     localistep += 1;
 
@@ -136,7 +136,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
 
       // calculate growth part F_g of the deformation gradient F
       F_g.put_scalar(0.0);
-      CalcFg(thetatemp, thetaold, gp, defgrd, refdir, curdir, histdefgrd, F_g);
+      calc_fg(thetatemp, thetaold, gp, defgrd, refdir, curdir, histdefgrd, F_g);
       // calculate F_g^(-1)
       F_ginv.put_scalar(0.0);
       F_ginv.invert(F_g);
@@ -156,7 +156,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
       glstraindachvec.scale(0.5);
       cmatdach.put_scalar(0.0);
       Sdachvec.put_scalar(0.0);
-      matgrowth.EvaluateElastic(
+      matgrowth.evaluate_elastic(
           &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, gp, eleGID);
 
       // the growth trigger (i.e. stress, strain, ...)
@@ -185,7 +185,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
   }  // end of local Newton iteration
 
 
-  if (localistep == maxstep && abs(residual) > Parameter()->abstol_)
+  if (localistep == maxstep && abs(residual) > parameter()->abstol_)
   {
     FOUR_C_THROW(
         "local Newton iteration did not converge after %i steps: residual: %e, thetaold: %f,"
@@ -222,7 +222,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawDyn::EvaluatePDeriv(double* thetainit, const double& thetaold,
+void Mat::GrowthLawDyn::evaluate_p_deriv(double* thetainit, const double& thetaold,
     Teuchos::RCP<Mat::So3Material> matelastic, const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID)
 {
@@ -230,12 +230,12 @@ void Mat::GrowthLawDyn::EvaluatePDeriv(double* thetainit, const double& thetaold
 }
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawDyn::DensityScale(const double theta)
+double Mat::GrowthLawDyn::density_scale(const double theta)
 {
   // nothing to do
   return 0;
 }
-double Mat::GrowthLawDyn::DensityDerivScale(const double theta)
+double Mat::GrowthLawDyn::density_deriv_scale(const double theta)
 {
   // nothing to do
   return 0;
@@ -248,7 +248,7 @@ Mat::GrowthLawStatic::GrowthLawStatic() : GrowthLaw() {}
 Mat::GrowthLawStatic::GrowthLawStatic(Core::Mat::PAR::Parameter* params) : GrowthLaw(params) {}
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawStatic::EvaluatePDeriv(double* thetainit, const double& thetaold,
+void Mat::GrowthLawStatic::evaluate_p_deriv(double* thetainit, const double& thetaold,
     Teuchos::RCP<Mat::So3Material> matelastic, const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID)
 {
@@ -256,13 +256,13 @@ void Mat::GrowthLawStatic::EvaluatePDeriv(double* thetainit, const double& theta
 }
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawStatic::DensityScale(const double theta)
+double Mat::GrowthLawStatic::density_scale(const double theta)
 {
   // nothing to do
   return 0;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawStatic::DensityDerivScale(const double theta)
+double Mat::GrowthLawStatic::density_deriv_scale(const double theta)
 {
   // nothing to do
   return 0;
@@ -277,7 +277,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthLawAnisoStrain::create_materia
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStrain::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStrain::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawAnisoStrain(this));
 }
@@ -429,7 +429,7 @@ void Mat::GrowthLawAnisoStrain::evaluate_growth_function_deriv_c(
 ///*----------------------------------------------------------------------*
 // | calculate growth part of deformation gradient                mh 04/17|
 // *----------------------------------------------------------------------*/
-void Mat::GrowthLawAnisoStrain::CalcFg(const double& theta, const double& thetaold, const int& gp,
+void Mat::GrowthLawAnisoStrain::calc_fg(const double& theta, const double& thetaold, const int& gp,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
@@ -443,14 +443,14 @@ void Mat::GrowthLawAnisoStrain::CalcFg(const double& theta, const double& thetao
 
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawAnisoStrain::DensityScale(const double theta)
+double Mat::GrowthLawAnisoStrain::density_scale(const double theta)
 {
   // in anisotropic uni-directional growth case: rho_0 = theta * rho_dach,
   // thus d(rho_0)/d(theta) = rho_dach
   return theta;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawAnisoStrain::DensityDerivScale(const double theta) { return 1.0; }
+double Mat::GrowthLawAnisoStrain::density_deriv_scale(const double theta) { return 1.0; }
 
 
 /*----------------------------------------------------------------------------*/
@@ -460,7 +460,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthLawAnisoStress::create_materia
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStress::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStress::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawAnisoStress(this));
 }
@@ -655,7 +655,7 @@ void Mat::GrowthLawAnisoStress::evaluate_growth_function_deriv_c(
 ///*----------------------------------------------------------------------*
 // | calculate growth part of deformation gradient                mh 04/17|
 // *----------------------------------------------------------------------*/
-void Mat::GrowthLawAnisoStress::CalcFg(const double& theta, const double& thetaold, const int& gp,
+void Mat::GrowthLawAnisoStress::calc_fg(const double& theta, const double& thetaold, const int& gp,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
@@ -669,14 +669,14 @@ void Mat::GrowthLawAnisoStress::CalcFg(const double& theta, const double& thetao
 
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawAnisoStress::DensityScale(const double theta)
+double Mat::GrowthLawAnisoStress::density_scale(const double theta)
 {
   // in anisotropic bi-directional growth case: rho_0 = theta^2 * rho_dach,
   // thus d(rho_0)/d(theta) = 2 * theta * rho_dach
   return theta * theta;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawAnisoStress::DensityDerivScale(const double theta) { return 2.0 * theta; }
+double Mat::GrowthLawAnisoStress::density_deriv_scale(const double theta) { return 2.0 * theta; }
 
 
 
@@ -687,7 +687,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthLawAnisoStrainConstTrig::creat
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStrainConstTrig::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStrainConstTrig::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawAnisoStrainConstTrig(this));
 }
@@ -778,7 +778,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthLawAnisoStressConstTrig::creat
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStressConstTrig::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAnisoStressConstTrig::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawAnisoStressConstTrig(this));
 }
@@ -869,7 +869,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthLawIsoStress::create_material(
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawIsoStress::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawIsoStress::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawIsoStress(this));
 }
@@ -1025,7 +1025,7 @@ void Mat::GrowthLawIsoStress::evaluate_growth_function_deriv_c(
 ///*----------------------------------------------------------------------*
 // | calculate growth part of deformation gradient                mh 04/17|
 // *----------------------------------------------------------------------*/
-void Mat::GrowthLawIsoStress::CalcFg(const double& theta, const double& thetaold, const int& gp,
+void Mat::GrowthLawIsoStress::calc_fg(const double& theta, const double& thetaold, const int& gp,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
@@ -1035,14 +1035,14 @@ void Mat::GrowthLawIsoStress::CalcFg(const double& theta, const double& thetaold
 
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawIsoStress::DensityScale(const double theta)
+double Mat::GrowthLawIsoStress::density_scale(const double theta)
 {
   // in isotropic growth case: rho_0 = theta^3 * rho_dach,
   // thus d(rho_0)/d(theta) = 3 * theta^2 * rho_dach
   return theta * theta * theta;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawIsoStress::DensityDerivScale(const double theta)
+double Mat::GrowthLawIsoStress::density_deriv_scale(const double theta)
 {
   return 3.0 * theta * theta;
 }
@@ -1066,7 +1066,7 @@ Mat::PAR::GrowthLawAC::GrowthLawAC(const Core::Mat::PAR::Parameter::Data& matdat
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthLawAC::create_material() { return Teuchos::null; }
 
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAC::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawAC::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawAC(this));
 }
@@ -1093,13 +1093,13 @@ void Mat::GrowthLawAC::evaluate(double* theta, const double& thetaold,
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
           Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
 
-  const int Sc1 = Parameter()->Sc1_;
-  const double alpha = Parameter()->alpha_;
+  const int Sc1 = parameter()->Sc1_;
+  const double alpha = parameter()->alpha_;
   // NOTE: if no second scalar is chosen to induce growth, this points out the first scalar field
-  const int Sc2 = Parameter()->Sc2_;
+  const int Sc2 = parameter()->Sc2_;
   // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence
   // on growth
-  const double beta = Parameter()->beta_;
+  const double beta = parameter()->beta_;
 
   const double deltagrowth =
       (alpha * concentrations->at(gp).at(Sc1 - 1) + beta * concentrations->at(gp).at(Sc2 - 1)) *
@@ -1151,7 +1151,7 @@ void Mat::GrowthLawAC::evaluate(double* theta, const double& thetaold,
 ///*----------------------------------------------------------------------*
 // | calculate growth part of deformation gradient                mh 04/17|
 // *----------------------------------------------------------------------*/
-void Mat::GrowthLawAC::CalcFg(const double& theta, const double& thetaold, const int& gp,
+void Mat::GrowthLawAC::calc_fg(const double& theta, const double& thetaold, const int& gp,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
@@ -1161,14 +1161,14 @@ void Mat::GrowthLawAC::CalcFg(const double& theta, const double& thetaold, const
 
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawAC::DensityScale(const double theta)
+double Mat::GrowthLawAC::density_scale(const double theta)
 {
   // in isotropic growth case: rho_0 = theta^3 * rho_dach,
   // thus d(rho_0)/d(theta) = 3 * theta^2 * rho_dach
   return theta * theta * theta;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawAC::DensityDerivScale(const double theta) { return 3.0 * theta * theta; }
+double Mat::GrowthLawAC::density_deriv_scale(const double theta) { return 3.0 * theta * theta; }
 
 
 
@@ -1178,7 +1178,7 @@ Mat::PAR::GrowthLawACRadial::GrowthLawACRadial(const Core::Mat::PAR::Parameter::
 {
 }
 
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawACRadial::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawACRadial::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawACRadial(this));
 }
@@ -1206,13 +1206,13 @@ void Mat::GrowthLawACRadial::evaluate(double* theta, const double& thetaold,
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
           Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
 
-  const int Sc1 = Parameter()->Sc1_;
-  const double alpha = Parameter()->alpha_;
+  const int Sc1 = parameter()->Sc1_;
+  const double alpha = parameter()->alpha_;
   // NOTE: if no second scalar is chosen to induce growth, this points out the first scalar field
-  const int Sc2 = Parameter()->Sc2_;
+  const int Sc2 = parameter()->Sc2_;
   // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence
   // on growth
-  const double beta = Parameter()->beta_;
+  const double beta = parameter()->beta_;
 
   const double deltagrowth =
       (alpha * concentrations->at(gp).at(Sc1 - 1) + beta * concentrations->at(gp).at(Sc2 - 1)) *
@@ -1265,7 +1265,7 @@ void Mat::GrowthLawACRadial::evaluate(double* theta, const double& thetaold,
 ///*----------------------------------------------------------------------*
 // | calculate growth part of deformation gradient                mh 04/17|
 // *----------------------------------------------------------------------*/
-void Mat::GrowthLawACRadial::CalcFg(const double& theta, const double& thetaold, const int& gp,
+void Mat::GrowthLawACRadial::calc_fg(const double& theta, const double& thetaold, const int& gp,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g
@@ -1285,14 +1285,14 @@ void Mat::GrowthLawACRadial::CalcFg(const double& theta, const double& thetaold,
 
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawACRadial::DensityScale(const double theta)
+double Mat::GrowthLawACRadial::density_scale(const double theta)
 {
   // in anisotropic uni-directional growth case: rho_0 = theta * rho_dach,
   // thus d(rho_0)/d(theta) = rho_dach
   return theta;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawACRadial::DensityDerivScale(const double theta) { return 1.0; }
+double Mat::GrowthLawACRadial::density_deriv_scale(const double theta) { return 1.0; }
 
 
 
@@ -1303,7 +1303,7 @@ Mat::PAR::GrowthLawACRadialRefConc::GrowthLawACRadialRefConc(
 {
 }
 
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawACRadialRefConc::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawACRadialRefConc::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawACRadialRefConc(this));
 }
@@ -1330,13 +1330,13 @@ void Mat::GrowthLawACRadialRefConc::evaluate(double* theta, const double& thetao
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc",
           Teuchos::rcp(new std::vector<std::vector<double>>(30, std::vector<double>(20, 0.0))));
 
-  const int Sc1 = Parameter()->Sc1_;
-  const double alpha = Parameter()->alpha_;
+  const int Sc1 = parameter()->Sc1_;
+  const double alpha = parameter()->alpha_;
   // NOTE: if no second scalar is chosen to induce growth, this points out the first scalar field
-  const int Sc2 = Parameter()->Sc2_;
+  const int Sc2 = parameter()->Sc2_;
   // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence
   // on growth
-  const double beta = Parameter()->beta_;
+  const double beta = parameter()->beta_;
 
   // const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta *
   // GetCfac().at(Sc2-1))*defgrd->Determinant();
@@ -1362,7 +1362,7 @@ void Mat::GrowthLawACRadialRefConc::evaluate(double* theta, const double& thetao
 ///*----------------------------------------------------------------------*
 // | calculate growth part of deformation gradient                mh 04/17|
 // *----------------------------------------------------------------------*/
-void Mat::GrowthLawACRadialRefConc::CalcFg(const double& theta, const double& thetaold,
+void Mat::GrowthLawACRadialRefConc::calc_fg(const double& theta, const double& thetaold,
     const int& gp, const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<3, 1>& refdir, const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
@@ -1379,14 +1379,14 @@ void Mat::GrowthLawACRadialRefConc::CalcFg(const double& theta, const double& th
 
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawACRadialRefConc::DensityScale(const double theta)
+double Mat::GrowthLawACRadialRefConc::density_scale(const double theta)
 {
   // in anisotropic uni-directional growth case: rho_0 = theta * rho_dach,
   // thus d(rho_0)/d(theta) = rho_dach
   return theta;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawACRadialRefConc::DensityDerivScale(const double theta) { return 1.0; }
+double Mat::GrowthLawACRadialRefConc::density_deriv_scale(const double theta) { return 1.0; }
 
 
 
@@ -1397,7 +1397,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthLawConst::create_material()
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawConst::CreateGrowthLaw()
+Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawConst::create_growth_law()
 {
   return Teuchos::rcp(new Mat::GrowthLawConst(this));
 }
@@ -1406,7 +1406,7 @@ Teuchos::RCP<Mat::GrowthLaw> Mat::PAR::GrowthLawConst::CreateGrowthLaw()
 Mat::PAR::GrowthLawConst::GrowthLawConst(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
-  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
@@ -1430,22 +1430,22 @@ void Mat::GrowthLawConst::evaluate(double* theta, const double& thetaold,
 {
   double dt = params.get<double>("delta time", -1.0);
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
-  // int eleID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
-  *theta = thetaold + Parameter()->GetParameter(Parameter()->thetarate, eleGID) * dt;
+  // int eleID = Global::Problem::instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  *theta = thetaold + parameter()->get_parameter(parameter()->thetarate, eleGID) * dt;
   //*theta = Parameter()->GetParameter(Parameter()->thetarate,eleID);
 
   dthetadC->put_scalar(0.0);
 }
 
 /*----------------------------------------------------------------------------*/
-void Mat::GrowthLawConst::EvaluatePDeriv(double* theta, const double& thetaold,
+void Mat::GrowthLawConst::evaluate_p_deriv(double* theta, const double& thetaold,
     Teuchos::RCP<Mat::So3Material> matelastic, const Core::LinAlg::Matrix<3, 3>* defgrd,
     const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID)
 {
   double dt = params.get<double>("delta time", -1.0);
 
   int deriv = params.get<int>("matparderiv", -1);
-  if (deriv == Parameter()->thetarate)
+  if (deriv == parameter()->thetarate)
   {
     *theta = dt;
   }
@@ -1456,7 +1456,7 @@ void Mat::GrowthLawConst::EvaluatePDeriv(double* theta, const double& thetaold,
 ///*----------------------------------------------------------------------*
 // | calculate growth part of deformation gradient                mh 04/17|
 // *----------------------------------------------------------------------*/
-void Mat::GrowthLawConst::CalcFg(const double& theta, const double& thetaold, const int& gp,
+void Mat::GrowthLawConst::calc_fg(const double& theta, const double& thetaold, const int& gp,
     const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
     const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
@@ -1466,13 +1466,13 @@ void Mat::GrowthLawConst::CalcFg(const double& theta, const double& thetaold, co
 
 
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawConst::DensityScale(const double theta)
+double Mat::GrowthLawConst::density_scale(const double theta)
 {
   // in isotropic growth case: rho_0 = theta^3 * rho_dach,
   // thus d(rho_0)/d(theta) = 3 * theta^2 * rho_dach
   return theta * theta * theta;
 }
 /*----------------------------------------------------------------------------*/
-double Mat::GrowthLawConst::DensityDerivScale(const double theta) { return 3.0 * theta * theta; }
+double Mat::GrowthLawConst::density_deriv_scale(const double theta) { return 3.0 * theta * theta; }
 
 FOUR_C_NAMESPACE_CLOSE

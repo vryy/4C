@@ -25,7 +25,7 @@ namespace
   void runEnsightVtuFilter(PostProblem& problem)
   {
     // each problem type is different and writes different results
-    switch (problem.Problemtype())
+    switch (problem.problemtype())
     {
       case Core::ProblemType::fsi:
       case Core::ProblemType::fsi_redmodels:
@@ -35,28 +35,28 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         PostField* alefield = problem.get_discretization(2);
         AleFilter alewriter(alefield, basename);
-        alewriter.WriteFiles();
+        alewriter.write_files();
         // 1d artery
         if (problem.num_discr() == 4)
         {
           PostField* field = problem.get_discretization(2);
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
+          writer.write_files();
         }
         if (problem.num_discr() > 2 and problem.get_discretization(2)->name() == "xfluid")
         {
           std::string basename = problem.outname();
           PostField* fluidfield = problem.get_discretization(2);
           FluidFilter xfluidwriter(fluidfield, basename);
-          xfluidwriter.WriteFiles();
+          xfluidwriter.write_files();
         }
         break;
       }
@@ -68,11 +68,11 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         int numdisc = problem.num_discr();
 
@@ -80,7 +80,7 @@ namespace
         {
           PostField* scatrafield = problem.get_discretization(3 + i);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
 
         break;
@@ -91,11 +91,11 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         int numdisc = problem.num_discr();
 
@@ -103,7 +103,7 @@ namespace
         {
           PostField* scatrafield = problem.get_discretization(3 + i);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
 
         break;
@@ -113,11 +113,11 @@ namespace
         PostField* structurefield = problem.get_discretization(0);
         StructureFilter structwriter(
             structurefield, problem.outname(), problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* alefield = problem.get_discretization(1);
         AleFilter alewriter(alefield, problem.outname());
-        alewriter.WriteFiles();
+        alewriter.write_files();
         break;
       }
       case Core::ProblemType::structure:
@@ -127,11 +127,11 @@ namespace
           PostField* structurefield = problem.get_discretization(0);
           StructureFilter structwriter(structurefield, problem.outname(), problem.stresstype(),
               problem.straintype(), problem.optquantitytype());
-          structwriter.WriteFiles();
+          structwriter.write_files();
         }
 
         // Deal with contact / meshtying problems
-        if (problem.DoMortarInterfaces())
+        if (problem.do_mortar_interfaces())
         {
           /* Loop over all mortar interfaces and process each interface individually
            *
@@ -144,7 +144,7 @@ namespace
           {
             PostField* mortarfield = problem.get_discretization(i);
             MortarFilter mortarwriter(mortarfield, problem.outname());
-            mortarwriter.WriteFiles();
+            mortarwriter.write_files();
           }
         }
 
@@ -160,25 +160,25 @@ namespace
           {
             PostField* structure = problem.get_discretization(i);
             StructureFilter writer(structure, problem.outname());
-            writer.WriteFiles();
+            writer.write_files();
           }
           else if (disname == "ia_structure")
           {
             PostField* ia_structure = problem.get_discretization(i);
             StructureFilter iawriter(ia_structure, problem.outname());
-            iawriter.WriteFiles();
+            iawriter.write_files();
           }
           else if (disname == "boundingbox")
           {
             PostField* boxdiscret = problem.get_discretization(i);
             StructureFilter boxwriter(boxdiscret, problem.outname());
-            boxwriter.WriteFiles();
+            boxwriter.write_files();
           }
           else if (disname == "bins")
           {
             PostField* visualizebins = problem.get_discretization(i);
             StructureFilter binwriter(visualizebins, problem.outname());
-            binwriter.WriteFiles();
+            binwriter.write_files();
           }
           else
           {
@@ -196,7 +196,7 @@ namespace
             std::string basename = problem.outname();
             PostField* fluidfield = problem.get_discretization(1);
             XFluidFilter xfluidwriter(fluidfield, basename);
-            xfluidwriter.WriteFiles();
+            xfluidwriter.write_files();
           }
         }
         [[fallthrough]];
@@ -209,13 +209,13 @@ namespace
           std::string basename = problem.outname();
           PostField* field = problem.get_discretization(1);
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
+          writer.write_files();
           if (problem.get_discretization(1)->name() == "xfluid")
           {
             std::string basename = problem.outname();
             PostField* fluidfield = problem.get_discretization(1);
             XFluidFilter xfluidwriter(fluidfield, basename);
-            xfluidwriter.WriteFiles();
+            xfluidwriter.write_files();
           }
         }
         [[fallthrough]];
@@ -225,13 +225,13 @@ namespace
       {
         PostField* field = problem.get_discretization(0);
         FluidFilter writer(field, problem.outname());
-        writer.WriteFiles();
+        writer.write_files();
         if (problem.num_discr() > 1 and problem.get_discretization(1)->name() == "xfluid")
         {
           std::string basename = problem.outname();
           PostField* fluidfield = problem.get_discretization(1);
           FluidFilter xfluidwriter(fluidfield, basename);
-          xfluidwriter.WriteFiles();
+          xfluidwriter.write_files();
         }
         break;
       }
@@ -246,14 +246,14 @@ namespace
           {
             PostField* visualizebins = problem.get_discretization(i);
             StructureFilter binwriter(visualizebins, problem.outname());
-            binwriter.WriteFiles();
+            binwriter.write_files();
           }
           else if (disname == "structure")
           {
             PostField* structure = problem.get_discretization(i);
             StructureFilter writer(structure, problem.outname(), problem.stresstype(),
                 problem.straintype(), problem.optquantitytype());
-            writer.WriteFiles();
+            writer.write_files();
           }
           else
           {
@@ -268,7 +268,7 @@ namespace
 
         PostField* scatrafield = problem.get_discretization(0);
         ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
+        scatrawriter.write_files();
 
         break;
       }
@@ -277,26 +277,26 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, problem.outname(), problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         StructureFilter fluidwriter(
             fluidfield, problem.outname(), problem.stresstype(), problem.straintype());
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
         break;
       }
       case Core::ProblemType::ale:
       {
         PostField* field = problem.get_discretization(0);
         AleFilter writer(field, problem.outname());
-        writer.WriteFiles();
+        writer.write_files();
         break;
       }
       case Core::ProblemType::lubrication:
       {
         PostField* lubricationfield = problem.get_discretization(0);
         LubricationFilter lubricationwriter(lubricationfield, problem.outname());
-        lubricationwriter.WriteFiles();
+        lubricationwriter.write_files();
         break;
       }
       case Core::ProblemType::porofluidmultiphase:
@@ -305,7 +305,7 @@ namespace
 
         PostField* field = problem.get_discretization(0);
         PoroFluidMultiPhaseFilter writer(field, problem.outname());
-        writer.WriteFiles();
+        writer.write_files();
 
         // write output for artery
         if (problem.num_discr() == 2)
@@ -313,7 +313,7 @@ namespace
           PostField* field = problem.get_discretization(1);
           // AnyFilter writer(field, problem.outname());
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
+          writer.write_files();
         }
         break;
       }
@@ -324,18 +324,18 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         PoroFluidMultiPhaseFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
         if (problem.num_discr() == 3)
         {
           // artery
           PostField* field = problem.get_discretization(2);
           // AnyFilter writer(field, problem.outname());
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
+          writer.write_files();
         }
         break;
       }
@@ -346,18 +346,18 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         PoroFluidMultiPhaseFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         // no artery discretization
         if (problem.num_discr() == 3)
         {
           PostField* scatrafield = problem.get_discretization(2);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
         else if (problem.num_discr() == 4)
         {
@@ -365,12 +365,12 @@ namespace
           PostField* field = problem.get_discretization(2);
           // AnyFilter writer(field, problem.outname());
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
+          writer.write_files();
 
           // scatra
           PostField* scatrafield = problem.get_discretization(3);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
         else if (problem.num_discr() == 5)
         {
@@ -378,17 +378,17 @@ namespace
           PostField* field = problem.get_discretization(2);
           // AnyFilter writer(field, problem.outname());
           StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
+          writer.write_files();
 
           // artery scatra
           PostField* artscatrafield = problem.get_discretization(3);
           ScaTraFilter artscatrawriter(artscatrafield, basename);
-          artscatrawriter.WriteFiles();
+          artscatrawriter.write_files();
 
           // scatra
           PostField* scatrafield = problem.get_discretization(4);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
         else
           FOUR_C_THROW("wrong number of discretizations");
@@ -404,17 +404,17 @@ namespace
         {
           PostField* fluidfield = problem.get_discretization(0);
           FluidFilter fluidwriter(fluidfield, basename);
-          fluidwriter.WriteFiles();
+          fluidwriter.write_files();
 
           PostField* scatrafield = problem.get_discretization(1);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
         else if (numfields == 1)
         {
           PostField* scatrafield = problem.get_discretization(0);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
         else
           FOUR_C_THROW("number of fields does not match: got %d", numfields);
@@ -433,26 +433,26 @@ namespace
 
         Discret::ELEMENTS::Transport* transport_element =
             dynamic_cast<Discret::ELEMENTS::Transport*>(
-                problem.get_discretization(0)->discretization()->lRowElement(0));
+                problem.get_discretization(0)->discretization()->l_row_element(0));
         if (transport_element == nullptr)
           FOUR_C_THROW("Elements of unknown type on scalar transport discretization!");
 
-        if (transport_element->ImplType() == Inpar::ScaTra::impltype_elch_electrode_thermo or
-            transport_element->ImplType() == Inpar::ScaTra::impltype_elch_diffcond_thermo)
+        if (transport_element->impl_type() == Inpar::ScaTra::impltype_elch_electrode_thermo or
+            transport_element->impl_type() == Inpar::ScaTra::impltype_elch_diffcond_thermo)
         {
           ElchFilter elchwriter(problem.get_discretization(0), basename);
-          elchwriter.WriteFiles();
+          elchwriter.write_files();
         }
         else
         {
           FOUR_C_THROW(
               "Scatra-thermo interaction not yet implemented for standard scalar transport!");
           ScaTraFilter scatrawriter(problem.get_discretization(0), basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
 
         ScaTraFilter thermowriter(problem.get_discretization(1), basename);
-        thermowriter.WriteFiles();
+        thermowriter.write_files();
 
         break;
       }
@@ -485,19 +485,19 @@ namespace
             std::cout << "|==  Structural Field ( " << disname << " )" << std::endl;
             StructureFilter structwriter(
                 field, basename, problem.stresstype(), problem.straintype());
-            structwriter.WriteFiles();
+            structwriter.write_files();
           }
           else if (disname == "fluid" or disname == "xfluid" or disname == "porofluid")
           {
             std::cout << "|==    Fluid Field ( " << disname << " )" << std::endl;
             FluidFilter fluidwriter(field, basename);
-            fluidwriter.WriteFiles();
+            fluidwriter.write_files();
           }
           else if (disname == "scatra")
           {
             std::cout << "|==    Scatra Field ( " << disname << " )" << std::endl;
             ScaTraFilter scatrawriter(field, basename);
-            scatrawriter.WriteFiles();
+            scatrawriter.write_files();
           }
           else if (disname == "ale")
           {
@@ -509,7 +509,7 @@ namespace
           {
             std::cout << "|==    Interface Field ( " << disname << " )" << std::endl;
             InterfaceFilter ifacewriter(field, basename);
-            ifacewriter.WriteFiles();
+            ifacewriter.write_files();
           }
           else
             FOUR_C_THROW(
@@ -542,7 +542,7 @@ namespace
         std::cout << "  Fluid Field" << std::endl;
         PostField* fluidfield = problem.get_discretization(0);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         // start index for interface discretizations
         int idx_int = 1;
@@ -552,7 +552,7 @@ namespace
           std::cout << "  XFluid Field" << std::endl;
           PostField* xfluidfield = problem.get_discretization(1);
           FluidFilter xfluidwriter(xfluidfield, basename);
-          xfluidwriter.WriteFiles();
+          xfluidwriter.write_files();
           idx_int += 1;
         }
 
@@ -563,7 +563,7 @@ namespace
                     << std::endl;
           PostField* ifacefield = problem.get_discretization(i);
           InterfaceFilter ifacewriter(ifacefield, basename);
-          ifacewriter.WriteFiles();
+          ifacewriter.write_files();
         }
         break;
       }
@@ -573,11 +573,11 @@ namespace
 
         PostField* fluidfield = problem.get_discretization(0);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         PostField* scatrafield = problem.get_discretization(1);
         ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
+        scatrawriter.write_files();
         break;
       }
       case Core::ProblemType::elch:
@@ -590,15 +590,15 @@ namespace
           // Fluid, ScaTra and ALE fields are present
           PostField* fluidfield = problem.get_discretization(0);
           FluidFilter fluidwriter(fluidfield, basename);
-          fluidwriter.WriteFiles();
+          fluidwriter.write_files();
 
           PostField* scatrafield = problem.get_discretization(1);
           ElchFilter elchwriter(scatrafield, basename);
-          elchwriter.WriteFiles();
+          elchwriter.write_files();
 
           PostField* alefield = problem.get_discretization(2);
           AleFilter alewriter(alefield, basename);
-          alewriter.WriteFiles();
+          alewriter.write_files();
         }
         else if (numfield == 2)
         {
@@ -609,22 +609,22 @@ namespace
           {
             PostField* scatrafield = dis0;
             ElchFilter elchwriter(scatrafield, basename);
-            elchwriter.WriteFiles();
+            elchwriter.write_files();
 
             PostField* scatrafield_micro = dis1;
             ElchFilter elchwriter_micro(scatrafield_micro, basename);
-            elchwriter_micro.WriteFiles();
+            elchwriter_micro.write_files();
           }
           else
           {
             // Fluid and ScaTra fields are present
             PostField* fluidfield = dis0;
             FluidFilter fluidwriter(fluidfield, basename);
-            fluidwriter.WriteFiles();
+            fluidwriter.write_files();
 
             PostField* scatrafield = dis1;
             ElchFilter elchwriter(scatrafield, basename);
-            elchwriter.WriteFiles();
+            elchwriter.write_files();
           }
           break;
         }
@@ -633,7 +633,7 @@ namespace
           // only a ScaTra field is present
           PostField* scatrafield = problem.get_discretization(0);
           ElchFilter elchwriter(scatrafield, basename);
-          elchwriter.WriteFiles();
+          elchwriter.write_files();
         }
         else
           FOUR_C_THROW("number of fields does not match: got %d", numfield);
@@ -645,14 +645,14 @@ namespace
         PostField* field = problem.get_discretization(0);
         // AnyFilter writer(field, problem.outname());
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-        writer.WriteFiles();
+        writer.write_files();
 
         // write output for scatra
         if (problem.num_discr() == 2)
         {
           PostField* scatrafield = problem.get_discretization(1);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
 
         break;
@@ -662,7 +662,7 @@ namespace
         PostField* field = problem.get_discretization(0);
         ThermoFilter writer(
             field, problem.outname(), problem.heatfluxtype(), problem.tempgradtype());
-        writer.WriteFiles();
+        writer.write_files();
         break;
       }
       case Core::ProblemType::tsi:
@@ -674,12 +674,12 @@ namespace
         PostField* thermfield = problem.get_discretization(0);
         ThermoFilter thermwriter(
             thermfield, basename, problem.heatfluxtype(), problem.tempgradtype());
-        thermwriter.WriteFiles();
+        thermwriter.write_files();
 
         PostField* structfield = problem.get_discretization(1);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
         break;
       }
       case Core::ProblemType::red_airways:
@@ -688,7 +688,7 @@ namespace
         PostField* field = problem.get_discretization(0);
         // AnyFilter writer(field, problem.outname());
         StructureFilter writer(field, basename, problem.stresstype(), problem.straintype());
-        writer.WriteFiles();
+        writer.write_files();
         //      writer.WriteFiles();
 
         break;
@@ -700,11 +700,11 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
         break;
       }
       case Core::ProblemType::poroscatra:
@@ -714,15 +714,15 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         PostField* scatrafield = problem.get_discretization(2);
         ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
+        scatrawriter.write_files();
 
         break;
       }
@@ -733,15 +733,15 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* porofluidfield = problem.get_discretization(1);
         FluidFilter porofluidwriter(porofluidfield, basename);
-        porofluidwriter.WriteFiles();
+        porofluidwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(2);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         break;
       }
@@ -753,11 +753,11 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(1);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         break;
       }
@@ -768,15 +768,15 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* porofluidfield = problem.get_discretization(1);
         FluidFilter porofluidwriter(porofluidfield, basename);
-        porofluidwriter.WriteFiles();
+        porofluidwriter.write_files();
 
         PostField* fluidfield = problem.get_discretization(2);
         FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+        fluidwriter.write_files();
 
         /////////////
 
@@ -786,7 +786,7 @@ namespace
         {
           PostField* scatrafield = problem.get_discretization(4 + i);
           ScaTraFilter scatrawriter(scatrafield, basename);
-          scatrawriter.WriteFiles();
+          scatrawriter.write_files();
         }
 
         break;
@@ -798,11 +798,11 @@ namespace
         PostField* structfield = problem.get_discretization(0);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* lubricationfield = problem.get_discretization(1);
         LubricationFilter lubricationwriter(lubricationfield, basename);
-        lubricationwriter.WriteFiles();
+        lubricationwriter.write_files();
 
         break;
       }
@@ -816,7 +816,7 @@ namespace
         // integration!
         PostField* scatrafield = problem.get_discretization(0);
         ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
+        scatrawriter.write_files();
 
         if (numfields == 2)
         {
@@ -824,7 +824,7 @@ namespace
           PostField* structfield = problem.get_discretization(1);
           StructureFilter structwriter(
               structfield, basename, problem.stresstype(), problem.straintype());
-          structwriter.WriteFiles();
+          structwriter.write_files();
         }
         else if (numfields == 3)
         {
@@ -832,11 +832,11 @@ namespace
           PostField* structfield = problem.get_discretization(2);
           StructureFilter structwriter(
               structfield, basename, problem.stresstype(), problem.straintype());
-          structwriter.WriteFiles();
+          structwriter.write_files();
 
           PostField* scatra_manifoldfield = problem.get_discretization(1);
           ScaTraFilter scatra_manifoldfieldwriter(scatra_manifoldfield, basename);
-          scatra_manifoldfieldwriter.WriteFiles();
+          scatra_manifoldfieldwriter.write_files();
         }
         else
           FOUR_C_THROW("Unknwon number of solution fields");
@@ -853,18 +853,18 @@ namespace
         PostField* scatrafield = problem.get_discretization(0);
 
         ScaTraFilter scatrawriter(scatrafield, basename);
-        scatrawriter.WriteFiles();
+        scatrawriter.write_files();
 
         // remark: structure discretization number is zero for old structural time integration!
         PostField* structfield = problem.get_discretization(2);
 
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+        structwriter.write_files();
 
         PostField* thermofield = problem.get_discretization(1);
         ScaTraFilter thermowriter(thermofield, basename);
-        thermowriter.WriteFiles();
+        thermowriter.write_files();
 
         break;
       }
@@ -872,7 +872,7 @@ namespace
       {
         PostField* field = problem.get_discretization(0);
         ElemagFilter writer(field, problem.outname());
-        writer.WriteFiles();
+        writer.write_files();
         break;
       }
       case Core::ProblemType::none:
@@ -881,11 +881,11 @@ namespace
         // of vectors. We just want to see whatever there is.
         PostField* field = problem.get_discretization(0);
         AnyFilter writer(field, problem.outname());
-        writer.WriteFiles();
+        writer.write_files();
         break;
       }
       default:
-        FOUR_C_THROW("problem type %d not yet supported", problem.Problemtype());
+        FOUR_C_THROW("problem type %d not yet supported", problem.problemtype());
         break;
     }
   }
@@ -933,7 +933,7 @@ int main(int argc, char** argv)
     std::cout << "\n\n" << line << err.what_with_stacktrace() << "\n" << line << "\n" << std::endl;
 
     // proper cleanup
-    Global::Problem::Done();
+    Global::Problem::done();
 #ifdef FOUR_C_ENABLE_CORE_DUMP
     abort();
 #endif
@@ -942,7 +942,7 @@ int main(int argc, char** argv)
   }  // catch
 
   // proper cleanup
-  Global::Problem::Done();
+  Global::Problem::done();
 
   return 0;
 }

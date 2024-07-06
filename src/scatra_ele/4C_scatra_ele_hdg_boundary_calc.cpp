@@ -22,57 +22,57 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface*
-Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::Impl(const Core::Elements::Element* ele)
+Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::impl(const Core::Elements::Element* ele)
 {
-  switch (ele->Shape())
+  switch (ele->shape())
   {
     case Core::FE::CellType::quad4:
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::quad4>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::quad4>::instance();
     }
     case Core::FE::CellType::quad8:
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::quad8>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::quad8>::instance();
     }
     case Core::FE::CellType::quad9:
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::quad9>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::quad9>::instance();
     }
     case Core::FE::CellType::tri3:
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::tri3>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::tri3>::instance();
     }
     case Core::FE::CellType::tri6:
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::tri6>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::tri6>::instance();
     }
     case Core::FE::CellType::line2:
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::line2>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::line2>::instance();
     }
     case Core::FE::CellType::line3:
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::line3>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::line3>::instance();
     }
     case Core::FE::CellType::nurbs2:  // 1D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs2>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs2>::instance();
     }
     case Core::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs3>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs3>::instance();
     }
     case Core::FE::CellType::nurbs4:  // 2D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs4>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs4>::instance();
     }
     case Core::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs9>::Instance();
+      return ScaTraHDGBoundaryImpl<Core::FE::CellType::nurbs9>::instance();
     }
     default:
       FOUR_C_THROW(
-          "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->num_node());
+          "Element shape %d (%d nodes) not activated. Just do it.", ele->shape(), ele->num_node());
       break;
   }
   return nullptr;
@@ -80,7 +80,7 @@ Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::Impl(const Core::Elements::El
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>*
-Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::instance(Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
@@ -89,7 +89,7 @@ Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::Instance(Core::UTILS::Singlet
             new Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>());
       });
 
-  return singleton_owner.Instance(action);
+  return singleton_owner.instance(action);
 }
 
 /*----------------------------------------------------------------------*
@@ -122,14 +122,14 @@ int Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
   Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
       "action", ScaTra::Action::project_neumann_field, params);
 
-  const int* nodeids = ele->NodeIds();
+  const int* nodeids = ele->node_ids();
 
   Core::Elements::Element* parent = ele->parent_element();
-  Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->Faces();
+  Teuchos::RCP<Core::Elements::FaceElement>* faces = parent->faces();
   bool same = false;
-  for (int i = 0; i < parent->NumFace(); ++i)
+  for (int i = 0; i < parent->num_face(); ++i)
   {
-    const int* nodeidsfaces = faces[i]->NodeIds();
+    const int* nodeidsfaces = faces[i]->node_ids();
 
     if (faces[i]->num_node() != ele->num_node()) break;
 

@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -42,7 +42,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
             new ScaTraEleBoundaryCalcPoro<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -96,7 +96,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       //       it would be wrong to suppress results for a ghosted boundary!
 
       // get actual values of transported scalars
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
@@ -105,11 +105,11 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, la[0].lm_);
 
       // get number of dofset associated with velocity related dofs
-      const int ndsvel = my::scatraparams_->NdsVel();
+      const int ndsvel = my::scatraparams_->nds_vel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
-          discretization.GetState(ndsvel, "convective velocity field");
+          discretization.get_state(ndsvel, "convective velocity field");
       if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
@@ -140,14 +140,14 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
 
       // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
       // dimension. If so, we assume that this is the porosity
-      if (discretization.NumDof(1, ele->Nodes()[0]) == nsd_ele_ + 2)
+      if (discretization.num_dof(1, ele->nodes()[0]) == nsd_ele_ + 2)
       {
         isnodalporosity_ = true;
 
         // get number of dofset associated with velocity related dofs
-        const int ndsdisp = my::scatraparams_->NdsDisp();
+        const int ndsdisp = my::scatraparams_->nds_disp();
 
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(ndsdisp, "dispnp");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(ndsdisp, "dispnp");
 
         if (disp != Teuchos::null)
         {
@@ -203,7 +203,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_
     integralflux[k] = 0.0;
 
     // loop over all integration points
-    for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+    for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
     {
       const double fac = my::eval_shape_func_and_int_fac(intpoints, iquad, &(this->normal_));
 

@@ -46,7 +46,7 @@ namespace Mat
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void UpdateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+    virtual void update_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
         Teuchos::ParameterList& params, const Core::LinAlg::Matrix<3, 3>& Q_trafo, int gp,
         int eleGID) = 0;
 
@@ -65,7 +65,7 @@ namespace Mat
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+    virtual void evaluate_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
         const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
         const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
         Core::LinAlg::Matrix<3, 3>& cmat, int gp, int eleGID) = 0;
@@ -96,7 +96,7 @@ namespace Mat
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+    virtual void evaluate_membrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<3, 3>& stress,
         Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) = 0;
   };

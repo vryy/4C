@@ -49,10 +49,10 @@ namespace Core::DOFSets
     ~DofSetProxy() override;
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSetProxy> Clone() { return Teuchos::rcp(new DofSetProxy(*this)); }
+    virtual Teuchos::RCP<DofSetProxy> clone() { return Teuchos::rcp(new DofSetProxy(*this)); }
 
     /// Add Dof Set to list #static_dofsets_
-    void AddDofSettoList() override;
+    void add_dof_setto_list() override;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
     void replace_in_static_dofsets(Teuchos::RCP<DofSetInterface> olddofset) override
@@ -65,7 +65,7 @@ namespace Core::DOFSets
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// returns true if \ref dofset_ is filled
-    bool Filled() const override;
+    bool filled() const override;
 
     /// reset all internal variables
     void reset() override;
@@ -76,10 +76,10 @@ namespace Core::DOFSets
     /// The original DofSet sends notifications if it changes.
 
     /// original DofSet has new dofs
-    void NotifyAssigned() override;
+    void notify_assigned() override;
 
     /// our original DofSet dies
-    void Disconnect(DofSetInterface* dofset) override;
+    void disconnect(DofSetInterface* dofset) override;
 
     //@}
 
@@ -87,123 +87,123 @@ namespace Core::DOFSets
     //! @name Access methods
 
     /// Get number of dofs for given node
-    int NumDof(
+    int num_dof(
         const Core::Nodes::Node* node  ///< node, for which you want to know the number of dofs
     ) const override
     {
       check_is_assigned();
-      return dofset_->NumDof(node);
+      return dofset_->num_dof(node);
     };
 
     /// Get number of dofs for given element
-    int NumDof(const Core::Elements::Element*
+    int num_dof(const Core::Elements::Element*
             element  ///< element, for which you want to know the number of dofs
     ) const override
     {
       check_is_assigned();
-      return dofset_->NumDof(element);
+      return dofset_->num_dof(element);
     };
 
     /// get number of nodal dofs
-    int NumDofPerNode(
+    int num_dof_per_node(
         const Core::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
       check_is_assigned();
-      return dofset_->NumDofPerNode(node);
+      return dofset_->num_dof_per_node(node);
     };
 
     /// Get the gid of a dof for given node
-    int Dof(const Core::Nodes::Node* node, int dof) const override
+    int dof(const Core::Nodes::Node* node, int dof) const override
     {
       check_is_assigned();
-      return dofset_->Dof(node, dof);
+      return dofset_->dof(node, dof);
     };
 
     /// Get the gid of a dof for given element
-    int Dof(
+    int dof(
         const Core::Elements::Element* element,  ///< element, for which you want the dof positions
         int dof) const override
     {
       check_is_assigned();
-      return dofset_->Dof(element, dof);
+      return dofset_->dof(element, dof);
     };
 
     /// Get the gid of all dofs of a node
-    std::vector<int> Dof(
+    std::vector<int> dof(
         const Core::Nodes::Node* node  ///< node, for which you want the dof positions
     ) const override
     {
       check_is_assigned();
-      return dofset_->Dof(node);
+      return dofset_->dof(node);
     };
 
     /// Get the gid of all dofs of a node
-    void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
+    void dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
         const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
       check_is_assigned();
-      dofset_->Dof(dof, node, nodaldofset);
+      dofset_->dof(dof, node, nodaldofset);
     };
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const Core::Elements::Element* element) const override
+    std::vector<int> dof(const Core::Elements::Element* element) const override
     {
       check_is_assigned();
-      return dofset_->Dof(element);
+      return dofset_->dof(element);
     };
 
     /// Get the gid of all dofs of a node and the location matrix
-    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
+    void dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
     {
       check_is_assigned();
-      dofset_->Dof(node, lm);
+      dofset_->dof(node, lm);
     };
 
     /// Get the gid of all dofs of a node
-    void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
+    void dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
     {
       check_is_assigned();
-      dofset_->Dof(node, startindex, lm);
+      dofset_->dof(node, startindex, lm);
     };
 
     /// Get the gid of all dofs of a element and the location matrix
-    void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
+    void dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
     {
       check_is_assigned();
-      dofset_->Dof(element, lm);
+      dofset_->dof(element, lm);
     };
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const Core::Elements::Element*
+    void dof(const Core::Elements::Element*
                  element,  ///< element which provides its expected number of DOFs per node
         const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
       check_is_assigned();
-      dofset_->Dof(element, node, lm);
+      dofset_->dof(element, node, lm);
     };
 
     /// Print this class
     void print(std::ostream& os) const override { dofset_->print(os); };
 
     /// Print the dofsets in the static_dofsets_ list
-    void PrintAllDofsets(const Epetra_Comm& comm) const override
+    void print_all_dofsets(const Epetra_Comm& comm) const override
     {
-      dofset_->PrintAllDofsets(comm);
+      dofset_->print_all_dofsets(comm);
     };
 
     /// Get Number of Global Elements of degree of freedom row map
-    int NumGlobalElements() const override
+    int num_global_elements() const override
     {
       check_is_assigned();
-      return dofset_->NumGlobalElements();
+      return dofset_->num_global_elements();
     };
 
     /// Get degree of freedom row map
@@ -214,39 +214,39 @@ namespace Core::DOFSets
     };
 
     /// Get degree of freedom column map
-    const Epetra_Map* DofColMap() const override
+    const Epetra_Map* dof_col_map() const override
     {
       check_is_assigned();
-      return dofset_->DofColMap();
+      return dofset_->dof_col_map();
     };
 
     /// Get maximum GID of degree of freedom row map
-    int MaxAllGID() const override
+    int max_all_gid() const override
     {
       check_is_assigned();
-      return dofset_->MaxAllGID();
+      return dofset_->max_all_gid();
     };
 
     /// Get minimum GID of degree of freedom row map
-    int MinAllGID() const override
+    int min_all_gid() const override
     {
       check_is_assigned();
-      return dofset_->MinAllGID();
+      return dofset_->min_all_gid();
     };
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    int MaxGIDinList(const Epetra_Comm& comm) const override
+    int max_gi_din_list(const Epetra_Comm& comm) const override
     {
       check_is_assigned();
-      return dofset_->MaxGIDinList(comm);
+      return dofset_->max_gi_din_list(comm);
     };
 
     /// are the dof maps already initialized?
-    bool Initialized() const override
+    bool initialized() const override
     {
       check_is_assigned();
-      return dofset_->Initialized();
+      return dofset_->initialized();
     };
 
    protected:

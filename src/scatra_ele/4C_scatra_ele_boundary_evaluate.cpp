@@ -40,11 +40,11 @@ int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& param
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
-  const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
+  const int numdofpernode = num_dof_per_node(*(nodes()[0]));
   int numscal = numdofpernode;
 
   // perform additional operations specific to implementation type
-  switch (parent_element()->ImplType())
+  switch (parent_element()->impl_type())
   {
     case Inpar::ScaTra::impltype_elch_diffcond:
     case Inpar::ScaTra::impltype_elch_diffcond_thermo:
@@ -59,9 +59,9 @@ int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& param
       // get the material of the first element
       // we assume here, that the material is equal for all elements in this discretization
       // get the parent element including its material
-      Teuchos::RCP<Core::Mat::Material> material = parent_element()->Material();
-      if (material->MaterialType() == Core::Materials::m_elchmat)
-        numscal = static_cast<const Mat::ElchMat*>(material.get())->NumScal();
+      Teuchos::RCP<Core::Mat::Material> material = parent_element()->material();
+      if (material->material_type() == Core::Materials::m_elchmat)
+        numscal = static_cast<const Mat::ElchMat*>(material.get())->num_scal();
 
       break;
     }
@@ -97,8 +97,8 @@ int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& param
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return Discret::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(
-      this, parent_element()->ImplType(), numdofpernode, numscal, discretization.Name())
+  return Discret::ELEMENTS::ScaTraBoundaryFactory::provide_impl(
+      this, parent_element()->impl_type(), numdofpernode, numscal, discretization.name())
       ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
 
@@ -114,8 +114,8 @@ int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterLis
   // add Neumann boundary condition to parameter list
   params.set<Core::Conditions::Condition*>("condition", &condition);
 
-  LocationArray la(discretization.NumDofSets());
-  Core::Elements::Element::LocationVector(discretization, la, false);
+  LocationArray la(discretization.num_dof_sets());
+  Core::Elements::Element::location_vector(discretization, la, false);
 
   // evaluate boundary element
   return evaluate(params, discretization, la, *elemat1, *elemat1, elevec1, elevec1, elevec1);
@@ -125,7 +125,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::LocationVector(const Core::FE::Discretization& dis,
+void Discret::ELEMENTS::TransportBoundary::location_vector(const Core::FE::Discretization& dis,
     LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
@@ -138,10 +138,10 @@ void Discret::ELEMENTS::TransportBoundary::LocationVector(const Core::FE::Discre
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
       //       as input in the respective evaluate routines
-      parent_element()->LocationVector(dis, la, doDirichlet);
+      parent_element()->location_vector(dis, la, doDirichlet);
       break;
     default:
-      Core::Elements::Element::LocationVector(dis, la, doDirichlet);
+      Core::Elements::Element::location_vector(dis, la, doDirichlet);
       break;
   }
 }

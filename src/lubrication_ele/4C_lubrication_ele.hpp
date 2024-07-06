@@ -30,21 +30,21 @@ namespace Discret
     class LubricationType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "LubricationType"; }
+      std::string name() const override { return "LubricationType"; }
 
-      static LubricationType& Instance();
+      static LubricationType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -89,21 +89,21 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Lubrication and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief set discretization type of element
       */
-      virtual void SetDisType(Core::FE::CellType shape)
+      virtual void set_dis_type(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -112,27 +112,27 @@ namespace Discret
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override;
+      int num_line() const override;
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override;
+      int num_surface() const override;
 
       /*!
       \brief Return number of volumes of this element
       */
-      int NumVolume() const override;
+      int num_volume() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -140,9 +140,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return LubricationType::Instance().UniqueParObjectId();
+        return LubricationType::instance().unique_par_object_id();
       }
 
       /*!
@@ -175,7 +175,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
+      int num_dof_per_node(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -198,9 +198,9 @@ namespace Discret
       /*!
       \brief Return ElementType
       */
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return LubricationType::Instance();
+        return LubricationType::instance();
       }
 
       //@}
@@ -210,7 +210,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -289,18 +289,18 @@ namespace Discret
     class LubricationBoundaryType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "LubricationBoundaryType"; }
+      std::string name() const override { return "LubricationBoundaryType"; }
 
-      static LubricationBoundaryType& Instance();
+      static LubricationBoundaryType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -350,37 +350,37 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of boundary element
       */
-      int NumLine() const override;
+      int num_line() const override;
 
       /*!
       \brief Return number of surfaces of boundary element
        */
-      int NumSurface() const override;
+      int num_surface() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -388,9 +388,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return LubricationBoundaryType::Instance().UniqueParObjectId();
+        return LubricationBoundaryType::instance().unique_par_object_id();
       }
 
       /*!
@@ -424,9 +424,9 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return parent_element()->NumDofPerNode(node);
+        return parent_element()->num_dof_per_node(node);
       }
 
       //! Return a pointer to the parent element of this boundary element
@@ -461,9 +461,9 @@ namespace Discret
       /*!
       \brief Return ElementType
       */
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return LubricationBoundaryType::Instance();
+        return LubricationBoundaryType::instance();
       }
 
       //@}

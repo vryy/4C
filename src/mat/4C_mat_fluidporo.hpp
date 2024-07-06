@@ -54,7 +54,7 @@ namespace Mat
 
       //! set initial porosity from structural material and calculate
       //! permeability_correction_factor_
-      void SetInitialPorosity(double initial_porosity);
+      void set_initial_porosity(double initial_porosity);
 
       //! @name material parameters
       //!@{
@@ -89,11 +89,11 @@ namespace Mat
   class FluidPoroType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FluidPoroType"; }
+    std::string name() const override { return "FluidPoroType"; }
 
-    static FluidPoroType& Instance() { return instance_; };
+    static FluidPoroType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroType instance_;
@@ -119,14 +119,17 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override { return FluidPoroType::Instance().UniqueParObjectId(); }
+    int unique_par_object_id() const override
+    {
+      return FluidPoroType::instance().unique_par_object_id();
+    }
 
     /*!
      \brief Pack this class so it can be communicated
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -140,7 +143,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -150,13 +153,13 @@ namespace Mat
     //!@}
 
     //! material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_fluidporo;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new FluidPoro(*this));
     }
@@ -185,16 +188,16 @@ namespace Mat
         Core::LinAlg::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const;
 
     //! effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
-    double EffectiveViscosity() const;
+    double effective_viscosity() const;
 
     //! return type
-    PAR::PoroFlowType Type() const { return params_->type_; }
+    PAR::PoroFlowType type() const { return params_->type_; }
 
     //! return viscosity
-    double Viscosity() const { return params_->viscosity_; }
+    double viscosity() const { return params_->viscosity_; }
 
     //! return density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     //! return permeability function
     PAR::PoroFlowPermeabilityFunction permeability_function() const
@@ -203,13 +206,13 @@ namespace Mat
     }
 
     //! Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! flag indicating a varying permeability
-    bool VaryingPermeability() const { return params_->varying_permeability_; }
+    bool varying_permeability() const { return params_->varying_permeability_; }
 
     //! flag indicating nodal orthotropy
-    bool IsNodalOrthotropic() const
+    bool is_nodal_orthotropic() const
     {
       return params_->permeability_func_ == Mat::PAR::const_material_nodal_orthotropic;
     }

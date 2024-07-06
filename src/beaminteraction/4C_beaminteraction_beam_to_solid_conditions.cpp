@@ -60,7 +60,7 @@ BEAMINTERACTION::BeamToSolidCondition::BeamToSolidCondition(
 /**
  *
  */
-bool BEAMINTERACTION::BeamToSolidCondition::IdsInCondition(
+bool BEAMINTERACTION::BeamToSolidCondition::ids_in_condition(
     const int id_line, const int id_other) const
 {
   if (line_ids_.find(id_line) != line_ids_.end())
@@ -82,11 +82,11 @@ void BEAMINTERACTION::BeamToSolidCondition::clear()
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
+BEAMINTERACTION::BeamToSolidCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
-  if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
+  if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return Teuchos::null;
 
   // Create the beam contact pair.
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair =
@@ -95,7 +95,7 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
   if (contact_pair != Teuchos::null)
   {
     // Create the geometry pair on the beam contact pair.
-    contact_pair->CreateGeometryPair(ele_ptrs[0], ele_ptrs[1], geometry_evaluation_data_);
+    contact_pair->create_geometry_pair(ele_ptrs[0], ele_ptrs[1], geometry_evaluation_data_);
 
     // Add to the internal vector which keeps track of the created contact pairs.
     condition_contact_pairs_.push_back(contact_pair);
@@ -137,7 +137,7 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
 
     // Setup the mortar manager.
     mortar_manager->setup();
-    mortar_manager->SetLocalMaps(condition_contact_pairs_);
+    mortar_manager->set_local_maps(condition_contact_pairs_);
 
     // Create the indirect assembly manager with the mortar manager
     return Teuchos::rcp(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(mortar_manager));
@@ -157,7 +157,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
 {
   // Get the input parameter list that will be passed to the geometry pair.
   const Teuchos::ParameterList& input_parameter_list =
-      Global::Problem::Instance()->beam_interaction_params().sublist(
+      Global::Problem::instance()->beam_interaction_params().sublist(
           "BEAM TO SOLID VOLUME MESHTYING");
 
   // Create the geometry evaluation data for this condition.
@@ -168,11 +168,11 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets(
+void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::build_id_sets(
     const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
-  BeamToSolidCondition::BuildIdSets(discretization);
+  BeamToSolidCondition::build_id_sets(discretization);
 
   // Build the volume map.
   std::vector<int> volume_ids;
@@ -287,7 +287,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_internal(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
-  const Core::FE::CellType shape = ele_ptrs[1]->Shape();
+  const Core::FE::CellType shape = ele_ptrs[1]->shape();
   const auto beam_to_volume_params =
       Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
           beam_to_solid_params_, true);
@@ -359,7 +359,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
     condition_name = "BEAM TO SOLID SURFACE CONTACT";
 
   const Teuchos::ParameterList& input_parameter_list =
-      Global::Problem::Instance()->beam_interaction_params().sublist(condition_name);
+      Global::Problem::instance()->beam_interaction_params().sublist(condition_name);
 
   // Create the geometry evaluation data for this condition.
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
@@ -369,26 +369,26 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
+void BEAMINTERACTION::BeamToSolidConditionSurface::build_id_sets(
     const Teuchos::RCP<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
-  BeamToSolidCondition::BuildIdSets(discretization);
+  BeamToSolidCondition::build_id_sets(discretization);
 
   // Build the surface map.
   surface_ids_.clear();
-  for (const auto& map_item : condition_other_->Geometry())
+  for (const auto& map_item : condition_other_->geometry())
   {
-    if (!map_item.second->IsFaceElement()) FOUR_C_THROW("Expected FaceElement");
+    if (!map_item.second->is_face_element()) FOUR_C_THROW("Expected FaceElement");
     Teuchos::RCP<const Core::Elements::FaceElement> face_element =
         Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(map_item.second);
-    const int solid_id = face_element->ParentElementId();
+    const int solid_id = face_element->parent_element_id();
     surface_ids_[solid_id] = face_element;
   }
 
   // The size of the surface id set and the geometry in the conditions have to match, otherwise
   // there are two faces connected to the same element, which is not implemented at this point.
-  if (surface_ids_.size() != condition_other_->Geometry().size())
+  if (surface_ids_.size() != condition_other_->geometry().size())
     FOUR_C_THROW(
         "There are multiple faces connected to one solid element in this condition. This case is "
         "currently not implemented.");
@@ -417,16 +417,16 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
     if (is_mesh_tying())
     {
       fad_order = condition_contact_pairs_[0]
-                      ->Params()
+                      ->params()
                       ->beam_to_solid_surface_meshtying_params()
-                      ->GetFADOrder();
+                      ->get_fad_order();
     }
     else
     {
       fad_order = condition_contact_pairs_[0]
-                      ->Params()
+                      ->params()
                       ->beam_to_solid_surface_contact_params()
-                      ->GetFADOrder();
+                      ->get_fad_order();
     }
   }
 
@@ -435,7 +435,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
   pair_face_elemets.clear();
   for (const auto& pair : condition_contact_pairs_)
   {
-    const int solid_id = pair->Element2()->Id();
+    const int solid_id = pair->element2()->id();
     auto find_in_condition = surface_ids_.find(solid_id);
     if (find_in_condition != surface_ids_.end())
     {
@@ -447,20 +447,20 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
         Teuchos::RCP<GEOMETRYPAIR::FaceElement> new_face_element =
             GEOMETRYPAIR::FaceElementFactory(find_in_condition->second, fad_order,
                 line_to_surface_evaluation_data->get_surface_normal_strategy());
-        new_face_element->SetPartOfPair(true);
+        new_face_element->set_part_of_pair(true);
         pair_face_elemets[solid_id] = new_face_element;
-        pair->SetFaceElement(new_face_element);
+        pair->set_face_element(new_face_element);
       }
       else
       {
         // Add the existing face element to the contact pair.
-        pair->SetFaceElement(find_in_pair->second);
+        pair->set_face_element(find_in_pair->second);
       }
     }
     else
     {
       FOUR_C_THROW("The face of the solid element %d is not in the current condition!",
-          pair->Element2()->Id());
+          pair->element2()->id());
     }
   }
 
@@ -472,15 +472,15 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
   {
     // Loop over the nodes of the face element.
     const Core::Nodes::Node* const* nodes =
-        face_element_iterator.second->GetDrtFaceElement()->Nodes();
-    for (int i_node = 0; i_node < face_element_iterator.second->GetDrtFaceElement()->num_node();
+        face_element_iterator.second->get_drt_face_element()->nodes();
+    for (int i_node = 0; i_node < face_element_iterator.second->get_drt_face_element()->num_node();
          i_node++)
     {
       // Loop over the elements connected to that node and check if they are in this condition.
-      const Core::Elements::Element* const* elements = nodes[i_node]->Elements();
-      for (int i_element = 0; i_element < nodes[i_node]->NumElement(); i_element++)
+      const Core::Elements::Element* const* elements = nodes[i_node]->elements();
+      for (int i_element = 0; i_element < nodes[i_node]->num_element(); i_element++)
       {
-        const int element_id = elements[i_element]->Id();
+        const int element_id = elements[i_element]->id();
         auto find_in_condition = surface_ids_.find(element_id);
         if (find_in_condition != surface_ids_.end())
         {
@@ -522,7 +522,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
     auto line_to_other_evaluation_data =
         Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
             geometry_evaluation_data_, true);
-    line_to_other_evaluation_data->ResetTracker();
+    line_to_other_evaluation_data->reset_tracker();
   }
 
   // Cast the geometry evaluation data to the correct type.
@@ -533,7 +533,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
     FOUR_C_THROW("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // Setup the geometry data for the surface patch.
-  line_to_surface_evaluation_data->set_state(beaminteraction_data_state->GetDisColNp());
+  line_to_surface_evaluation_data->set_state(beaminteraction_data_state->get_dis_col_np());
 }
 
 /**
@@ -549,8 +549,8 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
   const bool beam_is_hermite = beam_element->hermite_centerline_interpolation();
 
   const Teuchos::RCP<const Core::Elements::FaceElement>& face_element =
-      surface_ids_[ele_ptrs[1]->Id()];
-  const Core::FE::CellType shape = face_element->Shape();
+      surface_ids_[ele_ptrs[1]->id()];
+  const Core::FE::CellType shape = face_element->shape();
 
   auto line_to_surface_evaluation_data =
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
@@ -567,7 +567,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
             beam_to_solid_params_, true);
 
     Inpar::BeamToSolid::BeamToSolidSurfaceCoupling coupling_type =
-        beam_to_surface_params->GetCouplingType();
+        beam_to_surface_params->get_coupling_type();
 
     Inpar::BeamToSolid::BeamToSolidContactDiscretization coupling_discretization =
         beam_to_surface_params->get_contact_discretization();
@@ -721,7 +721,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
         case Inpar::BeamToSolid::BeamToSolidContactDiscretization::gauss_point_to_segment:
         {
           Inpar::BeamToSolid::BeamToSolidSurfaceContact contact_type =
-              beam_to_surface_contact_params->GetContactType();
+              beam_to_surface_contact_params->get_contact_type();
 
           switch (contact_type)
           {
@@ -802,7 +802,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
         case Inpar::BeamToSolid::BeamToSolidContactDiscretization::gauss_point_to_segment:
         {
           Inpar::BeamToSolid::BeamToSolidSurfaceContact contact_type =
-              beam_to_surface_contact_params->GetContactType();
+              beam_to_surface_contact_params->get_contact_type();
 
           switch (contact_type)
           {

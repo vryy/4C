@@ -36,7 +36,7 @@ namespace FS3I
     //! setup this class
     void setup() override;
 
-    void Timeloop() override;
+    void timeloop() override;
 
     void initial_calculations();
 
@@ -52,7 +52,7 @@ namespace FS3I
 
     bool scatra_convergence_check(int itnum) override;
 
-    void TimeUpdateAndOutput();
+    void time_update_and_output();
 
    private:
     //! @name  (preliminary) maximum number of iterations and tolerance for outer iteration

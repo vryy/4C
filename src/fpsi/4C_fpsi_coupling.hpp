@@ -76,61 +76,61 @@ namespace FPSI
     //! @name access coupling matrixes
 
     // Poro-Poro Coupling Matrix
-    Core::LinAlg::BlockSparseMatrixBase& C_pp() { return *c_pp_; }
+    Core::LinAlg::BlockSparseMatrixBase& c_pp() { return *c_pp_; }
     // Fluid-Fluid Coupling Matrix
-    Core::LinAlg::BlockSparseMatrixBase& C_ff()
+    Core::LinAlg::BlockSparseMatrixBase& c_ff()
     {
       return *c_ff_;
     }  // blockmatrix for condensation!!!
     // Poro-Fluid Coupling Matrix
-    Core::LinAlg::BlockSparseMatrixBase& C_pf() { return *c_pf_; }
+    Core::LinAlg::BlockSparseMatrixBase& c_pf() { return *c_pf_; }
     // Fluid-Poro Coupling Matrix
-    Core::LinAlg::BlockSparseMatrixBase& C_fp() { return *c_fp_; }
+    Core::LinAlg::BlockSparseMatrixBase& c_fp() { return *c_fp_; }
     // Poro-Ale Coupling Matrix
-    Core::LinAlg::BlockSparseMatrixBase& C_pa() { return *c_pa_; }
+    Core::LinAlg::BlockSparseMatrixBase& c_pa() { return *c_pa_; }
     // Fluid-Ale Coupling Matrix
-    Core::LinAlg::SparseMatrix& C_fa() { return *c_fa_; }
+    Core::LinAlg::SparseMatrix& c_fa() { return *c_fa_; }
 
     //@}
 
     // Poro Coupling RHS (structure)
-    Teuchos::RCP<Epetra_Vector>& RHS_s() { return c_rhs_s_; }
+    Teuchos::RCP<Epetra_Vector>& rhs_s() { return c_rhs_s_; }
     // Poro Coupling RHS (fluid)
-    Teuchos::RCP<Epetra_Vector>& RHS_pf() { return c_rhs_pf_; }
+    Teuchos::RCP<Epetra_Vector>& rhs_pf() { return c_rhs_pf_; }
     // Fluid Coupling RHS
-    Teuchos::RCP<Epetra_Vector>& RHS_f() { return c_rhs_f_; }
+    Teuchos::RCP<Epetra_Vector>& rhs_f() { return c_rhs_f_; }
 
     //! @name transform helpers
 
     // Vector Transform
-    Teuchos::RCP<Epetra_Vector> iFluidToPorofluid(Teuchos::RCP<const Epetra_Vector> iv) const
+    Teuchos::RCP<Epetra_Vector> i_fluid_to_porofluid(Teuchos::RCP<const Epetra_Vector> iv) const
     {
-      return icoup_pf_f_->SlaveToMaster(iv);
+      return icoup_pf_f_->slave_to_master(iv);
     }
 
-    Teuchos::RCP<Epetra_Vector> iPorofluidToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+    Teuchos::RCP<Epetra_Vector> i_porofluid_to_fluid(Teuchos::RCP<const Epetra_Vector> iv) const
     {
-      return icoup_pf_f_->MasterToSlave(iv);
+      return icoup_pf_f_->master_to_slave(iv);
     }
 
-    Teuchos::RCP<Epetra_Vector> iFluidToPorostruct(Teuchos::RCP<const Epetra_Vector> iv) const
+    Teuchos::RCP<Epetra_Vector> i_fluid_to_porostruct(Teuchos::RCP<const Epetra_Vector> iv) const
     {
-      return icoup_ps_f_->SlaveToMaster(iv);
+      return icoup_ps_f_->slave_to_master(iv);
     }
 
-    Teuchos::RCP<Epetra_Vector> iPorostructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+    Teuchos::RCP<Epetra_Vector> i_porostruct_to_fluid(Teuchos::RCP<const Epetra_Vector> iv) const
     {
-      return icoup_ps_f_->MasterToSlave(iv);
+      return icoup_ps_f_->master_to_slave(iv);
     }
 
-    Teuchos::RCP<Epetra_Vector> iAleToPorostruct(Teuchos::RCP<const Epetra_Vector> iv) const
+    Teuchos::RCP<Epetra_Vector> i_ale_to_porostruct(Teuchos::RCP<const Epetra_Vector> iv) const
     {
-      return icoup_ps_a_->SlaveToMaster(iv);
+      return icoup_ps_a_->slave_to_master(iv);
     }
 
-    Teuchos::RCP<Epetra_Vector> iPorostructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+    Teuchos::RCP<Epetra_Vector> i_porostruct_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const
     {
-      return icoup_ps_a_->MasterToSlave(iv);
+      return icoup_ps_a_->master_to_slave(iv);
     }
 
     //@}
@@ -159,7 +159,7 @@ namespace FPSI
     {
       return porofluid_extractor_;
     }
-    const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& PoroExtractor() const
+    const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& poro_extractor() const
     {
       return poro_extractor_;
     }
@@ -171,7 +171,7 @@ namespace FPSI
     //@}
 
     // set hydraulic conductivity
-    void SetConductivity(double conduct);
+    void set_conductivity(double conduct);
 
    private:
     // access to the fields

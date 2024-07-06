@@ -37,7 +37,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
   // prepare matrix for scaled thickness business of thin shell structures
   stcmat_ =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
-  stcmat_->Zero();
+  stcmat_->zero();
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -55,7 +55,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
 
   discret->evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  stcmat_->Complete();
+  stcmat_->complete();
 
   for (int lay = 2; lay <= stclayer_; ++lay)
   {
@@ -67,15 +67,15 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
-    tmpstcmat->Zero();
+    tmpstcmat->zero();
 
     discret->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    tmpstcmat->Complete();
+    tmpstcmat->complete();
 
     stcmat_ = MLMultiply(*tmpstcmat, *stcmat_, true, false, true);
   }
 
-  discret->ClearState();
+  discret->clear_state();
 }
 
 /*----------------------------------------------------------------------*
@@ -101,12 +101,12 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
 
     Teuchos::RCP<Epetra_Vector> rhs_scaled =
         Core::LinAlg::CreateVector(problem.GetRHS()->Map(), true);
-    stcmat_->Multiply(true, *rhs, *rhs_scaled);
+    stcmat_->multiply(true, *rhs, *rhs_scaled);
     rhs->Update(1.0, *rhs_scaled, 0.0);
   }
 
   // set new stiffness matrix
-  problem.SetOperator(stiff_scaled_->EpetraMatrix().get());
+  problem.SetOperator(stiff_scaled_->epetra_matrix().get());
 }
 
 /*----------------------------------------------------------------------*
@@ -117,7 +117,7 @@ void Solid::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem
       Core::LinAlg::CreateVector(problem.GetLHS()->Map(), true);
   Epetra_MultiVector* disi = dynamic_cast<Epetra_Vector*>(problem.GetLHS());
 
-  stcmat_->Multiply(false, *disi, *disisdc);
+  stcmat_->multiply(false, *disi, *disisdc);
   disi->Update(1.0, *disisdc, 0.0);
 }
 

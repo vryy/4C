@@ -166,14 +166,14 @@ namespace Discret
             soret_(0.){};
 
       //! set Soret coefficient
-      void SetSoret(const double& soret  //!< Soret coefficient
+      void set_soret(const double& soret  //!< Soret coefficient
       )
       {
         soret_ = soret;
       };
 
       //! get Soret coefficient
-      const double& GetSoret() const { return soret_; };
+      const double& get_soret() const { return soret_; };
 
      protected:
       double soret_;
@@ -202,10 +202,10 @@ namespace Discret
       };
 
       //! return temperature
-      const double& Temp() const { return temp_; };
+      const double& temp() const { return temp_; };
 
       //! return gradient of temperature
-      const Core::LinAlg::Matrix<nsd, 1>& GradTemp() const { return gradtemp_; };
+      const Core::LinAlg::Matrix<nsd, 1>& grad_temp() const { return gradtemp_; };
 
      protected:
       //! temperature

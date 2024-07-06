@@ -82,7 +82,7 @@ namespace ParticleInteraction
             particlestatestotypes) const = 0;
 
     //! compute density field
-    virtual void ComputeDensity() const = 0;
+    virtual void compute_density() const = 0;
 
    protected:
     //! evaluate sum of weighted mass
@@ -182,7 +182,7 @@ namespace ParticleInteraction
             particlestatestotypes) const override;
 
     //! compute density field
-    void ComputeDensity() const override;
+    void compute_density() const override;
   };
 
   class SPHDensityIntegration final : public SPHDensityBase
@@ -197,7 +197,7 @@ namespace ParticleInteraction
             particlestatestotypes) const override;
 
     //! compute density field
-    void ComputeDensity() const override;
+    void compute_density() const override;
   };
 
   class SPHDensityPredictCorrect final : public SPHDensityBase
@@ -236,7 +236,7 @@ namespace ParticleInteraction
             particlestatestotypes) const override;
 
     //! compute density field
-    void ComputeDensity() const override;
+    void compute_density() const override;
 
    private:
     //! init density correction handler

@@ -64,56 +64,56 @@ namespace CONTACT
     /*!
     \brief Get problem discretization
     */
-    virtual const Core::FE::Discretization& ProblemDiscret() const = 0;
+    virtual const Core::FE::Discretization& problem_discret() const = 0;
 
     /*!
     \brief Get beam contact discretization
     */
-    virtual const Core::FE::Discretization& ContactDiscret() const = 0;
+    virtual const Core::FE::Discretization& contact_discret() const = 0;
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
     */
-    virtual const std::map<int, int>& DofOffset() const = 0;
+    virtual const std::map<int, int>& dof_offset() const = 0;
 
     /*!
     \brief Get first element
     */
-    virtual const Core::Elements::Element* Element1() = 0;
+    virtual const Core::Elements::Element* element1() = 0;
     // inline const Core::Elements::Element* Element1() { return element1_;};
 
     /*!
     \brief Get first element
     */
-    virtual const Core::Elements::Element* Element2() = 0;
+    virtual const Core::Elements::Element* element2() = 0;
 
     /*!
     \brief Get gap of this contact pair
     */
-    virtual double GetGap() = 0;
+    virtual double get_gap() = 0;
 
     /*!
     \brief Get flag ndicating whether contact is active (true) or inactive (false)
     */
-    virtual bool GetContactFlag() = 0;
+    virtual bool get_contact_flag() = 0;
 
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    virtual Core::LinAlg::SerialDenseVector GetX1() = 0;
+    virtual Core::LinAlg::SerialDenseVector get_x1() = 0;
 
-    virtual Core::LinAlg::SerialDenseVector GetX2() = 0;
+    virtual Core::LinAlg::SerialDenseVector get_x2() = 0;
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
       the beams centerlines have already crossed or not.
     */
-    virtual bool GetNewGapStatus() = 0;
+    virtual bool get_new_gap_status() = 0;
 
     /*!
     \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
     */
-    virtual bool GetShiftStatus() = 0;
+    virtual bool get_shift_status() = 0;
     //@}
 
 
@@ -125,7 +125,7 @@ namespace CONTACT
         Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<Beam3tosolidcontactinterface> Impl(const int numnodessol,
+    static Teuchos::RCP<Beam3tosolidcontactinterface> impl(const int numnodessol,
         const int numnodes, const int numnodalvalues, const Core::FE::Discretization& pdiscret,
         const Core::FE::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
         Core::Elements::Element* element1, Core::Elements::Element* element2,
@@ -137,7 +137,7 @@ namespace CONTACT
     could cross in the next time step when the new gap function definition (ngf_=true) for slender
     beams is applied!
     */
-    virtual void InvertNormal() = 0;
+    virtual void invert_normal() = 0;
 
     /*!
       \brief Update of class variables at the end of a time step
@@ -148,12 +148,12 @@ namespace CONTACT
       \brief Shift current normal vector to old normal vector at the end of a time step. This is
       necessary when the new gap function definition (ngf_=true) for slender beams is applied!
     */
-    virtual void ShiftNormal() = 0;
+    virtual void shift_normal() = 0;
 
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    virtual void UpdateElePos(Core::LinAlg::SerialDenseMatrix& newele1pos,
+    virtual void update_ele_pos(Core::LinAlg::SerialDenseMatrix& newele1pos,
         Core::LinAlg::SerialDenseMatrix& newele2pos) = 0;
 
     /*
@@ -176,7 +176,7 @@ namespace CONTACT
     /*
     \ brief Get debug data for Gmsh
      */
-    virtual std::vector<GmshDebugPoint> GetGmshDebugPoints() = 0;
+    virtual std::vector<GmshDebugPoint> get_gmsh_debug_points() = 0;
 
 
   };  // class Beam3tosolidcontactinterface
@@ -221,42 +221,42 @@ namespace CONTACT
     /*!
     \brief Get problem discretization
     */
-    inline const Core::FE::Discretization& ProblemDiscret() const override { return pdiscret_; };
+    inline const Core::FE::Discretization& problem_discret() const override { return pdiscret_; };
 
     /*!
     \brief Get beam contact discretization
     */
-    inline const Core::FE::Discretization& ContactDiscret() const override { return cdiscret_; };
+    inline const Core::FE::Discretization& contact_discret() const override { return cdiscret_; };
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
     */
-    inline const std::map<int, int>& DofOffset() const override { return dofoffsetmap_; };
+    inline const std::map<int, int>& dof_offset() const override { return dofoffsetmap_; };
 
     /*!
     \brief Get first element
     */
-    inline const Core::Elements::Element* Element1() override { return element1_; };
+    inline const Core::Elements::Element* element1() override { return element1_; };
 
     /*!
     \brief Get first element
     */
-    inline const Core::Elements::Element* Element2() override { return element2_; };
+    inline const Core::Elements::Element* element2() override { return element2_; };
 
     /*!
     \brief Get gap of this contact pair
     */
-    double GetGap() override { return Core::FADUtils::CastToDouble(gap_); };
+    double get_gap() override { return Core::FADUtils::CastToDouble(gap_); };
 
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    bool GetContactFlag() override { return contactflag_; };
+    bool get_contact_flag() override { return contactflag_; };
 
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    Core::LinAlg::SerialDenseVector GetX1() override
+    Core::LinAlg::SerialDenseVector get_x1() override
     {
       Core::LinAlg::SerialDenseVector r1;
       r1.resize(3);
@@ -265,7 +265,7 @@ namespace CONTACT
       return r1;
     };
 
-    Core::LinAlg::SerialDenseVector GetX2() override
+    Core::LinAlg::SerialDenseVector get_x2() override
     {
       Core::LinAlg::SerialDenseVector r2;
       r2.resize(3);
@@ -277,13 +277,13 @@ namespace CONTACT
     /*!
     \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
     */
-    bool GetShiftStatus() override { return shiftnodalvalues_; };
+    bool get_shift_status() override { return shiftnodalvalues_; };
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
       the beams centerlines have already crossed or not.
     */
-    bool GetNewGapStatus() override;
+    bool get_new_gap_status() override;
     //@}
 
 
@@ -300,7 +300,7 @@ namespace CONTACT
     could cross in the next time step when the new gap function definition (ngf_=true) for slender
     beams is applied!
     */
-    void InvertNormal() override;
+    void invert_normal() override;
 
     /*!
       \brief Update of class variables at the end of a time step
@@ -311,12 +311,12 @@ namespace CONTACT
       \brief Shift current normal vector to old normal vector at the end of a time step. This is
       necessary when the new gap function definition (ngf_=true) for slender beams is applied!
     */
-    void ShiftNormal() override;
+    void shift_normal() override;
 
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    void UpdateElePos(Core::LinAlg::SerialDenseMatrix& newele1pos,
+    void update_ele_pos(Core::LinAlg::SerialDenseMatrix& newele1pos,
         Core::LinAlg::SerialDenseMatrix& newele2pos) override;
 
     /*
@@ -328,7 +328,7 @@ namespace CONTACT
     /*!
     \brief Get debugging data at Gauss points for Gmsh
     */
-    std::vector<GmshDebugPoint> GetGmshDebugPoints() override { return gmsh_debug_points_; };
+    std::vector<GmshDebugPoint> get_gmsh_debug_points() override { return gmsh_debug_points_; };
 
 
     //@}

@@ -63,7 +63,7 @@ namespace CONTACT
     \brief Get discretization
 
     */
-    const Core::FE::Discretization& Discret() const { return discret_; };
+    const Core::FE::Discretization& discret() const { return discret_; };
 
     //! @}
 
@@ -155,7 +155,7 @@ namespace CONTACT
      \brief Read and check contact input parameters
 
      All specified contact-related input parameters are read from the
-     Global::Problem::Instance() and stored into a local variable of
+     Global::Problem::instance() and stored into a local variable of
      type Teuchos::ParameterList. Invalid parameter combinations are
      sorted out and throw a FOUR_C_THROW.
 

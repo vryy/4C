@@ -241,14 +241,14 @@ namespace Solid
       };
 
       /// Returns nox parameters
-      const Teuchos::ParameterList& GetNoxParams() const
+      const Teuchos::ParameterList& get_nox_params() const
       {
         check_init_setup();
         return *noxparams_;
       }
 
       /// Returns loca parameters
-      const Teuchos::ParameterList& GetLocaParams() const
+      const Teuchos::ParameterList& get_loca_params() const
       {
         check_init_setup();
         return *locaparams_;
@@ -263,7 +263,7 @@ namespace Solid
 
       /// Returns linear solvers pointer
       const std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>&
-      GetLinSolvers() const
+      get_lin_solvers() const
       {
         check_init_setup();
         return *linsolvers_;
@@ -298,19 +298,19 @@ namespace Solid
       /// @name Get mass and inertia control parameters (read only access)
       ///@{
       /// Returns mass linearization type
-      enum Inpar::Solid::MassLin GetMassLinType() const
+      enum Inpar::Solid::MassLin get_mass_lin_type() const
       {
         check_init_setup();
         return masslintype_;
       };
 
-      bool IsMassLumping() const
+      bool is_mass_lumping() const
       {
         check_init_setup();
         return lumpmass_;
       }
 
-      bool NeglectInertia() const
+      bool neglect_inertia() const
       {
         check_init_setup();
         return neglectinertia_;
@@ -320,7 +320,7 @@ namespace Solid
       /// @name Get model evaluator control parameters (read only access)
       ///@{
       /// Returns types of the current models
-      const std::set<enum Inpar::Solid::ModelType>& GetModelTypes() const
+      const std::set<enum Inpar::Solid::ModelType>& get_model_types() const
       {
         check_init_setup();
         return *modeltypes_;
@@ -334,10 +334,10 @@ namespace Solid
       };
 
       /// check if the given model type is active.
-      bool HaveModelType(const Inpar::Solid::ModelType& modeltype) const;
+      bool have_model_type(const Inpar::Solid::ModelType& modeltype) const;
 
       /// check if the given element technology is active.
-      bool HaveEleTech(const Inpar::Solid::EleTech& eletech) const;
+      bool have_ele_tech(const Inpar::Solid::EleTech& eletech) const;
       ///@}
 
       /// @name Get model specific data container
@@ -353,14 +353,14 @@ namespace Solid
       /// @name Get the different status test control parameters (read only)
       ///@{
       /// Returns the STR vector norm type
-      const enum Inpar::Solid::VectorNorm& GetNormType() const
+      const enum Inpar::Solid::VectorNorm& get_norm_type() const
       {
         check_init_setup();
         return normtype_;
       }
 
       /// Returns the NOX normtype
-      const enum ::NOX::Abstract::Vector::NormType& GetNoxNormType() const
+      const enum ::NOX::Abstract::Vector::NormType& get_nox_norm_type() const
       {
         check_init_setup();
         return nox_normtype_;
@@ -392,7 +392,7 @@ namespace Solid
       /// @name Get residual and increment related parameters
       ///@{
       /// Returns the combination type of the two quantities
-      enum Inpar::Solid::BinaryOp GetResIncrComboType(
+      enum Inpar::Solid::BinaryOp get_res_incr_combo_type(
           const enum NOX::Nln::StatusTest::QuantityType& qtype_res,
           const enum NOX::Nln::StatusTest::QuantityType& qtype_incr) const;
       ///@}
@@ -400,17 +400,17 @@ namespace Solid
       /// @name Get residual related parameters
       ///@{
       /// Returns the tolerance values for the different quantities
-      double GetResTolerance(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
+      double get_res_tolerance(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
       /// Returns the tolerance type of the different quantities
-      enum Inpar::Solid::ConvNorm GetResToleranceType(
+      enum Inpar::Solid::ConvNorm get_res_tolerance_type(
           const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
       /// Returns the combination type of the different quantities
-      enum Inpar::Solid::BinaryOp GetResComboType(
+      enum Inpar::Solid::BinaryOp get_res_combo_type(
           const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
-      enum Inpar::Solid::BinaryOp GetResComboType(
+      enum Inpar::Solid::BinaryOp get_res_combo_type(
           const enum NOX::Nln::StatusTest::QuantityType& qtype_1,
           const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const;
       ///@}
@@ -418,7 +418,7 @@ namespace Solid
       /// @name Get increment related parameters
       ///@{
       /// Returns the tolerance values for the different quantities
-      double GetIncrTolerance(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
+      double get_incr_tolerance(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
       /// Returns the tolerance type of the different quantities
       enum Inpar::Solid::ConvNorm get_incr_tolerance_type(
@@ -429,10 +429,10 @@ namespace Solid
           const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const;
 
       /// Returns the combination type of the different quantities
-      enum Inpar::Solid::BinaryOp GetIncrComboType(
+      enum Inpar::Solid::BinaryOp get_incr_combo_type(
           const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
-      enum Inpar::Solid::BinaryOp GetIncrComboType(
+      enum Inpar::Solid::BinaryOp get_incr_combo_type(
           const enum NOX::Nln::StatusTest::QuantityType& qtype_1,
           const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const;
       ///@}
@@ -442,41 +442,41 @@ namespace Solid
       ///@{
 
       /// Returns final time \f$t_\text{fin}\f$
-      double& GetTimeMax()
+      double& get_time_max()
       {
         check_init_setup();
         return timemax_;
       };
 
       /// Returns final time step \f$N\f$
-      int& GetStepMax()
+      int& get_step_max()
       {
         check_init_setup();
         return stepmax_;
       };
 
       /// Returns timer for solution technique
-      Teuchos::RCP<Teuchos::Time>& GetTimer()
+      Teuchos::RCP<Teuchos::Time>& get_timer()
       {
         check_init_setup();
         return timer_;
       };
 
       /// Returns minimal non-linear iteration number
-      int& GetIterMin()
+      int& get_iter_min()
       {
         check_init_setup();
         return itermin_;
       };
 
       /// Returns maximal non-linear iteration number
-      int& GetIterMax()
+      int& get_iter_max()
       {
         check_init_setup();
         return itermax_;
       };
 
-      double& GetPreStressTime()
+      double& get_pre_stress_time()
       {
         check_init_setup();
         return prestresstime_;
@@ -585,14 +585,14 @@ namespace Solid
       ///@{
       /// Returns linear solvers pointer
       Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-      GetLinSolversPtr()
+      get_lin_solvers_ptr()
       {
         check_init_setup();
         return linsolvers_;
       }
 
       /// Returns linear solvers pointer
-      std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>& GetLinSolvers()
+      std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>& get_lin_solvers()
       {
         check_init_setup();
         return *linsolvers_;
@@ -667,7 +667,7 @@ namespace Solid
       };
 
       /// Returns the function index to initialize the displacement
-      int StartFuncNo() const
+      int start_func_no() const
       {
         check_init_setup();
         return start_func_no_;
@@ -1021,42 +1021,42 @@ namespace Solid
       //!@{
 
       //! returns the mid-average type (for more information see MidAverageEnum)
-      const enum Inpar::Solid::MidAverageEnum& GetMidAverageType() const
+      const enum Inpar::Solid::MidAverageEnum& get_mid_average_type() const
       {
         check_init_setup();
         return midavg_;
       };
 
       //! Return time integration parameter \f$\beta\f$
-      const double& GetBeta() const
+      const double& get_beta() const
       {
         check_init_setup();
         return beta_;
       };
 
       //! Return time integration parameter \f$\gamma\f$
-      const double& GetGamma() const
+      const double& get_gamma() const
       {
         check_init_setup();
         return gamma_;
       };
 
       //! Return time integration parameter \f$\alpha_f\f$
-      const double& GetAlphaF() const
+      const double& get_alpha_f() const
       {
         check_init_setup();
         return alphaf_;
       };
 
       //! Return time integration parameter \f$\alpha_m\f$
-      const double& GetAlphaM() const
+      const double& get_alpha_m() const
       {
         check_init_setup();
         return alpham_;
       };
 
       //! Return spectral radius \f$\rho_\infty\f$
-      const double& GetRhoInf() const
+      const double& get_rho_inf() const
       {
         check_init_setup();
         return rhoinf_;

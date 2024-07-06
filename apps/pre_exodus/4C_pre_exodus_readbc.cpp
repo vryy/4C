@@ -502,31 +502,31 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       string_tolstream >> abstol;
 
       const int slave_nodeset_id = slave_con.id;
-      const EXODUS::NodeSet master_nodeset = mesh.GetNodeSet(master_nodeset_id);
-      const EXODUS::NodeSet slave_nodeset = mesh.GetNodeSet(slave_nodeset_id);
+      const EXODUS::NodeSet master_nodeset = mesh.get_node_set(master_nodeset_id);
+      const EXODUS::NodeSet slave_nodeset = mesh.get_node_set(slave_nodeset_id);
 
-      if (slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes())
+      if (slave_nodeset.get_num_nodes() != master_nodeset.get_num_nodes())
       {
-        std::cout << "yz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
-        std::cout << "yz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
+        std::cout << "yz num master nodes = " << master_nodeset.get_num_nodes() << std::endl;
+        std::cout << "yz num slave nodes = " << slave_nodeset.get_num_nodes() << std::endl;
         FOUR_C_THROW("num master nodes != num slave nodes before adjusting coords");
       }
 
-      const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
-      const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
+      const std::set<int> master_nodeset_ids = master_nodeset.get_node_set();
+      const std::set<int> slave_nodeset_ids = slave_nodeset.get_node_set();
 
       // reference values for x on the master side and x on the slave side
-      const double x_master = (mesh.GetNode(*master_nodeset_ids.begin()))[0];
-      const double x_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[0];
+      const double x_master = (mesh.get_node(*master_nodeset_ids.begin()))[0];
+      const double x_slave = (mesh.get_node(*slave_nodeset_ids.begin()))[0];
 
       // loop over all master nodes
       for (std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
            m_node_id != master_nodeset_ids.end(); m_node_id++)
       {
         // get master node coordinates
-        std::vector<double> m_coord = mesh.GetNode(*m_node_id);
+        std::vector<double> m_coord = mesh.get_node(*m_node_id);
         m_coord[0] = x_master;
-        mesh.SetNode(*m_node_id, m_coord);
+        mesh.set_node(*m_node_id, m_coord);
 
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
@@ -535,7 +535,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
         {
           count_slavenodes++;
           // get master node coordinates
-          std::vector<double> s_coord = mesh.GetNode(*s_node_id);
+          std::vector<double> s_coord = mesh.get_node(*s_node_id);
 
           // compare coordinates
           bool equal = false;
@@ -553,17 +553,17 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
             s_coord[0] = x_slave;
             s_coord[1] = m_coord[1];
             s_coord[2] = m_coord[2];
-            mesh.SetNode(*s_node_id, s_coord);
+            mesh.set_node(*s_node_id, s_coord);
             break;
           }
         }  // loop all slave nodes
       }    // loop all master nodes
-      if (mesh.GetNodeSet(master_nodeset_id).GetNumNodes() !=
-          mesh.GetNodeSet(slave_nodeset_id).GetNumNodes())
+      if (mesh.get_node_set(master_nodeset_id).get_num_nodes() !=
+          mesh.get_node_set(slave_nodeset_id).get_num_nodes())
       {
-        std::cout << "yz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes()
-                  << std::endl;
-        std::cout << "yz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes()
+        std::cout << "yz num master nodes = "
+                  << mesh.get_node_set(master_nodeset_id).get_num_nodes() << std::endl;
+        std::cout << "yz num slave nodes = " << mesh.get_node_set(slave_nodeset_id).get_num_nodes()
                   << std::endl;
         FOUR_C_THROW("num master nodes != num slave nodes after adjusting coords");
       }
@@ -640,31 +640,31 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       string_tolstream >> abstol;
 
       const int slave_nodeset_id = slave_con.id;
-      const EXODUS::NodeSet master_nodeset = mesh.GetNodeSet(master_nodeset_id);
-      const EXODUS::NodeSet slave_nodeset = mesh.GetNodeSet(slave_nodeset_id);
+      const EXODUS::NodeSet master_nodeset = mesh.get_node_set(master_nodeset_id);
+      const EXODUS::NodeSet slave_nodeset = mesh.get_node_set(slave_nodeset_id);
 
-      if (slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes())
+      if (slave_nodeset.get_num_nodes() != master_nodeset.get_num_nodes())
       {
-        std::cout << "xz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
-        std::cout << "xz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
+        std::cout << "xz num master nodes = " << master_nodeset.get_num_nodes() << std::endl;
+        std::cout << "xz num slave nodes = " << slave_nodeset.get_num_nodes() << std::endl;
         FOUR_C_THROW("xz num master nodes != num slave nodes before adjusting coords");
       }
 
-      const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
-      const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
+      const std::set<int> master_nodeset_ids = master_nodeset.get_node_set();
+      const std::set<int> slave_nodeset_ids = slave_nodeset.get_node_set();
 
       // reference values for x on the master side and x on the slave side
-      const double y_master = (mesh.GetNode(*master_nodeset_ids.begin()))[1];  // get y-coord
-      const double y_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[1];    // get y-coord
+      const double y_master = (mesh.get_node(*master_nodeset_ids.begin()))[1];  // get y-coord
+      const double y_slave = (mesh.get_node(*slave_nodeset_ids.begin()))[1];    // get y-coord
 
       // loop over all master nodes
       for (std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
            m_node_id != master_nodeset_ids.end(); m_node_id++)
       {
         // get master node coordinates
-        std::vector<double> m_coord = mesh.GetNode(*m_node_id);
+        std::vector<double> m_coord = mesh.get_node(*m_node_id);
         m_coord[1] = y_master;
-        mesh.SetNode(*m_node_id, m_coord);
+        mesh.set_node(*m_node_id, m_coord);
 
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
@@ -673,7 +673,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
         {
           count_slavenodes++;
           // get master node coordinates
-          std::vector<double> s_coord = mesh.GetNode(*s_node_id);
+          std::vector<double> s_coord = mesh.get_node(*s_node_id);
 
           // compare coordinates
           bool equal = false;
@@ -691,17 +691,17 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
             s_coord[0] = m_coord[0];
             s_coord[1] = y_slave;
             s_coord[2] = m_coord[2];
-            mesh.SetNode(*s_node_id, s_coord);
+            mesh.set_node(*s_node_id, s_coord);
             break;
           }
         }  // loop all slave nodes
       }    // loop all master nodes
-      if (mesh.GetNodeSet(master_nodeset_id).GetNumNodes() !=
-          mesh.GetNodeSet(slave_nodeset_id).GetNumNodes())
+      if (mesh.get_node_set(master_nodeset_id).get_num_nodes() !=
+          mesh.get_node_set(slave_nodeset_id).get_num_nodes())
       {
-        std::cout << "xz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes()
-                  << std::endl;
-        std::cout << "xz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes()
+        std::cout << "xz num master nodes = "
+                  << mesh.get_node_set(master_nodeset_id).get_num_nodes() << std::endl;
+        std::cout << "xz num slave nodes = " << mesh.get_node_set(slave_nodeset_id).get_num_nodes()
                   << std::endl;
         FOUR_C_THROW("xz num master nodes != num slave nodes after adjusting coords");
       }
@@ -777,31 +777,31 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
       string_tolstream >> abstol;
 
       const int slave_nodeset_id = slave_con.id;
-      const EXODUS::NodeSet master_nodeset = mesh.GetNodeSet(master_nodeset_id);
-      const EXODUS::NodeSet slave_nodeset = mesh.GetNodeSet(slave_nodeset_id);
+      const EXODUS::NodeSet master_nodeset = mesh.get_node_set(master_nodeset_id);
+      const EXODUS::NodeSet slave_nodeset = mesh.get_node_set(slave_nodeset_id);
 
-      if (slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes())
+      if (slave_nodeset.get_num_nodes() != master_nodeset.get_num_nodes())
       {
-        std::cout << "xy num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
-        std::cout << "xy num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
+        std::cout << "xy num master nodes = " << master_nodeset.get_num_nodes() << std::endl;
+        std::cout << "xy num slave nodes = " << slave_nodeset.get_num_nodes() << std::endl;
         FOUR_C_THROW("xy num master nodes != num slave nodes before adjusting coords");
       }
 
-      const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
-      const std::set<int> slave_nodeset_ids = slave_nodeset.GetNodeSet();
+      const std::set<int> master_nodeset_ids = master_nodeset.get_node_set();
+      const std::set<int> slave_nodeset_ids = slave_nodeset.get_node_set();
 
       // reference values for z on the master side and z on the slave side
-      const double z_master = (mesh.GetNode(*master_nodeset_ids.begin()))[2];
-      const double z_slave = (mesh.GetNode(*slave_nodeset_ids.begin()))[2];
+      const double z_master = (mesh.get_node(*master_nodeset_ids.begin()))[2];
+      const double z_slave = (mesh.get_node(*slave_nodeset_ids.begin()))[2];
 
       // loop over all master nodes
       for (std::set<int>::const_iterator m_node_id = master_nodeset_ids.begin();
            m_node_id != master_nodeset_ids.end(); m_node_id++)
       {
         // get master node coordinates
-        std::vector<double> m_coord = mesh.GetNode(*m_node_id);
+        std::vector<double> m_coord = mesh.get_node(*m_node_id);
         m_coord[2] = z_master;
-        mesh.SetNode(*m_node_id, m_coord);
+        mesh.set_node(*m_node_id, m_coord);
 
         int count_slavenodes = 0;
         // loop over all slave nodes and find matching node
@@ -810,7 +810,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
         {
           count_slavenodes++;
           // get master node coordinates
-          std::vector<double> s_coord = mesh.GetNode(*s_node_id);
+          std::vector<double> s_coord = mesh.get_node(*s_node_id);
 
           // compare coordinates x and y
           bool equal = false;
@@ -828,17 +828,17 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
             s_coord[0] = m_coord[0];
             s_coord[1] = m_coord[1];
             s_coord[2] = z_slave;
-            mesh.SetNode(*s_node_id, s_coord);
+            mesh.set_node(*s_node_id, s_coord);
             break;
           }
         }  // loop all slave nodes
       }    // loop all master nodes
-      if (mesh.GetNodeSet(master_nodeset_id).GetNumNodes() !=
-          mesh.GetNodeSet(slave_nodeset_id).GetNumNodes())
+      if (mesh.get_node_set(master_nodeset_id).get_num_nodes() !=
+          mesh.get_node_set(slave_nodeset_id).get_num_nodes())
       {
-        std::cout << "xy num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes()
-                  << std::endl;
-        std::cout << "xy num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes()
+        std::cout << "xy num master nodes = "
+                  << mesh.get_node_set(master_nodeset_id).get_num_nodes() << std::endl;
+        std::cout << "xy num slave nodes = " << mesh.get_node_set(slave_nodeset_id).get_num_nodes()
                   << std::endl;
         FOUR_C_THROW("xy num master nodes != num slave nodes after adjusting coords");
       }

@@ -77,15 +77,15 @@ namespace Mat
       ///@name Packing and Unpacking (dummy routines)
       //@{
 
-      int UniqueParObjectId() const override;
+      int unique_par_object_id() const override;
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
       void unpack(const std::vector<char>& data) override;
 
-      virtual void PackSummand(Core::Communication::PackBuffer& data) const { return; };
+      virtual void pack_summand(Core::Communication::PackBuffer& data) const { return; };
 
-      virtual void UnpackSummand(
+      virtual void unpack_summand(
           const std::vector<char>& data, std::vector<char>::size_type& position)
       {
         return;
@@ -94,10 +94,10 @@ namespace Mat
       //@}
 
       /// provide material type
-      virtual Core::Materials::MaterialType MaterialType() const = 0;
+      virtual Core::Materials::MaterialType material_type() const = 0;
 
       /// Create summand object by input parameter ID
-      static Teuchos::RCP<Summand> Factory(int matnum  ///< material ID
+      static Teuchos::RCP<Summand> factory(int matnum  ///< material ID
       );
 
       /*!
@@ -122,7 +122,7 @@ namespace Mat
       virtual void setup(int numgp, Input::LineDefinition* linedef){};
 
       //! Dummy routine for setup of patient-specific materials
-      virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID){};
+      virtual void setup_aaa(Teuchos::ParameterList& params, const int eleGID){};
 
       /*!
        * @brief Post setup routine for summands. It will be called once after everything is set up.
@@ -135,7 +135,7 @@ namespace Mat
       virtual void update() { return; };
 
       //! add strain energy
-      virtual void AddStrainEnergy(double& psi,  ///< strain energy functions
+      virtual void add_strain_energy(double& psi,  ///< strain energy functions
           const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           const Core::LinAlg::Matrix<3, 1>&
@@ -150,12 +150,12 @@ namespace Mat
       };
 
       //! add shear modulus equivalent
-      virtual void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-          double& shearmod                          ///< variable to add upon
+      virtual void add_shear_mod(bool& haveshearmod,  ///< non-zero shear modulus was added
+          double& shearmod                            ///< variable to add upon
       ) const;
 
       //! add young's modulus equivalent
-      virtual void AddYoungsMod(double& young, double& shear, double& bulk)
+      virtual void add_youngs_mod(double& young, double& shear, double& bulk)
       {
         FOUR_C_THROW("Summand does not support calculation of youngs modulus");
       };
@@ -352,7 +352,7 @@ namespace Mat
        *             \mathbf{C}^{-1}\otimes\mathbf{C}^{-1}
        * \f]
        */
-      virtual void Add3rdVolDeriv(const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
+      virtual void add3rd_vol_deriv(const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
       {
         return;  // do nothing
       };
@@ -363,7 +363,7 @@ namespace Mat
        * since the effects are already included in the derivatives w.r.t. to the invariants. For
        * special applications, those derivatives may be interesting.
        */
-      virtual void AddCoupDerivVol(
+      virtual void add_coup_deriv_vol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
       {
         return;  // do nothing
@@ -699,23 +699,23 @@ namespace Mat
       }
 
       //! Set fiber directions
-      virtual void SetFiberVecs(const double newgamma,  ///< new angle
-          const Core::LinAlg::Matrix<3, 3>& locsys,     ///< local coordinate system
-          const Core::LinAlg::Matrix<3, 3>& defgrd      ///< deformation gradient
+      virtual void set_fiber_vecs(const double newgamma,  ///< new angle
+          const Core::LinAlg::Matrix<3, 3>& locsys,       ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd        ///< deformation gradient
       )
       {
         return;  // do nothing
       };
 
       //! Set fiber directions
-      virtual void SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
+      virtual void set_fiber_vecs(const Core::LinAlg::Matrix<3, 1>& fibervec  ///< new fiber vector
       )
       {
         FOUR_C_THROW("Not implemented yet for this type of anisotropic material;");
       };
 
       //! Get fiber directions
-      virtual void GetFiberVecs(
+      virtual void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
       )
       {
@@ -723,14 +723,14 @@ namespace Mat
       };
 
       //! Read FIBERn
-      void ReadFiber(Input::LineDefinition* linedef, const std::string& specifier,
+      void read_fiber(Input::LineDefinition* linedef, const std::string& specifier,
           Core::LinAlg::Matrix<3, 1>& fiber_vector);
 
       //! Read RAD-AXI-CIR
-      void ReadRadAxiCir(Input::LineDefinition* linedef, Core::LinAlg::Matrix<3, 3>& locsys);
+      void read_rad_axi_cir(Input::LineDefinition* linedef, Core::LinAlg::Matrix<3, 3>& locsys);
 
       //! Indicator for the chosen formulations
-      virtual void SpecifyFormulation(
+      virtual void specify_formulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
@@ -753,12 +753,13 @@ namespace Mat
       //! @name Visualization methods
 
       //! Return names of visualization data
-      virtual void VisNames(std::map<std::string, int>& names){
+      virtual void vis_names(std::map<std::string, int>& names){
           /* do nothing for simple material models */
       };
 
       //! Return visualization data
-      virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleId)
+      virtual bool vis_data(
+          const std::string& name, std::vector<double>& data, int numgp, int eleId)
       { /* do nothing for simple material models */
         return false;
       };

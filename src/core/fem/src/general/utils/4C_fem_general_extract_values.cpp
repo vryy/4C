@@ -100,7 +100,7 @@ void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
   // loop over element nodes
   for (int i = 0; i < numnode; ++i)
   {
-    const int nodegid = (ele->Nodes()[i])->Id();
+    const int nodegid = (ele->nodes()[i])->id();
     const int lid = global.Map().LID(nodegid);
     if (lid < 0)
       FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), nodegid);
@@ -136,7 +136,7 @@ void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
     // loop over the element nodes
     for (int j = 0; j < iel; j++)
     {
-      const int nodegid = (ele->Nodes()[j])->Id();
+      const int nodegid = (ele->nodes()[j])->id();
       const int lid = global->Map().LID(nodegid);
       if (lid < 0)
         FOUR_C_THROW(
@@ -158,7 +158,7 @@ void Core::FE::ExtractMyNodeBasedValues(const Core::Nodes::Node* node,
     FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
   if (local.length() != nsd) FOUR_C_THROW("vector size mismatch.");
 
-  const int nodegid = node->Id();
+  const int nodegid = node->id();
   const int lid = global->Map().LID(nodegid);
 
   for (int i = 0; i < nsd; i++)

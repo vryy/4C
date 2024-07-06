@@ -34,7 +34,7 @@ namespace GEOMETRYPAIR
         FOUR_C_THROW(
             "The element pointer has to point to a valid beam element when evaluating the shape "
             "function data of a hermite beam, as we need to get RefLength()!");
-      shape_function_data.ref_length_ = beam_element->RefLength();
+      shape_function_data.ref_length_ = beam_element->ref_length();
     }
   };
 }  // namespace GEOMETRYPAIR

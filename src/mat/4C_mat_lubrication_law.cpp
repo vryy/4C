@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawConstant::create_mater
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::PAR::LubricationLawConstant::ComputeViscosity(const double& press, double& viscosity)
+void Mat::PAR::LubricationLawConstant::compute_viscosity(const double& press, double& viscosity)
 {
   viscosity = viscosity_;
   return;
@@ -75,7 +75,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawBarus::create_material
 }
 
 // Calculate the current viscosity
-void Mat::PAR::LubricationLawBarus::ComputeViscosity(const double& press, double& viscosity)
+void Mat::PAR::LubricationLawBarus::compute_viscosity(const double& press, double& viscosity)
 {
   viscosity = ABSViscosity_ * (std::exp(PreVisCoeff_ * press));
 
@@ -115,7 +115,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawRoeland::create_materi
 }
 
 // Calculate the current viscosity
-void Mat::PAR::LubricationLawRoeland::ComputeViscosity(const double& press, double& viscosity)
+void Mat::PAR::LubricationLawRoeland::compute_viscosity(const double& press, double& viscosity)
 {
   // double z = (PreVisCoeff_ * RefPress_) / (log ( ABSViscosity_ / RefVisc_ ));
 

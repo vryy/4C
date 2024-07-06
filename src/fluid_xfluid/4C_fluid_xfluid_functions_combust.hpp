@@ -42,7 +42,7 @@ namespace Discret
      public:
       double evaluate(const double* x, double t, std::size_t component) const override;
 
-      [[nodiscard]] std::size_t NumberComponents() const override
+      [[nodiscard]] std::size_t number_components() const override
       {
         FOUR_C_THROW("Number of components not defined for ZalesaksDiskFunction.");
       };
@@ -54,7 +54,7 @@ namespace Discret
      public:
       double evaluate(const double* x, double t, std::size_t component) const override;
 
-      [[nodiscard]] std::size_t NumberComponents() const override
+      [[nodiscard]] std::size_t number_components() const override
       {
         FOUR_C_THROW("Number of components not defined for CollapsingWaterColumnFunction.");
       };

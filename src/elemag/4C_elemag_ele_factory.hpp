@@ -32,7 +32,7 @@ namespace Discret
       //! dtor
       virtual ~ElemagFactory() = default;
       //! ProvideImpl
-      static ElemagEleInterface* ProvideImpl(Core::FE::CellType distype, std::string problem);
+      static ElemagEleInterface* provide_impl(Core::FE::CellType distype, std::string problem);
 
      private:
       //! define ElemagEle instances dependent on problem

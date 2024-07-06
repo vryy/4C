@@ -61,13 +61,13 @@ namespace PoroElast
     void read_restart(const int step) override;
 
     //! outer level time loop
-    virtual void TimeLoop();
+    virtual void time_loop();
 
     //! initialize system
-    virtual void SetupSystem() = 0;
+    virtual void setup_system() = 0;
 
     //! perform result tests
-    virtual void TestResults(const Epetra_Comm& comm);
+    virtual void test_results(const Epetra_Comm& comm);
 
     //! build combined dirichlet map for the monolithic problem
     virtual void build_combined_dbc_map()
@@ -107,13 +107,13 @@ namespace PoroElast
     }
 
     //! dof row map of Structure field
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMapStructure() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map_structure() = 0;
 
     //! dof row map of Fluid field
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMapFluid() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> dof_row_map_fluid() = 0;
 
     //! extractor to communicate between full monolithic map and block maps
-    virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const
+    virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const
     {
       FOUR_C_THROW("ExtractorPointer only available for monolithic schemes!");
       return Teuchos::null;
@@ -127,7 +127,7 @@ namespace PoroElast
     }
 
     //! return rhs of poro problem
-    Teuchos::RCP<const Epetra_Vector> RHS() override
+    Teuchos::RCP<const Epetra_Vector> rhs() override
     {
       FOUR_C_THROW("RHS() only available for monolithic schemes!");
       return Teuchos::null;
@@ -174,13 +174,13 @@ namespace PoroElast
     }
 
     //! solve time step (depending on algorithm)
-    virtual void Solve() = 0;
+    virtual void solve() = 0;
 
     //! perform one time step (setup + solve + output)
     virtual void do_time_step() = 0;
 
     //! setup solver (for monolithic only)
-    virtual bool SetupSolver() { return false; }
+    virtual bool setup_solver() { return false; }
 
     virtual void setup_rhs(bool firstcall = false)
     {
@@ -205,7 +205,7 @@ namespace PoroElast
 
     //! return whether the poro discretization contains submeshes (i.e. it is coupled with a pure
     //! solid)
-    bool HasSubmeshes() { return submeshes_; }
+    bool has_submeshes() { return submeshes_; }
 
     //! return coupling object
     Core::Adapter::Coupling& fluid_structure_coupling() { return *coupling_fluid_structure_; }
@@ -322,31 +322,31 @@ namespace PoroElast
     void buid_no_penetration_map(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
 
     //! apply rhs terms of no penetration condition to global rhs vector
-    void ApplyCondRHS(Teuchos::RCP<Epetra_Vector> iterinc, Teuchos::RCP<Epetra_Vector> rhs);
+    void apply_cond_rhs(Teuchos::RCP<Epetra_Vector> iterinc, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! return no penetration map extractor
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> Extractor() { return nopenetration_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> extractor() { return nopenetration_; }
 
     //! return vector containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<std::set<int>> CondIDs() { return cond_ids_; }
+    Teuchos::RCP<std::set<int>> cond_i_ds() { return cond_ids_; }
 
     //! return vector containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<Epetra_Vector> CondVector() { return cond_dofs_; }
+    Teuchos::RCP<Epetra_Vector> cond_vector() { return cond_dofs_; }
 
     //! check if a no penetration condition exists
-    bool HasCond() { return has_cond_; }
+    bool has_cond() { return has_cond_; }
 
     //! return condrhs
-    Teuchos::RCP<Epetra_Vector> RHS() { return cond_rhs_; }
+    Teuchos::RCP<Epetra_Vector> rhs() { return cond_rhs_; }
 
     //! clear everything that is needed for coupling
-    void Clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
+    void clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
 
     //! setup coupling matrixes and vecors
     void setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
 
     //! return constraint matrix, that fits to coupling type
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix(PoroElast::Coupltype coupltype);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_matrix(PoroElast::Coupltype coupltype);
 
     //! return constraint matrix for structure velocity coupling
     Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix(

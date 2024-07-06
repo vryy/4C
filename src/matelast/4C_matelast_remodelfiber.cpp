@@ -45,13 +45,13 @@ Mat::Elastic::RemodelFiber::RemodelFiber(Mat::Elastic::PAR::RemodelFiber* params
   for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsumfiber_.push_back(Teuchos::rcp(new FiberData(sum)));
   }
 }
 
-void Mat::Elastic::RemodelFiber::PackSummand(Core::Communication::PackBuffer& data) const
+void Mat::Elastic::RemodelFiber::pack_summand(Core::Communication::PackBuffer& data) const
 {
   int num_fiber = 0;
   num_fiber = potsumfiber_.size();
@@ -84,10 +84,10 @@ void Mat::Elastic::RemodelFiber::PackSummand(Core::Communication::PackBuffer& da
   add_to_pack(data, init_rho_col_);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
-    for (const auto& k : potsumfiber_) k->fiber->PackSummand(data);
+    for (const auto& k : potsumfiber_) k->fiber->pack_summand(data);
 }
 
-void Mat::Elastic::RemodelFiber::UnpackSummand(
+void Mat::Elastic::RemodelFiber::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   //  // make sure we have a pristine material
@@ -131,7 +131,7 @@ void Mat::Elastic::RemodelFiber::UnpackSummand(
   extract_from_pack(position, data, init_rho_col_);
 
   // loop map of associated potential summands
-  for (auto& k : potsumfiber_) k->fiber->UnpackSummand(data, position);
+  for (auto& k : potsumfiber_) k->fiber->unpack_summand(data, position);
 }
 
 void Mat::Elastic::RemodelFiber::register_anisotropy_extensions(Anisotropy& anisotropy)
@@ -195,7 +195,7 @@ void Mat::Elastic::RemodelFiber::setup(int numgp, double rho_tot, Input::LineDef
             .getRawPtr())
     {
       CpreM.update(potsumfiber_[k]->G * potsumfiber_[k]->G, potsumfiber_[k]->AM, 0.0);
-      t1->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
+      t1->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig_pre = 2.0 * dPI(0) * potsumfiber_[k]->G * potsumfiber_[k]->G;
       for (int gp = 0; gp < numgp; ++gp) cauchystress_[k][gp] = sig_pre;
       potsumfiber_[k]->growth = Teuchos::rcp(new GrowthEvolution(params_->k_growth_, sig_pre));
@@ -207,7 +207,7 @@ void Mat::Elastic::RemodelFiber::setup(int numgp, double rho_tot, Input::LineDef
                  .getRawPtr())
     {
       CpreM.update(potsumfiber_[k]->G * potsumfiber_[k]->G, potsumfiber_[k]->AM, 0.0);
-      t2->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
+      t2->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig_pre = 2.0 * dPI(0) * potsumfiber_[k]->G * potsumfiber_[k]->G;
       t2->evaluate_active_stress_cmat_aniso(id, cmatactive, stressactv, 0, 0);
       Core::LinAlg::Voigt::Stresses::vector_to_matrix(stressactv, stressactM);
@@ -226,7 +226,7 @@ void Mat::Elastic::RemodelFiber::setup(int numgp, double rho_tot, Input::LineDef
   // Initialize inelastic deformation gradients in FiberData (default time step size (does not have
   // to be the real one))
   for (auto& k : potsumfiber_)
-    for (int gp = 0; gp < numgp; ++gp) k->UpdateNewton(gp, 1.0);
+    for (int gp = 0; gp < numgp; ++gp) k->update_newton(gp, 1.0);
 }
 
 void Mat::Elastic::RemodelFiber::setup_structural_tensors_gr()
@@ -241,7 +241,7 @@ void Mat::Elastic::RemodelFiber::setup_structural_tensors_gr()
   for (unsigned k = 0; k < potsumfiber_.size(); ++k)
   {
     // Get fiberdirection
-    potsumfiber_[k]->fiber->GetFiberVecs(fibervecs);
+    potsumfiber_[k]->fiber->get_fiber_vecs(fibervecs);
 
     // build structural tensor in matrix notation
     potsumfiber_[k]->AM.multiply_nt(1.0, fibervecs[k], fibervecs[k], 0.0);
@@ -255,26 +255,26 @@ void Mat::Elastic::RemodelFiber::update()
 {
   // update history variable
   for (auto& k : potsumfiber_)
-    for (unsigned gp = 0; gp < k->cur_rho.size(); ++gp) k->UpdateHistory(gp);
+    for (unsigned gp = 0; gp < k->cur_rho.size(); ++gp) k->update_history(gp);
 }
 
-void Mat::Elastic::RemodelFiber::UpdateFiberDirs(
+void Mat::Elastic::RemodelFiber::update_fiber_dirs(
     Core::LinAlg::Matrix<3, 3> const& locsys, const double& dt)
 {
   Core::LinAlg::Matrix<3, 3> id(true);
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
-  for (auto& k : potsumfiber_) k->fiber->SetFiberVecs(-1.0, locsys, id);
+  for (auto& k : potsumfiber_) k->fiber->set_fiber_vecs(-1.0, locsys, id);
 
   setup_structural_tensors_gr();
 
   for (auto& k : potsumfiber_)
-    for (unsigned gp = 0; gp < potsumfiber_[0]->cur_lambr.size(); ++gp) k->UpdateNewton(gp, dt);
+    for (unsigned gp = 0; gp < potsumfiber_[0]->cur_lambr.size(); ++gp) k->update_newton(gp, dt);
 
-  UpdateSigH();
+  update_sig_h();
 };
 
-void Mat::Elastic::RemodelFiber::UpdateSigH()
+void Mat::Elastic::RemodelFiber::update_sig_h()
 {
   // some variables
   Core::LinAlg::Matrix<3, 3> CpreM(true);
@@ -299,22 +299,22 @@ void Mat::Elastic::RemodelFiber::UpdateSigH()
     if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(k->fiber)).getRawPtr())
     {
       CpreM.update(k->G * k->G, k->AM, 0.0);
-      t1->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
+      t1->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig = 2.0 * dPI(0) * k->G * k->G;
-      k->growth->SetSigH(sig);
-      k->remodel->SetSigH(sig);
+      k->growth->set_sig_h(sig);
+      k->remodel->set_sig_h(sig);
     }
     else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(k->fiber))
                  .getRawPtr())
     {
       CpreM.update(k->G * k->G, k->AM, 0.0);
-      t2->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
+      t2->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig = 2.0 * dPI(0) * k->G * k->G;
       t2->evaluate_active_stress_cmat_aniso(id, cmatactive, stressactv, 0, 0);
       Core::LinAlg::Voigt::Stresses::vector_to_matrix(stressactv, stressactM);
       sig += stressactM.dot(k->AM);
-      k->growth->SetSigH(sig);
-      k->remodel->SetSigH(sig);
+      k->growth->set_sig_h(sig);
+      k->remodel->set_sig_h(sig);
     }
   }
 }
@@ -330,7 +330,7 @@ void Mat::Elastic::RemodelFiber::evaluate_anisotropic_stress_cmat(
 
   for (auto& k : potsumfiber_)
   {
-    k->UpdateNewton(gp, dt);
+    k->update_newton(gp, dt);
     add_stress_cmat(CM, iFgM, *k, gp, eleGID, stress, cmat);
   }
 }
@@ -348,7 +348,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_internal_newton(
 
   for (unsigned k = 0; k < potsumfiber_.size(); ++k)
   {
-    potsumfiber_[k]->UpdateNewton(gp, dt);
+    potsumfiber_[k]->update_newton(gp, dt);
 
     // Residual of evolution equations
     evaluate_evolution_equation(
@@ -387,7 +387,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_green(
   {
     dEdC[nr_grf_proc + k].clear();
     dWdC[nr_grf_proc + k].clear();
-    potsumfiber_[k]->UpdateNewton(gp, dt);
+    potsumfiber_[k]->update_newton(gp, dt);
 
     evaluated_evolution_equationd_c(dWdC[nr_grf_proc + k], dEdC[nr_grf_proc + k], CM, iFgM, dt,
         *(potsumfiber_[k]), k, gp, eleGID);
@@ -437,7 +437,7 @@ void Mat::Elastic::RemodelFiber::evaluate_growth_and_remodeling_expl(
 
   for (unsigned k = 0; k < potsumfiber_.size(); ++k)
   {
-    potsumfiber_[k]->UpdateNewton(gp, dt);
+    potsumfiber_[k]->update_newton(gp, dt);
 
     evaluated_evolution_equationdt(drhodt, dlambrdt, CM, iFgM, *(potsumfiber_[k]), k, gp, eleGID);
 
@@ -469,7 +469,7 @@ void Mat::Elastic::RemodelFiber::derivd_c(Core::LinAlg::Matrix<3, 3, T> const& C
   CeM_fad.multiply_tn(1.0, iFinM_fad, tmp_fad, 0.0);
 
   FAD r_fad = 0.0;
-  func.EvaluateFunc(r_fad, CeM_fad, gp, eleGID);
+  func.evaluate_func(r_fad, CeM_fad, gp, eleGID);
 
   Core::LinAlg::Matrix<3, 3> tmp(true);
   FirstDerivToMatrix(r_fad, tmp);
@@ -498,7 +498,7 @@ void Mat::Elastic::RemodelFiber::derivd_c(Core::LinAlg::Matrix<3, 3, T> const& C
   static Core::LinAlg::Matrix<2, 1, T> dPIe(true);
   static Core::LinAlg::Matrix<3, 1, T> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1, T> dddPIIIe(true);
-  func.GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+  func.get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   dfuncdC.update(dPIe(0) / CinM.dot(AM), AM, 0.0);
 }
@@ -559,7 +559,7 @@ void Mat::Elastic::RemodelFiber::derivd_cd_c(Core::LinAlg::Matrix<3, 3, T> const
   static Core::LinAlg::Matrix<2, 1, T> dPIe(true);
   static Core::LinAlg::Matrix<3, 1, T> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1, T> dddPIIIe(true);
-  func.GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+  func.get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   static Core::LinAlg::Matrix<6, 1, T> Av(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(AM, Av);
@@ -627,11 +627,11 @@ void Mat::Elastic::RemodelFiber::evaluate_local_cauchy_stress(
   T dPIact = 0.0;
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
   {
-    t1->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
   else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
   {
-    t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
     t2->get_derivative_aniso_active(dPIact);
   }
 
@@ -669,11 +669,11 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ce(Core::LinAlg::Matrix<3, 3, T> 
   static Core::LinAlg::Matrix<4, 1, T> dddPIIIe(true);
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
   {
-    t1->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
   else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
   {
-    t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
 
   dsigdCe.update(2.0 * (ddPIIe(0) * CeM.dot(AgrM) + dPIe(0)), AgrM, 0.0);
@@ -754,11 +754,11 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_ced_c(Core::LinAlg::Matrix<3, 3> 
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
   {
-    t1->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
   else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
   {
-    t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   }
 
   static Core::LinAlg::Matrix<6, 1> Agrv(true);
@@ -856,10 +856,10 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_growth(
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
-    t1->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
                .getRawPtr())
-    t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   static Core::LinAlg::Matrix<3, 3> dsigdiFgM(true);
   dsigdiFgM.multiply_nt(
@@ -988,10 +988,10 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_remodel(
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
-    t1->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
                .getRawPtr())
-    t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   static Core::LinAlg::Matrix<3, 3> dsigdiFrM(true);
   dsigdiFrM.multiply_tn(
@@ -1083,9 +1083,9 @@ void Mat::Elastic::RemodelFiber::evaluatedsigd_c(Core::LinAlg::Matrix<3, 3, T> c
   static Core::LinAlg::Matrix<3, 1> ddPIIe(true);
   static Core::LinAlg::Matrix<4, 1> dddPIIIe(true);
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiber)).getRawPtr())
-    t1->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiber)).getRawPtr())
-    t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   dsigdC.update(2.0 / CinM.dot(AM) * (ddPIIe(0) * CM.dot(AM) / CinM.dot(AM) + dPIe(0)), AM, 0.0);
 }
@@ -1100,7 +1100,7 @@ void Mat::Elastic::RemodelFiber::evaluate_evolution_equation(double& rg, double&
   evaluate_local_cauchy_stress(CM, iFinM, fiberdat.AM, fiberdat.fiber, gp, eleGID, sig);
 
   // Growth evolution equation
-  fiberdat.growth->EvaluateFunc(rg, sig, fiberdat.cur_rho[gp], fiberdat.last_rho[gp], dt, eleGID);
+  fiberdat.growth->evaluate_func(rg, sig, fiberdat.cur_rho[gp], fiberdat.last_rho[gp], dt, eleGID);
 
   static Core::LinAlg::Matrix<3, 3> dsigdCe(true);
   evaluatedsigd_ce(CM, iFgM, fiberdat.iFrM[gp], fiberdat.AM, fiberdat.fiber, gp, eleGID, dsigdCe);
@@ -1115,7 +1115,7 @@ void Mat::Elastic::RemodelFiber::evaluate_evolution_equation(double& rg, double&
   YM.multiply_nn(1.0, CeM, FrdotiFrM, 0.0);
 
   // Remodel evolution equation
-  fiberdat.remodel->EvaluateFunc(rr, sig, YM, dsigdCe, eleGID);
+  fiberdat.remodel->evaluate_func(rr, sig, YM, dsigdCe, eleGID);
 }
 
 void Mat::Elastic::RemodelFiber::evaluate_derivative_evolution_equation(double& dWidrhoi,
@@ -1135,8 +1135,8 @@ void Mat::Elastic::RemodelFiber::evaluate_derivative_evolution_equation(double& 
   evaluate_derivatives_cauchy_growth(
       CM, iFgM, dFgdrhoM, diFgdrhoM, fiberdat, gp, eleGID, dsigdrho, dsigdCedrhoM);
 
-  fiberdat.growth->EvaluatedFuncidrhoi(dWidrhoi, sig, dsigdrho, fiberdat.cur_rho[gp], dt, eleGID);
-  fiberdat.growth->EvaluatedFuncidrhoj(dWidrhoj, sig, dsigdrho, fiberdat.cur_rho[gp], dt, eleGID);
+  fiberdat.growth->evaluated_funcidrhoi(dWidrhoi, sig, dsigdrho, fiberdat.cur_rho[gp], dt, eleGID);
+  fiberdat.growth->evaluated_funcidrhoj(dWidrhoj, sig, dsigdrho, fiberdat.cur_rho[gp], dt, eleGID);
 
   // Derivative of growth evolution eq. w.r.t. the inelastic remodel stretch
   static Core::LinAlg::Matrix<3, 3> dsigdCedlambrM(true);
@@ -1183,7 +1183,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivative_evolution_equation(double& 
   dYdrhoM.multiply_nn(1.0, tmp1, FrdotiFrM, 0.0);
   dYdrhoM.multiply_tn(1.0, tmp1, FrdotiFrM, 1.0);
 
-  fiberdat.remodel->EvaluatedFuncidrho(
+  fiberdat.remodel->evaluated_funcidrho(
       dEdrho, sig, dsigdrho, YM, dYdrhoM, dsigdCeM, dsigdCedrhoM, eleGID);
 }
 
@@ -1201,7 +1201,7 @@ void Mat::Elastic::RemodelFiber::evaluated_evolution_equationd_c(Core::LinAlg::M
   static Core::LinAlg::Matrix<6, 1> dsigdCv(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(dsigdC, dsigdCv);
 
-  fiberdat.growth->EvaluatedFuncidC(dWdC, dsigdCv, fiberdat.cur_rho[gp], dt, eleGID);
+  fiberdat.growth->evaluated_funcid_c(dWdC, dsigdCv, fiberdat.cur_rho[gp], dt, eleGID);
 
 
   // Remodel law
@@ -1234,7 +1234,7 @@ void Mat::Elastic::RemodelFiber::evaluated_evolution_equationd_c(Core::LinAlg::M
   iFrTFrdotTiFinTM.multiply_tt(1.0, FrdotiFrM, iFinM, 0.0);
   Mat::add_left_non_symmetric_holzapfel_product(dYdC, iFinTM, iFrTFrdotTiFinTM, 0.5);
 
-  fiberdat.remodel->EvaluatedFuncidC(
+  fiberdat.remodel->evaluated_funcid_c(
       dEdC, sig, dsigdCv, Y_strain, dYdC, dsigdCe9x1, dsigdCedC, eleGID);
 }
 
@@ -1249,7 +1249,7 @@ void Mat::Elastic::RemodelFiber::evaluated_evolution_equationdt(double& drhodt, 
   evaluate_local_cauchy_stress(CM, iFinM, fiberdat.AM, fiberdat.fiber, gp, eleGID, sig);
   cauchystress_[k][gp] = sig;
 
-  fiberdat.growth->Evaluatedrhodt(drhodt, sig, fiberdat.cur_rho[gp], eleGID);
+  fiberdat.growth->evaluatedrhodt(drhodt, sig, fiberdat.cur_rho[gp], eleGID);
 
   // Time derivative of the remodel stretch
   static Core::LinAlg::Matrix<3, 3> tmp(true);
@@ -1267,7 +1267,7 @@ void Mat::Elastic::RemodelFiber::evaluated_evolution_equationdt(double& drhodt, 
   tmp.multiply_nn(1.0, CeM, FrdotredM, 0.0);
   YredM.multiply_nn(1.0, tmp, fiberdat.iFrM[gp], 0.0);
 
-  fiberdat.remodel->Evaluatedlambrdt(dlambrdt, sig, YredM, dsigdCeM, eleGID);
+  fiberdat.remodel->evaluatedlambrdt(dlambrdt, sig, YredM, dsigdCeM, eleGID);
 }
 
 template <typename ForceAnalytical>
@@ -1324,7 +1324,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives2nd_piola_kirchhoff_growth_
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(diFgdrhoM, diFgdrho9x1);
   static Core::LinAlg::Matrix<3, 3> firstderivM(true);
   static Core::LinAlg::Matrix<6, 1> firstderivv(true);
-  firstderivM = firstderivM_fad.ConverttoDouble();
+  firstderivM = firstderivM_fad.convertto_double();
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(firstderivM, firstderivv);
   dSidrhoj.multiply_nn(1.0, dSdiFg, diFgdrho9x1, 0.0);
   dSidrhoi.update(1.0, dSidrhoj, 0.0);
@@ -1386,11 +1386,11 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives2nd_piola_kirchhoff_growth_
   static Core::LinAlg::Matrix<6, 1> stressactv(true);
   static Core::LinAlg::Matrix<6, 6> cmatact(true);
   if ((t1 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpo>(fiberdat.fiber)).getRawPtr())
-    t1->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t1->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
   else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(fiberdat.fiber))
                .getRawPtr())
   {
-    t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
+    t2->get_derivatives_aniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
     t2->evaluate_active_stress_cmat_aniso(CM, cmatact, stressactv, gp, eleGID);
     dSidrhoi.update(1.0, stressactv, 0.0);
   }
@@ -1425,7 +1425,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives2nd_piola_kirchhoff_growth_
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::Elastic::RemodelFiber::VisNames(std::map<std::string, int>& names, unsigned int p)
+void Mat::Elastic::RemodelFiber::vis_names(std::map<std::string, int>& names, unsigned int p)
 {
   std::string inelastic_defgrd = "lambda_r";
   std::string result_inelastic_defgrad;
@@ -1461,13 +1461,13 @@ void Mat::Elastic::RemodelFiber::VisNames(std::map<std::string, int>& names, uns
 
     names[result_cur_rho_col] = 1;
   }
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool Mat::Elastic::RemodelFiber::VisData(
+bool Mat::Elastic::RemodelFiber::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if ((name == "lambda_r_0_0") || (name == "lambda_r_1_0"))
@@ -1613,6 +1613,6 @@ bool Mat::Elastic::RemodelFiber::VisData(
 
   FOUR_C_THROW("The output is only implemented for four different fiber directions!!!");
   return false;
-}  // VisData()
+}  // vis_data()
 
 FOUR_C_NAMESPACE_CLOSE

@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup
 
 
   // cast first element to Beam3Base
-  beam_element_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1());
+  beam_element_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1());
 
   if (beam_element_ == nullptr)
     FOUR_C_THROW(
@@ -77,10 +77,10 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup
 
   // get radius and stress-free reference length of beam element
   radius1_ = BEAMINTERACTION::CalcEleRadius(beam_element_);
-  beamele_reflength_ = beam_element_->RefLength();
+  beamele_reflength_ = beam_element_->ref_length();
 
   // cast second element to RigidSphere
-  sphere_element_ = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(Element2());
+  sphere_element_ = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element2());
 
   if (sphere_element_ == nullptr)
     FOUR_C_THROW(
@@ -88,7 +88,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup
         " must be a Rigidsphere element!");
 
   // get radius of sphere element
-  radius2_ = sphere_element_->Radius();
+  radius2_ = sphere_element_->radius();
 
   // initialize charge conditions applied to beam and sphere elements
   chargeconds_.resize(2);
@@ -120,12 +120,12 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
   // set class variables
   if (chargeconds.size() == 2)
   {
-    if (chargeconds[0]->Type() == Core::Conditions::BeamPotential_LineChargeDensity)
+    if (chargeconds[0]->type() == Core::Conditions::BeamPotential_LineChargeDensity)
       chargeconds_[0] = chargeconds[0];
     else
       FOUR_C_THROW("Provided condition is not of correct type BeamPotential_LineChargeDensity!");
 
-    if (chargeconds[1]->Type() == Core::Conditions::RigidspherePotential_PointCharge)
+    if (chargeconds[1]->type() == Core::Conditions::RigidspherePotential_PointCharge)
       chargeconds_[1] = chargeconds[1];
     else
       FOUR_C_THROW("Provided condition is not of correct type RigidspherePotential_PointCharge!");
@@ -152,7 +152,7 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
 
   // compute the values for element residual vectors ('force') and linearizations ('stiff')
   // Todo allow for independent choice of strategy for beam-to-sphere potentials
-  switch (Params()->Strategy())
+  switch (params()->strategy())
   {
     case Inpar::BEAMPOTENTIAL::strategy_doublelengthspec_largesepapprox:
     {
@@ -217,7 +217,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     numnodalvalues>::evaluate_fpotand_stiffpot_large_sep_approx()
 {
   // get cutoff radius
-  const double cutoff_radius = Params()->CutoffRadius();
+  const double cutoff_radius = params()->cutoff_radius();
 
   // Set gauss integration rule
   Core::FE::GaussRule1D gaussrule = get_gauss_rule();
@@ -254,15 +254,15 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   int function_number = chargeconds_[0]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    q1 *= Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    q1 *= Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
   function_number = chargeconds_[1]->parameters().get<int>("funct");
 
   if (function_number != -1)
-    q2 *= Global::Problem::Instance()
-              ->FunctionById<Core::UTILS::FunctionOfTime>(function_number - 1)
+    q2 *= Global::Problem::instance()
+              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
 
@@ -272,7 +272,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
 
-  switch (Params()->PotentialType())  // Todo do we need a own Beam-to-sphere potential type here?
+  switch (params()->potential_type())  // Todo do we need a own Beam-to-sphere potential type here?
   {
     case Inpar::BEAMPOTENTIAL::beampot_surf:
       prefactor *= 2 * radius1_ * M_PI;
@@ -349,7 +349,8 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     }
 
     double q1q2_JacFac_GaussWeights =
-        q1 * q2 * BeamElement()->GetJacobiFacAtXi(gausspoints.qxg[gp1][0]) * gausspoints.qwgt[gp1];
+        q1 * q2 * beam_element()->get_jacobi_fac_at_xi(gausspoints.qxg[gp1][0]) *
+        gausspoints.qwgt[gp1];
 
     // compute fpot_tmp here, same for both element forces
     for (unsigned int i = 0; i < 3; ++i)
@@ -482,8 +483,8 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::print
 {
   check_init_setup();
 
-  out << "\nInstance of BeamToSpherePotentialPair (EleGIDs " << Element1()->Id() << " & "
-      << Element2()->Id() << "):";
+  out << "\nInstance of BeamToSpherePotentialPair (EleGIDs " << element1()->id() << " & "
+      << element2()->id() << "):";
   out << "\nbeamele dofvec: " << ele1pos_;
   out << "\nspherele dofvec: " << ele2pos_;
 
@@ -513,7 +514,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_s
     Core::FE::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
-  const Core::FE::CellType distype1 = Element1()->Shape();
+  const Core::FE::CellType distype1 = element1()->shape();
 
   if (numnodalvalues == 1)
   {
@@ -572,7 +573,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::compu
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ResetState(double time,
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::reset_state(double time,
     const std::vector<double>& centerline_dofvec_ele1,
     const std::vector<double>& centerline_dofvec_ele2)
 {

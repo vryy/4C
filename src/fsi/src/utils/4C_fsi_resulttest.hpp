@@ -69,16 +69,16 @@ namespace FSI
         ) override;
 
     //! \brief fsi version of element value tests
-    void TestElement(Input::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                                ///< number of tests with errors
-        int& test_count                           ///< number of tests performed
+    void test_element(Input::LineDefinition& res,  ///< the line definition from input file
+        int& nerr,                                 ///< number of tests with errors
+        int& test_count                            ///< number of tests performed
         ) override;
 
 
     //! \brief fsi version of special tests
-    void TestSpecial(Input::LineDefinition& res,  ///< the line definition from input file
-        int& nerr,                                ///< number of tests with errors
-        int& test_count                           ///< number of tests performed
+    void test_special(Input::LineDefinition& res,  ///< the line definition from input file
+        int& nerr,                                 ///< number of tests with errors
+        int& test_count                            ///< number of tests performed
         ) override;
 
    private:

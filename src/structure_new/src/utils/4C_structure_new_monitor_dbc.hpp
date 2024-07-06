@@ -77,7 +77,7 @@ namespace Solid
     void setup();
 
     /// monitor the tensile test results and write them to a text file
-    void Execute(Core::IO::DiscretizationWriter& writer);
+    void execute(Core::IO::DiscretizationWriter& writer);
 
    private:
     int get_unique_id(int tagged_id, Core::Conditions::GeometryType gtype) const;
@@ -130,7 +130,7 @@ namespace Solid
         const Core::LinAlg::Matrix<DIM, 1>& rmoment, const double& area_ref,
         const double& area_cur) const;
 
-    inline const Epetra_Comm& comm() const;
+    inline const Epetra_Comm& get_comm() const;
 
     inline void throw_if_not_init() const { FOUR_C_ASSERT(isinit_, "Call init() first!"); }
 

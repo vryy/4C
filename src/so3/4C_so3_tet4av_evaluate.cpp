@@ -82,7 +82,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -98,7 +98,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -113,7 +113,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
     case calc_struct_nlnstiffmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case calc_struct_stress:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       Teuchos::RCP<std::vector<char>> stressdata =
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
@@ -167,7 +167,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       // Update of history for materials
-      SolidMaterial()->update();
+      solid_material()->update();
     }
     break;
 
@@ -175,7 +175,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      SolidMaterial()->reset_step();
+      solid_material()->reset_step();
     }
     break;
 
@@ -207,7 +207,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
   const double time = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return str_params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
@@ -240,10 +240,9 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -281,8 +280,8 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
         // function evaluation
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
-            (functnum > 0) ? Global::Problem::Instance()
-                                 ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            (functnum > 0) ? Global::Problem::instance()
+                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -306,10 +305,9 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
 void Discret::ELEMENTS::SoTet4av::init_jacobian_mapping()
 {
   Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
-  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -317,15 +315,15 @@ void Discret::ELEMENTS::SoTet4av::init_jacobian_mapping()
   Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMNOD_SOTET4av> deriv;
 
   Core::FE::IntPointsAndWeights<3> intpoints(Core::FE::GaussRule3D::tet_1point);
-  numgpt_ = intpoints.IP().nquad;
+  numgpt_ = intpoints.ip().nquad;
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
   invJ_.resize(numgpt_);
   detJ_.resize(numgpt_);
   for (int gp = 0; gp < numgpt_; ++gp)
   {
-    wgt_[gp] = (intpoints.IP().qwgt)[gp];
-    const double* gpcoord = (intpoints.IP().qxg)[gp];
+    wgt_[gp] = (intpoints.ip().qwgt)[gp];
+    const double* gpcoord = (intpoints.ip().qxg)[gp];
     for (int idim = 0; idim < 3; idim++) xsi_[gp](idim) = gpcoord[idim];
 
     Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xsi_[gp], deriv);
@@ -360,11 +358,10 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
   // current  displacements of element
   Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xrefe;
   Core::LinAlg::Matrix<NUMNOD_SOTET4av, NUMDIM_SOTET4av> xcurr;
-  Core::Nodes::Node** nodes = Nodes();
   Core::LinAlg::Matrix<NUMNOD_SOTET4av, 1> nodalVol;
   for (int i = 0; i < NUMNOD_SOTET4av; ++i)
   {
-    const auto& x = nodes[i]->X();
+    const auto& x = nodes()[i]->x();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
@@ -419,7 +416,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 
     Core::LinAlg::Matrix<6, 1> pk2;
     Core::LinAlg::Matrix<6, 6> cmat;
-    SolidMaterial()->evaluate(&defgrd_bar, &gl_bar, params, &pk2, &cmat, gp, Id());
+    solid_material()->evaluate(&defgrd_bar, &gl_bar, params, &pk2, &cmat, gp, id());
 
     // return gp stresses
     switch (iostress)
@@ -564,7 +561,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 
   if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
   {
-    double density = Material()->Density(0);  // density at the only Gauss point the material has!
+    double density = material()->density(0);  // density at the only Gauss point the material has!
     // integrate consistent mass matrix
     // jacobian is constatnt
     double ifactor, massfactor;
@@ -572,11 +569,11 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
     Core::FE::IntPointsAndWeights<3> intpoints(Core::FE::GaussRule3D::tet_4point);
     Core::LinAlg::Matrix<3, 1> xsi;
 
-    for (int gp = 0; gp < intpoints.IP().nquad; gp++)
+    for (int gp = 0; gp < intpoints.ip().nquad; gp++)
     {
-      for (int i = 0; i < NUMDIM_SOTET4av; ++i) xsi(i) = (intpoints.IP().qxg)[gp][i];
+      for (int i = 0; i < NUMDIM_SOTET4av; ++i) xsi(i) = (intpoints.ip().qxg)[gp][i];
       Core::FE::shape_function<Core::FE::CellType::tet4>(xsi_[gp], shapefct);
-      const double factor = detJ_[0] * density * (intpoints.IP().qwgt)[gp];
+      const double factor = detJ_[0] * density * (intpoints.ip().qwgt)[gp];
       for (int inod = 0; inod < 4; ++inod)
       {
         ifactor = shapefct(inod) * factor;
@@ -600,10 +597,10 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::SoTet4avType::initialize(Core::FE::Discretization& dis)
 {
-  for (int i = 0; i < dis.NumMyColElements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoTet4av*>(dis.lColElement(i));
+    if (dis.l_col_element(i)->element_type() != *this) continue;
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoTet4av*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet4av* failed");
     actele->init_jacobian_mapping();
   }

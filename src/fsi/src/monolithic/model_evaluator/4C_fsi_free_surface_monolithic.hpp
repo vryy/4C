@@ -81,7 +81,7 @@ namespace FSI
     //@}
 
     /// setup of block preconditioners
-    void SetupPreconditioner() override;
+    void setup_preconditioner() override;
 
    protected:
     /// (symmetric) Gauss-Seidel block preconditioner
@@ -151,7 +151,7 @@ namespace FSI
     //@}
 
     /// setup of block preconditioners
-    void SetupPreconditioner() override;
+    void setup_preconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
@@ -246,7 +246,7 @@ namespace FSI
     explicit MonolithicMainFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// outer level FSI time loop
-    void Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
+    void timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface);
 
     //! @name NOX methods
 
@@ -327,7 +327,7 @@ namespace FSI
     Teuchos::RCP<::NOX::Utils> utils() const { return utils_; }
 
     /// full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
 
     /// set full monolithic dof row map
     /*!
@@ -397,7 +397,7 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix() override { setup_system_matrix(*SystemMatrix()); }
+    void setup_system_matrix() override { setup_system_matrix(*system_matrix()); }
 
     /// setup composed system matrix from field solvers
     virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) = 0;
@@ -405,15 +405,15 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const = 0;
 
     /// apply infnorm scaling to linear block system
-    void scale_system(Epetra_Vector& b) override { scale_system(*SystemMatrix(), b); }
+    void scale_system(Epetra_Vector& b) override { scale_system(*system_matrix(), b); }
 
     /// undo infnorm scaling from scaled solution
     void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override
     {
-      unscale_solution(*SystemMatrix(), x, b);
+      unscale_solution(*system_matrix(), x, b);
     }
 
     //! @name Methods for infnorm-scaling of the system
@@ -473,7 +473,7 @@ namespace FSI
     void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override;
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override
     {
       return systemmatrix_;
     }
@@ -554,7 +554,7 @@ namespace NOX
           const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys);
 
       /// fetch the known Jacobian and RHS from the field solvers
-      void CaptureSystemState();
+      void capture_system_state();
 
       ::NOX::Abstract::Group::ReturnType computeF() override;
 

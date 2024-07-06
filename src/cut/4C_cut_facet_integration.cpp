@@ -59,27 +59,27 @@ void Core::Geo::Cut::FacetIntegration::is_clockwise(
   ordering_computed_ = true;
   clockwise_ = false;
 
-  bool iscut = face1_->OnCutSide();
+  bool iscut = face1_->on_cut_side();
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Case 1: Facet is formed from the cut side
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (iscut)
   {
-    Side *parent = face1_->ParentSide();
+    Side *parent = face1_->parent_side();
 
     double dotProduct = 0.0;
 
     if (not face1_->belongs_to_level_set_side())
     {
-      const std::vector<Node *> &par_nodes = parent->Nodes();
+      const std::vector<Node *> &par_nodes = parent->nodes();
       std::vector<std::vector<double>> corners(par_nodes.size());
       int mm = 0;
       for (std::vector<Node *>::const_iterator i = par_nodes.begin(); i != par_nodes.end(); i++)
       {
         Node *nod = *i;
         double x1[3];
-        nod->Coordinates(x1);
+        nod->coordinates(x1);
 
         std::vector<double> pt_local(3);
 #ifdef LOCAL
@@ -233,12 +233,12 @@ void Core::Geo::Cut::FacetIntegration::is_clockwise(
 /*-----------------------------------------------------------------------------------------------*
           Returns true if vertices of facets are ordered clockwise              sudhakar 07/12
 *------------------------------------------------------------------------------------------------*/
-bool Core::Geo::Cut::FacetIntegration::IsClockwiseOrdering()
+bool Core::Geo::Cut::FacetIntegration::is_clockwise_ordering()
 {
   if (ordering_computed_) return clockwise_;
 
   std::vector<std::vector<double>> cornersLocal;
-  face1_->CornerPointsLocal(elem1_, cornersLocal);
+  face1_->corner_points_local(elem1_, cornersLocal);
   if (eqn_plane_.size() == 0)
   {
     eqn_plane_ = equation_plane(cornersLocal);
@@ -327,7 +327,7 @@ double Core::Geo::Cut::FacetIntegration::integrate_facet()
   }
 
 #else
-  std::vector<std::vector<double>> cornersLocal = face1_->CornerPointsGlobal(elem1_, true);
+  std::vector<std::vector<double>> cornersLocal = face1_->corner_points_global(elem1_, true);
 #endif
 
   eqn_plane_ = equation_plane(cornersLocal);
@@ -593,18 +593,18 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule(
 #endif
 
     Core::FE::GaussIntegration gi_temp =
-        Core::FE::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
+        Core::FE::GaussIntegration(bcell->shape(), DIRECTDIV_GAUSSRULE);
 
-    if (bcell->Area() < REF_AREA_BCELL) continue;
+    if (bcell->area() < REF_AREA_BCELL) continue;
 
     for (Core::FE::GaussIntegration::iterator iquad = gi_temp.begin(); iquad != gi_temp.end();
          ++iquad)
     {
       double drs = 0.0;
       Core::LinAlg::Matrix<3, 1> x_gp_loc(true), normal(true);
-      const Core::LinAlg::Matrix<2, 1> eta(iquad.Point());
+      const Core::LinAlg::Matrix<2, 1> eta(iquad.point());
 
-      switch (bcell->Shape())
+      switch (bcell->shape())
       {
         case Core::FE::CellType::tri3:
         {
@@ -612,7 +612,7 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule(
           bcell->transform_local_coords<Core::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<Core::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
+          bcell->transform<Core::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
@@ -622,16 +622,16 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule(
           bcell->transform_local_coords<Core::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<Core::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
+          bcell->transform<Core::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
         default:
           FOUR_C_THROW("unsupported integration cell type");
       }
-      double wei = iquad.Weight() * drs * normalX;
+      double wei = iquad.weight() * drs * normalX;
 
-      cgp->Append(x_gp_loc, wei);
+      cgp->append(x_gp_loc, wei);
     }
   }
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
@@ -652,7 +652,7 @@ void Core::Geo::Cut::FacetIntegration::generate_divergence_cells(
   std::vector<std::vector<double>> cornersLocal;
   face1_->CornerPointsLocal(elem1_, cornersLocal);
 #else
-  std::vector<std::vector<double>> cornersLocal = face1_->CornerPointsGlobal(elem1_);
+  std::vector<std::vector<double>> cornersLocal = face1_->corner_points_global(elem1_);
 #endif
 
   eqn_plane_ = equation_plane(cornersLocal);
@@ -667,11 +667,11 @@ void Core::Geo::Cut::FacetIntegration::generate_divergence_cells(
     }
   }
 
-  if (!divergenceRule && !face1_->OnCutSide()) return;
+  if (!divergenceRule && !face1_->on_cut_side()) return;
 
   is_clockwise(eqn_plane_, cornersLocal);
 
-  std::vector<Point *> corners = face1_->CornerPoints();
+  std::vector<Point *> corners = face1_->corner_points();
 
   if (divergenceRule)
   {
@@ -691,17 +691,17 @@ void Core::Geo::Cut::FacetIntegration::generate_divergence_cells(
       std::vector<std::vector<Point *>> split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
-      if (not face1_->is_planar(mesh, face1_->CornerPoints()))
+      if (not face1_->is_planar(mesh, face1_->corner_points()))
       {
-        if (!face1_->IsTriangulated()) face1_->DoTriangulation(mesh, corners);
-        split = face1_->Triangulation();
+        if (!face1_->is_triangulated()) face1_->do_triangulation(mesh, corners);
+        split = face1_->triangulation();
       }
       // the facet is not warped
       else
       {
         // split facet
-        if (!face1_->IsFacetSplit()) face1_->SplitFacet(corners);
-        split = face1_->GetSplitCells();
+        if (!face1_->is_facet_split()) face1_->split_facet(corners);
+        split = face1_->get_split_cells();
         splitMethod = "split";
       }
 
@@ -731,7 +731,7 @@ void Core::Geo::Cut::FacetIntegration::temporary_tri3(
     const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
 {
   Core::LinAlg::SerialDenseMatrix xyz(3, 3);
-  for (int i = 0; i < 3; ++i) corners[i]->Coordinates(&xyz(0, i));
+  for (int i = 0; i < 3; ++i) corners[i]->coordinates(&xyz(0, i));
   Tri3BoundaryCell *bc = new Tri3BoundaryCell(xyz, face1_, corners);
   divCells.push_back(Teuchos::rcp(bc));
 }
@@ -744,7 +744,7 @@ void Core::Geo::Cut::FacetIntegration::temporary_quad4(
     const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
 {
   Core::LinAlg::SerialDenseMatrix xyz(3, 4);
-  for (int i = 0; i < 4; ++i) corners[i]->Coordinates(&xyz(0, i));
+  for (int i = 0; i < 4; ++i) corners[i]->coordinates(&xyz(0, i));
   Quad4BoundaryCell *bc = new Quad4BoundaryCell(xyz, face1_, corners);
   divCells.push_back(Teuchos::rcp(bc));
 }
@@ -768,16 +768,16 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule_new(
 
 #ifndef TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
   bool triangulate_and_levelset =
-      (face1_->CornerPoints().size() > 3 and face1_->belongs_to_level_set_side());
+      (face1_->corner_points().size() > 3 and face1_->belongs_to_level_set_side());
 #else
   bool triangulate_and_levelset = (face1_->CornerPoints().size() > 3);
 #endif
 
   //  if(face1_->CornerPoints().size()>3 and face1_->belongs_to_level_set_side())
-  if (triangulate_and_levelset) face1_->DoTriangulation(mesh, face1_->CornerPoints());
+  if (triangulate_and_levelset) face1_->do_triangulation(mesh, face1_->corner_points());
 
 #ifndef TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
-  triangulate_and_levelset = ((face1_->IsTriangulated() or face1_->IsFacetSplit()) and
+  triangulate_and_levelset = ((face1_->is_triangulated() or face1_->is_facet_split()) and
                               face1_->belongs_to_level_set_side());
 #else
   triangulate_and_levelset = (face1_->IsTriangulated() or face1_->IsFacetSplit());
@@ -788,10 +788,10 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule_new(
   if (triangulate_and_levelset)
   {
     std::vector<std::vector<Point *>> facet_triang;
-    if (face1_->IsTriangulated())
-      facet_triang = face1_->Triangulation();
+    if (face1_->is_triangulated())
+      facet_triang = face1_->triangulation();
     else
-      facet_triang = face1_->GetSplitCells();
+      facet_triang = face1_->get_split_cells();
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
     std::cout << "TRIANGULATED OR SPLIT FACET!" << std::endl;
 #endif
@@ -816,7 +816,7 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule_new(
     std::cout << "NOT TRIANGULATED FACET." << std::endl;
 #endif
 
-    generate_divergence_cells_new(true, mesh, divCells, face1_->CornerPoints());
+    generate_divergence_cells_new(true, mesh, divCells, face1_->corner_points());
     // generate_divergence_cells(true,mesh,divCells);
     for (unsigned i = 0; i < divCells.size(); i++)
     {
@@ -881,18 +881,18 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule_new(
 #endif
 
     Core::FE::GaussIntegration gi_temp =
-        Core::FE::GaussIntegration(bcell->Shape(), DIRECTDIV_GAUSSRULE);
+        Core::FE::GaussIntegration(bcell->shape(), DIRECTDIV_GAUSSRULE);
 
-    if (bcell->Area() < REF_AREA_BCELL) continue;
+    if (bcell->area() < REF_AREA_BCELL) continue;
 
     for (Core::FE::GaussIntegration::iterator iquad = gi_temp.begin(); iquad != gi_temp.end();
          ++iquad)
     {
       double drs = 0.0;
       Core::LinAlg::Matrix<3, 1> x_gp_loc(true), normal(true);
-      const Core::LinAlg::Matrix<2, 1> eta(iquad.Point());
+      const Core::LinAlg::Matrix<2, 1> eta(iquad.point());
 
-      switch (bcell->Shape())
+      switch (bcell->shape())
       {
         case Core::FE::CellType::tri3:
         {
@@ -900,7 +900,7 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule_new(
           bcell->transform_local_coords<Core::FE::CellType::tri3>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<Core::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
+          bcell->transform<Core::FE::CellType::tri3>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
@@ -910,18 +910,18 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule_new(
           bcell->transform_local_coords<Core::FE::CellType::quad4>(
               elem1_, eta, x_gp_loc, normal, drs, true);
 #else
-          bcell->Transform<Core::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
+          bcell->transform<Core::FE::CellType::quad4>(eta, x_gp_loc, normal, drs);
 #endif
           break;
         }
         default:
           FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-              Core::FE::CellTypeToString(bcell->Shape()).c_str());
+              Core::FE::CellTypeToString(bcell->shape()).c_str());
           exit(EXIT_FAILURE);
       }
-      double wei = iquad.Weight() * drs * normalX;
+      double wei = iquad.weight() * drs * normalX;
 
-      cgp->Append(x_gp_loc, wei);
+      cgp->append(x_gp_loc, wei);
     }
     zz++;  // Iterator of divCells.
   }
@@ -969,7 +969,7 @@ void Core::Geo::Cut::FacetIntegration::generate_divergence_cells_new(bool diverg
   for (std::vector<Point *>::const_iterator j = cornersGlobal.begin(); j != cornersGlobal.end();
        ++j)
   {
-    Core::LinAlg::Matrix<3, 1> cornersGloMatrix((*j)->X());
+    Core::LinAlg::Matrix<3, 1> cornersGloMatrix((*j)->x());
 
     std::vector<double> cornerGlobal(3);
     cornerGlobal[0] = cornersGloMatrix(0, 0);
@@ -1004,7 +1004,7 @@ void Core::Geo::Cut::FacetIntegration::generate_divergence_cells_new(bool diverg
     }
   }
 
-  if (!divergenceRule && !face1_->OnCutSide()) return;
+  if (!divergenceRule && !face1_->on_cut_side()) return;
 
   is_clockwise(eqn_plane_, cornersLocal);
 
@@ -1037,17 +1037,17 @@ void Core::Geo::Cut::FacetIntegration::generate_divergence_cells_new(bool diverg
       std::vector<std::vector<Point *>> split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
-      if (not face1_->is_planar(mesh, face1_->CornerPoints()))
+      if (not face1_->is_planar(mesh, face1_->corner_points()))
       {
-        if (!face1_->IsTriangulated()) face1_->DoTriangulation(mesh, corners);
-        split = face1_->Triangulation();
+        if (!face1_->is_triangulated()) face1_->do_triangulation(mesh, corners);
+        split = face1_->triangulation();
       }
       // the facet is not warped
       else
       {
         // split facet
-        if (!face1_->IsFacetSplit()) face1_->SplitFacet(corners);
-        split = face1_->GetSplitCells();
+        if (!face1_->is_facet_split()) face1_->split_facet(corners);
+        split = face1_->get_split_cells();
         splitMethod = "split";
       }
 

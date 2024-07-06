@@ -93,7 +93,7 @@ namespace ParticleRigidBody
     /*!
      * \brief Write the visualization files to disk
      */
-    void WriteToDisk(const double time, const unsigned int timestep_number);
+    void write_to_disk(const double time, const unsigned int timestep_number);
 
    private:
     //! communicator

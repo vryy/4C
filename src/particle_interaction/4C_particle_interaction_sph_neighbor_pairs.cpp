@@ -54,7 +54,7 @@ void ParticleInteraction::SPHNeighborPairs::setup(
   kernel_ = kernel;
 
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   // allocate memory to hold index of particle pairs for each type
   indexofparticlepairs_.resize(typevectorsize, std::vector<std::vector<int>>(typevectorsize));
@@ -125,8 +125,8 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs()
   particlepairdata_.clear();
 
   // clear index of particle pairs for each type
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
-    for (const auto& type_j : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
+    for (const auto& type_j : particlecontainerbundle_->get_particle_types())
       indexofparticlepairs_[type_i][type_j].clear();
 
   // index of particle pairs
@@ -157,11 +157,11 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs()
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
-    const double* pos_j = container_j->GetPtrToState(PARTICLEENGINE::Position, particle_j);
-    const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
+    const double* pos_j = container_j->get_ptr_to_state(PARTICLEENGINE::Position, particle_j);
+    const double* rad_j = container_j->get_ptr_to_state(PARTICLEENGINE::Radius, particle_j);
 
     // vector from particle i to j
     double r_ji[3];
@@ -206,10 +206,10 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs()
       if (absdist < rad_i[0])
       {
         // evaluate kernel
-        particlepair.Wij_ = kernel_->W(absdist, rad_i[0]);
+        particlepair.Wij_ = kernel_->w(absdist, rad_i[0]);
 
         // evaluate first derivative of kernel
-        particlepair.dWdrij_ = kernel_->dWdrij(absdist, rad_i[0]);
+        particlepair.dWdrij_ = kernel_->d_wdrij(absdist, rad_i[0]);
       }
 
       // particle i within support radius of owned particle j
@@ -227,10 +227,10 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs()
         else
         {
           // evaluate kernel
-          particlepair.Wji_ = kernel_->W(absdist, rad_j[0]);
+          particlepair.Wji_ = kernel_->w(absdist, rad_j[0]);
 
           // evaluate first derivative of kernel
-          particlepair.dWdrji_ = kernel_->dWdrij(absdist, rad_j[0]);
+          particlepair.dWdrji_ = kernel_->d_wdrij(absdist, rad_j[0]);
         }
       }
     }
@@ -245,7 +245,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
   particlewallpairdata_.clear();
 
   // clear index of particle wall pairs for each type
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
     indexofparticlewallpairs_[type_i].clear();
 
   // relate particles to index of particle-wall pairs (considering object type of contact point)
@@ -269,14 +269,14 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
     const Core::LinAlg::Matrix<3, 1> pos_i(
-        container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
+        container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
     Core::Elements::Element* ele = potentialneighbors.second;
@@ -334,7 +334,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
       Core::LinAlg::Matrix<2, 1> elecoords(true);
       const Core::LinAlg::SerialDenseMatrix xyze(
           Core::Geo::getCurrentNodalPositions(ele, colelenodalpos));
-      Core::Geo::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
+      Core::Geo::CurrentToSurfaceElementCoordinates(ele->shape(), xyze, closestpos, elecoords);
 
       // set parameter space coordinates of wall contact point
       particlewallpair.elecoords_[0] = elecoords(0, 0);
@@ -370,7 +370,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
         particlecontainerbundle_->get_specific_container(type_i, status_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_i = container_i->get_ptr_to_state(PARTICLEENGINE::Radius, particle_i);
 
     // define tolerance dependent on the particle radius
     const double adaptedtol = 1.0e-7 * rad_i[0];

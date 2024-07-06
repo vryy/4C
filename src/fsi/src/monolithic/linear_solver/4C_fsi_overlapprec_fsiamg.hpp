@@ -57,7 +57,7 @@ namespace FSI
     //@}
 
     /// setup of block preconditioners
-    void SetupPreconditioner() override;
+    void setup_preconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
@@ -134,22 +134,22 @@ namespace FSI
       }
 
       //! Return number of levels
-      inline int Nlevel() { return nlevel_; }
+      inline int nlevel() { return nlevel_; }
 
       //! Return set of optimal algorithm types
-      inline std::vector<std::string>& Type() { return besttype_; }
+      inline std::vector<std::string>& type() { return besttype_; }
 
       //! Return set of optimal damping paramters
-      inline std::vector<double>& Damp() { return bestdamp_; }
+      inline std::vector<double>& damp() { return bestdamp_; }
 
       //! Return set of optimal polynomial degrees
-      inline std::vector<int>& Poly() { return bestpoly_; }
+      inline std::vector<int>& poly() { return bestpoly_; }
 
       //! Return set of optimal number of sweeps
-      inline std::vector<int>& Sweeps() { return bestsweeps_; }
+      inline std::vector<int>& sweeps() { return bestsweeps_; }
 
       //! Access the underlying algorithmic operator
-      inline std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& S() { return s_; }
+      inline std::vector<Teuchos::RCP<MLAPI::InverseOperator>>& s() { return s_; }
 
      private:
       int nlevel_;                         ///< number of levels

@@ -67,7 +67,7 @@ namespace NTS
      \brief Interpolate for nts algorithm
 
      */
-    bool Interpolate(Mortar::Node& snode, std::vector<Mortar::Element*> meles);
+    bool interpolate(Mortar::Node& snode, std::vector<Mortar::Element*> meles);
 
     /*!
      \brief Interpolate temperature of master side at a slave node
@@ -80,7 +80,7 @@ namespace NTS
      \brief lin 3D projection
 
      */
-    void DerivXiGP3D(Mortar::Element& sele, Mortar::Element& mele, double* sxigp, double* mxigp,
+    void deriv_xi_g_p3_d(Mortar::Element& sele, Mortar::Element& mele, double* sxigp, double* mxigp,
         const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
         std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi, double& alpha);
 
@@ -88,7 +88,7 @@ namespace NTS
      \brief node-wise gap calculation for 3D problems
 
      */
-    void nwGap3D(CONTACT::Node& mynode, Mortar::Element& mele,
+    void nw_gap3_d(CONTACT::Node& mynode, Mortar::Element& mele,
         Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
         std::vector<Core::Gen::Pairedvector<int, double>>& dmxi, double* gpn);
 
@@ -208,13 +208,13 @@ namespace NTS
     virtual ~MTInterpolator() = default;
     //! @name Access methods
     /// Internal implementation class
-    static MTInterpolator* Impl(std::vector<Mortar::Element*> meles);
+    static MTInterpolator* impl(std::vector<Mortar::Element*> meles);
 
     /*!
      \brief Interpolate for nts algorithm
 
      */
-    virtual void Interpolate(Mortar::Node& snode, std::vector<Mortar::Element*> meles) = 0;
+    virtual void interpolate(Mortar::Node& snode, std::vector<Mortar::Element*> meles) = 0;
   };
 
 
@@ -228,7 +228,7 @@ namespace NTS
     MTInterpolatorCalc();
 
     /// Singleton access method
-    static MTInterpolatorCalc<distype_m>* Instance(Core::UTILS::SingletonAction action);
+    static MTInterpolatorCalc<distype_m>* instance(Core::UTILS::SingletonAction action);
 
     //! nm_: number of master element nodes
     static constexpr int nm_ = Core::FE::num_nodes<distype_m>;
@@ -240,7 +240,7 @@ namespace NTS
      \brief Interpolate for nts problems
 
      */
-    void Interpolate(Mortar::Node& snode, std::vector<Mortar::Element*> meles) override;
+    void interpolate(Mortar::Node& snode, std::vector<Mortar::Element*> meles) override;
 
    private:
     /*!

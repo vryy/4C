@@ -40,7 +40,7 @@ namespace Discret
 
      public:
       //! Singleton access method
-      static ScaTraEleCalcChemoReac<distype, probdim>* Instance(
+      static ScaTraEleCalcChemoReac<distype, probdim>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      protected:

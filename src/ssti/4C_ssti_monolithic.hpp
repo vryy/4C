@@ -77,10 +77,10 @@ namespace SSTI
    public:
     explicit SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
     //! get vector containing positions within system matrix for specific subproblem
-    std::vector<int> GetBlockPositions(Subproblem subproblem) const;
+    std::vector<int> get_block_positions(Subproblem subproblem) const;
 
     //! get position within global dof map for specific subproblem
-    int GetProblemPosition(Subproblem subproblem) const;
+    int get_problem_position(Subproblem subproblem) const;
 
     //! Setup of algorithm
     //@{
@@ -88,26 +88,26 @@ namespace SSTI
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& thermoparams,
         const Teuchos::ParameterList& structparams) override;
     void setup() override;
-    void SetupSystem() override;
+    void setup_system() override;
     //@}
 
     //! Loop over all time steps
-    void Timeloop() override;
+    void timeloop() override;
 
     //! return all maps
-    Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_maps_mono_; };
+    Teuchos::RCP<SSTI::SSTIMapsMono> all_maps() const { return ssti_maps_mono_; };
 
     //! number of current Newton Iteration
-    unsigned int NewtonIteration() const { return Iter(); };
+    unsigned int newton_iteration() const { return iter(); };
 
     //! state vectors
     //@{
-    Teuchos::RCP<Epetra_Vector> Increment() const { return increment_; };
-    Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
+    Teuchos::RCP<Epetra_Vector> increment() const { return increment_; };
+    Teuchos::RCP<Epetra_Vector> residual() const { return residual_; };
     //}
 
     //! statistics for evaluation and solving
-    std::vector<double> TimeStatistics() const
+    std::vector<double> time_statistics() const
     {
       return {dtevaluate_ + dtassemble_, dtsolve_, dtnewton_};
     };

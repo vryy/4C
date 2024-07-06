@@ -127,7 +127,7 @@ void Mat::Anisotropy::read_anisotropy_from_parameter_list(const Teuchos::Paramet
 
     gp_fibers_.resize(numgp_);
 
-    for (const auto& fiber : fiberHolder.GetFibers())
+    for (const auto& fiber : fiberHolder.get_fibers())
     {
       insert_fibers(fiber);
     }

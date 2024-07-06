@@ -34,36 +34,36 @@ double ScaTra::ElchResultTest::result_special(const std::string quantity) const
 
   if (quantity == "meanc" or quantity == "meanc1" or quantity == "meanc2")
   {
-    auto it = elch_tim_int()->ElectrodeConc().begin();
+    auto it = elch_tim_int()->electrode_conc().begin();
     if (quantity == "meanc2") ++it;
     result = it->second;
   }
   else if (quantity == "meaneta" or quantity == "meaneta1" or quantity == "meaneta2")
   {
-    auto it = elch_tim_int()->ElectrodeEta().begin();
+    auto it = elch_tim_int()->electrode_eta().begin();
     if (quantity == "meaneta2") ++it;
     result = it->second;
   }
   else if (quantity == "meancur" or quantity == "meancur1" or quantity == "meancur2")
   {
-    auto it = elch_tim_int()->ElectrodeCurr().begin();
+    auto it = elch_tim_int()->electrode_curr().begin();
     if (quantity == "meancur2") ++it;
     result = it->second;
   }
   else if (quantity == "soc" or quantity == "soc1" or quantity == "soc2")
   {
-    auto it = elch_tim_int()->ElectrodeSOC().begin();
+    auto it = elch_tim_int()->electrode_soc().begin();
     if (quantity == "soc2") ++it;
     result = it->second;
   }
   else if (quantity == "c-rate" or quantity == "c-rate1" or quantity == "c-rate2")
   {
-    auto it = elch_tim_int()->ElectrodeCRates().begin();
+    auto it = elch_tim_int()->electrode_c_rates().begin();
     if (quantity == "c-rate2") ++it;
     result = it->second;
   }
   else if (quantity == "cellvoltage")
-    result = elch_tim_int()->CellVoltage();
+    result = elch_tim_int()->cell_voltage();
   else if (quantity == "temperature")
     result = elch_tim_int()->get_current_temperature();
   else

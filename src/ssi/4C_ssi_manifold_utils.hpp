@@ -85,28 +85,28 @@ namespace SSI
     bool check_and_set_size_of_matrix_graph(BlockMatrixType block, int size);
 
     //! Kinetics condition on scatra dis
-    Core::Conditions::Condition* ConditionKinetics() const { return condition_kinetics_; }
+    Core::Conditions::Condition* condition_kinetics() const { return condition_kinetics_; }
 
     //! manifold condition
-    Core::Conditions::Condition* ConditionManifold() const { return condition_manifold_; }
+    Core::Conditions::Condition* condition_manifold() const { return condition_manifold_; }
 
     //! coupling adapter between manifold (slave) and scatra (master)
-    Teuchos::RCP<Core::Adapter::Coupling> CouplingAdapter() const { return coupling_adapter_; }
+    Teuchos::RCP<Core::Adapter::Coupling> coupling_adapter() const { return coupling_adapter_; }
 
     //! inverse of thickness of manifold
-    double InvThickness() const { return inv_thickness_; }
+    double inv_thickness() const { return inv_thickness_; }
 
     //! condition ID of manifold condition
-    int ManifoldConditionID() const { return manifold_condition_id_; }
+    int manifold_condition_id() const { return manifold_condition_id_; }
 
     //! from master to slave side
-    Teuchos::RCP<Core::Adapter::CouplingMasterConverter> MasterConverter() const
+    Teuchos::RCP<Core::Adapter::CouplingMasterConverter> master_converter() const
     {
       return master_converter_;
     }
 
     //! condition ID of kinetics condition
-    int KineticsConditionID() const { return kinetics_condition_id_; }
+    int kinetics_condition_id() const { return kinetics_condition_id_; }
 
     //! Map exctractor for dofs in this manifold condition
     Teuchos::RCP<Core::LinAlg::MapExtractor> manifold_map_extractor() const
@@ -115,7 +115,7 @@ namespace SSI
     }
 
     //! Map exctractor for dofs in this kinetics condition
-    Teuchos::RCP<Core::LinAlg::MapExtractor> ScaTraMapExtractor() const
+    Teuchos::RCP<Core::LinAlg::MapExtractor> sca_tra_map_extractor() const
     {
       return scatra_map_extractor_;
     }
@@ -171,7 +171,7 @@ namespace SSI
     //@}
 
     //! write inflow fluxes to csv file
-    bool DoOutput() const { return do_output_; }
+    bool do_output() const { return do_output_; }
 
     //! Evaluate everything including coupling
     void evaluate();
@@ -181,8 +181,8 @@ namespace SSI
 
     //! get all RHS
     //@{
-    Teuchos::RCP<Epetra_Vector> RHSManifold() { return rhs_manifold_; }
-    Teuchos::RCP<Epetra_Vector> RHSScaTra() { return rhs_scatra_; }
+    Teuchos::RCP<Epetra_Vector> rhs_manifold() { return rhs_manifold_; }
+    Teuchos::RCP<Epetra_Vector> rhs_sca_tra() { return rhs_scatra_; }
     //@}
 
     //! get all matrices
@@ -191,7 +191,10 @@ namespace SSI
     {
       return systemmatrix_manifold_;
     }
-    Teuchos::RCP<Core::LinAlg::SparseOperator> SystemMatrixScaTra() { return systemmatrix_scatra_; }
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix_sca_tra()
+    {
+      return systemmatrix_scatra_;
+    }
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> matrix_manifold_scatra()
     {
@@ -368,7 +371,7 @@ namespace SSI
         bool do_uncomplete) = 0;
 
     //! coupling adpaters, maps, and extractors for mesh tying
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> SSIMeshTying() const { return ssi_meshtying_; }
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_mesh_tying() const { return ssi_meshtying_; }
 
    protected:
     //! should meshtying between manifold fields be applied?

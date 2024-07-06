@@ -110,7 +110,7 @@ namespace Core::Geo
 
         const int* operator()() const { return points_; }
 
-        bool Equals(const std::vector<int>& points)
+        bool equals(const std::vector<int>& points)
         {
           for (std::vector<int>::const_iterator i = points.begin(); i != points.end(); ++i)
           {
@@ -120,7 +120,7 @@ namespace Core::Geo
           return true;
         }
 
-        bool Contains(int p) { return std::find(points_, points_ + length, p) != points_ + length; }
+        bool contains(int p) { return std::find(points_, points_ + length, p) != points_ + length; }
 
         Handle<length + 1> operator+(int p) const
         {
@@ -159,25 +159,25 @@ namespace Core::Geo
 
         const int* operator()() const { return handle_(); }
 
-        bool Equals(const std::vector<int>& points) { return handle_.Equals(points); }
+        bool equals(const std::vector<int>& points) { return handle_.equals(points); }
 
-        bool Contains(int p) { return handle_.Contains(p); }
+        bool contains(int p) { return handle_.Contains(p); }
 
-        int Id() const { return id_; }
+        int id() const { return id_; }
 
-        void SetId(int i) { id_ = i; }
+        void set_id(int i) { id_ = i; }
 
-        const Handle<length>& GetHandle() const { return handle_; }
+        const Handle<length>& get_handle() const { return handle_; }
 
-        void SetHandle(const Handle<length>& handle) { handle_ = handle; }
+        void set_handle(const Handle<length>& handle) { handle_ = handle; }
 
-        void AddParent(Entity<length + 1>* parent)
+        void add_parent(Entity<length + 1>* parent)
         {
           parents_.push_back(parent);
-          parent->AddChild(this);
+          parent->add_child(this);
         }
 
-        void RemoveParent(Entity<length + 1>* parent)
+        void remove_parent(Entity<length + 1>* parent)
         {
           typename std::vector<Entity<length + 1>*>::iterator i =
               std::find(parents_.begin(), parents_.end(), parent);
@@ -187,9 +187,9 @@ namespace Core::Geo
           }
         }
 
-        void AddChild(Entity<length - 1>* child) { children_.push_back(child); }
+        void add_child(Entity<length - 1>* child) { children_.push_back(child); }
 
-        void RemoveChild(Entity<length - 1>* child)
+        void remove_child(Entity<length - 1>* child)
         {
           typename std::vector<Entity<length - 1>*>::iterator i =
               std::find(children_.begin(), children_.end(), child);
@@ -200,20 +200,20 @@ namespace Core::Geo
           // child->RemoveParent( this );
         }
 
-        void Disconnect()
+        void disconnect()
         {
           for (typename std::vector<Entity<length - 1>*>::const_iterator i = children_.begin();
                i != children_.end(); ++i)
           {
             Entity<length - 1>* child = *i;
-            child->RemoveParent(this);
+            child->remove_parent(this);
           }
           children_.clear();
           for (typename std::vector<Entity<length + 1>*>::const_iterator i = parents_.begin();
                i != parents_.end(); ++i)
           {
             Entity<length + 1>* parent = *i;
-            parent->RemoveChild(this);
+            parent->remove_child(this);
           }
           parents_.clear();
         }
@@ -222,7 +222,7 @@ namespace Core::Geo
         /// This creats from, for instance a tet, 4 surfaces and also stores handle to access
         /// "parent" element. Same thing is done for a surface where lines are created as children.
         /// Or at least as far as my understanding goes.... //m.w
-        void CreateChildren(std::map<Handle<length - 1>, Entity<length - 1>>& entities)
+        void create_children(std::map<Handle<length - 1>, Entity<length - 1>>& entities)
         {
           for (int i = 0; i < length; ++i)
           {
@@ -231,15 +231,15 @@ namespace Core::Geo
                 entities.find(h);
             if (j != entities.end())
             {
-              j->second.AddParent(this);
+              j->second.add_parent(this);
             }
             else
             {
               int id = entities.size();
               Entity<length - 1>& e = entities[h];
-              e.SetId(id);
-              e.SetHandle(h);
-              e.AddParent(this);
+              e.set_id(id);
+              e.set_handle(h);
+              e.add_parent(this);
             }
           }
         }
@@ -247,12 +247,12 @@ namespace Core::Geo
         /* Do all the points in this tri cut the facet?
          * I.e. make sure all points are on the facet. Otherwise return false!
          */
-        bool IsCut(const std::vector<Point*>& points, Facet* facet)
+        bool is_cut(const std::vector<Point*>& points, Facet* facet)
         {
           for (int i = 0; i < length; ++i)
           {
             Point* p = points[handle_[i]];
-            if (not p->IsCut(facet))
+            if (not p->is_cut(facet))
             {
               return false;
             }
@@ -264,9 +264,9 @@ namespace Core::Geo
         \brief Stores connectivity information i.e. surface information for a line (what
         tet-surfaces a line is contributing to).
          */
-        const std::vector<Entity<length + 1>*>& Parents() const { return parents_; }
+        const std::vector<Entity<length + 1>*>& parents() const { return parents_; }
 
-        const std::vector<Entity<length - 1>*>& Children() const { return children_; }
+        const std::vector<Entity<length - 1>*>& children() const { return children_; }
 
        private:
         int id_;
@@ -292,16 +292,16 @@ namespace Core::Geo
       {
        public:
         /// Is the domain empty?
-        bool Empty() const { return members_.size() == 0; }
+        bool empty() const { return members_.size() == 0; }
 
         /// Members contains for a TET-domain the TETs and for a TRI-domain the TRIs
-        PlainEntitySet<length>& Members() { return members_; }
+        PlainEntitySet<length>& members() { return members_; }
 
         /// Border contains for a TET-domain the surfaces and for a TRI-domain the lines
-        PlainEntitySet<length - 1>& Border() { return border_; }
+        PlainEntitySet<length - 1>& border() { return border_; }
 
         /// Does this member already exist in the domain?
-        bool Contains(Entity<length>* m) { return members_.count(m) > 0; }
+        bool contains(Entity<length>* m) { return members_.count(m) > 0; }
 
         /* Add a tri or a tet to the domain (either a mesh containing TETs for a cell or a mesh
          * containing TRIs for a surface). Check the border of the added element: If it is on the
@@ -311,9 +311,9 @@ namespace Core::Geo
          * but one of its children (tri or line) have already been added to done_border_ throw an
          * error as this can not happen.
          */
-        void Add(Entity<length>* m, bool check_done = true)
+        void add(Entity<length>* m, bool check_done = true)
         {
-          const typename std::vector<Entity<length - 1>*>& bs = m->Children();
+          const typename std::vector<Entity<length - 1>*>& bs = m->children();
           for (typename std::vector<Entity<length - 1>*>::const_iterator i = bs.begin();
                i != bs.end(); ++i)
           {
@@ -343,7 +343,7 @@ namespace Core::Geo
               seed_domain() has already been called, i.e. tets associated with boundary-tris are
           already covered.
          */
-        void Fill()
+        void fill()
         {
           if (members_.size() == 0)
           {
@@ -359,12 +359,12 @@ namespace Core::Geo
           {
             Entity<length - 1>* b = *i;
             bool skip = false;
-            const std::vector<Entity<length>*>& ms = b->Parents();
+            const std::vector<Entity<length>*>& ms = b->parents();
             for (typename std::vector<Entity<length>*>::const_iterator i = ms.begin();
                  i != ms.end(); ++i)
             {
               Entity<length>* m = *i;
-              if (Contains(m))
+              if (contains(m))
               {
                 skip = true;
                 break;
@@ -394,7 +394,7 @@ namespace Core::Geo
             Entity<length>* m = *stack.begin();
             stack.erase(m);
 
-            Add(m, false);
+            add(m, false);
 
             push_new_neighbors(stack, m);
           }
@@ -413,19 +413,19 @@ namespace Core::Geo
          */
         void push_new_neighbors(PlainEntitySet<length>& stack, Entity<length>* m)
         {
-          const std::vector<Entity<length - 1>*>& bs = m->Children();
+          const std::vector<Entity<length - 1>*>& bs = m->children();
           for (typename std::vector<Entity<length - 1>*>::const_iterator i = bs.begin();
                i != bs.end(); ++i)
           {
             Entity<length - 1>* b = *i;
             if (done_border_.count(b) == 0)
             {
-              const std::vector<Entity<length>*>& ms = b->Parents();
+              const std::vector<Entity<length>*>& ms = b->parents();
               for (typename std::vector<Entity<length>*>::const_iterator i = ms.begin();
                    i != ms.end(); ++i)
               {
                 Entity<length>* m = *i;
-                if (not Contains(m))
+                if (not contains(m))
                 {
                   stack.insert(m);
                 }
@@ -451,12 +451,12 @@ namespace Core::Geo
          *       If Yes -> Add the created tris.
          *                 return true
          */
-        bool Fill(TetMesh* tm, Facet* facet)
+        bool fill(TetMesh* tm, Facet* facet)
         {
           Domain<3> domain;
-          PlainEntitySet<2>& lines = domain.Border();
+          PlainEntitySet<2>& lines = domain.border();
 
-          if (FindTrace(tm, facet, lines))
+          if (find_trace(tm, facet, lines))
           {
             if (lines.size() < 3)
             {
@@ -481,7 +481,7 @@ namespace Core::Geo
                 if (tri != nullptr)
                 {
                   match = true;
-                  domain.Add(tri);
+                  domain.add(tri);
                   break;
                 }
               }
@@ -492,7 +492,7 @@ namespace Core::Geo
               }
             }
 
-            std::swap(domain.Members(), tris_);
+            std::swap(domain.members(), tris_);
 
             return true;
           }
@@ -507,10 +507,10 @@ namespace Core::Geo
                                    Probably the tetmesh runs through a cut-side, as such all facet
            lines will not be included.
          */
-        bool FindTrace(TetMesh* tm, Facet* facet, PlainEntitySet<2>& trace_lines)
+        bool find_trace(TetMesh* tm, Facet* facet, PlainEntitySet<2>& trace_lines)
         {
           std::map<std::pair<Point*, Point*>, plain_facet_set> lines;
-          facet->GetLines(lines);
+          facet->get_lines(lines);
 
           for (std::map<std::pair<Point*, Point*>, plain_facet_set>::iterator i = lines.begin();
                i != lines.end(); ++i)
@@ -531,7 +531,7 @@ namespace Core::Geo
           return true;
         }
 
-        const PlainEntitySet<3>& SurfaceTris() const { return tris_; }
+        const PlainEntitySet<3>& surface_tris() const { return tris_; }
 
        private:
         /* See if there exists an unique tri for this line. Taking into consideration not to add
@@ -546,13 +546,13 @@ namespace Core::Geo
         Entity<3>* find_unique_tri(TetMesh* tm, Facet* facet, Domain<3>& domain, Entity<2>* l)
         {
           Entity<3>* tri = nullptr;
-          const std::vector<Entity<3>*>& tris = l->Parents();  // TRIs connected to this line.
+          const std::vector<Entity<3>*>& tris = l->parents();  // TRIs connected to this line.
           for (std::vector<Entity<3>*>::const_iterator i = tris.begin(); i != tris.end(); ++i)
           {
             Entity<3>* t = *i;
-            if (not domain.Contains(t))
+            if (not domain.contains(t))
             {
-              if (t->IsCut(tm->points_, facet))
+              if (t->is_cut(tm->points_, facet))
               {
                 if (tri == nullptr)
                 {
@@ -603,13 +603,13 @@ namespace Core::Geo
        */
       TetMesh(const std::vector<Point*>& points, const plain_facet_set& facets, bool project);
 
-      void CreateElementTets(Mesh& mesh, Element* element, const plain_volumecell_set& cells,
+      void create_element_tets(Mesh& mesh, Element* element, const plain_volumecell_set& cells,
           const plain_side_set& cut_sides, int count, bool tetcellsonly = false);
 
       void create_volume_cell_tets();
 
       /// Return the list of tets.
-      const std::vector<std::vector<int>>& Tets() const { return tets_; }
+      const std::vector<std::vector<int>>& tets() const { return tets_; }
 
       //       /// Return the tris for each facet
       //       const std::map<Facet*, std::vector<Point*> > & SidesXYZ() const { return sides_xyz_;
@@ -658,10 +658,10 @@ namespace Core::Geo
 
       void swap_tet_handle(Entity<4>* tet, const Handle<4>& handle)
       {
-        tet->Disconnect();
-        tet->SetHandle(handle);
+        tet->disconnect();
+        tet->set_handle(handle);
 
-        std::vector<int>& t = tets_[tet->Id()];
+        std::vector<int>& t = tets_[tet->id()];
         t.clear();
         std::copy(handle(), handle() + 4, std::back_inserter(t));
       }
@@ -713,7 +713,7 @@ namespace Core::Geo
       bool fill_facet(Facet* f)
       {
         FacetMesh& cf = facet_mesh_[f];
-        if (not cf.Fill(this, f))
+        if (not cf.fill(this, f))
         {
           facet_mesh_.clear();
           return false;
@@ -740,21 +740,21 @@ namespace Core::Geo
        */
       void seed_domain(Domain<4>& cell_domain, Facet* f, bool force = false)
       {
-        if (force or not f->OnBoundaryCellSide())
+        if (force or not f->on_boundary_cell_side())
         {
           FacetMesh& fm = facet_mesh_[f];
-          const PlainEntitySet<3>& tris = fm.SurfaceTris();
+          const PlainEntitySet<3>& tris = fm.surface_tris();
 
           for (PlainEntitySet<3>::const_iterator i = tris.begin(); i != tris.end(); ++i)
           {
             Entity<3>* t = *i;
-            const std::vector<Entity<4>*>& tets = t->Parents();
+            const std::vector<Entity<4>*>& tets = t->parents();
 #ifdef NEW_SEED_DOMAIN
             Entity<4>* tet_accepted = tets[0];
             int possible_tets = tets.size();
             for (unsigned j = 0; j < tets.size(); j++)
             {
-              if (not accept_tets_[tets[j]->Id()])
+              if (not accept_tets_[tets[j]->id()])
                 possible_tets--;
               else
                 tet_accepted = tets[j];
@@ -767,9 +767,9 @@ namespace Core::Geo
             //  tets which are not considered here.
             if (possible_tets == 1)
             {
-              if (not cell_domain.Contains(tet_accepted))
+              if (not cell_domain.contains(tet_accepted))
               {
-                cell_domain.Add(tet_accepted);
+                cell_domain.add(tet_accepted);
               }
             }
             // In the case a tri is created on the boundary of the element but is so small it
@@ -778,9 +778,9 @@ namespace Core::Geo
             {
               if (tets.size() == 1)
               {
-                if (not cell_domain.Contains(tets[0]))
+                if (not cell_domain.contains(tets[0]))
                 {
-                  cell_domain.Add(tets[0]);
+                  cell_domain.add(tets[0]);
                 }
               }
             }

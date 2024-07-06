@@ -13,9 +13,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-void CONTACT::NitscheStrategySsiElch::Integrate(const CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategySsiElch::integrate(const CONTACT::ParamsInterface& cparams)
 {
-  CONTACT::NitscheStrategy::Integrate(cparams);
+  CONTACT::NitscheStrategy::integrate(cparams);
 
   fs_ = create_rhs_block_ptr(CONTACT::VecBlockType::elch);
   kss_ = create_matrix_block_ptr(CONTACT::MatBlockType::elch_elch);

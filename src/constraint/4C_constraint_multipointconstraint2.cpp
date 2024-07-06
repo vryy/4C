@@ -39,10 +39,10 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Core::FE::Discretization>
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
     Teuchos::RCP<Epetra_Map> newcolnodemap =
         Core::Rebalance::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
-    actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
+    actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
     Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
         Teuchos::rcp(new Core::DOFSets::TransparentDofSet(actdisc_));
-    (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
+    (constraintdis_.find(0)->second)->replace_dof_set(newdofset);
     newdofset = Teuchos::null;
     (constraintdis_.find(0)->second)->fill_complete();
   }
@@ -63,7 +63,7 @@ void CONSTRAINTS::MPConstraint2::initialize(const double& time)
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
     {
       activecons_.find(condID)->second = true;
-      if (actdisc_->Comm().MyPID() == 0)
+      if (actdisc_->get_comm().MyPID() == 0)
       {
         std::cout << "Encountered another active condition (Id = " << condID
                   << ")  for restart time t = " << time << std::endl;
@@ -100,7 +100,7 @@ void CONSTRAINTS::MPConstraint2::initialize(
       IDs[i] = MPCcondID - mid;
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second = true;
-      if (actdisc_->Comm().MyPID() == 0)
+      if (actdisc_->get_comm().MyPID() == 0)
       {
         std::cout << "Encountered a new active condition (Id = " << condID
                   << ")  at time t = " << time << std::endl;
@@ -109,7 +109,7 @@ void CONSTRAINTS::MPConstraint2::initialize(
   }
   // replace systemvector by the given amplitude values
   // systemvector is supposed to be the vector with initial values of the constraints
-  if (actdisc_->Comm().MyPID() == 0)
+  if (actdisc_->get_comm().MyPID() == 0)
   {
     systemvector->ReplaceGlobalValues(amplit.size(), amplit.data(), IDs.data());
   }
@@ -125,7 +125,7 @@ void CONSTRAINTS::MPConstraint2::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  switch (Type())
+  switch (type())
   {
     case mpcnodeonline2d:
       params.set("action", "calc_MPC_stiff");
@@ -149,17 +149,17 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
     std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->get_comm().Clone());
 
   Teuchos::RCP<Core::FE::Discretization> newdis =
       Teuchos::rcp(new Core::FE::Discretization(discret_name, com, actdisc->n_dim()));
 
-  if (!actdisc->Filled())
+  if (!actdisc->filled())
   {
     actdisc->fill_complete();
   }
 
-  const int myrank = newdis->Comm().MyPID();
+  const int myrank = newdis->get_comm().MyPID();
 
   if (constrcondvec.size() == 0)
     FOUR_C_THROW(
@@ -168,12 +168,12 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
 
   std::set<int> rownodeset;
   std::set<int> colnodeset;
-  const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
+  const Epetra_Map* actnoderowmap = actdisc->node_row_map();
 
   // Loop all conditions in constrcondvec
   for (unsigned int j = 0; j < constrcondvec.size(); j++)
   {
-    std::vector<int> ngid = *(constrcondvec[j]->GetNodes());
+    std::vector<int> ngid = *(constrcondvec[j]->get_nodes());
     const int numnodes = ngid.size();
     // We sort the global node ids according to the definition of the boundary condition
     reorder_constraint_nodes(ngid, constrcondvec[j]);
@@ -189,8 +189,8 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
       const int gid = actnoderowmap->GID(i);
       if (rownodeset.find(gid) != rownodeset.end())
       {
-        const Core::Nodes::Node* standardnode = actdisc->lRowNode(i);
-        newdis->AddNode(Teuchos::rcp(new Core::Nodes::Node(gid, standardnode->X(), myrank)));
+        const Core::Nodes::Node* standardnode = actdisc->l_row_node(i);
+        newdis->add_node(Teuchos::rcp(new Core::Nodes::Node(gid, standardnode->x(), myrank)));
       }
     }
 
@@ -199,7 +199,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
       Teuchos::RCP<Core::Elements::Element> constraintele =
           Core::Communication::Factory(element_name, "Polynomial", j, myrank);
       // set the same global node ids to the ale element
-      constraintele->SetNodeIds(ngid.size(), ngid.data());
+      constraintele->set_node_ids(ngid.size(), ngid.data());
 
       // add constraint element
       newdis->add_element(constraintele);
@@ -211,19 +211,19 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
   // build unique node row map
   std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(
-      new Epetra_Map(-1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->Comm()));
+  Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(
+      -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->get_comm()));
   boundarynoderowvec.clear();
 
   // build overlapping node column map
   std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
   Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(
-      -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->Comm()));
+      -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm()));
 
   constraintnodecolvec.clear();
 
-  newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);
+  newdis->redistribute(*constraintnoderowmap, *constraintnodecolmap);
 
   std::map<int, Teuchos::RCP<Core::FE::Discretization>> newdismap;
   newdismap[startID] = newdis;
@@ -262,8 +262,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  if (!(disc->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(disc->filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!(disc->have_dofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // see what we have for input
   bool assemblemat1 = systemmatrix1 != Teuchos::null;
@@ -281,7 +281,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
 
 
   const double time = params.get("total time", -1.0);
-  const int numcolele = disc->NumMyColElements();
+  const int numcolele = disc->num_my_col_elements();
 
   // get values from time integrator to scale matrices with
   double scStiff = params.get("scaleStiffEntries", 1.0);
@@ -290,8 +290,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
   // loop over column elements
   for (int i = 0; i < numcolele; ++i)
   {
-    Core::Elements::Element* actele = disc->lColElement(i);
-    Core::Conditions::Condition& cond = *(constrcond_[actele->Id()]);
+    Core::Elements::Element* actele = disc->l_col_element(i);
+    Core::Conditions::Condition& cond = *(constrcond_[actele->id()]);
     int condID = cond.parameters().get<int>("ConditionID");
 
     // computation only if time is larger or equal than initialization time for constraint
@@ -319,7 +319,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      actele->LocationVector(*disc, lm, lmowner, lmstride);
+      actele->location_vector(*disc, lm, lmowner, lmstride);
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
@@ -337,23 +337,23 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err)
         FOUR_C_THROW(
-            "Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), actele->Id(), err);
+            "Proc %d: Element %d returned err=%d", disc->get_comm().MyPID(), actele->id(), err);
 
-      int eid = actele->Id();
+      int eid = actele->id();
 
       // Assembly
       if (assemblemat1)
       {
         // scale with time integrator dependent value
         elematrix1.scale(scStiff * lagraval);
-        systemmatrix1->Assemble(eid, lmstride, elematrix1, lm, lmowner);
+        systemmatrix1->assemble(eid, lmstride, elematrix1, lm, lmowner);
       }
       if (assemblemat2)
       {
         std::vector<int> colvec(1);
         colvec[0] = gindex;
         elevector2.scale(scConMat);
-        systemmatrix2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
+        systemmatrix2->assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
       }
       if (assemblevec1)
       {
@@ -365,20 +365,20 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
         std::vector<int> constrlm;
         std::vector<int> constrowner;
         constrlm.push_back(gindex);
-        constrowner.push_back(actele->Owner());
+        constrowner.push_back(actele->owner());
         Core::LinAlg::Assemble(*systemvector3, elevector3, constrlm, constrowner);
       }
 
       // Load curve business
-      const auto* curve = cond.parameters().GetIf<int>("curve");
+      const auto* curve = cond.parameters().get_if<int>("curve");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       double curvefac = 1.0;
       bool usetime = true;
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
-        curvefac = Global::Problem::Instance()
-                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
+        curvefac = Global::Problem::instance()
+                       ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
                        .evaluate(time);
       Teuchos::RCP<Epetra_Vector> timefact =
           params.get<Teuchos::RCP<Epetra_Vector>>("vector curve factors");

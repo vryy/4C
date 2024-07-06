@@ -100,9 +100,9 @@ bool Core::Geo::Cut::TetMesh::fill_facet_mesh()
     {
       return false;
     }
-    if (f->HasHoles())  // Does Facet contain holes?
+    if (f->has_holes())  // Does Facet contain holes?
     {
-      const plain_facet_set& holes = f->Holes();
+      const plain_facet_set& holes = f->holes();
       for (plain_facet_set::const_iterator i = holes.begin(); i != holes.end(); ++i)
       {
         Facet* h = *i;
@@ -128,7 +128,7 @@ bool Core::Geo::Cut::TetMesh::fill_facet_mesh()
    tesselation for this element.
 
 */
-void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
+void Core::Geo::Cut::TetMesh::create_element_tets(Mesh& mesh, Element* element,
     const plain_volumecell_set& cells,
     const plain_side_set& cut_sides,  //<- cut_facets_ of parent ele.
     int count, bool tetcellsonly)
@@ -145,16 +145,16 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
       // Describes the "domain" of the volume cell (i.e. its tets and borders)
       Domain<4> cell_domain;
       // The tets which are to be added in this volume cell
-      PlainEntitySet<4>& cell_members = cell_domain.Members();
+      PlainEntitySet<4>& cell_members = cell_domain.members();
       // The border (i.e. surface-tris) between the tets in the cell.
-      PlainEntitySet<3>& cell_border = cell_domain.Border();
+      PlainEntitySet<3>& cell_border = cell_domain.border();
 
-      const plain_facet_set& facets = vc->Facets();
+      const plain_facet_set& facets = vc->facets();
       for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
       {
         Facet* f = *i;
         FacetMesh& fm = facet_mesh_[f];
-        const PlainEntitySet<3>& tris = fm.SurfaceTris();
+        const PlainEntitySet<3>& tris = fm.surface_tris();
 
         // All tris are added to the cell_border, i.e. (border_ in class Domain).
         //  These are later used to create "done_border_" later in seed_domain.
@@ -167,7 +167,7 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
         seed_domain(cell_domain, f);
       }
 
-      if (cell_domain.Empty())
+      if (cell_domain.empty())
       {
         // Emergency. If this is the only volume cell within the element (an
         // element is surrounded by cut surfaces), try and force any available
@@ -183,7 +183,7 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
           }
         }
 
-        if (cell_domain.Empty())
+        if (cell_domain.empty())
         {
           // Assume the volume cell in question is degenerated and does not
           // contain any tets.
@@ -198,17 +198,17 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
             Facet* f = *i;
 
             std::cout << "f->ShareSameCutSide(*facets.begin()): "
-                      << f->ShareSameCutSide(*facets.begin()) << std::endl;
+                      << f->share_same_cut_side(*facets.begin()) << std::endl;
 
 
-            if (not f->ShareSameCutSide(*facets.begin()))
+            if (not f->share_same_cut_side(*facets.begin()))
             {
               std::cout << "NOT SAME ParentSide!" << std::endl;
               does_not_share_same_cutside = false;
               continue;
             }
 
-            if (not f->is_planar(mesh, f->CornerPoints()))
+            if (not f->is_planar(mesh, f->corner_points()))
             {
               std::cout << "Warning: This volume cell has no integration cells AND not all on same "
                            "cut-side."
@@ -229,7 +229,7 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
         }
       }
 
-      cell_domain.Fill();
+      cell_domain.fill();
 
       std::vector<std::vector<Point*>> tets;
       tets.reserve(cell_members.size());
@@ -237,9 +237,9 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
       for (PlainEntitySet<4>::iterator i = cell_members.begin(); i != cell_members.end(); ++i)
       {
         Entity<4>& t = **i;
-        if (accept_tets_[t.Id()])
+        if (accept_tets_[t.id()])
         {
-          std::vector<int>& fixedtet = tets_[t.Id()];
+          std::vector<int>& fixedtet = tets_[t.id()];
           if (fixedtet.size() != 4) FOUR_C_THROW("confused");
           tets.push_back(std::vector<Point*>(4));
           std::vector<Point*>& tet = tets.back();
@@ -257,10 +257,10 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
       for (plain_facet_set::const_iterator i = facets.begin(); i != facets.end(); ++i)
       {
         Facet* f = *i;
-        if (f->OnBoundaryCellSide())  // This is entered for both sides of the volume cell.
+        if (f->on_boundary_cell_side())  // This is entered for both sides of the volume cell.
         {
           FacetMesh& fm = facet_mesh_[f];
-          const PlainEntitySet<3>& tris = fm.SurfaceTris();  // tris from the triangulated surface
+          const PlainEntitySet<3>& tris = fm.surface_tris();  // tris from the triangulated surface
           std::vector<Point*>& side_coords =
               sides_xyz[f];  // create entry for facet and get a reference to the facets side
                              // coordinates
@@ -273,7 +273,7 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 
       vc->create_tet4_integration_cells(mesh, tets, sides_xyz);
 
-      if (vc->Empty())
+      if (vc->empty())
       {
         FOUR_C_THROW("empty volume cell detected");
       }
@@ -284,8 +284,8 @@ void Core::Geo::Cut::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
     // if ( count <= 3 )
     {
       TetMeshIntersection intersection(
-          mesh.CreateOptions(), element, tets_, accept_tets_, points_, cut_sides);
-      intersection.Cut(
+          mesh.create_options(), element, tets_, accept_tets_, points_, cut_sides);
+      intersection.cut(
           mesh, element, cells, count, tetcellsonly);  // writes tetmesh output in debug mode!!!
     }
   }
@@ -307,14 +307,14 @@ void Core::Geo::Cut::TetMesh::init()
   for (std::vector<Entity<4>>::iterator i = tet_entities_.begin(); i != tet_entities_.end(); ++i)
   {
     Entity<4>& e = *i;
-    e.CreateChildren(tet_surfaces_);
+    e.create_children(tet_surfaces_);
   }
 
   for (std::map<Handle<3>, Entity<3>>::iterator i = tet_surfaces_.begin(); i != tet_surfaces_.end();
        ++i)
   {
     Entity<3>& e = i->second;
-    e.CreateChildren(tet_lines_);
+    e.create_children(tet_lines_);
   }
 
   accept_tets_.resize(tets_.size());
@@ -357,7 +357,7 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
     for (int i = 0; i < n; ++i)  // Find mid-point (m)
     {
       Point* p = points[i];
-      Core::LinAlg::Matrix<3, 1> x(p->X());
+      Core::LinAlg::Matrix<3, 1> x(p->x());
       m.update(scale, x, 1);
     }
     double length = 0;
@@ -366,7 +366,7 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
          ++i)  // Find the distance to the point furthest away from the mid-point (length)
     {
       Point* p = points[i];
-      Core::LinAlg::Matrix<3, 1> x(p->X());
+      Core::LinAlg::Matrix<3, 1> x(p->x());
       l = m;
       l.update(1, x, -1);
       double n = l.norm2();
@@ -376,7 +376,7 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
     for (int i = 0; i < n; ++i)
     {
       Point* p = points[i];
-      Core::LinAlg::Matrix<3, 1> x(p->X());
+      Core::LinAlg::Matrix<3, 1> x(p->x());
       l = m;
       l.update(1, x, -1);
       double n = l.norm2();
@@ -390,7 +390,7 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
     for (int i = 0; i < n; ++i)
     {
       Point* p = points[i];
-      p->Coordinates(&coordinates[dim * i]);
+      p->coordinates(&coordinates[dim * i]);
     }
   }
 
@@ -528,7 +528,7 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
   for (int i = 0; i < n; ++i)
   {
     Point* p = points[i];
-    const double* x = p->X();
+    const double* x = p->x();
     fprintf(debug_f, "% .20f % .20f % .20f ", x[0], x[1], x[2]);
   }
   fprintf(debug_f, "\n");
@@ -588,7 +588,7 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
     for (plain_facet_set::iterator i = facets.begin(); i != facets.end(); ++i)
     {
       Facet* f = *i;
-      if (not f->IsTriangulated())
+      if (not f->is_triangulated())
       {
         return false;
       }
@@ -605,7 +605,7 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
     // The points of a tet can all be on a cut-side that is a LevelSetSide, but not share a common
     // facet. This occurs when there exists a degenerate cut (i.e. a cut we can't cut well). One VC
     // is created and that's about all.... Might have to investigate...
-    if ((*sides.begin())->IsLevelSetSide())
+    if ((*sides.begin())->is_level_set_side())
     {
       // This part is done mainly for debugging purposes. It is probably not necessary,
       //  but could play an important role when/if the LevelSetSide is remodeled.
@@ -642,7 +642,7 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
       for (plain_facet_set::iterator i = facets.begin(); i != facets.end(); ++i)
       {
         Facet* f = *i;
-        if (f->IsTriangulated())
+        if (f->is_triangulated())
         {
           return true;
         }
@@ -670,7 +670,7 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
   for (plain_facet_set::iterator i = facets.begin(); i != facets.end(); ++i)
   {
     Facet* f = *i;
-    if (f->IsTriangulated())  //(i.e. is this facet not a tri?)
+    if (f->is_triangulated())  //(i.e. is this facet not a tri?)
     {
       return true;
     }
@@ -705,10 +705,10 @@ void Core::Geo::Cut::TetMesh::fix_broken_tets()
     std::vector<int>& t = *i;
 
     // create planes consisting of 3 nodes each
-    Core::LinAlg::Matrix<3, 1> p0(points_[t[0]]->X());
-    Core::LinAlg::Matrix<3, 1> p1(points_[t[1]]->X());
-    Core::LinAlg::Matrix<3, 1> p2(points_[t[2]]->X());
-    Core::LinAlg::Matrix<3, 1> p3(points_[t[3]]->X());
+    Core::LinAlg::Matrix<3, 1> p0(points_[t[0]]->x());
+    Core::LinAlg::Matrix<3, 1> p1(points_[t[1]]->x());
+    Core::LinAlg::Matrix<3, 1> p2(points_[t[2]]->x());
+    Core::LinAlg::Matrix<3, 1> p3(points_[t[3]]->x());
 
     Core::LinAlg::Matrix<3, 1> v01;
     Core::LinAlg::Matrix<3, 1> v02;
@@ -797,7 +797,7 @@ void Core::Geo::Cut::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
     Entity<3>* tri = *i;
 
     bool done = false;
-    const std::vector<Entity<4>*>& tets = tri->Parents();
+    const std::vector<Entity<4>*>& tets = tri->parents();
     for (std::vector<Entity<4>*>::const_iterator i = tets.begin(); i != tets.end(); ++i)
     {
       Entity<4>* tet = *i;
@@ -811,7 +811,7 @@ void Core::Geo::Cut::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
       // Get the tet from the set of original tets.
       //  QUESTION: Why do we do this?
       //  Possible ans: Want access to the node-IDs.
-      std::vector<int>& original_tet = tets_[tet->Id()];
+      std::vector<int>& original_tet = tets_[tet->id()];
 
       if (original_tet.size() > 0)
       {
@@ -830,7 +830,7 @@ void Core::Geo::Cut::TetMesh::find_proper_sides(const PlainEntitySet<3>& tris,
           {
             side[j] = original_tet[Core::FE::eleNodeNumbering_tet10_surfaces[i][j]];
           }
-          if (tri->Equals(side))
+          if (tri->equals(side))
           {
             found = true;
             sides.push_back(std::vector<int>());

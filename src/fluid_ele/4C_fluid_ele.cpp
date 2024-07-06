@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::FluidType Discret::ELEMENTS::FluidType::instance_;
 
-Discret::ELEMENTS::FluidType& Discret::ELEMENTS::FluidType::Instance() { return instance_; }
+Discret::ELEMENTS::FluidType& Discret::ELEMENTS::FluidType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::FluidType::create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Fluid* object = new Discret::ELEMENTS::Fluid(-1, -1);
   object->unpack(data);
@@ -32,7 +32,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidType::Create(const std::
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUID")
@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::Create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::Fluid(id, owner));
@@ -57,14 +57,14 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::Create(
 void Discret::ELEMENTS::FluidType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+  numdf = dwele->num_dof_per_node(*(dwele->nodes()[0]));
   dimns = numdf;
   nv = numdf - 1;
   np = 1;
 }
 
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
@@ -201,7 +201,7 @@ Discret::ELEMENTS::Fluid::Fluid(const Discret::ELEMENTS::Fluid& old)
 {
   tds_ = Teuchos::null;
   if (old.tds_ != Teuchos::null)
-    FOUR_C_THROW("Clone() method for deep copying tds_ not yet implemented!");
+    FOUR_C_THROW("clone() method for deep copying tds_ not yet implemented!");
   return;
 }
 
@@ -209,7 +209,7 @@ Discret::ELEMENTS::Fluid::Fluid(const Discret::ELEMENTS::Fluid& old)
  |  Deep copy this instance of Fluid and return pointer to it (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Fluid::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Fluid::clone() const
 {
   Discret::ELEMENTS::Fluid* newelement = new Discret::ELEMENTS::Fluid(*this);
   return newelement;
@@ -224,7 +224,7 @@ void Discret::ELEMENTS::Fluid::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -258,7 +258,7 @@ void Discret::ELEMENTS::Fluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -304,7 +304,7 @@ void Discret::ELEMENTS::Fluid::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::lines()
 {
   return Core::Communication::GetElementLines<FluidBoundary, Fluid>(*this);
 }
@@ -313,7 +313,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::Lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::surfaces()
 {
   return Core::Communication::GetElementSurfaces<FluidBoundary, Fluid>(*this);
 }
@@ -322,7 +322,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::Sur
 /*----------------------------------------------------------------------*
  |  get face element (public)                               schott 03/12|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::CreateFaceElement(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::create_face_element(
     Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
@@ -355,12 +355,12 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::CreateFaceElemen
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Fluid::ActivateTDS(
+void Discret::ELEMENTS::Fluid::activate_tds(
     int nquad, int nsd, double** saccn, double** sveln, double** svelnp)
 {
   if (tds_ == Teuchos::null) tds_ = Teuchos::rcp(new FLD::TDSEleData());
 
-  tds_->ActivateTDS(nquad, nsd, saccn, sveln, svelnp);
+  tds_->activate_tds(nquad, nsd, saccn, sveln, svelnp);
 }
 
 FOUR_C_NAMESPACE_CLOSE

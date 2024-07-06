@@ -44,7 +44,7 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
     FOUR_C_THROW("No discretizations provided for binning !");
 
   // get communicator
-  const Epetra_Comm& comm = vector_of_discretizations[0]->Comm();
+  const Epetra_Comm& comm = vector_of_discretizations[0]->get_comm();
 
   // rebalance discr. with help of binning strategy
   if (comm.NumProc() > 1)
@@ -57,9 +57,9 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
           << "| Rebalance discretizations using Binning Strategy ...          " << Core::IO::endl;
       for (const auto& curr_dis : vector_of_discretizations)
       {
-        if (!curr_dis->Filled()) FOUR_C_THROW("fill_complete(false,false,false) was not called");
+        if (!curr_dis->filled()) FOUR_C_THROW("fill_complete(false,false,false) was not called");
         Core::IO::cout(Core::IO::verbose)
-            << "| Rebalance discretization " << std::setw(11) << curr_dis->Name() << Core::IO::endl;
+            << "| Rebalance discretization " << std::setw(11) << curr_dis->name() << Core::IO::endl;
       }
       Core::IO::cout(Core::IO::verbose)
           << "+---------------------------------------------------------------" << Core::IO::endl;
@@ -70,8 +70,8 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
 
     // binning strategy is created and parallel redistribution is performed
     auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
-        output_control, vector_of_discretizations[0]->Comm(),
-        vector_of_discretizations[0]->Comm().MyPID(), element_filter, rigid_sphere_radius,
+        output_control, vector_of_discretizations[0]->get_comm(),
+        vector_of_discretizations[0]->get_comm().MyPID(), element_filter, rigid_sphere_radius,
         correct_beam_center_node, vector_of_discretizations));
 
     binningstrategy
@@ -95,7 +95,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
     const Teuchos::RCP<Core::FE::Discretization> distobeghosted)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(distobeghosted->Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(distobeghosted->get_comm().Clone());
 
   if (com->MyPID() == 0)
   {
@@ -103,7 +103,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
         << "+-----------------------------------------------------------------------+"
         << Core::IO::endl;
     Core::IO::cout(Core::IO::verbose)
-        << "|   Ghost discretization " << std::setw(11) << distobeghosted->Name()
+        << "|   Ghost discretization " << std::setw(11) << distobeghosted->name()
         << " redundantly on all procs ...       |" << Core::IO::endl;
     Core::IO::cout(Core::IO::verbose)
         << "+-----------------------------------------------------------------------+"
@@ -114,7 +114,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
   for (int i = 0; i < com->NumProc(); ++i) allproc[i] = i;
 
   // fill my own row node ids
-  const Epetra_Map* noderowmap = distobeghosted->NodeRowMap();
+  const Epetra_Map* noderowmap = distobeghosted->node_row_map();
   std::vector<int> sdata;
   for (int lid = 0; lid < noderowmap->NumMyElements(); ++lid)
   {
@@ -133,7 +133,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
   rdata.clear();
 
   // fill my own row element ids
-  const Epetra_Map* elerowmap = distobeghosted->ElementRowMap();
+  const Epetra_Map* elerowmap = distobeghosted->element_row_map();
   sdata.resize(0);
   for (int i = 0; i < elerowmap->NumMyElements(); ++i)
   {
@@ -154,7 +154,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
 
   // rebalance the nodes and elements of the discr. according to the
   // new node / element column layout (i.e. master = full overlap)
-  distobeghosted->ExportColumnNodes(*newnodecolmap);
+  distobeghosted->export_column_nodes(*newnodecolmap);
   distobeghosted->export_column_elements(*newelecolmap);
 
   // Safety checks in DEBUG
@@ -181,7 +181,7 @@ void Core::Rebalance::MatchNodalDistributionOfMatchingDiscretizations(
     Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.get_comm().Clone());
   if (com->NumProc() > 1)
   {
     // print to screen
@@ -191,8 +191,8 @@ void Core::Rebalance::MatchNodalDistributionOfMatchingDiscretizations(
           << "+---------------------------------------------------------------------------+"
           << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose)
-          << "|   Match nodal distribution of discr. " << std::setw(11) << dis_to_rebalance.Name()
-          << "to discr. " << std::setw(11) << dis_template.Name() << " ... |" << Core::IO::endl;
+          << "|   Match nodal distribution of discr. " << std::setw(11) << dis_to_rebalance.name()
+          << "to discr. " << std::setw(11) << dis_template.name() << " ... |" << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose)
           << "+---------------------------------------------------------------------------+"
           << Core::IO::endl;
@@ -219,7 +219,7 @@ void Core::Rebalance::MatchNodalDistributionOfMatchingDiscretizations(
 
     // we finally rebalance.
     // fill_complete(...) inside.
-    dis_to_rebalance.Redistribute(*rebalanced_noderowmap, *rebalanced_nodecolmap,
+    dis_to_rebalance.redistribute(*rebalanced_noderowmap, *rebalanced_nodecolmap,
         false,  // assigndegreesoffreedom
         false,  // initelements
         false,  // doboundaryconditions
@@ -240,7 +240,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
     Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.get_comm().Clone());
   if (com->NumProc() > 1)
   {
     // print to screen
@@ -250,8 +250,8 @@ void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
           << "+-----------------------------------------------------------------------------+"
           << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose)
-          << "|   Match element distribution of discr. " << std::setw(11) << dis_to_rebalance.Name()
-          << "to discr. " << std::setw(11) << dis_template.Name() << " ... |" << Core::IO::endl;
+          << "|   Match element distribution of discr. " << std::setw(11) << dis_to_rebalance.name()
+          << "to discr. " << std::setw(11) << dis_template.name() << " ... |" << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose)
           << "+-----------------------------------------------------------------------------+"
           << Core::IO::endl;
@@ -299,10 +299,10 @@ void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
     // REBALANCE
     ////////////////////////////////////////
     // export the nodes
-    dis_to_rebalance.ExportRowNodes(*rebalanced_noderowmap, false, false);
-    dis_to_rebalance.ExportColumnNodes(*rebalanced_nodecolmap, false, false);
+    dis_to_rebalance.export_row_nodes(*rebalanced_noderowmap, false, false);
+    dis_to_rebalance.export_column_nodes(*rebalanced_nodecolmap, false, false);
     // export the elements
-    dis_to_rebalance.ExportRowElements(*rebalanced_elerowmap, false, false);
+    dis_to_rebalance.export_row_elements(*rebalanced_elerowmap, false, false);
     dis_to_rebalance.export_column_elements(*rebalanced_elecolmap, false, false);
 
     ////////////////////////////////////////
@@ -326,7 +326,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     const std::string& condname_template, const std::string& condname_rebalance, const bool print)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.get_comm().Clone());
   if (com->NumProc() > 1)
   {
     // print to screen
@@ -336,12 +336,12 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
           << "+-----------------------------------------------------------------------------+"
           << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose)
-          << "|   Match element distribution of discr. " << std::setw(11) << dis_to_rebalance.Name()
+          << "|   Match element distribution of discr. " << std::setw(11) << dis_to_rebalance.name()
           << "                          |" << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose) << "|   Condition : " << std::setw(35) << condname_rebalance
                                         << "                           |" << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose)
-          << "|   to template discr. " << std::setw(11) << dis_template.Name()
+          << "|   to template discr. " << std::setw(11) << dis_template.name()
           << "                                            |" << Core::IO::endl;
       Core::IO::cout(Core::IO::verbose) << "|   Condition : " << std::setw(35) << condname_template
                                         << "                           |" << Core::IO::endl;
@@ -379,9 +379,9 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     );
 
     // get element col map of conditioned template dis
-    const Epetra_Map* template_cond_dis_elecolmap = dis_from_template_condition->ElementColMap();
+    const Epetra_Map* template_cond_dis_elecolmap = dis_from_template_condition->element_col_map();
     // get element row map of dis to be rebalanced
-    const Epetra_Map* rebalance_elerowmap = dis_to_rebalance.ElementRowMap();
+    const Epetra_Map* rebalance_elerowmap = dis_to_rebalance.element_row_map();
 
 
     ////////////////////////////////////////
@@ -428,12 +428,12 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
 
     if (print)
     {
-      dis_to_rebalance.Comm().Barrier();
+      dis_to_rebalance.get_comm().Barrier();
       for (const auto& it : matched_ele_map)
       {
         std::cout << "ELEMENT : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
                   << ", " << it.second[2] << " )"
-                  << " on PROC " << dis_to_rebalance.Comm().MyPID()
+                  << " on PROC " << dis_to_rebalance.get_comm().MyPID()
                   << " map size = " << matched_ele_map.size() << std::endl;
       }
     }
@@ -443,15 +443,15 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     // ALSO APPEND UNCONDITIONED ELEMENTS
     ////////////////////////////////////////
     // add row elements
-    for (int lid = 0; lid < dis_to_rebalance.ElementColMap()->NumMyElements(); lid++)
+    for (int lid = 0; lid < dis_to_rebalance.element_col_map()->NumMyElements(); lid++)
     {
       bool conditionedele = false;
       Core::Elements::Element* ele =
-          dis_to_rebalance.gElement(dis_to_rebalance.ElementColMap()->GID(lid));
-      Core::Nodes::Node** nodes = ele->Nodes();
+          dis_to_rebalance.g_element(dis_to_rebalance.element_col_map()->GID(lid));
+      Core::Nodes::Node** nodes = ele->nodes();
       for (int node = 0; node < ele->num_node(); node++)
       {
-        Core::Conditions::Condition* nodal_cond = nodes[node]->GetCondition(condname_rebalance);
+        Core::Conditions::Condition* nodal_cond = nodes[node]->get_condition(condname_rebalance);
         if (nodal_cond != nullptr)
         {
           conditionedele = true;
@@ -462,10 +462,10 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
       if (not conditionedele)
       {
         // append unconditioned ele id to col gid vec
-        rebalance_colelegid_vec.push_back(ele->Id());
+        rebalance_colelegid_vec.push_back(ele->id());
 
         // append unconditioned ele id to row gid vec
-        if (ele->Owner() == com->MyPID()) rebalance_rowelegid_vec.push_back(ele->Id());
+        if (ele->owner() == com->MyPID()) rebalance_rowelegid_vec.push_back(ele->id());
       }
 
     }  // loop over col elements
@@ -484,24 +484,24 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     // MATCH CONDITIONED NODES
     ////////////////////////////////////////
     // fill vector with processor local conditioned node gids for template dis
-    for (int lid = 0; lid < dis_template.NodeColMap()->NumMyElements(); ++lid)
+    for (int lid = 0; lid < dis_template.node_col_map()->NumMyElements(); ++lid)
     {
-      if (dis_template.gNode(dis_template.NodeColMap()->GID(lid))
-              ->GetCondition(condname_template) != nullptr)
-        my_template_nodegid_vec.push_back(dis_template.NodeColMap()->GID(lid));
+      if (dis_template.g_node(dis_template.node_col_map()->GID(lid))
+              ->get_condition(condname_template) != nullptr)
+        my_template_nodegid_vec.push_back(dis_template.node_col_map()->GID(lid));
     }
 
     // fill vec with processor local node gids of dis to be rebalanced
     std::vector<Core::Conditions::Condition*> rebalance_conds;
-    dis_to_rebalance.GetCondition(condname_rebalance, rebalance_conds);
+    dis_to_rebalance.get_condition(condname_rebalance, rebalance_conds);
 
     for (auto* const rebalance_cond : rebalance_conds)
     {
-      const std::vector<int>* rebalance_cond_nodes = rebalance_cond->GetNodes();
+      const std::vector<int>* rebalance_cond_nodes = rebalance_cond->get_nodes();
       for (int rebalance_cond_node : *rebalance_cond_nodes)
       {
-        if (dis_to_rebalance.HaveGlobalNode(rebalance_cond_node))
-          if (dis_to_rebalance.gNode(rebalance_cond_node)->Owner() == com->MyPID())
+        if (dis_to_rebalance.have_global_node(rebalance_cond_node))
+          if (dis_to_rebalance.g_node(rebalance_cond_node)->owner() == com->MyPID())
             rebalance_rownodegid_vec.push_back(rebalance_cond_node);
       }
     }
@@ -533,12 +533,12 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     }
     if (print)
     {
-      dis_to_rebalance.Comm().Barrier();
+      dis_to_rebalance.get_comm().Barrier();
       for (const auto& it : matched_node_map)
       {
         std::cout << "NODE : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
                   << ", " << it.second[2] << " )"
-                  << " on PROC " << dis_to_rebalance.Comm().MyPID()
+                  << " on PROC " << dis_to_rebalance.get_comm().MyPID()
                   << " map size = " << matched_node_map.size() << std::endl;
       }
     }
@@ -548,24 +548,24 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     // ALSO APPEND UNCONDITIONED  NODES
     ////////////////////////////////////////
     // add row nodes
-    for (int lid = 0; lid < dis_to_rebalance.NodeRowMap()->NumMyElements(); lid++)
+    for (int lid = 0; lid < dis_to_rebalance.node_row_map()->NumMyElements(); lid++)
     {
       Core::Conditions::Condition* testcond =
-          dis_to_rebalance.gNode(dis_to_rebalance.NodeRowMap()->GID(lid))
-              ->GetCondition(condname_rebalance);
+          dis_to_rebalance.g_node(dis_to_rebalance.node_row_map()->GID(lid))
+              ->get_condition(condname_rebalance);
       if (testcond == nullptr)
         rebalance_rownodegid_vec.push_back(
-            dis_to_rebalance.gNode(dis_to_rebalance.NodeRowMap()->GID(lid))->Id());
+            dis_to_rebalance.g_node(dis_to_rebalance.node_row_map()->GID(lid))->id());
     }
     // add col nodes
-    for (int lid = 0; lid < dis_to_rebalance.NodeColMap()->NumMyElements(); lid++)
+    for (int lid = 0; lid < dis_to_rebalance.node_col_map()->NumMyElements(); lid++)
     {
       Core::Conditions::Condition* testcond =
-          dis_to_rebalance.gNode(dis_to_rebalance.NodeColMap()->GID(lid))
-              ->GetCondition(condname_rebalance);
+          dis_to_rebalance.g_node(dis_to_rebalance.node_col_map()->GID(lid))
+              ->get_condition(condname_rebalance);
       if (testcond == nullptr)
         rebalance_colnodegid_vec.push_back(
-            dis_to_rebalance.gNode(dis_to_rebalance.NodeColMap()->GID(lid))->Id());
+            dis_to_rebalance.g_node(dis_to_rebalance.node_col_map()->GID(lid))->id());
     }
 
     // construct rebalanced node row map
@@ -581,10 +581,10 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
     // REBALANCE
     ////////////////////////////////////////
     // export the nodes
-    dis_to_rebalance.ExportRowNodes(*rebalanced_noderowmap, false, false);
-    dis_to_rebalance.ExportColumnNodes(*rebalanced_nodecolmap, false, false);
+    dis_to_rebalance.export_row_nodes(*rebalanced_noderowmap, false, false);
+    dis_to_rebalance.export_column_nodes(*rebalanced_nodecolmap, false, false);
     // export the elements
-    dis_to_rebalance.ExportRowElements(*rebalanced_elerowmap, false, false);
+    dis_to_rebalance.export_row_elements(*rebalanced_elerowmap, false, false);
     dis_to_rebalance.export_column_elements(*rebalanced_elecolmap, false, false);
 
 
@@ -612,8 +612,8 @@ Teuchos::RCP<const Epetra_Vector> Core::Rebalance::GetColVersionOfRowVector(
   // maybe this routine can be used in set_state or become a member function of the discretization
   // class
 
-  if (!dis->HaveDofs()) FOUR_C_THROW("fill_complete() was not called");
-  const Epetra_Map* colmap = dis->DofColMap(nds);
+  if (!dis->have_dofs()) FOUR_C_THROW("fill_complete() was not called");
+  const Epetra_Map* colmap = dis->dof_col_map(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 
   // if it's already in column map just set a reference
@@ -641,23 +641,23 @@ Teuchos::RCP<Epetra_Map> Core::Rebalance::ComputeNodeColMap(
     const Teuchos::RCP<Core::FE::Discretization> subdis  ///< subdiscretization prescribing ghosting
 )
 {
-  const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
+  const Epetra_Map* oldcolnodemap = sourcedis->node_col_map();
 
   std::vector<int> mycolnodes(oldcolnodemap->NumMyElements());
   oldcolnodemap->MyGlobalElements(mycolnodes.data());
-  for (int inode = 0; inode != subdis->NumMyColNodes(); ++inode)
+  for (int inode = 0; inode != subdis->num_my_col_nodes(); ++inode)
   {
-    const Core::Nodes::Node* newnode = subdis->lColNode(inode);
-    const int gid = newnode->Id();
-    if (!(sourcedis->HaveGlobalNode(gid)))
+    const Core::Nodes::Node* newnode = subdis->l_col_node(inode);
+    const int gid = newnode->id();
+    if (!(sourcedis->have_global_node(gid)))
     {
       mycolnodes.push_back(gid);
     }
   }
 
   // now reconstruct the extended colmap
-  Teuchos::RCP<Epetra_Map> newcolnodemap =
-      Teuchos::rcp(new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, sourcedis->Comm()));
+  Teuchos::RCP<Epetra_Map> newcolnodemap = Teuchos::rcp(
+      new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, sourcedis->get_comm()));
   return newcolnodemap;
 }  // Core::Rebalance::ComputeNodeColMap
 
@@ -669,8 +669,8 @@ void Core::Rebalance::MatchElementRowColDistribution(const Core::FE::Discretizat
     std::vector<int>& col_id_vec_to_fill)
 {
   // preliminary work
-  const Epetra_Map* rebalance_elerowmap = dis_to_rebalance.ElementRowMap();
-  const Epetra_Map* template_elecolmap = dis_template.ElementColMap();
+  const Epetra_Map* rebalance_elerowmap = dis_to_rebalance.element_row_map();
+  const Epetra_Map* template_elecolmap = dis_template.element_col_map();
   std::vector<int> my_template_elegid_vec(template_elecolmap->NumMyElements());
   std::vector<int> my_rebalance_elegid_vec(0);
 
@@ -726,8 +726,8 @@ void Core::Rebalance::MatchNodalRowColDistribution(const Core::FE::Discretizatio
   for (int& col_id_to_fill : col_id_vec_to_fill) tempcolset.insert(col_id_to_fill);
 
   // preliminary work
-  const Epetra_Map* rebalance_noderowmap = dis_to_rebalance.NodeRowMap();
-  const Epetra_Map* template_nodecolmap = dis_template.NodeColMap();
+  const Epetra_Map* rebalance_noderowmap = dis_to_rebalance.node_row_map();
+  const Epetra_Map* template_nodecolmap = dis_template.node_col_map();
   std::vector<int> my_template_nodegid_vec(template_nodecolmap->NumMyElements());
   std::vector<int> my_rebalance_nodegid_vec(0);
 

@@ -58,7 +58,7 @@ namespace ScaTra
     void setup() override;
 
     /// time loop
-    void TimeLoop() override;
+    void time_loop() override;
 
     void check_and_write_output_and_restart() override;
 
@@ -80,12 +80,12 @@ namespace ScaTra
     void mass_center_using_smoothing();
 
     /// redistribute the scatra discretization and vectors according to nodegraph
-    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
+    void redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
 
-    void TestResults() override;
+    void test_results() override;
 
     /// set time and step value
-    void SetTimeStep(const double time, const int step) override;
+    void set_time_step(const double time, const int step) override;
 
     // -----------------------------------------------------------------
     // general methods
@@ -95,7 +95,7 @@ namespace ScaTra
     void prepare_time_step() override;
 
     /// solve level-set equation
-    void Solve() override;
+    void solve() override;
 
     /// calculate error compared to analytical solution
     void evaluate_error_compared_to_analytical_sol() override;

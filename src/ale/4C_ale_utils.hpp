@@ -37,7 +37,7 @@ namespace ALE
       }
 
       /// assemble into the given block
-      void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
+      void assemble(int eid, int myrank, const std::vector<int>& lmstride,
           const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
           const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
       {
@@ -45,25 +45,25 @@ namespace ALE
         {
           // if we have an element with conditioned nodes, we have to do the
           // default assembling
-          Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(
+          Core::LinAlg::DefaultBlockMatrixStrategy::assemble(
               eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
         else
         {
           // if there are no conditioned nodes we can simply assemble to the
           // internal matrix
-          Core::LinAlg::SparseMatrix& matrix = mat().Matrix(0, 0);
-          matrix.Assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
+          Core::LinAlg::SparseMatrix& matrix = mat().matrix(0, 0);
+          matrix.assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
       }
 
-      void Assemble(double val, int rgid, int cgid)
+      void assemble(double val, int rgid, int cgid)
       {
         // forward single value assembling
-        Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
+        Core::LinAlg::DefaultBlockMatrixStrategy::assemble(val, rgid, cgid);
       }
 
-      void SetCondElements(Teuchos::RCP<std::set<int>> condelements)
+      void set_cond_elements(Teuchos::RCP<std::set<int>> condelements)
       {
         condelements_ = condelements;
       }

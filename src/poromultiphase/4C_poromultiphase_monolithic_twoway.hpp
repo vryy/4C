@@ -60,13 +60,13 @@ namespace POROMULTIPHASE
         const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    void SetupSystem() override;
+    void setup_system() override;
 
     /// time step of coupled problem
-    void TimeStep() override;
+    void time_step() override;
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const override
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const override
     {
       return blockrowdofmap_;
     }
@@ -81,10 +81,10 @@ namespace POROMULTIPHASE
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
 
     // access to monolithic rhs vector
-    Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() const override { return rhs_; }
 
     // access to monolithic block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() const override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() const override
     {
       return systemmatrix_;
     }
@@ -144,7 +144,7 @@ namespace POROMULTIPHASE
     virtual void setup_maps();
 
     // Setup solver for monolithic system
-    bool SetupSolver() override;
+    bool setup_solver() override;
 
     //! build the block null spaces
     void build_block_null_spaces(Teuchos::RCP<Core::LinAlg::Solver>& solver) override;

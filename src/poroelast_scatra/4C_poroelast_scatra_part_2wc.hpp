@@ -28,7 +28,7 @@ namespace PoroElastScaTra
     explicit PoroScatraPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! full time loop
-    void Timeloop() override;
+    void timeloop() override;
 
     //! read and set fields needed for restart
     void read_restart(int restart) override;
@@ -37,7 +37,7 @@ namespace PoroElastScaTra
     void prepare_time_step(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve() override;
+    void solve() override;
 
     //! prepare output
     void prepare_output() override;
@@ -50,7 +50,7 @@ namespace PoroElastScaTra
 
    protected:
     //! perform iteration step of structure field
-    void DoPoroStep() override;
+    void do_poro_step() override;
 
     //! perform iteration step of scatra field
     void do_scatra_step() override;

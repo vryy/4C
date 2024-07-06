@@ -34,76 +34,76 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
   if (idx_.size() != 2)
     FOUR_C_THROW("XFSCoupling_Manager required two block ( 2 != %d)", idx_.size());
 
-  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   interface_second_order_ = Core::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER");
 
   // Coupling_Comm_Manager create all Coupling Objects now with Structure has idx = 0, Fluid has idx
   // = 1!
   mcfsi_ =
-      Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(condmanager->GetMeshCoupling(cond_name_));
+      Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(condmanager->get_mesh_coupling(cond_name_));
   if (mcfsi_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFSI for Structure!");
 
-  mcfsi_->SetTimeFac(1. / get_interface_timefac());
+  mcfsi_->set_time_fac(1. / get_interface_timefac());
 
   // safety check
-  if (!mcfsi_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
+  if (!mcfsi_->i_dispnp()->Map().SameAs(*get_map_extractor(0)->Map(1)))
     FOUR_C_THROW("XFSCoupling_Manager: Maps of Condition and Mesh Coupling do not fit!");
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*mcfsi_->GetCouplingDis()->dof_row_map(), true));
+  lambda_ = Teuchos::rcp(new Epetra_Vector(*mcfsi_->get_coupling_dis()->dof_row_map(), true));
 }
 
 /*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 04/2017 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::InitCouplingStates()
+void XFEM::XfsCouplingManager::init_coupling_states()
 {
   // 1 Set Displacement on both mesh couplings ... we get them from the structure field!
-  insert_vector(0, struct_->Dispn(), 0, mcfsi_->IDispn(), CouplingCommManager::full_to_partial);
-  insert_vector(0, struct_->Dispn(), 0, mcfsi_->IDispnp(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->dispn(), 0, mcfsi_->i_dispn(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->dispn(), 0, mcfsi_->i_dispnp(), CouplingCommManager::full_to_partial);
 
   // 2 Set Displacement on both mesh couplings ... we get them from the structure field!
-  insert_vector(0, struct_->Veln(), 0, mcfsi_->IVeln(), CouplingCommManager::full_to_partial);
-  insert_vector(0, struct_->Veln(), 0, mcfsi_->IVelnp(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->veln(), 0, mcfsi_->i_veln(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->veln(), 0, mcfsi_->i_velnp(), CouplingCommManager::full_to_partial);
 }
 
 /*-----------------------------------------------------------------------------------------*
 | Set required displacement & velocity states in the coupling object          ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::SetCouplingStates()
+void XFEM::XfsCouplingManager::set_coupling_states()
 {
   // 1 update last increment, before we set new idispnp
   mcfsi_->update_displacement_iteration_vectors();
 
   // 2 Set Displacement on both mesh couplings ... we get them from the structure field!
-  insert_vector(0, struct_->Dispnp(), 0, mcfsi_->IDispnp(), CouplingCommManager::full_to_partial);
+  insert_vector(0, struct_->dispnp(), 0, mcfsi_->i_dispnp(), CouplingCommManager::full_to_partial);
 
   // get interface velocity at t(n)
   Teuchos::RCP<Epetra_Vector> velnp =
-      Teuchos::rcp(new Epetra_Vector(mcfsi_->IVelnp()->Map(), true));
-  velnp->Update(1.0, *mcfsi_->IDispnp(), -1.0, *mcfsi_->IDispn(), 0.0);
+      Teuchos::rcp(new Epetra_Vector(mcfsi_->i_velnp()->Map(), true));
+  velnp->Update(1.0, *mcfsi_->i_dispnp(), -1.0, *mcfsi_->i_dispn(), 0.0);
 
   // inverse of FSI (1st order, 2nd order) scaling
   const double scaling_FSI = get_interface_timefac();  // 1/(theta_FSI * dt) =  1/weight^FSI_np
-  const double dt = xfluid_->Dt();
+  const double dt = xfluid_->dt();
 
   // v^{n+1} = -(1-theta)/theta * v^{n} - 1/(theta*dt)*(d^{n+1}-d^{n0})
-  velnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *mcfsi_->IVeln(), scaling_FSI);
+  velnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *mcfsi_->i_veln(), scaling_FSI);
 
   // 3 Set Structural Velocity onto ps mesh coupling
-  insert_vector(0, velnp, 0, mcfsi_->IVelnp(), CouplingCommManager::partial_to_partial);
+  insert_vector(0, velnp, 0, mcfsi_->i_velnp(), CouplingCommManager::partial_to_partial);
 
   // 4 Set Structural Velocity onto the structural discretization
   if (mcfsi_->get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided)
   {
     // Set Dispnp (used to calc local coord of gausspoints)
-    struct_->discretization()->set_state("dispnp", struct_->Dispnp());
+    struct_->discretization()->set_state("dispnp", struct_->dispnp());
     // Set Velnp (used for interface integration)
     Teuchos::RCP<Epetra_Vector> fullvelnp =
-        Teuchos::rcp(new Epetra_Vector(struct_->Velnp()->Map(), true));
-    fullvelnp->Update(1.0, *struct_->Dispnp(), -1.0, *struct_->Dispn(), 0.0);
-    fullvelnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *struct_->Veln(), scaling_FSI);
+        Teuchos::rcp(new Epetra_Vector(struct_->velnp()->Map(), true));
+    fullvelnp->Update(1.0, *struct_->dispnp(), -1.0, *struct_->dispn(), 0.0);
+    fullvelnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *struct_->veln(), scaling_FSI);
     struct_->discretization()->set_state("velaf", fullvelnp);
   }
 }
@@ -111,7 +111,7 @@ void XFEM::XfsCouplingManager::SetCouplingStates()
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling matrixes to the global systemmatrix                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::AddCouplingMatrix(
+void XFEM::XfsCouplingManager::add_coupling_matrix(
     Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   /*----------------------------------------------------------------------*/
@@ -133,10 +133,10 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
 
   // C_ss_block scaled with 1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) *
   // 1/weight(t^FSI_np) add the coupling block C_ss on the already existing diagonal block
-  C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
+  C_ss_block.add(*xfluid_->c_ss_matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
 
 
-  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
+  Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
 
   // Todo: Need to eighter split fluid matrixes in the fsi algo or change the maps of the coupling
   // matrixes(merged)
@@ -147,22 +147,22 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
       !is_xfluidfluid)  // use assign for off diagonal blocks
   {
     // scale the off diagonal coupling blocks
-    xfluid_->C_sx_Matrix(cond_name_)
-        ->Scale(scaling);  //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
-    xfluid_->C_xs_Matrix(cond_name_)
-        ->Scale(scaling * scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np)
+    xfluid_->c_sx_matrix(cond_name_)
+        ->scale(scaling);  //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
+    xfluid_->c_xs_matrix(cond_name_)
+        ->scale(scaling * scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np)
                                          //* 1/weight(t^FSI_np)
 
-    systemmatrix.Assign(idx_[0], idx_[1], Core::LinAlg::View, *xfluid_->C_sx_Matrix(cond_name_));
-    systemmatrix.Assign(idx_[1], idx_[0], Core::LinAlg::View, *xfluid_->C_xs_Matrix(cond_name_));
+    systemmatrix.assign(idx_[0], idx_[1], Core::LinAlg::View, *xfluid_->c_sx_matrix(cond_name_));
+    systemmatrix.assign(idx_[1], idx_[0], Core::LinAlg::View, *xfluid_->c_xs_matrix(cond_name_));
   }
   else if (probtype == Core::ProblemType::fpsi_xfem || is_xfluidfluid)
   {
     Core::LinAlg::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1], idx_[0]);
     Core::LinAlg::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0], idx_[1]);
 
-    C_sf_block.Add(*xfluid_->C_sx_Matrix(cond_name_), false, scaling, 1.0);
-    C_fs_block.Add(*xfluid_->C_xs_Matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
+    C_sf_block.add(*xfluid_->c_sx_matrix(cond_name_), false, scaling, 1.0);
+    C_fs_block.add(*xfluid_->c_xs_matrix(cond_name_), false, scaling * scaling_FSI, 1.0);
   }
   else
   {
@@ -173,10 +173,10 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::AddCouplingRHS(
+void XFEM::XfsCouplingManager::add_coupling_rhs(
     Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
-  Teuchos::RCP<Epetra_Vector> coup_rhs_sum = Teuchos::rcp(new Epetra_Vector(*xfluid_->RHS_s_Vec(
+  Teuchos::RCP<Epetra_Vector> coup_rhs_sum = Teuchos::rcp(new Epetra_Vector(*xfluid_->rhs_s_vec(
       cond_name_)));  // REMARK: Copy this vector to store the correct lambda_ in update!
   /// Lagrange multiplier \lambda_\Gamma^n at the interface (ie forces onto the structure,
   /// Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
@@ -191,7 +191,7 @@ void XFEM::XfsCouplingManager::AddCouplingRHS(
     // this is the interpolation weight for quantities from last time step
     // alpha_f for genalpha and (1-theta) for OST (weighting of the old time step n for
     // displacements)
-    const double stiparam = struct_->TimIntParam();  // (1-theta) for OST and alpha_f for Genalpha
+    const double stiparam = struct_->tim_int_param();  // (1-theta) for OST and alpha_f for Genalpha
 
     // scale factor for the structure system matrix w.r.t the new time step
     const double scaling_S = 1.0 / (1.0 - stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
@@ -214,7 +214,7 @@ void XFEM::XfsCouplingManager::AddCouplingRHS(
 /*----------------------------------------------------------------------*/
 /* Store the Coupling RHS of the Old Timestep in lambda     ager 06/2016 |
  *----------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::Update(double scaling)
+void XFEM::XfsCouplingManager::update(double scaling)
 {
   /*----------------------------------------------------------------------*/
   // we directly store the fluid-unscaled rhs_C_s residual contribution from the fluid solver which
@@ -223,7 +223,7 @@ void XFEM::XfsCouplingManager::Update(double scaling)
   // scaling for the structural residual is done when it is added to the global residual vector
   // get the coupling rhs from the xfluid, this vector is based on the boundary dis which is part of
   // the structure dis
-  lambda_->Update(scaling, *xfluid_->RHS_s_Vec(cond_name_), 0.0);
+  lambda_->Update(scaling, *xfluid_->rhs_s_vec(cond_name_), 0.0);
   return;
 }
 
@@ -237,7 +237,7 @@ void XFEM::XfsCouplingManager::output(Core::IO::DiscretizationWriter& writer)
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
   Teuchos::RCP<Epetra_Vector> lambdafull =
-      Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*get_map_extractor(0)->full_map(), true));
   insert_vector(0, lambda_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fsilambda", lambdafull);
   return;
@@ -248,7 +248,7 @@ void XFEM::XfsCouplingManager::output(Core::IO::DiscretizationWriter& writer)
 void XFEM::XfsCouplingManager::read_restart(Core::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> lambdafull =
-      Teuchos::rcp(new Epetra_Vector(*GetMapExtractor(0)->FullMap(), true));
+      Teuchos::rcp(new Epetra_Vector(*get_map_extractor(0)->full_map(), true));
   reader.read_vector(lambdafull, "fsilambda");
   insert_vector(0, lambdafull, 0, lambda_, CouplingCommManager::full_to_partial);
   return;
@@ -266,7 +266,7 @@ double XFEM::XfsCouplingManager::get_interface_timefac()
    * with fac = |
    *             \ = 1 / dt   if interface time integration is first order
    */
-  const double dt = xfluid_->Dt();
+  const double dt = xfluid_->dt();
   if (interface_second_order_)
     return 2. / dt;
   else

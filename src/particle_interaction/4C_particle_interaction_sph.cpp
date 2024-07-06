@@ -230,7 +230,7 @@ void ParticleInteraction::ParticleInteractionSPH::insert_particle_states_of_part
     surfacetension_->insert_particle_states_of_particle_types(particlestatestotypes);
 }
 
-void ParticleInteraction::ParticleInteractionSPH::SetInitialStates()
+void ParticleInteraction::ParticleInteractionSPH::set_initial_states()
 {
   // get kernel space dimension
   int kernelspacedim = 0;
@@ -246,14 +246,14 @@ void ParticleInteraction::ParticleInteractionSPH::SetInitialStates()
   const double initialparticlevolume = std::pow(initialparticlespacing, kernelspacedim);
 
   // iterate over particle types
-  for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type_i : particlecontainerbundle_->get_particle_types())
   {
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    const int particlestored = container->ParticlesStored();
+    const int particlestored = container->particles_stored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
@@ -275,7 +275,7 @@ void ParticleInteraction::ParticleInteractionSPH::SetInitialStates()
     initradius[0] = material->initRadius_;
 
     // set initial density for respective particles of current type
-    if (container->HaveStoredState(PARTICLEENGINE::Density))
+    if (container->have_stored_state(PARTICLEENGINE::Density))
       container->set_state(initdensity, PARTICLEENGINE::Density);
 
     // set initial mass and radius for all particles of current type
@@ -283,7 +283,7 @@ void ParticleInteraction::ParticleInteractionSPH::SetInitialStates()
     container->set_state(initradius, PARTICLEENGINE::Radius);
 
     // evaluate initial inertia for respective particles of current type
-    if (container->HaveStoredState(PARTICLEENGINE::Inertia))
+    if (container->have_stored_state(PARTICLEENGINE::Inertia))
     {
       // (initial) inertia of current phase
       std::vector<double> initinertia(1);
@@ -354,16 +354,16 @@ void ParticleInteraction::ParticleInteractionSPH::evaluate_interactions()
     virtualwallparticle_->init_relative_positions_of_virtual_particles(max_interaction_distance());
 
   // compute density field
-  density_->ComputeDensity();
+  density_->compute_density();
 
   // compute pressure using equation of state and density
-  pressure_->ComputePressure();
+  pressure_->compute_pressure();
 
   // compute interface quantities
   if (surfacetension_) surfacetension_->compute_interface_quantities();
 
   // compute temperature field
-  if (temperature_) temperature_->ComputeTemperature();
+  if (temperature_) temperature_->compute_temperature();
 
   // interpolate open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->interpolate_open_boundary_states();
@@ -401,7 +401,7 @@ void ParticleInteraction::ParticleInteractionSPH::post_evaluate_time_step(
     neumannopenboundary_->check_open_boundary_phase_change(max_interaction_distance());
 
   // evaluate phase change
-  if (phasechange_) phasechange_->EvaluatePhaseChange(particlesfromphasetophase);
+  if (phasechange_) phasechange_->evaluate_phase_change(particlesfromphasetophase);
 }
 
 double ParticleInteraction::ParticleInteractionSPH::max_interaction_distance() const

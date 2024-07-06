@@ -51,7 +51,7 @@ namespace FBI
        * \param[in] lmrowowner vector with owner procs of row gids
        * \param[in] lmcol vector with column gids
        */
-      void AssembleFluidMatrix(Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid,
+      void assemble_fluid_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid,
           const std::vector<int>& lmstride, const Core::LinAlg::SerialDenseMatrix& elemat,
           const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
           const std::vector<int>& lmcol) override;

@@ -126,7 +126,7 @@ namespace ParticleInteraction
     void communicate_history_pairs();
 
     //! update history pairs
-    void UpdateHistoryPairs();
+    void update_history_pairs();
 
    private:
     //! communicate specific history pairs

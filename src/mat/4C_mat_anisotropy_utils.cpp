@@ -89,7 +89,7 @@ void Mat::pack_fiber_array(
   {
     for (const auto& fiber : list)
     {
-      Core::Communication::ParObject::add_to_pack<T::numRows(), T::numCols()>(buffer, fiber);
+      Core::Communication::ParObject::add_to_pack<T::num_rows(), T::num_cols()>(buffer, fiber);
     }
   }
 }
@@ -119,7 +119,7 @@ void Mat::unpack_fiber_array(std::vector<char>::size_type& position, const std::
     std::array<T, numfib> mat;
     for (unsigned int j = 0; j < numfib; ++j)
     {
-      Core::Communication::ParObject::extract_from_pack<T::numRows(), T::numCols()>(
+      Core::Communication::ParObject::extract_from_pack<T::num_rows(), T::num_cols()>(
           position, data, mat.at(j));
     }
     vct.emplace_back(mat);

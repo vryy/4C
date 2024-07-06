@@ -40,11 +40,11 @@ namespace CrossLinking
   class CrosslinkerNodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "CrosslinkerNodeType"; };
+    std::string name() const override { return "CrosslinkerNodeType"; };
 
-    static CrosslinkerNodeType& Instance() { return instance_; };
+    static CrosslinkerNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static CrosslinkerNodeType instance_;
@@ -103,7 +103,7 @@ namespace CrossLinking
     /*!
      \brief Get current binding spot status of linker
      */
-    const std::vector<std::pair<int, int>>& GetClBSpotStatus()
+    const std::vector<std::pair<int, int>>& get_cl_b_spot_status()
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // safety check
@@ -115,7 +115,7 @@ namespace CrossLinking
     /*!
      \brief Get
      */
-    void SetClBSpotStatus(std::vector<std::pair<int, int>> clbspots)
+    void set_cl_b_spot_status(std::vector<std::pair<int, int>> clbspots)
     {
       clbspots_ = clbspots;
       return;
@@ -124,12 +124,12 @@ namespace CrossLinking
     /*!
     \brief Get current number of bonds of crosslinker
     */
-    const int& GetNumberOfBonds() { return numbond_; }
+    const int& get_number_of_bonds() { return numbond_; }
 
     /*!
     \brief Set current number of bonds of crosslinker
     */
-    void SetNumberOfBonds(int numbond)
+    void set_number_of_bonds(int numbond)
     {
       numbond_ = numbond;
       return;
@@ -197,7 +197,7 @@ namespace CrossLinking
      \brief Deep copy the derived class and return pointer to it
 
      */
-    CrossLinking::CrosslinkerNode* Clone() const override;
+    CrossLinking::CrosslinkerNode* clone() const override;
 
 
 
@@ -208,9 +208,9 @@ namespace CrossLinking
      top of lib/parobject.H.
 
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return CrosslinkerNodeType::Instance().UniqueParObjectId();
+      return CrosslinkerNodeType::instance().unique_par_object_id();
     }
 
     /*!
@@ -245,7 +245,7 @@ namespace CrossLinking
     This method returns the material associated with this crosslinker node
 
     */
-    inline Teuchos::RCP<Mat::CrosslinkerMat> GetMaterial() const
+    inline Teuchos::RCP<Mat::CrosslinkerMat> get_material() const
     {
       if (mat_ == Teuchos::null) FOUR_C_THROW("No crosslinker material attached.");
       return mat_;
@@ -266,13 +266,13 @@ namespace CrossLinking
      Matnum needs to be assigned to a crosslinker type in the input file
 
      */
-    virtual void SetMaterial(int const matnum);
+    virtual void set_material(int const matnum);
 
 
     /*!
      \brief Set material for crosslinker node
      */
-    virtual void SetMaterial(Teuchos::RCP<Core::Mat::Material> material);
+    virtual void set_material(Teuchos::RCP<Core::Mat::Material> material);
 
     //  /*!
     //   \brief Resets the data container of the node

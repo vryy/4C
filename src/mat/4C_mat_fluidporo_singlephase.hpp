@@ -157,11 +157,11 @@ namespace Mat
   class FluidPoroSinglePhaseType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FluidPoroSinglePhaseType"; }
+    std::string name() const override { return "FluidPoroSinglePhaseType"; }
 
-    static FluidPoroSinglePhaseType& Instance() { return instance_; };
+    static FluidPoroSinglePhaseType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSinglePhaseType instance_;
@@ -173,11 +173,11 @@ namespace Mat
   class FluidPoroSingleVolFracType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FluidPoroSingleVolFracType"; }
+    std::string name() const override { return "FluidPoroSingleVolFracType"; }
 
-    static FluidPoroSingleVolFracType& Instance() { return instance_; };
+    static FluidPoroSingleVolFracType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSingleVolFracType instance_;
@@ -189,11 +189,11 @@ namespace Mat
   class FluidPoroVolFracPressureType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "FluidPoroVolFracPressureType"; }
+    std::string name() const override { return "FluidPoroVolFracPressureType"; }
 
-    static FluidPoroVolFracPressureType& Instance() { return instance_; };
+    static FluidPoroVolFracPressureType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroVolFracPressureType instance_;
@@ -234,9 +234,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return FluidPoroSinglePhaseType::Instance().UniqueParObjectId();
+      return FluidPoroSinglePhaseType::instance().unique_par_object_id();
     }
 
     /*!
@@ -244,7 +244,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -258,7 +258,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -271,24 +271,24 @@ namespace Mat
     void initialize() override;
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_fluidporo_singlephase;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new FluidPoroSinglePhase(*this));
     }
 
     /// return density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     /// return relative permeability
-    double RelPermeability(const double saturation) const
+    double rel_permeability(const double saturation) const
     {
-      return params_->relpermeabilitylaw_->GetRelPermeability(saturation);
+      return params_->relpermeabilitylaw_->get_rel_permeability(saturation);
     }
 
     // check for constant relative permeability
@@ -307,35 +307,35 @@ namespace Mat
     bool has_constant_viscosity() const { return params_->viscositylaw_->has_constant_viscosity(); }
 
     /// return viscosity
-    double Viscosity(const double abspressgrad) const
+    double viscosity(const double abspressgrad) const
     {
-      return params_->viscositylaw_->GetViscosity(abspressgrad);
+      return params_->viscositylaw_->get_viscosity(abspressgrad);
     }
 
     /// return derivative of viscosity w.r.t. to absolute value of pressure gradient
-    double ViscosityDeriv(const double abspressgrad) const
+    double viscosity_deriv(const double abspressgrad) const
     {
       return params_->viscositylaw_->get_deriv_of_viscosity_wrt_abs_press_grad(abspressgrad);
     }
 
     /// return inverse bulk modulus (compressibility)
-    double InvBulkmodulus() const { return params_->densitylaw_->InvBulkmodulus(); }
+    double inv_bulkmodulus() const { return params_->densitylaw_->inv_bulkmodulus(); }
 
     /// return type of degree of freedom
-    Core::Materials::MaterialType PoroDofType() const;
+    Core::Materials::MaterialType poro_dof_type() const;
 
     /// return type of phase law
-    Core::Materials::MaterialType PoroPhaseLawType() const;
+    Core::Materials::MaterialType poro_phase_law_type() const;
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-    void FillDoFMatrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const;
+    void fill_do_f_matrix(Core::LinAlg::SerialDenseMatrix& dofmat, int numphase) const;
 
     /// evaluate saturation of the phase
-    double EvaluateSaturation(
+    double evaluate_saturation(
         int phasenum, const std::vector<double>& state, const std::vector<double>& pressure) const;
 
     /// evaluate the generalized(!) pressure of this phase
-    double EvaluateGenPressure(int phasenum, const std::vector<double>& state) const;
+    double evaluate_gen_pressure(int phasenum, const std::vector<double>& state) const;
 
     //! evaluate derivative of saturation with respect to pressure
     double evaluate_deriv_of_saturation_wrt_pressure(
@@ -350,7 +350,7 @@ namespace Mat
         int phasenum, int doftoderive, const std::vector<double>& state) const;
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
     /// my material parameters
@@ -379,9 +379,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return FluidPoroSingleVolFracType::Instance().UniqueParObjectId();
+      return FluidPoroSingleVolFracType::instance().unique_par_object_id();
     }
 
     /*!
@@ -389,7 +389,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -403,7 +403,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -416,37 +416,37 @@ namespace Mat
     void initialize() override;
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_fluidporo_singlevolfrac;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// return density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     /// return diffusivity
-    double Diffusivity() const { return params_->diffusivity_; }
+    double diffusivity() const { return params_->diffusivity_; }
 
     /// return number of scalars
-    int NumScal() const { return params_->numscal_; }
+    int num_scal() const { return params_->numscal_; }
 
     /// return scalardependentflux_
     bool has_add_scalar_dependent_flux() const { return params_->scalardependentflux_; }
 
     /// return diffusivities for scalar-dependent flux
-    std::vector<double> ScalarDiffs() const { return params_->scalardiffs_; }
+    std::vector<double> scalar_diffs() const { return params_->scalardiffs_; }
 
     /// return omega_half for scalar-dependent flux
-    std::vector<double> OmegaHalf() const { return params_->omega_half_; }
+    std::vector<double> omega_half() const { return params_->omega_half_; }
 
    private:
     /// my material parameters
@@ -474,9 +474,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return FluidPoroVolFracPressureType::Instance().UniqueParObjectId();
+      return FluidPoroVolFracPressureType::instance().unique_par_object_id();
     }
 
     /*!
@@ -484,7 +484,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -498,7 +498,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -511,37 +511,37 @@ namespace Mat
     void initialize() override;
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_fluidporo_volfracpressure;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new FluidPoroVolFracPressure(*this));
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// return permeability
-    double Permeability() const { return params_->permeability_; }
+    double permeability() const { return params_->permeability_; }
 
     /// return minimum volume fraction
-    double MinVolFrac() const { return params_->min_volfrac_; }
+    double min_vol_frac() const { return params_->min_volfrac_; }
 
     // check for constant viscosity
     bool has_constant_viscosity() const { return params_->viscositylaw_->has_constant_viscosity(); }
 
     /// return viscosity
-    double Viscosity(const double abspressgrad) const
+    double viscosity(const double abspressgrad) const
     {
-      return params_->viscositylaw_->GetViscosity(abspressgrad);
+      return params_->viscositylaw_->get_viscosity(abspressgrad);
     }
 
     /// return derivative of viscosity w.r.t. to absolute value of pressure gradient
-    double ViscosityDeriv(const double abspressgrad) const
+    double viscosity_deriv(const double abspressgrad) const
     {
       return params_->viscositylaw_->get_deriv_of_viscosity_wrt_abs_press_grad(abspressgrad);
     }

@@ -157,7 +157,7 @@ namespace Core::LinAlg
       return (a_->ApplyInverse(X, Y));
     }
 
-    Teuchos::RCP<Epetra_Operator> UnprojectedOperator() { return (a_); }
+    Teuchos::RCP<Epetra_Operator> unprojected_operator() { return (a_); }
 
    private:
     //! flag whether to do a projection or just pass through

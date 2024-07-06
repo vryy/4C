@@ -38,7 +38,7 @@ namespace ScaTra
     // number of modes equal to number of elements in one spatial direction
     // this does not yield the correct value
     // nummodes_ = (int) pow((double) discret_->NumGlobalElements(),1.0/3.0);
-    switch (discret_->NumGlobalElements())
+    switch (discret_->num_global_elements())
     {
       case 512:
       {
@@ -77,7 +77,7 @@ namespace ScaTra
       }
       default:
       {
-        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->num_global_elements());
         break;
       }
     }
@@ -89,24 +89,24 @@ namespace ScaTra
     // the criterion allows differences in coordinates by 1e-9
     std::set<double, LineSortCriterion> coords;
     // loop all nodes and store x1-coordinate
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
-      if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
-          (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
-        coords.insert(node->X()[0]);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
+      if ((node->x()[1] < 2e-9 && node->x()[1] > -2e-9) and
+          (node->x()[2] < 2e-9 && node->x()[2] > -2e-9))
+        coords.insert(node->x()[0]);
     }
 
     // communicate coordinates to all procs via round Robin loop
     {
-      int myrank = discret_->Comm().MyPID();
-      int numprocs = discret_->Comm().NumProc();
+      int myrank = discret_->get_comm().MyPID();
+      int numprocs = discret_->get_comm().NumProc();
 
       std::vector<char> sblock;
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      Core::Communication::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->get_comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
@@ -134,18 +134,18 @@ namespace ScaTra
 
         // receive from predecessor
         frompid = (myrank + numprocs - 1) % numprocs;
-        exporter.ReceiveAny(frompid, tag, rblock, length);
+        exporter.receive_any(frompid, tag, rblock, length);
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
           FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
-        exporter.Wait(request);
+        exporter.wait(request);
 
         {
           // for safety
-          exporter.Comm().Barrier();
+          exporter.get_comm().Barrier();
         }
 
         // unpack received block into set of all coordinates
@@ -251,16 +251,16 @@ namespace ScaTra
               // this ensures that all processors construct the same
               // initial field, which is important to get a matching
               // scalar field in physical space
-              if (discret_->Comm().MyPID() == 0)
+              if (discret_->get_comm().MyPID() == 0)
               {
-                Core::UTILS::Random* random = Global::Problem::Instance()->Random();
+                Core::UTILS::Random* random = Global::Problem::instance()->random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta = random->Uni();
                 // use this version to get random field different from fluid
-                random_theta = 0.5 * random->Uni() + 0.5;
+                random_theta = 0.5 * random->uni() + 0.5;
               }
-              discret_->Comm().Broadcast(&random_theta, 1, 0);
+              discret_->get_comm().Broadcast(&random_theta, 1, 0);
 
               // estimate energy at wave number from energy spectrum
               const double energy = calculate_energy_from_spectrum(k);
@@ -394,17 +394,17 @@ namespace ScaTra
     // set scalar field
     //----------------------------------------
 
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    for (int inode = 0; inode < discret_->num_my_row_nodes(); inode++)
     {
       // get node
-      Core::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->l_row_node(inode);
 
       // get coordinates
       Core::LinAlg::Matrix<3, 1> xyz(true);
-      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
+      for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->x()[idim];
 
       // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(0, node);
+      std::vector<int> dofs = discret_->dof(0, node);
       if (dofs.size() > 1)
         FOUR_C_THROW("Only one dof per node for homogeneous isotropic turbulence!");
 

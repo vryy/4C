@@ -28,7 +28,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& par
 {
   // we assume here, that numdofpernode is equal for every node within
   // the element and does not change during the computations
-  const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
+  const int numdofpernode = num_dof_per_node(*(nodes()[0]));
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::Action action =
@@ -59,8 +59,8 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& par
       elevec[1] = &elevec2;
       elevec[2] = &elevec3;
 
-      return Discret::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
-          Shape(), numdofpernode, discretization.Name())
+      return Discret::ELEMENTS::PoroFluidMultiPhaseFactory::provide_impl(
+          shape(), numdofpernode, discretization.name())
           ->evaluate(this, params, discretization, la, elemat, elevec);
       break;
     }
@@ -110,7 +110,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discreti
   {
     case POROFLUIDMULTIPHASE::set_general_parameter:
     {
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
+      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(dis.name())
           ->set_general_parameters(p);
 
       break;
@@ -118,7 +118,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discreti
 
     case POROFLUIDMULTIPHASE::set_timestep_parameter:
     {
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(dis.Name())
+      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(dis.name())
           ->set_time_step_parameters(p);
 
       break;

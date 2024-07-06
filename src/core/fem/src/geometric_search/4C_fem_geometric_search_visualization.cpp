@@ -25,9 +25,9 @@ namespace Core::GeometricSearch
       : Core::IO::VisualizationManager(std::move(parameters), comm, std::move(base_output_name))
   {
     my_rank_ = comm.MyPID();
-    this->get_visualization_data().RegisterCellData<int>("element_id", 1);
-    this->get_visualization_data().RegisterCellData<int>("element_created_on_rank", 1);
-    this->get_visualization_data().RegisterCellData<int>("primitive_predicate_flag", 1);
+    this->get_visualization_data().register_cell_data<int>("element_id", 1);
+    this->get_visualization_data().register_cell_data<int>("element_created_on_rank", 1);
+    this->get_visualization_data().register_cell_data<int>("primitive_predicate_flag", 1);
   }
 
   void GeometricSearchVisualization::write_primitives_and_predicates_to_disk(
@@ -53,9 +53,9 @@ namespace Core::GeometricSearch
       {
         const auto& [points, polygons] = GetKDopPolyhedronRepresentation(bounding_volume.second);
         IO::AppendPolyhedronToVisualizationData(visualization_data, points, polygons);
-        visualization_data.GetCellData<int>("element_id").push_back(bounding_volume.first);
-        visualization_data.GetCellData<int>("element_created_on_rank").push_back(my_rank_);
-        visualization_data.GetCellData<int>("primitive_predicate_flag")
+        visualization_data.get_cell_data<int>("element_id").push_back(bounding_volume.first);
+        visualization_data.get_cell_data<int>("element_created_on_rank").push_back(my_rank_);
+        visualization_data.get_cell_data<int>("primitive_predicate_flag")
             .push_back(primitive_predicate_flag);
       }
     };
@@ -65,7 +65,7 @@ namespace Core::GeometricSearch
     add_bounding_volumes(predicates, 1);
 
     // Write the data to disk
-    WriteToDisk(visualziation_time, visualization_step);
+    write_to_disk(visualziation_time, visualization_step);
 #endif
   }
 

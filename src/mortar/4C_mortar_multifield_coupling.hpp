@@ -41,19 +41,19 @@ namespace Mortar
 
 
     /// add a new discretization to perform coupling on
-    void PushBackCoupling(const Teuchos::RCP<Core::FE::Discretization>& dis,  ///< discretization
-        const int nodeset,                                                    ///< nodeset to couple
-        const std::vector<int> dofs_to_couple                                 ///< dofs to couple
+    void push_back_coupling(const Teuchos::RCP<Core::FE::Discretization>& dis,  ///< discretization
+        const int nodeset,                     ///< nodeset to couple
+        const std::vector<int> dofs_to_couple  ///< dofs to couple
     );
 
     /// Perform condensation in all blocks of the matrix
-    void CondenseMatrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat);
+    void condense_matrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
-    void CondenseRhs(Teuchos::RCP<Epetra_Vector>& rhs);
+    void condense_rhs(Teuchos::RCP<Epetra_Vector>& rhs);
 
     /// recover condensed primal slave-sided dofs
-    void RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr);
+    void recover_incr(Teuchos::RCP<Epetra_Vector>& incr);
 
    private:
     std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> p_;

@@ -44,7 +44,7 @@ namespace PARTICLEENGINE
   class ParticleObjectType final : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ParticleObjectType"; };
+    std::string name() const override { return "ParticleObjectType"; };
 
     /*!
      * \brief get instance of particle object type
@@ -53,9 +53,9 @@ namespace PARTICLEENGINE
      *
      * \return reference to instance of particle object type
      */
-    static ParticleObjectType& Instance() { return instance_; };
+    static ParticleObjectType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     //! particle object type instance
@@ -104,9 +104,9 @@ namespace PARTICLEENGINE
     ParticleObject(ParticleType type, int globalid, const ParticleStates& states, int bingid = -1,
         int index = -1);
 
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ParticleObjectType::Instance().UniqueParObjectId();
+      return ParticleObjectType::instance().unique_par_object_id();
     };
 
     void pack(Core::Communication::PackBuffer& data) const override;
@@ -123,7 +123,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particleglobalid global id of particle
      */
-    inline void SetParticleGlobalID(int globalid) { globalid_ = globalid; };
+    inline void set_particle_global_id(int globalid) { globalid_ = globalid; };
 
     //! @}
 
@@ -137,7 +137,7 @@ namespace PARTICLEENGINE
      *
      * \return particle type
      */
-    inline ParticleType ReturnParticleType() const { return type_; };
+    inline ParticleType return_particle_type() const { return type_; };
 
     /*!
      * \brief get global id of particle
@@ -164,7 +164,7 @@ namespace PARTICLEENGINE
      *
      * \return global id of bin the particle is located in
      */
-    inline int ReturnBinGid() const { return bingid_; };
+    inline int return_bin_gid() const { return bingid_; };
 
     /*!
      * \brief get index of particle in container

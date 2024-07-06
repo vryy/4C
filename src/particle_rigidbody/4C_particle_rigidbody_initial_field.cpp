@@ -50,13 +50,13 @@ void ParticleRigidBody::SetInitialFields(const Teuchos::ParameterList& params,
 
     // get reference to function
     const auto& function =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
+        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
 
     // get rigid body state dimension
     const int statedim = 3;
 
     // safety check
-    if (static_cast<std::size_t>(statedim) != function.NumberComponents())
+    if (static_cast<std::size_t>(statedim) != function.number_components())
     {
       FOUR_C_ASSERT(
           "dimensions of function defining initial field and of state of rigid bodies '%s' not "
@@ -68,7 +68,7 @@ void ParticleRigidBody::SetInitialFields(const Teuchos::ParameterList& params,
     for (const int rigidbody_k : ownedrigidbodies)
     {
       // get pointer to rigid body states
-      const double* pos_k = rigidbodydatastates.GetRefPosition()[rigidbody_k].data();
+      const double* pos_k = rigidbodydatastates.get_ref_position()[rigidbody_k].data();
 
       // evaluate function to set initial field
       for (int dim = 0; dim < statedim; ++dim)
@@ -129,11 +129,11 @@ namespace
     switch (particleState)
     {
       case PARTICLEENGINE::Velocity:
-        return rigidbodydatastates.GetRefVelocity();
+        return rigidbodydatastates.get_ref_velocity();
       case PARTICLEENGINE::AngularVelocity:
         return rigidbodydatastates.get_ref_angular_velocity();
       case PARTICLEENGINE::Acceleration:
-        return rigidbodydatastates.GetRefAcceleration();
+        return rigidbodydatastates.get_ref_acceleration();
       case PARTICLEENGINE::AngularAcceleration:
         return rigidbodydatastates.get_ref_angular_acceleration();
 

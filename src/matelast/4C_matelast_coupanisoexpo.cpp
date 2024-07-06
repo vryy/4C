@@ -23,7 +23,7 @@ Mat::Elastic::CoupAnisoExpoAnisotropyExtension::CoupAnisoExpoAnisotropyExtension
 {
 }
 
-double Mat::Elastic::CoupAnisoExpoAnisotropyExtension::GetScalarProduct(int gp) const
+double Mat::Elastic::CoupAnisoExpoAnisotropyExtension::get_scalar_product(int gp) const
 {
   return 1.0;
 }
@@ -71,18 +71,18 @@ void Mat::Elastic::CoupAnisoExpo::register_anisotropy_extensions(Mat::Anisotropy
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void Mat::Elastic::CoupAnisoExpo::PackSummand(Core::Communication::PackBuffer& data) const
+void Mat::Elastic::CoupAnisoExpo::pack_summand(Core::Communication::PackBuffer& data) const
 {
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::CoupAnisoExpo::UnpackSummand(
+void Mat::Elastic::CoupAnisoExpo::unpack_summand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   anisotropy_extension_.unpack_anisotropy(data, position);
 }
 
-void Mat::Elastic::CoupAnisoExpo::GetFiberVecs(
+void Mat::Elastic::CoupAnisoExpo::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
@@ -90,13 +90,13 @@ void Mat::Elastic::CoupAnisoExpo::GetFiberVecs(
     fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT));
 }
 
-void Mat::Elastic::CoupAnisoExpo::SetFiberVecs(const double newgamma,
+void Mat::Elastic::CoupAnisoExpo::set_fiber_vecs(const double newgamma,
     const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   anisotropy_extension_.set_fiber_vecs(newgamma, locsys, defgrd);
 }
 
-void Mat::Elastic::CoupAnisoExpo::SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec)
+void Mat::Elastic::CoupAnisoExpo::set_fiber_vecs(const Core::LinAlg::Matrix<3, 1>& fibervec)
 {
   anisotropy_extension_.set_fiber_vecs(fibervec);
 }

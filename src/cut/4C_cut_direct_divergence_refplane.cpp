@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------*
  * Perform all the operations related to computing reference plane           sudhakar 06/15
  *-----------------------------------------------------------------------------------*/
-std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::GetReferencePlane()
+std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::get_reference_plane()
 {
-  if (elem1_->Shape() != Core::FE::CellType::hex8)
+  if (elem1_->shape() != Core::FE::CellType::hex8)
   {
-    FOUR_C_THROW("Currently can handle only hexagonal family, not %d\n", elem1_->Shape());
+    FOUR_C_THROW("Currently can handle only hexagonal family, not %d\n", elem1_->shape());
   }
 
   std::vector<double> RefPlaneEqn(4, 0.0);
@@ -32,7 +32,7 @@ std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::GetReference
   bool comp_ref_plane = false;
 
   // In the first round check if the projection of element corner points is inside
-  std::vector<Point*> points = elem1_->Points();
+  std::vector<Point*> points = elem1_->points();
 
   static const int max_attempts = 9;
   double tol = 1e-8;
@@ -89,19 +89,19 @@ std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::GetReference
       // expensive depending on the number of points describing the vc but will just be neccesary in
       // some cases ...
       points.clear();
-      for (plain_facet_set::const_iterator fit = volcell_->Facets().begin();
-           fit != volcell_->Facets().end(); ++fit)
+      for (plain_facet_set::const_iterator fit = volcell_->facets().begin();
+           fit != volcell_->facets().end(); ++fit)
       {
-        for (std::size_t p = 0; p < (*fit)->Points().size(); ++p)
+        for (std::size_t p = 0; p < (*fit)->points().size(); ++p)
         {
           bool insert = true;
           for (std::size_t ap = 0; ap < points.size(); ++ap)
-            if (points[ap]->Id() == (*fit)->Points()[p]->Id())
+            if (points[ap]->id() == (*fit)->points()[p]->id())
             {
               insert = false;
               break;
             }
-          if (insert) points.push_back((*fit)->Points()[p]);
+          if (insert) points.push_back((*fit)->points()[p]);
         }
       }
     }
@@ -137,7 +137,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
   // output. Here we take all possible 6 diagonals of the Hex element, and choose the diagonal which
   // has maximum normal component in x-direction as the reference plane
   //---
-  std::vector<Point*> ptslist = elem1_->Points();
+  std::vector<Point*> ptslist = elem1_->points();
 
   std::vector<Point*> diag;
   std::vector<std::vector<Point*>> diagonals;
@@ -199,7 +199,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
       options_.direct_divergence_refplane() != DirDiv_refplane_facet)
     return false;
 
-  const plain_facet_set& allfacets = volcell_->Facets();
+  const plain_facet_set& allfacets = volcell_->facets();
 
   //---
   // STEP 1: Estimate equation of reference plane and store the corresponding points for gmsh
@@ -210,12 +210,12 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
       facet_data;
   for (plain_facet_set::const_iterator it = allfacets.begin(); it != allfacets.end(); it++)
   {
-    std::vector<double> RefPlaneTemp = Kernel::EqnPlaneOfPolygon((*it)->Points());
+    std::vector<double> RefPlaneTemp = Kernel::EqnPlaneOfPolygon((*it)->points());
     scale_equation_of_plane(RefPlaneTemp);
     if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 
     facet_data.insert(
-        std::make_pair(RefPlaneTemp[0], std::make_pair(RefPlaneTemp, (*it)->Points())));
+        std::make_pair(RefPlaneTemp[0], std::make_pair(RefPlaneTemp, (*it)->points())));
   }
 
   double xnormal = 0.0;
@@ -270,7 +270,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::side_based_ref(
       options_.direct_divergence_refplane() != DirDiv_refplane_diagonal_side)
     return false;
 
-  const std::vector<Side*>& allsides = elem1_->Sides();
+  const std::vector<Side*>& allsides = elem1_->sides();
 
   //---
   // STEP 1: Estimate equation of reference plane and store the corresponding points for gmsh
@@ -282,7 +282,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::side_based_ref(
   for (std::vector<Side*>::const_iterator it = allsides.begin(); it != allsides.end(); it++)
   {
     const Side* s = *it;
-    const std::vector<Node*> nds = s->Nodes();
+    const std::vector<Node*> nds = s->nodes();
 
 
     for (std::size_t split_quadidx = 0; split_quadidx < 3 * nds.size() - 8; ++split_quadidx)
@@ -363,7 +363,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::is_all_projected_corners_in
     Point* pt = *it;
 
     Core::LinAlg::Matrix<3, 1> coo;
-    pt->Coordinates(coo.data());
+    pt->coordinates(coo.data());
 
     Core::LinAlg::Matrix<3, 1> xyz_proj(coo), rst_proj;
 

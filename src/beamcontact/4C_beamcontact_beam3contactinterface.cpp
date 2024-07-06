@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl(
+Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::impl(
     const int numnodes, const int numnodalvalues, const Core::FE::Discretization& pdiscret,
     const Core::FE::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
     Core::Elements::Element* element1, Core::Elements::Element* element2,

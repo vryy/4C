@@ -40,7 +40,7 @@ namespace Discret
       virtual ~ScaTraEleParameterBase() = default;
 
       //! set parameters
-      virtual void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
+      virtual void set_parameters(Teuchos::ParameterList& parameters  //!< parameter list
           ) = 0;
     };
   }  // namespace ELEMENTS

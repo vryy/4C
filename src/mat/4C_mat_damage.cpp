@@ -83,7 +83,7 @@ Mat::DamageType Mat::DamageType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::DamageType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::DamageType::create(const std::vector<char>& data)
 {
   Mat::Damage* plastic = new Mat::Damage();
   plastic->unpack(data);
@@ -111,17 +111,17 @@ void Mat::Damage::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
   // in case we are in post-process mode
-  if (params_ != nullptr) matid = params_->Id();
+  if (params_ != nullptr) matid = params_->id();
   add_to_pack(data, matid);
 
   // pack history data
-  int histsize = Initialized() ? strainpllast_.size() : 0;
+  int histsize = initialized() ? strainpllast_.size() : 0;
 
   add_to_pack(data, histsize);  // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
@@ -150,23 +150,23 @@ void Mat::Damage::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::Damage*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   // history data
@@ -633,7 +633,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
         // total stress
         // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
         // pressure/volumetric stress no influence due to plasticity
-        Stress(p_tilde, devstress, *stress);
+        Damage::stress(p_tilde, devstress, *stress);
 
         // total strains
         // compute converged engineering strain components (Voigt-notation)
@@ -776,7 +776,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
       // total stress
       // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
       // pressure/volumetric stress no influence due to plasticity
-      Stress(p, devstress, *stress);
+      Damage::stress(p, devstress, *stress);
 
       // -------------------------------------------- update flow vectors
 
@@ -842,7 +842,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
     // result vectors of time step n+1 = omega . trial state vectors
     // sigma^e_n+1 = omega . sigma^(e,trial)_n+1
     //             = omega . (s^{trial}_{n+1} + p . id2)
-    Stress(p, devstress, *stress);
+    Damage::stress(p, devstress, *stress);
 
     // --------------------------------------------------------- update history
     // constant values for
@@ -1189,7 +1189,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
   // -----------------------------------------  relative effective stress
   // eta^{~,trial}_{n+1} = s^{~,trial}_{n+1} - beta^{trial}_{n+1}
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> eta_tilde(true);
-  RelStress(devstress_tilde, beta, eta_tilde);
+  rel_stress(devstress_tilde, beta, eta_tilde);
 
   // --------------- trial (undamaged) elastic von Mises effective stress
 
@@ -1528,7 +1528,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
       // update effective stress
       // eta^{~}_{n+1} = s^{~}_{n+1} - beta_{n+1}
       Core::LinAlg::Matrix<NUM_STRESS_3D, 1> eta_tilde(true);
-      RelStress(devstress_tilde, beta, eta_tilde);
+      rel_stress(devstress_tilde, beta, eta_tilde);
       // update the invariant of the stress deviator
       J2bar = 1.0 / 2.0 *
                   (eta_tilde(0) * eta_tilde(0) + eta_tilde(1) * eta_tilde(1) +
@@ -1889,7 +1889,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
     // total stress
     // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
     // pressure/volumetric stress no influence due to plasticity
-    Stress(p, devstress, *stress);
+    Damage::stress(p, devstress, *stress);
 
     // ------------------------------------------------- update strains
 
@@ -1947,7 +1947,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
     // result vectors of time step n+1 = omega . trial state vectors
     // sigma^e_n+1 = omega . sigma^(e,trial)_n+1
     //             = omega . (s^{trial}_{n+1} + p . id2)
-    Stress(p, devstress, *stress);
+    Damage::stress(p, devstress, *stress);
 
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1}
@@ -2007,7 +2007,7 @@ void Mat::Damage::evaluate_full_lemaitre(const Core::LinAlg::Matrix<3, 3>* defgr
 /*----------------------------------------------------------------------*
  | computes stress tensor                                    dano 11/13 |
  *----------------------------------------------------------------------*/
-void Mat::Damage::Stress(const double p,                      // volumetric stress
+void Mat::Damage::stress(const double p,                      // volumetric stress
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            // 2nd PK-stress
 )
@@ -2023,7 +2023,7 @@ void Mat::Damage::Stress(const double p,                      // volumetric stre
 /*----------------------------------------------------------------------*
  | compute relative deviatoric stress tensor                 dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::Damage::RelStress(
+void Mat::Damage::rel_stress(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& beta,       // back stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               // relative stress
@@ -2649,7 +2649,7 @@ void Mat::Damage::setup_cmat_elasto_plastic_full_lemaitre(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)              dano 09/13 |
  *---------------------------------------------------------------------*/
-void Mat::Damage::VisNames(std::map<std::string, int>& names)
+void Mat::Damage::vis_names(std::map<std::string, int>& names)
 {
   std::string variablename = "accumulatedstrain";
   names[variablename] = 1;  // scalar
@@ -2663,13 +2663,13 @@ void Mat::Damage::VisNames(std::map<std::string, int>& names)
   variablename = "failedFlag";
   names[variablename] = 1;  // scalar
 
-}  // VisNames()
+}  // vis_names()
 
 
 /*---------------------------------------------------------------------*
  | return visualization data (public)                       dano 09/13 |
  *---------------------------------------------------------------------*/
-bool Mat::Damage::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
+bool Mat::Damage::vis_data(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
   {
@@ -2704,7 +2704,7 @@ bool Mat::Damage::VisData(const std::string& name, std::vector<double>& data, in
   }
 
   return true;
-}  // VisData()
+}  // vis_data()
 
 
 /*---------------------------------------------------------------------*
@@ -2720,7 +2720,7 @@ void Mat::Damage::register_output_data_names(
 }
 
 
-bool Mat::Damage::EvaluateOutputData(
+bool Mat::Damage::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")

@@ -34,7 +34,7 @@ Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>*
-Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -44,7 +44,7 @@ Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
             new ScaTraEleCalcRefConcReac<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -61,13 +61,13 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
 
-  remanager->AddToReaBodyForce(
-      matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->Phinp(), gpcoord, 1.0 / j_) *
+  remanager->add_to_rea_body_force(
+      matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->phinp(), gpcoord, 1.0 / j_) *
           j_,
       k);
 
   matreaclist->calc_rea_body_force_deriv_matrix(
-      k, remanager->get_rea_body_force_deriv_vector(k), my::scatravarmanager_->Phinp(), gpcoord);
+      k, remanager->get_rea_body_force_deriv_vector(k), my::scatravarmanager_->phinp(), gpcoord);
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
-  Diff_tens.scale(my::diffmanager_->GetIsotropicDiff(k));
+  Diff_tens.scale(my::diffmanager_->get_isotropic_diff(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
 
 
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
-  Diff_tens2.scale(my::diffmanager_->GetIsotropicDiff(k) / j_);
+  Diff_tens2.scale(my::diffmanager_->get_isotropic_diff(k) / j_);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -214,9 +214,9 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
   // \D* \grad c_0 \times \grad \phi ...
   /////////////////////////////////////////////////////////////////////
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
-  Diff_tens.scale(my::diffmanager_->GetIsotropicDiff(k));
+  Diff_tens.scale(my::diffmanager_->get_isotropic_diff(k));
 
-  const Core::LinAlg::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
+  const Core::LinAlg::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->grad_phi(k);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -239,7 +239,7 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
   // ... + \D* c_0/J * \grad J \times \grad \phi
   /////////////////////////////////////////////////////////////////////
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
-  Diff_tens2.scale(my::diffmanager_->GetIsotropicDiff(k) / j_ * my::scatravarmanager_->Phinp(k));
+  Diff_tens2.scale(my::diffmanager_->get_isotropic_diff(k) / j_ * my::scatravarmanager_->phinp(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {

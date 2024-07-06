@@ -76,22 +76,22 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// get the node based on node id
-      Node* GetNode(int nid) const;
+      Node* get_node(int nid) const;
 
       /// get the side (handle) based on side id of the cut mesh
       SideHandle* get_side(int sid) const;
 
       /// get the mesh's element based on element id
-      ElementHandle* GetElement(int eid) const;
+      ElementHandle* get_element(int eid) const;
 
       /// get the element' side of the mesh's element based on node ids
       SideHandle* get_side(std::vector<int>& nodeids) const;
 
       /// Remove this side from the Sidehandle (Used by the SelfCut)
-      void RemoveSubSide(Core::Geo::Cut::Side* side);
+      void remove_sub_side(Core::Geo::Cut::Side* side);
 
       /// Add this side into the corresponding Sidehandle (Used by the SelfCut)
-      void AddSubSide(Core::Geo::Cut::Side* side);
+      void add_sub_side(Core::Geo::Cut::Side* side);
 
       /// Mark this side as unphysical (Used by SelfCut)
       void mark_sub_sideas_unphysical(Core::Geo::Cut::Side* side);
@@ -101,7 +101,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// get the linear mesh
-      Mesh& LinearMesh() { return mesh_; }
+      Mesh& linear_mesh() { return mesh_; }
 
      private:
       /*========================================================================*/

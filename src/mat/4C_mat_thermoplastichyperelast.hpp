@@ -94,11 +94,11 @@ namespace Mat
   class ThermoPlasticHyperElastType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ThermoPlasticHyperElastType"; }
+    std::string name() const override { return "ThermoPlasticHyperElastType"; }
 
-    static ThermoPlasticHyperElastType& Instance() { return instance_; };
+    static ThermoPlasticHyperElastType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ThermoPlasticHyperElastType instance_;
@@ -124,9 +124,9 @@ namespace Mat
     every class implementing ParObject needs a unique id defined at the
     top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ThermoPlasticHyperElastType::Instance().UniqueParObjectId();
+      return ThermoPlasticHyperElastType::instance().unique_par_object_id();
     }
 
     /*!
@@ -134,7 +134,7 @@ namespace Mat
 
     Resizes the vector data and stores all information of a class in it.
     The first information to be stored in data has to be the
-    unique parobject id delivered by UniqueParObjectId() which will then
+    unique parobject id delivered by unique_par_object_id() which will then
     identify the exact class on the receiving processor.
 
     \param data (in/out): char vector to store class information
@@ -148,7 +148,7 @@ namespace Mat
     exact copy of an instance of a class on a different processor.
     The first entry in data has to be an integer which is the unique
     parobject id defined at the top of this file and delivered by
-    UniqueParObjectId().
+    unique_par_object_id().
 
     \param data (in) : vector storing all data to be unpacked into this
     instance.
@@ -160,86 +160,86 @@ namespace Mat
     //! @name Access methods
 
     //! material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_thermoplhyperelast;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ThermoPlasticHyperElast(*this));
     }
 
     //! Young's modulus
-    double Youngs() const { return params_->youngs_; }
+    double youngs() const { return params_->youngs_; }
 
     //! Poisson's ratio
-    double PoissonRatio() const { return params_->poissonratio_; }
+    double poisson_ratio() const { return params_->poissonratio_; }
 
     //! density
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     //! shear modulus
     double shear_mod() const { return 0.5 * (params_->youngs_) / (1.0 + params_->poissonratio_); }
 
     //! yield stress
-    virtual double Yield() const { return params_->yield_; }
+    virtual double yield() const { return params_->yield_; }
 
     //! isotropic hardening modulus
-    virtual double IsoHard() const { return params_->isohard_; }
+    virtual double iso_hard() const { return params_->isohard_; }
 
     //! flow stress softening
-    virtual double FlowStressSoft() const { return params_->yieldsoft_; }
+    virtual double flow_stress_soft() const { return params_->yieldsoft_; }
 
     //! hardening softening
-    virtual double HardSoft() const { return params_->hardsoft_; }
+    virtual double hard_soft() const { return params_->hardsoft_; }
 
     //! saturation hardening
-    virtual double SatHardening() const { return params_->sathardening_; }
+    virtual double sat_hardening() const { return params_->sathardening_; }
 
     //! coefficient of thermal expansion
-    virtual double CTE() const { return params_->cte_; }
+    virtual double cte() const { return params_->cte_; }
 
     //! coefficient of thermal expansion
-    virtual double HardExpo() const { return params_->hardexpo_; }
+    virtual double hard_expo() const { return params_->hardexpo_; }
 
     //! initial, reference temperature
-    virtual double InitTemp() const { return params_->inittemp_; }
+    virtual double init_temp() const { return params_->inittemp_; }
 
     //! return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    double AccumulatedStrain(int gp) const { return (accplstrainlast_->at(gp)); }
+    double accumulated_strain(int gp) const { return (accplstrainlast_->at(gp)); }
 
     //! mechanical dissipation
-    double MechDiss(int gp) const { return (mechdiss_->at(gp)); }
+    double mech_diss(int gp) const { return (mechdiss_->at(gp)); }
 
     //! linearisation of Dmech w.r.t. temperatures T_{n+1}
     //! contribution to K_TT
-    double MechDiss_kTT(int gp) const { return (mechdiss_k_tt_->at(gp)); }
+    double mech_diss_k_tt(int gp) const { return (mechdiss_k_tt_->at(gp)); }
 
     //! linearisation of the mechanical dissipation w.r.t. displacements d_{n+1}
     //! contribution to K_Td
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> MechDiss_kTd(int gp) const
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> mech_diss_k_td(int gp) const
     {
       return (mechdiss_k_td_->at(gp));
     }
 
     //! thermoplastic heating
-    double ThermoPlastHeating(int gp) const { return (thrplheat_->at(gp)); }
+    double thermo_plast_heating(int gp) const { return (thrplheat_->at(gp)); }
 
     //! linearisation of thermoplastic heating w.r.t. temperatures T_{n+1}
     //! contribution to K_TT
@@ -254,16 +254,17 @@ namespace Mat
 
     //! linearisation of material tangent w.r.t. temperatures T_{n+1}
     //! contribution to K_dT
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> CMat_kdT(int gp) const { return (cmat_kd_t_->at(gp)); }
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> c_mat_kd_t(int gp) const { return (cmat_kd_t_->at(gp)); }
 
     //! check if history variables are already initialised
-    bool Initialized() const { return (isinit_ and (defgrdcurr_ != Teuchos::null)); }
+    bool initialized() const { return (isinit_ and (defgrdcurr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    void VisNames(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+    bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //@}
 
@@ -333,7 +334,7 @@ namespace Mat
 
     //! computes temperature-dependent isotropic mechanical elasticity tensor in
     //! matrix notion for 3d
-    void SetupCmatThermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
+    void setup_cmat_thermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
         Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params);
 
     //! calculates stress-temperature modulus

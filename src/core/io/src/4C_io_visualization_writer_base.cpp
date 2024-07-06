@@ -34,23 +34,23 @@ void Core::IO::VisualizationWriterBase::write_visualization_data_to_disk(
     const VisualizationData& visualization_data, const double visualziation_time,
     const int visualization_step)
 {
-  visualization_data.ConsistencyCheck();
-  InitializeTimeStep(visualziation_time, visualization_step);
-  write_field_data_to_disk(visualization_data.GetFieldDataMap());
-  WriteGeometryToDisk(visualization_data.GetPointCoordinates(),
-      visualization_data.GetCellConnectivity(), visualization_data.GetCellOffsets(),
-      visualization_data.GetCellTypes(), visualization_data.GetFaceConnectivity(),
-      visualization_data.GetFaceOffsets());
-  for (const auto& data_name : visualization_data.GetPointDataNames())
+  visualization_data.consistency_check();
+  initialize_time_step(visualziation_time, visualization_step);
+  write_field_data_to_disk(visualization_data.get_field_data_map());
+  write_geometry_to_disk(visualization_data.get_point_coordinates(),
+      visualization_data.get_cell_connectivity(), visualization_data.get_cell_offsets(),
+      visualization_data.get_cell_types(), visualization_data.get_face_connectivity(),
+      visualization_data.get_face_offsets());
+  for (const auto& data_name : visualization_data.get_point_data_names())
   {
-    write_point_data_vector_to_disk(visualization_data.GetPointDataVariant(data_name),
+    write_point_data_vector_to_disk(visualization_data.get_point_data_variant(data_name),
         visualization_data.get_point_data_dimension(data_name), data_name);
   }
-  for (const auto& data_name : visualization_data.GetCellDataNames())
+  for (const auto& data_name : visualization_data.get_cell_data_names())
   {
-    write_cell_data_vector_to_disk(visualization_data.GetCellDataVariant(data_name),
+    write_cell_data_vector_to_disk(visualization_data.get_cell_data_variant(data_name),
         visualization_data.get_cell_data_dimension(data_name), data_name);
   }
-  FinalizeTimeStep();
+  finalize_time_step();
 }
 FOUR_C_NAMESPACE_CLOSE

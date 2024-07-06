@@ -49,14 +49,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::setup()
   base_class::setup();
 
   // Get the solid element data container
-  ele2posref_ = GEOMETRYPAIR::InitializeElementData<Solid, double>::initialize(this->Element2());
-  ele2pos_ = GEOMETRYPAIR::InitializeElementData<Solid, scalar_type>::initialize(this->Element2());
+  ele2posref_ = GEOMETRYPAIR::InitializeElementData<Solid, double>::initialize(this->element2());
+  ele2pos_ = GEOMETRYPAIR::InitializeElementData<Solid, scalar_type>::initialize(this->element2());
 
   // Set reference nodal positions for the solid element
   for (unsigned int n = 0; n < Solid::n_nodes_; ++n)
   {
-    const Core::Nodes::Node* node = this->Element2()->Nodes()[n];
-    for (int d = 0; d < 3; ++d) ele2posref_.element_position_(3 * n + d) = node->X()[d];
+    const Core::Nodes::Node* node = this->element2()->nodes()[n];
+    for (int d = 0; d < 3; ++d) ele2posref_.element_position_(3 * n + d) = node->x()[d];
   }
 
   // Initialize current nodal positions for the solid element
@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::setup()
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::CreateGeometryPair(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::create_geometry_pair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
@@ -97,12 +97,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::pre_evalu
  *
  */
 template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::ResetState(
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::reset_state(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
   // Call the method in the parent class.
-  base_class::ResetState(beam_centerline_dofvec, solid_nodal_dofvec);
+  base_class::reset_state(beam_centerline_dofvec, solid_nodal_dofvec);
 
   // Solid element.
   for (unsigned int i = 0; i < Solid::n_dof_; i++)
@@ -123,7 +123,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::set_resta
   base_class::set_restart_displacement(centerline_restart_vec_);
 
   // We only set the restart displacement, if the current section has the restart coupling flag.
-  if (this->Params()->beam_to_solid_volume_meshtying_params()->get_couple_restart_state())
+  if (this->params()->beam_to_solid_volume_meshtying_params()->get_couple_restart_state())
   {
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       ele1posref_offset_(i_dof) = centerline_restart_vec_[0][i_dof];
@@ -169,22 +169,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_
 
     // Get the visualization vectors.
     auto& visualization_data = visualization_segmentation->get_visualization_data();
-    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
-    std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
+    std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+    std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
 
     std::vector<double>* pair_beam_id = nullptr;
     std::vector<double>* pair_solid_id = nullptr;
     if (write_unique_ids)
     {
-      pair_beam_id = &(visualization_data.GetPointData<double>("uid_0_pair_beam_id"));
-      pair_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
+      pair_beam_id = &(visualization_data.get_point_data<double>("uid_0_pair_beam_id"));
+      pair_solid_id = &(visualization_data.get_point_data<double>("uid_1_pair_solid_id"));
     }
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the left and right boundary point of the segment.
-      for (const auto& segmentation_point : {segment.GetEtadata(), segment.GetEtaB()})
+      for (const auto& segmentation_point : {segment.get_etadata(), segment.get_eta_b()})
       {
         GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1posref_, X);
         GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1pos_, r);
@@ -198,8 +198,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_
 
         if (write_unique_ids)
         {
-          pair_beam_id->push_back(this->Element1()->Id());
-          pair_solid_id->push_back(this->Element2()->Id());
+          pair_beam_id->push_back(this->element1()->id());
+          pair_solid_id->push_back(this->element2()->id());
         }
       }
     }
@@ -217,30 +217,30 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_
 
     // Get the visualization vectors.
     auto& visualization_data = visualization_integration_points->get_visualization_data();
-    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
-    std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
-    std::vector<double>& force = visualization_data.GetPointData<double>("force");
+    std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+    std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
+    std::vector<double>& force = visualization_data.get_point_data<double>("force");
 
     std::vector<double>* pair_beam_id = nullptr;
     std::vector<double>* pair_solid_id = nullptr;
     if (write_unique_ids)
     {
-      pair_beam_id = &(visualization_data.GetPointData<double>("uid_0_pair_beam_id"));
-      pair_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
+      pair_beam_id = &(visualization_data.get_point_data<double>("uid_0_pair_beam_id"));
+      pair_solid_id = &(visualization_data.get_point_data<double>("uid_1_pair_solid_id"));
     }
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the integration points.
-      for (const auto& projection_point : segment.GetProjectionPoints())
+      for (const auto& projection_point : segment.get_projection_points())
       {
         this->evaluate_beam_position_double(projection_point, X, true);
         this->evaluate_beam_position_double(projection_point, r, false);
         u = r;
         u -= X;
-        GEOMETRYPAIR::EvaluatePosition<Solid>(projection_point.GetXi(),
-            GEOMETRYPAIR::ElementDataToDouble<Solid>::ToDouble(this->ele2pos_), r_solid);
+        GEOMETRYPAIR::EvaluatePosition<Solid>(projection_point.get_xi(),
+            GEOMETRYPAIR::ElementDataToDouble<Solid>::to_double(this->ele2pos_), r_solid);
         evaluate_penalty_force_double(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
@@ -251,8 +251,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_
 
         if (write_unique_ids)
         {
-          pair_beam_id->push_back(this->Element1()->Id());
-          pair_solid_id->push_back(this->Element2()->Id());
+          pair_beam_id->push_back(this->element1()->id());
+          pair_solid_id->push_back(this->element2()->id());
         }
       }
     }
@@ -271,7 +271,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam,
   // The base implementation of the force is a simple linear penalty law.
   force = r_solid;
   force -= r_beam;
-  force.scale(this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter());
+  force.scale(this->params()->beam_to_solid_volume_meshtying_params()->get_penalty_parameter());
 }
 
 /**

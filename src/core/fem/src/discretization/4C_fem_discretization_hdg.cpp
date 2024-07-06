@@ -37,19 +37,19 @@ int Core::FE::DiscretizationHDG::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // call FillComleteFaces of base class with create_faces set to true
-  this->FillCompleteFaces(assigndegreesoffreedom, initelements, doboundaryconditions, true);
+  this->fill_complete_faces(assigndegreesoffreedom, initelements, doboundaryconditions, true);
 
   // get the correct face orientation from the owner. since the elements in general do not allow
   // packing, extract the node ids, communicate them, and change the node ids in the element
-  Core::Communication::Exporter nodeexporter(*facerowmap_, *facecolmap_, Comm());
+  Core::Communication::Exporter nodeexporter(*facerowmap_, *facecolmap_, get_comm());
   std::map<int, std::vector<int>> nodeIds, trafoMap;
   for (std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::const_iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
     std::vector<int> ids(f->second->num_node());
-    for (int i = 0; i < f->second->num_node(); ++i) ids[i] = f->second->NodeIds()[i];
+    for (int i = 0; i < f->second->num_node(); ++i) ids[i] = f->second->node_ids()[i];
     nodeIds[f->first] = ids;
-    trafoMap[f->first] = f->second->GetLocalTrafoMap();
+    trafoMap[f->first] = f->second->get_local_trafo_map();
   }
 
   nodeexporter.Export(nodeIds);
@@ -58,14 +58,14 @@ int Core::FE::DiscretizationHDG::fill_complete(
   for (std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
-    if (f->second->Owner() == Comm().MyPID()) continue;
+    if (f->second->owner() == get_comm().MyPID()) continue;
     std::vector<int>& ids = nodeIds[f->first];
     FOUR_C_ASSERT(ids.size() > 0, "Lost a face during communication");
-    f->second->SetNodeIds(ids.size(), ids.data());
+    f->second->set_node_ids(ids.size(), ids.data());
     f->second->set_local_trafo_map(trafoMap[f->first]);
 
     // refresh node pointers if they have been set up
-    Core::Nodes::Node** oldnodes = f->second->Nodes();
+    Core::Nodes::Node** oldnodes = f->second->nodes();
     if (oldnodes != nullptr)
     {
       std::vector<Core::Nodes::Node*> nodes(ids.size(), nullptr);
@@ -73,39 +73,39 @@ int Core::FE::DiscretizationHDG::fill_complete(
       for (unsigned int i = 0; i < ids.size(); ++i)
       {
         for (unsigned int j = 0; j < ids.size(); ++j)
-          if (oldnodes[j]->Id() == ids[i])
+          if (oldnodes[j]->id() == ids[i])
           {
             nodes[i] = oldnodes[j];
           }
         FOUR_C_ASSERT(nodes[i] != 0, "Could not find node.");
       }
-      f->second->BuildNodalPointers(nodes.data());
+      f->second->build_nodal_pointers(nodes.data());
     }
 
     // check master/slave relation of current face in terms of the local trafo map
-    FOUR_C_ASSERT(
-        f->second->ParentMasterElement() != nullptr, "Unexpected topology between face and parent");
-    const int* nodeIdsMaster = f->second->ParentMasterElement()->NodeIds();
-    const int* nodeIds = f->second->NodeIds();
+    FOUR_C_ASSERT(f->second->parent_master_element() != nullptr,
+        "Unexpected topology between face and parent");
+    const int* nodeIdsMaster = f->second->parent_master_element()->node_ids();
+    const int* nodeIds = f->second->node_ids();
 
     std::vector<std::vector<int>> faceNodeOrder =
-        Core::FE::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
+        Core::FE::getEleNodeNumberingFaces(f->second->parent_master_element()->shape());
 
     bool exchangeMasterAndSlave = false;
     for (int i = 0; i < f->second->num_node(); ++i)
     {
       // TODO (MK): check that this is enough also on periodic B.C. where the
       // node ids are different in any case...
-      if (nodeIdsMaster[faceNodeOrder[f->second->FaceMasterNumber()][i]] != nodeIds[i])
+      if (nodeIdsMaster[faceNodeOrder[f->second->face_master_number()][i]] != nodeIds[i])
         exchangeMasterAndSlave = true;
     }
     if (exchangeMasterAndSlave)
     {
-      Core::Elements::Element* faceMaster = f->second->ParentMasterElement();
-      const int faceMasterNo = f->second->FaceMasterNumber();
+      Core::Elements::Element* faceMaster = f->second->parent_master_element();
+      const int faceMasterNo = f->second->face_master_number();
       // new master element might be nullptr on MPI computations
-      f->second->set_parent_master_element(f->second->ParentSlaveElement(),
-          f->second->ParentSlaveElement() != nullptr ? f->second->FaceSlaveNumber() : -1);
+      f->second->set_parent_master_element(f->second->parent_slave_element(),
+          f->second->parent_slave_element() != nullptr ? f->second->face_slave_number() : -1);
       f->second->set_parent_slave_element(faceMaster, faceMasterNo);
     }
   }
@@ -114,33 +114,33 @@ int Core::FE::DiscretizationHDG::fill_complete(
   // nds = 0 used for trace values
   // nds = 1 used for interior values
   // nds = 2 used for nodal ALE values
-  if (this->NumMyRowElements())
-    if (this->lRowElement(0)->ElementType().Name() == "FluidHDGWeakCompType")
+  if (this->num_my_row_elements())
+    if (this->l_row_element(0)->element_type().name() == "FluidHDGWeakCompType")
     {
       // add nds 1
-      if (this->NumDofSets() == 1)
+      if (this->num_dof_sets() == 1)
       {
-        int ndof_ele = this->NumMyRowElements() > 0
-                           ? dynamic_cast<Core::Elements::DgElement*>(this->lRowElement(0))
+        int ndof_ele = this->num_my_row_elements() > 0
+                           ? dynamic_cast<Core::Elements::DgElement*>(this->l_row_element(0))
                                  ->num_dof_per_element_auxiliary()
                            : 0;
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofset_ele =
             Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
 
-        this->AddDofSet(dofset_ele);
+        this->add_dof_set(dofset_ele);
       }
 
       // add nds 2
-      if (this->NumDofSets() == 2)
+      if (this->num_dof_sets() == 2)
       {
-        int ndof_node = this->NumMyRowElements() > 0
-                            ? dynamic_cast<Core::Elements::DgElement*>(this->lRowElement(0))
+        int ndof_node = this->num_my_row_elements() > 0
+                            ? dynamic_cast<Core::Elements::DgElement*>(this->l_row_element(0))
                                   ->num_dof_per_node_auxiliary()
                             : 0;
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofset_node =
             Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
 
-        this->AddDofSet(dofset_node);
+        this->add_dof_set(dofset_node);
       }
     }
 
@@ -178,7 +178,7 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
   for (elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter)
   {
     sendblock.push_back(elemsiter->first.size());
-    sendblock.push_back(elemsiter->second->Degree());
+    sendblock.push_back(elemsiter->second->degree());
     std::copy(elemsiter->first.begin(), elemsiter->first.end(), std::back_inserter(sendblock));
   }
 
@@ -265,7 +265,7 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
         elementmap.find(element);
     if (iter != elementmap.end())
     {
-      iter->second->SetId(gid);
+      iter->second->set_id(gid);
 
       finalelements[gid] = iter->second;
     }
@@ -281,7 +281,7 @@ std::ostream& operator<<(std::ostream& os, const Core::FE::DiscretizationHDG& di
   // print standard discretization info
   dis.print(os);
   // print additional info about internal faces
-  dis.PrintFaces(os);
+  dis.print_faces(os);
 
   return os;
 }
@@ -313,25 +313,25 @@ void Core::FE::UTILS::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
       params, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == nullptr) return;
+  if (discret.face_row_map() == nullptr) return;
 
   // get onoff toggles
   const auto& onoff = cond.parameters().get<std::vector<int>>("onoff");
 
-  if (discret.NumMyRowFaces() > 0)
+  if (discret.num_my_row_faces() > 0)
   {
     // initialize with true on each proc except proc 0
-    bool pressureDone = discret.Comm().MyPID() != 0;
+    bool pressureDone = discret.get_comm().MyPID() != 0;
 
     // loop over all faces
-    for (int i = 0; i < discret.NumMyRowFaces(); ++i)
+    for (int i = 0; i < discret.num_my_row_faces(); ++i)
     {
       const Core::Elements::FaceElement* faceele =
-          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.l_row_face(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_face(faceele->face_master_number());
       const unsigned int dofpercomponent =
-          faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_component(faceele->face_master_number());
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff.size() <= component || onoff[component] == 0 ||
@@ -339,9 +339,9 @@ void Core::FE::UTILS::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.NumMyRowElements() > 0 && discret.Comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
         {
-          std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
+          std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
           const int lid = discret.dof_row_map(0)->LID(gid);
 
@@ -355,10 +355,10 @@ void Core::FE::UTILS::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
 
       // do only faces where all nodes are present in the node list
       bool faceRelevant = true;
-      int nummynodes = discret.lRowFace(i)->num_node();
-      const int* mynodes = discret.lRowFace(i)->NodeIds();
+      int nummynodes = discret.l_row_face(i)->num_node();
+      const int* mynodes = discret.l_row_face(i)->node_ids();
       for (int j = 0; j < nummynodes; ++j)
-        if (!cond.ContainsNode(mynodes[j]))
+        if (!cond.contains_node(mynodes[j]))
         {
           faceRelevant = false;
           break;
@@ -366,7 +366,7 @@ void Core::FE::UTILS::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
       if (!faceRelevant) continue;
 
       // get dofs of current face element
-      std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
+      std::vector<int> dofs = discret.dof(0, discret.l_row_face(i));
 
       // loop over dofs
       for (unsigned int j = 0; j < dofperface; ++j)
@@ -376,8 +376,8 @@ void Core::FE::UTILS::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
         // get corresponding local id
         const int lid = info.toggle.Map().LID(gid);
         if (lid < 0)
-          FOUR_C_THROW(
-              "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
+          FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
+              discret.get_comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 
@@ -432,10 +432,10 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
       params, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == nullptr) return;
+  if (discret.face_row_map() == nullptr) return;
 
   // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.GetNodes();
+  const std::vector<int>* nodeids = cond.get_nodes();
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
@@ -464,7 +464,7 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
   }
 
   // do we have faces?
-  if (discret.NumMyRowFaces() > 0)
+  if (discret.num_my_row_faces() > 0)
   {
     Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
     Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
@@ -491,17 +491,17 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
     initParams.set("time", time);
 
     // initialize with true if proc is not proc 0
-    bool pressureDone = discret.Comm().MyPID() != 0;
+    bool pressureDone = discret.get_comm().MyPID() != 0;
 
     // loop over all faces
-    for (int i = 0; i < discret.NumMyRowFaces(); ++i)
+    for (int i = 0; i < discret.num_my_row_faces(); ++i)
     {
       const Core::Elements::FaceElement* faceele =
-          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.l_row_face(i));
       const unsigned int dofperface =
-          faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_face(faceele->face_master_number());
       const unsigned int dofpercomponent =
-          faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
+          faceele->parent_master_element()->num_dof_per_component(faceele->face_master_number());
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
@@ -509,9 +509,9 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
         pressureDone = true;
       if (!pressureDone)
       {
-        if (discret.NumMyRowElements() > 0 && discret.Comm().MyPID() == 0)
+        if (discret.num_my_row_elements() > 0 && discret.get_comm().MyPID() == 0)
         {
-          std::vector<int> predof = discret.Dof(0, discret.lRowElement(0));
+          std::vector<int> predof = discret.dof(0, discret.l_row_element(0));
           const int gid = predof[0];
           const int lid = discret.dof_row_map(0)->LID(gid);
 
@@ -524,13 +524,13 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
           pressureDone = true;
         }
       }
-      int nummynodes = discret.lRowFace(i)->num_node();
-      const int* mynodes = discret.lRowFace(i)->NodeIds();
+      int nummynodes = discret.l_row_face(i)->num_node();
+      const int* mynodes = discret.l_row_face(i)->node_ids();
 
       // do only faces where all nodes are present in the node list
       bool faceRelevant = true;
       for (int j = 0; j < nummynodes; ++j)
-        if (!cond.ContainsNode(mynodes[j]))
+        if (!cond.contains_node(mynodes[j]))
         {
           faceRelevant = false;
           break;
@@ -538,9 +538,9 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
       if (!faceRelevant) continue;
 
       initParams.set<unsigned int>(
-          "faceconsider", static_cast<unsigned int>(faceele->FaceMasterNumber()));
+          "faceconsider", static_cast<unsigned int>(faceele->face_master_number()));
       if (static_cast<unsigned int>(elevec1.numRows()) != dofperface) elevec1.shape(dofperface, 1);
-      std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
+      std::vector<int> dofs = discret.dof(0, discret.l_row_face(i));
 
       bool do_evaluate = false;
       if (funct != nullptr)
@@ -552,7 +552,7 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
         // cast the const qualifier away, thus the Evaluate routine can be called.
         Core::FE::DiscretizationFaces& non_const_dis =
             const_cast<Core::FE::DiscretizationFaces&>(discret);
-        faceele->ParentMasterElement()->evaluate(
+        faceele->parent_master_element()->evaluate(
             initParams, non_const_dis, dummy, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
       else
@@ -566,8 +566,8 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
         // get corresponding local id
         const int lid = toggle.Map().LID(gid);
         if (lid < 0)
-          FOUR_C_THROW(
-              "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
+          FOUR_C_THROW("Global id %d not on this proc %d in system vector", dofs[j],
+              discret.get_comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 

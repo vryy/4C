@@ -121,7 +121,7 @@ void ScaTra::LevelSetAlgorithm::capture_interface(
   double surf = 0.0;
   // reconstruct interface and calculate volumes, etc ...
   ScaTra::LevelSet::Intersection intersect;
-  intersect.CaptureZeroLevelSet(phinp_, discret_, volminus, volplus, surf, interface);
+  intersect.capture_zero_level_set(phinp_, discret_, volminus, volplus, surf, interface);
 
   // do mass conservation check
   mass_conservation_check(volminus, writetofile);
@@ -157,7 +157,7 @@ void ScaTra::LevelSetAlgorithm::mass_conservation_check(
 
       if (writetofile)
       {
-        const std::string simulation = problem_->OutputControlFile()->file_name();
+        const std::string simulation = problem_->output_control_file()->file_name();
         const std::string fname = simulation + "_massconservation.relerror";
 
         if (step_ == 0)
@@ -218,7 +218,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
       {
         if (step_ == 0)
         {
-          const std::string simulation = problem_->OutputControlFile()->file_name();
+          const std::string simulation = problem_->output_control_file()->file_name();
           const std::string fname = simulation + "_shape.error";
 
           std::ofstream f;
@@ -247,12 +247,12 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         if (startfuncno < 1) FOUR_C_THROW("No initial field defined!");
 
         // loop all nodes on the processor
-        for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+        for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
         {
           // get the processor local node
-          Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+          Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
           // the set of degrees of freedom associated with the node
-          std::vector<int> nodedofset = discret_->Dof(0, lnode);
+          std::vector<int> nodedofset = discret_->dof(0, lnode);
 
           int numdofs = nodedofset.size();
           for (int k = 0; k < numdofs; ++k)
@@ -261,23 +261,23 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
             int doflid = dofrowmap->LID(dofgid);
             // evaluate component k of spatial function
             double initialval =
-                problem_->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                    .evaluate(lnode->X().data(), time_, k);
+                problem_->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                    .evaluate(lnode->x().data(), time_, k);
             int err = phiref->ReplaceMyValues(1, &initialval, &doflid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
 
         // set vector values needed by elements
-        discret_->ClearState();
+        discret_->clear_state();
         discret_->set_state("phinp", phinp_);
         discret_->set_state("phiref", phiref);
 
         // get error and volume
         Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
             Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
-        discret_->EvaluateScalars(eleparams, errors);
-        discret_->ClearState();
+        discret_->evaluate_scalars(eleparams, errors);
+        discret_->clear_state();
 
         double errL1 = (*errors)[0] / (*errors)[1];  // division by thickness of element layer for
                                                      // 2D problems with domain size 1
@@ -286,7 +286,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         double errLinf = 0.0;
         phidiff->NormInf(&errLinf);
 
-        const std::string simulation = problem_->OutputControlFile()->file_name();
+        const std::string simulation = problem_->output_control_file()->file_name();
         const std::string fname = simulation + "_shape.error";
 
         if (myrank_ == 0)
@@ -320,14 +320,14 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 {
   // get condition
   std::vector<Core::Conditions::Condition*> lscontactpoint;
-  discret_->GetCondition("LsContact", lscontactpoint);
+  discret_->get_condition("LsContact", lscontactpoint);
 
   // map to store node gid and corrected values
   std::map<int, std::vector<double>> nodal_correction;
 
   // extract convective velocity field
   Teuchos::RCP<const Epetra_Vector> convel =
-      discret_->GetState(NdsVel(), "convective velocity field");
+      discret_->get_state(nds_vel(), "convective velocity field");
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   Teuchos::RCP<Epetra_Vector> convel_new = Teuchos::rcp(new Epetra_Vector(*convel));
@@ -339,21 +339,21 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 
     // loop all nodes belonging to this condition
     // for these nodes, new values have to be set
-    const std::vector<int>* mynodes = mycondition->GetNodes();
+    const std::vector<int>* mynodes = mycondition->get_nodes();
     for (std::size_t inode = 0; inode < mynodes->size(); inode++)
     {
       // for all nodes on this proc: is this check really necessary here
-      if (discret_->HaveGlobalNode((*mynodes)[inode]))
+      if (discret_->have_global_node((*mynodes)[inode]))
       {
         // get node
-        Core::Nodes::Node* actnode = discret_->gNode((*mynodes)[inode]);
+        Core::Nodes::Node* actnode = discret_->g_node((*mynodes)[inode]);
 
         // exclude ghosted nodes, since we need all adjacent elements here,
         // which are only available for nodes belonging to the this proc
-        if (actnode->Owner() == myrank_)
+        if (actnode->owner() == myrank_)
         {
           // get adjacent elements
-          const Core::Elements::Element* const* adjelements = actnode->Elements();
+          const Core::Elements::Element* const* adjelements = actnode->elements();
 
           // initialize vector for averaged center velocity
           // note: velocity in scatra algorithm has three components (see also basic constructor)
@@ -361,10 +361,10 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
           for (int rr = 0; rr < 3; rr++) averagedvel[rr] = 0.0;
 
           // loop all adjacent elements
-          for (int iele = 0; iele < actnode->NumElement(); iele++)
+          for (int iele = 0; iele < actnode->num_element(); iele++)
           {
             // get discretization type
-            if ((adjelements[iele])->Shape() != Core::FE::CellType::hex8)
+            if ((adjelements[iele])->shape() != Core::FE::CellType::hex8)
               FOUR_C_THROW("Currently only hex8 supported");
             const Core::FE::CellType distype = Core::FE::CellType::hex8;
 
@@ -376,9 +376,9 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
               const int nsd = Core::FE::dim<distype>;
 
               // get nodal values of velocity field from secondary dofset
-              Core::Elements::Element::LocationArray la(discret_->NumDofSets());
-              adjelements[iele]->LocationVector(*discret_, la, false);
-              const std::vector<int>& lmvel = la[NdsVel()].lm_;
+              Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+              adjelements[iele]->location_vector(*discret_, la, false);
+              const std::vector<int>& lmvel = la[nds_vel()].lm_;
               std::vector<double> myconvel(lmvel.size());
 
               // extract local values from global vector
@@ -400,7 +400,7 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
               Core::FE::IntPointsAndWeights<nsd> centercoord(
                   ScaTra::DisTypeToStabGaussRule<distype>::rule);
               Core::LinAlg::Matrix<nsd, 1> xsi(true);
-              const double* gpcoord = (centercoord.IP().qxg)[0];
+              const double* gpcoord = (centercoord.ip().qxg)[0];
               for (int idim = 0; idim < nsd; idim++) xsi(idim, 0) = gpcoord[idim];
 
               // compute shape functions at element center
@@ -417,28 +417,28 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
           }  // end loop elements
 
           // computed averaged value
-          for (int rr = 0; rr < 3; rr++) averagedvel[rr] /= (double)(actnode->NumElement());
+          for (int rr = 0; rr < 3; rr++) averagedvel[rr] /= (double)(actnode->num_element());
 
           // store value in map, if not yet stored (i.e., multiple conditions intersect at one
           // point)
-          if (nodal_correction.find(actnode->Id()) == nodal_correction.end())
+          if (nodal_correction.find(actnode->id()) == nodal_correction.end())
             nodal_correction.insert(
-                std::pair<int, std::vector<double>>(actnode->Id(), averagedvel));
+                std::pair<int, std::vector<double>>(actnode->id(), averagedvel));
         }
       }
     }  // end loop nodes
   }    // end loop conditions
 
   // replace values in velocity vector
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  const Epetra_Map* noderowmap = discret_->node_row_map();
   for (std::map<int, std::vector<double>>::iterator iter = nodal_correction.begin();
        iter != nodal_correction.end(); iter++)
   {
     const int gnodeid = iter->first;
     const int lnodeid = noderowmap->LID(gnodeid);
-    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
 
-    std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
+    std::vector<int> nodedofs = discret_->dof(nds_vel(), lnode);
 
     std::vector<double> myvel = iter->second;
     for (int index = 0; index < 3; ++index)
@@ -454,8 +454,8 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
   }
 
   // update velocity vectors
-  discret_->set_state(NdsVel(), "convective velocity field", convel_new);
-  discret_->set_state(NdsVel(), "velocity field", convel_new);
+  discret_->set_state(nds_vel(), "convective velocity field", convel_new);
+  discret_->set_state(nds_vel(), "velocity field", convel_new);
 
   return;
 }
@@ -476,19 +476,19 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
                    << Core::IO::endl;
 
   Teuchos::RCP<const Epetra_Vector> convel_col =
-      discret_->GetState(NdsVel(), "convective velocity field");
+      discret_->get_state(nds_vel(), "convective velocity field");
   if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
   Teuchos::RCP<Epetra_Vector> convel =
-      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(NdsVel()), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(nds_vel()), true));
   Core::LinAlg::Export(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
   //         master and slave nodes, if periodic bounday conditions are present
   Teuchos::RCP<Epetra_Vector> conveltmp =
-      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(NdsVel()), true));
+      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(nds_vel()), true));
 
-  const int numproc = discret_->Comm().NumProc();
+  const int numproc = discret_->get_comm().NumProc();
   std::vector<int> allproc(numproc);
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
@@ -503,8 +503,8 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   // std::vector<Core::Conditions::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
   // get periodic surface boundary conditions
   std::vector<Core::Conditions::Condition*> surfacepbcs;
-  discret_->GetCondition("SurfacePeriodic", surfacepbcs);
-  if (surfacepbcs.empty()) discret_->GetCondition("LinePeriodic", surfacepbcs);
+  discret_->get_condition("SurfacePeriodic", surfacepbcs);
+  if (surfacepbcs.empty()) discret_->get_condition("LinePeriodic", surfacepbcs);
   std::vector<int> planenormal(0);
   std::vector<double> globalmins(0);
   std::vector<double> globalmaxs(0);
@@ -516,7 +516,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     {
       const int masterid =
           surfacepbcs[i]->parameters().get<int>("Id of periodic boundary condition");
-      std::vector<int> nodeids(*(surfacepbcs[i]->GetNodes()));
+      std::vector<int> nodeids(*(surfacepbcs[i]->get_nodes()));
       for (auto& surfacepbc : surfacepbcs)
       {
         const int slaveid = surfacepbc->parameters().get<int>("Id of periodic boundary condition");
@@ -526,7 +526,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
               surfacepbc->parameters().get<std::string>("Is slave periodic boundary condition");
           if (isslave == "Slave")
           {
-            const std::vector<int>* slavenodeids = surfacepbc->GetNodes();
+            const std::vector<int>* slavenodeids = surfacepbc->get_nodes();
             // append slave node Ids to node Ids for the complete condition
             for (int slavenodeid : *slavenodeids) nodeids.push_back(slavenodeid);
           }
@@ -550,17 +550,17 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       for (size_t j = 0; j < nodeids.size(); ++j)
       {
         const int gid = nodeids[j];
-        const int lid = discret_->NodeRowMap()->LID(gid);
+        const int lid = discret_->node_row_map()->LID(gid);
         if (lid < 0) continue;
-        const Core::Nodes::Node* lnode = discret_->lRowNode(lid);
-        const auto& coord = lnode->X();
+        const Core::Nodes::Node* lnode = discret_->l_row_node(lid);
+        const auto& coord = lnode->x();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
       }
       globalmins.resize(planenormal.size());
       globalmaxs.resize(planenormal.size());
-      discret_->Comm().MinAll(&min, &(globalmins.back()), 1);
-      discret_->Comm().MaxAll(&max, &(globalmaxs.back()), 1);
+      discret_->get_comm().MinAll(&min, &(globalmins.back()), 1);
+      discret_->get_comm().MaxAll(&max, &(globalmaxs.back()), 1);
     }
   }  // end loop over all surfacepbcs
 
@@ -571,7 +571,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 
   // export phinp to column map
   const Teuchos::RCP<Epetra_Vector> phinpcol =
-      Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap()));
+      Teuchos::rcp(new Epetra_Vector(*discret_->dof_col_map()));
   Core::LinAlg::Export(*phinp_, *phinpcol);
 
   // this loop determines how many layers around the cut elements will be collected
@@ -583,18 +583,18 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       // loop over row elements an check whether it has positive and negative phi-values. If it does
       // add the element to the allcollectedelements set.
       //-------------------------------------------------------------------------------------------------
-      for (int lroweleid = 0; lroweleid < discret_->NumMyRowElements(); lroweleid++)
+      for (int lroweleid = 0; lroweleid < discret_->num_my_row_elements(); lroweleid++)
       {
-        Core::Elements::Element* ele = discret_->lRowElement(lroweleid);
-        const int* nodeids = ele->NodeIds();
+        Core::Elements::Element* ele = discret_->l_row_element(lroweleid);
+        const int* nodeids = ele->node_ids();
         bool gotpositivephi = false;
         bool gotnegativephi = false;
 
         for (int inode = 0; inode < ele->num_node(); ++inode)
         {
           const int nodegid = nodeids[inode];
-          Core::Nodes::Node* node = discret_->gNode(nodegid);
-          const int dofgid = discret_->Dof(0, node, 0);
+          Core::Nodes::Node* node = discret_->g_node(nodegid);
+          const int dofgid = discret_->dof(0, node, 0);
           const int doflid = phinpcol->Map().LID(dofgid);
           if (doflid < 0)
             FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", myrank_, dofgid);
@@ -605,7 +605,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
             gotpositivephi = true;
         }
 
-        if (gotpositivephi and gotnegativephi) allcollectedelements->insert(ele->Id());
+        if (gotpositivephi and gotnegativephi) allcollectedelements->insert(ele->id());
       }
     }
     else
@@ -617,13 +617,13 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       std::set<int>::const_iterator nodeit;
       for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
       {
-        const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
-        Core::Nodes::Node* node = discret_->lRowNode(nodelid);
-        Core::Elements::Element** elements = node->Elements();
-        for (int iele = 0; iele < node->NumElement(); ++iele)
+        const int nodelid = discret_->node_row_map()->LID(*nodeit);
+        Core::Nodes::Node* node = discret_->l_row_node(nodelid);
+        Core::Elements::Element** elements = node->elements();
+        for (int iele = 0; iele < node->num_element(); ++iele)
         {
           Core::Elements::Element* ele = elements[iele];
-          allcollectedelements->insert(ele->Id());
+          allcollectedelements->insert(ele->id());
         }
       }  // loop over elements
     }
@@ -638,25 +638,25 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
         discret_->get_all_pbc_coupled_col_nodes();
     for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
     {
-      const int elelid = discret_->ElementColMap()->LID(*eleit);
-      Core::Elements::Element* ele = discret_->lColElement(elelid);
-      Core::Nodes::Node** nodes = ele->Nodes();
+      const int elelid = discret_->element_col_map()->LID(*eleit);
+      Core::Elements::Element* ele = discret_->l_col_element(elelid);
+      Core::Nodes::Node** nodes = ele->nodes();
       for (int inode = 0; inode < ele->num_node(); ++inode)
       {
         Core::Nodes::Node* node = nodes[inode];
 
         // now check whether we have a pbc condition on this node
         std::vector<Core::Conditions::Condition*> mypbc;
-        node->GetCondition("SurfacePeriodic", mypbc);
+        node->get_condition("SurfacePeriodic", mypbc);
 
         if (mypbc.size() == 0)
         {
-          allcollectednodes->insert(node->Id());
+          allcollectednodes->insert(node->id());
         }
         else
         {
           // obtain a vector of master and slaves
-          const int nodeid = node->Id();
+          const int nodeid = node->id();
           std::vector<int> pbcnodes;
           for (size_t numcond = 0; numcond < mypbc.size(); ++numcond)
           {
@@ -695,7 +695,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     {
       Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::rcp(new std::set<int>);
       Core::LinAlg::Gather<int>(
-          *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->Comm());
+          *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->get_comm());
 
       allcollectednodes->clear();
       std::set<int>::const_iterator gnodesit;
@@ -703,7 +703,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
            ++gnodesit)
       {
         const int nodegid = (*gnodesit);
-        const int nodelid = discret_->NodeRowMap()->LID(nodegid);
+        const int nodelid = discret_->node_row_map()->LID(nodegid);
         if (nodelid >= 0) allcollectednodes->insert(nodegid);
       }
     }
@@ -720,22 +720,22 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   std::set<int>::const_iterator nodeit;
   for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
   {
-    const int nodelid = discret_->NodeRowMap()->LID(*nodeit);
-    Core::Nodes::Node* node = discret_->lRowNode(nodelid);
-    Core::Elements::Element** eles = node->Elements();
+    const int nodelid = discret_->node_row_map()->LID(*nodeit);
+    Core::Nodes::Node* node = discret_->l_row_node(nodelid);
+    Core::Elements::Element** eles = node->elements();
     int elementcount = 0;
-    for (int iele = 0; iele < node->NumElement(); ++iele)
+    for (int iele = 0; iele < node->num_element(); ++iele)
     {
       Core::Elements::Element* ele = eles[iele];
-      std::set<int>::const_iterator foundit = allcollectedelements->find(ele->Id());
+      std::set<int>::const_iterator foundit = allcollectedelements->find(ele->id());
       if (foundit != allcollectedelements->end()) elementcount++;
     }
 
     if (elementcount < 8)
     {
-      std::vector<int> nodedofs = discret_->Dof(NdsVel(), node);
+      std::vector<int> nodedofs = discret_->dof(nds_vel(), node);
       Core::LinAlg::Matrix<3, 2> coordandvel;
-      const auto& coord = node->X();
+      const auto& coord = node->x();
       for (int i = 0; i < 3; ++i)
       {
         // get global and local dof IDs
@@ -755,17 +755,17 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     surfacenodes = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 2>>);
 
     Core::LinAlg::Gather<Core::LinAlg::Matrix<3, 2>>(
-        *mysurfacenodes, *surfacenodes, numproc, allproc.data(), discret_->Comm());
+        *mysurfacenodes, *surfacenodes, numproc, allproc.data(), discret_->get_comm());
   }
 
   //----------------------------------------------------------------------------------------------
   // Here we manipulate the velocity vector. If a node is not in allnodes we find the nearest node
   // in surface nodes and use its velocity instead.
   //----------------------------------------------------------------------------------------------
-  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); ++lnodeid)
   {
-    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
-    std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
+    Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
+    std::vector<int> nodedofs = discret_->dof(nds_vel(), lnode);
 
     Core::LinAlg::Matrix<3, 1> fluidvel(true);
 
@@ -780,14 +780,14 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       fluidvel(i) = (*convel)[lid];
     }
 
-    std::set<int>::const_iterator foundit = allcollectednodes->find(lnode->Id());
+    std::set<int>::const_iterator foundit = allcollectednodes->find(lnode->id());
     if (foundit == allcollectednodes->end())
     {
       // find closest node in surfacenodes
       Core::LinAlg::Matrix<3, 2> closestnodedata(true);
       {
         Core::LinAlg::Matrix<3, 1> nodecoord;
-        auto& coord = lnode->X();
+        auto& coord = lnode->x();
         for (int i = 0; i < 3; ++i) nodecoord(i) = coord[i];
         double mindist = 1.0e19;
 
@@ -902,8 +902,8 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   }
 
   // update velocity vectors
-  discret_->set_state(NdsVel(), "convective velocity field", conveltmp);
-  discret_->set_state(NdsVel(), "velocity field", conveltmp);
+  discret_->set_state(nds_vel(), "convective velocity field", conveltmp);
+  discret_->set_state(nds_vel(), "velocity field", conveltmp);
 
 
   return;
@@ -916,7 +916,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
 {
   // set vector values needed by elements
-  discret_->ClearState();
+  discret_->clear_state();
   discret_->set_state("phinp", phinp_);
 
   // create the parameters for the error calculation
@@ -933,8 +933,8 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
   // get masscenter and volume, last entry of vector is total volume of minus domain.
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> masscenter_and_volume =
       Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nsd_ + 1));
-  discret_->EvaluateScalars(eleparams, masscenter_and_volume);
-  discret_->ClearState();
+  discret_->evaluate_scalars(eleparams, masscenter_and_volume);
+  discret_->clear_state();
 
   std::vector<double> center(nsd_);
 
@@ -946,19 +946,19 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
   if (nsd_ != 3)
     FOUR_C_THROW("Writing the mass center only available for 3 dimensional problems currently.");
 
-  if (discret_->Comm().MyPID() == 0)
+  if (discret_->get_comm().MyPID() == 0)
   {
     // write to file
-    const std::string simulation = problem_->OutputControlFile()->file_name();
+    const std::string simulation = problem_->output_control_file()->file_name();
     const std::string fname = simulation + "_center_of_mass.txt";
 
-    if (Step() == 0)
+    if (step() == 0)
     {
       std::ofstream f;
       f.open(fname.c_str());
       f << "#| Step | Time |       x       |       y       |       z       |\n";
-      f << "  " << std::setw(2) << std::setprecision(10) << Step() << "    " << std::setw(3)
-        << std::setprecision(5) << Time() << std::setw(4) << std::setprecision(8) << "  "
+      f << "  " << std::setw(2) << std::setprecision(10) << step() << "    " << std::setw(3)
+        << std::setprecision(5) << time() << std::setw(4) << std::setprecision(8) << "  "
         << center[0] << "    " << std::setprecision(8) << center[1] << "    "
         << std::setprecision(8) << center[2] << " "
         << "\n";
@@ -970,8 +970,8 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
     {
       std::ofstream f;
       f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-      f << "  " << std::setw(2) << std::setprecision(10) << Step() << "    " << std::setw(3)
-        << std::setprecision(5) << Time() << std::setw(4) << std::setprecision(8) << "  "
+      f << "  " << std::setw(2) << std::setprecision(10) << step() << "    " << std::setw(3)
+        << std::setprecision(5) << time() << std::setw(4) << std::setprecision(8) << "  "
         << center[0] << "    " << std::setprecision(8) << center[1] << "    "
         << std::setprecision(8) << center[2] << " "
         << "\n";
@@ -990,7 +990,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
  | redistribute the scatra discretization and vectors         rasthofer 07/11 |
  | according to nodegraph according to nodegraph              DA wichmann     |
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
+void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
 {
   // TODO: works if and only if discretization has already been redistributed
   //      change this and use unused nodegraph
@@ -1001,7 +1001,7 @@ void ScaTra::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   // Now update all Epetra_Vectors and Epetra_Matrix to the new dofmap
   //--------------------------------------------------------------------
 
-  discret_->compute_null_space_if_necessary(solver_->Params(), true);
+  discret_->compute_null_space_if_necessary(solver_->params(), true);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -1134,7 +1134,7 @@ void ScaTra::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
     FOUR_C_THROW("No redistribution for AVM3 subgrid stuff.");
   }
 
-  if (discret_->Comm().MyPID() == 0) std::cout << "done" << std::endl;
+  if (discret_->get_comm().MyPID() == 0) std::cout << "done" << std::endl;
 
   return;
 }  // ScaTra::ScaTraTimIntImpl::Redistribute

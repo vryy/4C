@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Ale2Type Discret::ELEMENTS::Ale2Type::instance_;
 
-Discret::ELEMENTS::Ale2Type& Discret::ELEMENTS::Ale2Type::Instance() { return instance_; }
+Discret::ELEMENTS::Ale2Type& Discret::ELEMENTS::Ale2Type::instance() { return instance_; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Ale2Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Ale2Type::create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Ale2* object = new Discret::ELEMENTS::Ale2(-1, -1);
   object->unpack(data);
@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Ale2Type::Create(const std::v
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele;
@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::create(
     const int id, const int owner)
 {
   return Teuchos::rcp(new Discret::ELEMENTS::Ale2(id, owner));
@@ -71,7 +71,7 @@ void Discret::ELEMENTS::Ale2Type::nodal_block_information(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Ale2Type::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Ale2Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
@@ -102,7 +102,7 @@ void Discret::ELEMENTS::Ale2Type::setup_element_definition(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2LineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Ale2Line( id, owner ) );
@@ -119,7 +119,7 @@ Discret::ELEMENTS::Ale2::Ale2(const Discret::ELEMENTS::Ale2& old) : Core::Elemen
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Ale2::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Ale2::clone() const
 {
   Discret::ELEMENTS::Ale2* newelement = new Discret::ELEMENTS::Ale2(*this);
   return newelement;
@@ -127,7 +127,7 @@ Core::Elements::Element* Discret::ELEMENTS::Ale2::Clone() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Ale2::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Ale2::shape() const
 {
   switch (num_node())
   {
@@ -154,7 +154,7 @@ void Discret::ELEMENTS::Ale2::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Element::pack(data);
@@ -166,7 +166,7 @@ void Discret::ELEMENTS::Ale2::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -189,7 +189,7 @@ void Discret::ELEMENTS::Ale2::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale2::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale2::lines()
 {
   return Core::Communication::ElementBoundaryFactory<Ale2Line, Ale2>(
       Core::Communication::buildLines, *this);
@@ -197,7 +197,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale2::Line
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale2::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale2::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

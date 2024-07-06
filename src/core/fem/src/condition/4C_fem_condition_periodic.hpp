@@ -111,7 +111,7 @@ namespace Core::Conditions
     //@}
 
 
-    bool HasPBC()
+    bool has_pbc()
     {
       if (numpbcpairs_ > 0)
       {
@@ -125,7 +125,7 @@ namespace Core::Conditions
 
 
     //! @name method that returns a pointer to the vector of the conditions
-    std::vector<Core::Conditions::Condition *> *ReturnSurfacePBCs() { return &mysurfpbcs_; }
+    std::vector<Core::Conditions::Condition *> *return_surface_pb_cs() { return &mysurfpbcs_; }
     //@}
 
 

@@ -53,7 +53,7 @@ namespace FLD
      *
      * \return number of components (u,v,w,p)
      */
-    std::size_t NumberComponents() const override { return (4); };
+    std::size_t number_components() const override { return (4); };
 
    private:
     double density_;
@@ -76,7 +76,7 @@ namespace FLD
      *
      * \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
      */
-    std::size_t NumberComponents() const override { return (9); };
+    std::size_t number_components() const override { return (9); };
   };
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity,
@@ -97,7 +97,7 @@ namespace FLD
      *
      * \return number of components (u,v,w,p)
      */
-    std::size_t NumberComponents() const override { return (4); };
+    std::size_t number_components() const override { return (4); };
 
    private:
     double density_;
@@ -123,7 +123,7 @@ namespace FLD
      *
      * \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
      */
-    std::size_t NumberComponents() const override { return (9); };
+    std::size_t number_components() const override { return (9); };
 
    private:
     double kinviscosity_;
@@ -147,7 +147,7 @@ namespace FLD
      *
      *  \return number of components (u,v,w,p)
      */
-    std::size_t NumberComponents() const override { return (4); };
+    std::size_t number_components() const override { return (4); };
 
    private:
     double c1_;
@@ -168,7 +168,7 @@ namespace FLD
      *
      *  \return number of components (u,v,w,p)
      */
-    std::size_t NumberComponents() const override { return (3); };
+    std::size_t number_components() const override { return (3); };
   };
 
   /// correction term for weakly compressible flow in a channel
@@ -180,7 +180,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (1); };
+    std::size_t number_components() const override { return (1); };
   };
 
   /// special implementation for weakly compressible Poiseuille flow
@@ -195,7 +195,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (6); };
+    std::size_t number_components() const override { return (6); };
 
    private:
     double length_;
@@ -219,7 +219,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (3); };
+    std::size_t number_components() const override { return (3); };
 
    private:
     double length_;
@@ -241,7 +241,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (6); };
+    std::size_t number_components() const override { return (6); };
 
    private:
     double viscosity_;
@@ -262,7 +262,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (3); };
+    std::size_t number_components() const override { return (3); };
 
    private:
     double viscosity_;
@@ -282,7 +282,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (6); };
+    std::size_t number_components() const override { return (6); };
 
    private:
     double refdensity_;
@@ -301,7 +301,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (3); };
+    std::size_t number_components() const override { return (3); };
 
    private:
     double refdensity_;
@@ -318,7 +318,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (1); };
+    std::size_t number_components() const override { return (1); };
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
@@ -334,7 +334,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (6); };
+    std::size_t number_components() const override { return (6); };
 
    private:
     double refdensity_;
@@ -358,7 +358,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (3); };
+    std::size_t number_components() const override { return (3); };
 
    private:
     double refdensity_;
@@ -382,7 +382,7 @@ namespace FLD
     std::vector<double> evaluate_time_derivative(
         const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (1); };
+    std::size_t number_components() const override { return (1); };
 
    private:
     double refdensity_;
@@ -410,7 +410,7 @@ namespace FLD
      *
      *  \return number of components (u,v,w)
      */
-    std::size_t NumberComponents() const override { return (3); };
+    std::size_t number_components() const override { return (3); };
 
    private:
     double kinviscosity_;
@@ -434,7 +434,7 @@ namespace FLD
      *
      *  \return number of components (u,v,w)
      */
-    std::size_t NumberComponents() const override { return (3); };
+    std::size_t number_components() const override { return (3); };
 
    private:
     double kinviscosity_;
@@ -452,7 +452,7 @@ namespace FLD
 
     double evaluate(const double* x, double t, std::size_t component) const override;
 
-    std::size_t NumberComponents() const override { return (6); };
+    std::size_t number_components() const override { return (6); };
 
    private:
     double kinviscosity_;

@@ -82,7 +82,7 @@ namespace FLD
     \brief Compute the in-shell mean values of first and second order
     moments for velocities, pressure (and transported scalar fields).
     */
-    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp,
+    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp,
         Teuchos::RCP<Epetra_Vector> fullphinp);
 
 
@@ -120,7 +120,7 @@ namespace FLD
 
     */
 
-    void ClearStatistics();
+    void clear_statistics();
 
     /*!
     \brief Provide the radius of the homogeneous shell for a
@@ -132,7 +132,7 @@ namespace FLD
     //@}
 
     // Add results from scalar transport field solver to statistics
-    void AddScaTraResults(
+    void add_sca_tra_results(
         Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp);
 
    protected:

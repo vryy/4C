@@ -179,7 +179,7 @@ namespace Core::IO
     void find_result_group(int step, MAP* file);
 
     /// access the Epetra_Comm object
-    [[nodiscard]] virtual const Epetra_Comm& comm() const;
+    [[nodiscard]] virtual const Epetra_Comm& get_comm() const;
 
     MAP* restart_step_map() { return restart_step_; }
 
@@ -389,7 +389,7 @@ namespace Core::IO
     DiscretizationWriter();
 
     /// access the Epetra_Comm object
-    [[nodiscard]] virtual const Epetra_Comm& comm() const;
+    [[nodiscard]] virtual const Epetra_Comm& get_comm() const;
 
     /*!
       \brief write a knotvector for a nurbs discretisation

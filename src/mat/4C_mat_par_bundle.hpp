@@ -64,17 +64,17 @@ namespace Mat
       [[nodiscard]] bool id_exists(int id) const;
 
       /// provide access to material map (a li'l dirty)
-      [[nodiscard]] const std::map<int, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>>& Map()
+      [[nodiscard]] const std::map<int, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>>& map()
           const
       {
         return matmap_;
       }
 
       /// return number of defined materials
-      int Num() const { return matmap_.size(); }
+      int num() const { return matmap_.size(); }
 
       /// return material parameters
-      Core::Mat::PAR::Parameter* ParameterById(
+      Core::Mat::PAR::Parameter* parameter_by_id(
           const int num  ///< request is made for this material ID
       ) const;
 
@@ -82,13 +82,13 @@ namespace Mat
       ///
       /// \return The ID of seached for material type.
       ///         If the search is unsuccessful -1 is returned
-      int FirstIdByType(const Core::Materials::MaterialType type) const;
+      int first_id_by_type(const Core::Materials::MaterialType type) const;
 
       /// return problem index to read from
-      int GetReadFromProblem() const { return materialreadfromproblem_; }
+      int get_read_from_problem() const { return materialreadfromproblem_; }
 
       /// set problem index to read from
-      void SetReadFromProblem(const int p  ///< index of Global::Problem instance to read for
+      void set_read_from_problem(const int p  ///< index of Global::Problem instance to read for
       )
       {
         materialreadfromproblem_ = p;

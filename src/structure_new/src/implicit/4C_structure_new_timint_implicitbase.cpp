@@ -106,12 +106,12 @@ Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::ImplicitBase::initial_guess()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::ImplicitBase::Update(double endtime)
+void Solid::TimeInt::ImplicitBase::update(double endtime)
 {
   check_init_setup();
-  PreUpdate();
+  pre_update();
   integrator().update_step_state();
-  SetTimeNp(endtime);
+  set_time_np(endtime);
   update_step_time();
   integrator().update_step_element();
   post_update();
@@ -123,9 +123,9 @@ void Solid::TimeInt::ImplicitBase::print_step()
 {
   check_init_setup();
 
-  if (data_global_state().get_my_rank() != 0 or GroupId() != 0) return;
+  if (data_global_state().get_my_rank() != 0 or group_id() != 0) return;
 
-  const int stepmax = data_sdyn().GetStepMax();
+  const int stepmax = data_sdyn().get_step_max();
   const int stepn = data_global_state().get_step_n();
   const double& timen = data_global_state().get_time_n();
   const double& dt = (*data_global_state().get_delta_time())[0];

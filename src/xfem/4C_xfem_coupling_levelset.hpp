@@ -47,12 +47,12 @@ namespace XFEM
         const int step          ///< time step
     );
 
-    void SetCouplingDofsets() override;
+    void set_coupling_dofsets() override;
 
-    bool HaveMatchingNodes(const Teuchos::RCP<Core::FE::Discretization>& dis_A,
+    bool have_matching_nodes(const Teuchos::RCP<Core::FE::Discretization>& dis_A,
         const Teuchos::RCP<Core::FE::Discretization>& dis_B);
 
-    void MapCutterToBgVector(const Teuchos::RCP<Core::FE::Discretization>& source_dis,
+    void map_cutter_to_bg_vector(const Teuchos::RCP<Core::FE::Discretization>& source_dis,
         const Teuchos::RCP<Epetra_Vector>& source_vec_dofbased, const int source_nds,
         const Teuchos::RCP<Core::FE::Discretization>& target_dis,
         const Teuchos::RCP<Epetra_Vector>& target_vec_dofbased, const int target_nds);
@@ -69,12 +69,12 @@ namespace XFEM
 
 
     /// set levelset field by function, return if interface moved compared to last time step
-    bool SetLevelSetField(const double time);
+    bool set_level_set_field(const double time);
 
     /// initialize level set based state vectors
     void init_state_vectors() override;
 
-    virtual void InitStateVectors_Bg();
+    virtual void init_state_vectors_bg();
 
     virtual void init_state_vectors_cutter();
 
@@ -86,14 +86,14 @@ namespace XFEM
     virtual void output(
         const int step, const double time, const bool write_restart_data, const int lsc_idx = 0);
 
-    void GmshOutput(const std::string& filename_base, const int step, const int gmsh_step_diff,
+    void gmsh_output(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen) override;
 
     Teuchos::RCP<Epetra_Vector> get_level_set_field_as_node_row_vector();
 
     virtual void read_restart(const int step, const int lsc_idx = 0);
 
-    bool HasMovingInterface() override { return true; }
+    bool has_moving_interface() override { return true; }
 
     void get_interface_slave_material(
         Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat) override
@@ -177,9 +177,9 @@ namespace XFEM
     );
 
 
-    void PrepareSolve() override;
+    void prepare_solve() override;
 
-    bool HasMovingInterface() override;
+    bool has_moving_interface() override;
 
    protected:
     bool has_interface_moved_;  ///< did interface move compared to the last time step?
@@ -336,7 +336,7 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
         const Core::Conditions::Condition* cond) override;
 
-    void GetSlipCoefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
+    void get_slip_coefficient(double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x,
         const Core::Conditions::Condition* cond) override;
 
 
@@ -369,7 +369,7 @@ namespace XFEM
         // sliplenght twice evaluate interface traction (given by Neumann condition) Add this to the
         // veljump!
         double sliplength = 0.0;
-        GetSlipCoefficient(sliplength, x, cond);
+        get_slip_coefficient(sliplength, x, cond);
 
         if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 
@@ -426,7 +426,7 @@ namespace XFEM
       const size_t nen = Core::FE::num_nodes<distype>;
 
       // Should this be provided as well by the input?
-      Core::Elements::Element* actele = cutter_dis_->gElement(eid);
+      Core::Elements::Element* actele = cutter_dis_->g_element(eid);
 
       //   Non-smoothed projection matrix
       Core::LinAlg::Matrix<nsd, 1> gradphi;

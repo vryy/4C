@@ -30,7 +30,7 @@ namespace Discret
     {
      public:
       /// Singleton access method
-      static ScaTraEleCalcElchNP<distype>* Instance(
+      static ScaTraEleCalcElchNP<distype>* instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
      private:
@@ -424,11 +424,11 @@ namespace Discret
       /*========================================================================*/
 
       //! return migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
-      const Core::LinAlg::Matrix<nsd, 1>& MigVelInt() const { return migvelint_; };
+      const Core::LinAlg::Matrix<nsd, 1>& mig_vel_int() const { return migvelint_; };
 
       //! return convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} *
       //! \grad{N}
-      Core::LinAlg::Matrix<nen, 1> MigConv() { return migconv_; };
+      Core::LinAlg::Matrix<nen, 1> mig_conv() { return migconv_; };
 
      private:
       /*========================================================================*/

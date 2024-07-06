@@ -87,7 +87,7 @@ namespace BEAMINTERACTION
      * @param timestep_number (in) Number of this time step.
      * @param time (in) Time of this time step.
      */
-    void Write(const unsigned int timestep_number, const double time);
+    void write(const unsigned int timestep_number, const double time);
 
    private:
     //! Global parameters of visualization output.

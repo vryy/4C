@@ -48,10 +48,10 @@ void ntacal()
 {
   using namespace FourC;
 
-  int restart = Global::Problem::Instance()->restart();
+  int restart = Global::Problem::instance()->restart();
 
   // choose the entry-routine depending on the problem type
-  switch (Global::Problem::Instance()->GetProblemType())
+  switch (Global::Problem::instance()->get_problem_type())
   {
     case Core::ProblemType::structure:
     case Core::ProblemType::polymernetwork:
@@ -195,7 +195,7 @@ void ntacal()
 
     default:
       FOUR_C_THROW("solution of unknown problemtyp %d requested",
-          Global::Problem::Instance()->GetProblemType());
+          Global::Problem::instance()->get_problem_type());
       break;
   }
 }

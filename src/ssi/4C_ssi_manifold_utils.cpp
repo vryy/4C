@@ -51,21 +51,21 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(
 {
   std::vector<int> inodegidvec_manifold;
   Core::Communication::AddOwnedNodeGIDFromList(
-      *manifolddis, *condition_manifold->GetNodes(), inodegidvec_manifold);
+      *manifolddis, *condition_manifold->get_nodes(), inodegidvec_manifold);
 
   std::vector<int> inodegidvec_scatra;
   Core::Communication::AddOwnedNodeGIDFromList(
-      *scatradis, *condition_kinetics->GetNodes(), inodegidvec_scatra);
+      *scatradis, *condition_kinetics->get_nodes(), inodegidvec_scatra);
 
   coupling_adapter_->setup_coupling(*scatradis, *manifolddis, inodegidvec_scatra,
       inodegidvec_manifold, ndof_per_node, true, 1.0e-8);
   master_converter_ = Teuchos::rcp(new Core::Adapter::CouplingMasterConverter(*coupling_adapter_));
 
   scatra_map_extractor_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-      *scatradis->dof_row_map(), coupling_adapter_->MasterDofMap(), true));
+      *scatradis->dof_row_map(), coupling_adapter_->master_dof_map(), true));
 
   manifold_map_extractor_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-      *manifolddis->dof_row_map(), coupling_adapter_->SlaveDofMap(), true));
+      *manifolddis->dof_row_map(), coupling_adapter_->slave_dof_map(), true));
 
   // initially, the matrices are empty
   size_matrix_graph_.insert(std::make_pair(BlockMatrixType::ManifoldScaTra, 0));
@@ -94,31 +94,32 @@ bool SSI::ManifoldScaTraCoupling::check_and_set_size_of_matrix_graph(
  *---------------------------------------------------------------------------------*/
 SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     const SSI::SsiMono& ssi_mono)
-    : block_map_scatra_(ssi_mono.BlockMapScaTra()),
+    : block_map_scatra_(ssi_mono.block_map_sca_tra()),
       block_map_scatra_manifold_(ssi_mono.block_map_sca_tra_manifold()),
-      block_map_structure_(ssi_mono.BlockMapStructure()),
+      block_map_structure_(ssi_mono.block_map_structure()),
       do_output_(Core::UTILS::IntegralValue<bool>(
-          Global::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "OUTPUT_INFLOW")),
-      full_map_manifold_(ssi_mono.MapsSubProblems()->Map(
-          UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold))),
-      full_map_scatra_(ssi_mono.MapsSubProblems()->Map(
-          UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))),
-      full_map_structure_(ssi_mono.MapsSubProblems()->Map(
-          UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))),
-      scatra_(ssi_mono.ScaTraBaseAlgorithm()),
+          Global::Problem::instance()->ssi_control_params().sublist("MANIFOLD"), "OUTPUT_INFLOW")),
+      full_map_manifold_(ssi_mono.maps_sub_problems()->Map(
+          UTILS::SSIMaps::get_problem_position(Subproblem::manifold))),
+      full_map_scatra_(ssi_mono.maps_sub_problems()->Map(
+          UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport))),
+      full_map_structure_(ssi_mono.maps_sub_problems()->Map(
+          UTILS::SSIMaps::get_problem_position(Subproblem::structure))),
+      scatra_(ssi_mono.sca_tra_base_algorithm()),
       scatra_manifold_(ssi_mono.sca_tra_manifold_base_algorithm()),
       ssi_structure_meshtying_(ssi_mono.ssi_structure_mesh_tying())
 {
   // safety check before setup of coupling
-  if (ssi_mono.ScaTraField()->NumDofPerNode() != ssi_mono.ScaTraManifold()->NumDofPerNode())
+  if (ssi_mono.sca_tra_field()->num_dof_per_node() !=
+      ssi_mono.sca_tra_manifold()->num_dof_per_node())
     FOUR_C_THROW("Number of dofs per node of scatra field and scatra manifold field must be equal");
 
   std::vector<Core::Conditions::Condition*> conditions_manifold;
-  scatra_manifold_->ScaTraField()->discretization()->GetCondition(
+  scatra_manifold_->sca_tra_field()->discretization()->get_condition(
       "SSISurfaceManifold", conditions_manifold);
 
   std::vector<Core::Conditions::Condition*> conditions_manifold_kinetics_scatra;
-  scatra_->ScaTraField()->discretization()->GetCondition(
+  scatra_->sca_tra_field()->discretization()->get_condition(
       "SSISurfaceManifoldKinetics", conditions_manifold_kinetics_scatra);
 
   // create pair: manifold condition - kinetics condition
@@ -130,9 +131,9 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
           condition_kinetics->parameters().get<int>("ManifoldConditionID"))
       {
         scatra_manifold_couplings_.emplace_back(Teuchos::rcp(
-            new SSI::ManifoldScaTraCoupling(scatra_manifold_->ScaTraField()->discretization(),
-                scatra_->ScaTraField()->discretization(), condition_manifold, condition_kinetics,
-                ssi_mono.ScaTraManifold()->NumDofPerNode())));
+            new SSI::ManifoldScaTraCoupling(scatra_manifold_->sca_tra_field()->discretization(),
+                scatra_->sca_tra_field()->discretization(), condition_manifold, condition_kinetics,
+                ssi_mono.sca_tra_manifold()->num_dof_per_node())));
       }
     }
   }
@@ -140,7 +141,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   rhs_manifold_ = Core::LinAlg::CreateVector(*full_map_manifold_, true);
   rhs_scatra_ = Core::LinAlg::CreateVector(*full_map_scatra_, true);
 
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (scatra_->sca_tra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
@@ -190,10 +191,10 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   matrix_scatra_structure_cond_ = SSI::UTILS::SSIMatrices::setup_sparse_matrix(full_map_scatra_);
 
   // Prepare runtime csv writer
-  if (DoOutput())
+  if (do_output())
   {
-    runtime_csvwriter_.emplace(ssi_mono.Comm().MyPID(),
-        *Global::Problem::Instance()->OutputControlFile(), "manifold_inflow");
+    runtime_csvwriter_.emplace(ssi_mono.get_comm().MyPID(),
+        *Global::Problem::instance()->output_control_file(), "manifold_inflow");
 
     for (const auto& condition_manifold : conditions_manifold)
     {
@@ -202,7 +203,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
 
       runtime_csvwriter_->register_data_vector("Integral of " + manifold_string, 1, 16);
 
-      for (int k = 0; k < ssi_mono.ScaTraManifold()->NumDofPerNode(); ++k)
+      for (int k = 0; k < ssi_mono.sca_tra_manifold()->num_dof_per_node(); ++k)
       {
         runtime_csvwriter_->register_data_vector(
             "Total flux of scalar " + std::to_string(k + 1) + " into " + manifold_string, 1, 16);
@@ -218,17 +219,17 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_manifold_sca_tra()
 {
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (scatra_->sca_tra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      matrix_manifold_scatra_->Complete();
+      matrix_manifold_scatra_->complete();
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      matrix_manifold_scatra_->Complete(*full_map_scatra_, *full_map_manifold_);
+      matrix_manifold_scatra_->complete(*full_map_scatra_, *full_map_manifold_);
       break;
     }
     default:
@@ -243,17 +244,17 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_manifold_sca_tra()
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_manifold_structure()
 {
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (scatra_->sca_tra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      matrix_manifold_structure_->Complete();
+      matrix_manifold_structure_->complete();
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      matrix_manifold_structure_->Complete(*full_map_structure_, *full_map_manifold_);
+      matrix_manifold_structure_->complete(*full_map_structure_, *full_map_manifold_);
       break;
     }
     default:
@@ -268,17 +269,17 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_manifold_structure(
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_sca_tra_manifold()
 {
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (scatra_->sca_tra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      matrix_scatra_manifold_->Complete();
+      matrix_scatra_manifold_->complete();
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      matrix_scatra_manifold_->Complete(*full_map_manifold_, *full_map_scatra_);
+      matrix_scatra_manifold_->complete(*full_map_manifold_, *full_map_scatra_);
       break;
     }
     default:
@@ -293,17 +294,17 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_sca_tra_manifold()
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_sca_tra_structure()
 {
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (scatra_->sca_tra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      matrix_scatra_structure_->Complete();
+      matrix_scatra_structure_->complete();
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      matrix_scatra_structure_->Complete(*full_map_structure_, *full_map_scatra_);
+      matrix_scatra_structure_->complete(*full_map_structure_, *full_map_scatra_);
       break;
     }
     default:
@@ -318,14 +319,14 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_matrix_sca_tra_structure()
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_system_matrix_manifold()
 {
-  systemmatrix_manifold_->Complete();
+  systemmatrix_manifold_->complete();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_system_matrix_sca_tra()
 {
-  systemmatrix_scatra_->Complete();
+  systemmatrix_scatra_->complete();
 }
 
 /*----------------------------------------------------------------------*
@@ -333,12 +334,12 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::complete_system_matrix_sca_tra()
 void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate()
 {
   // clear matrices and rhs from last evaluation
-  systemmatrix_manifold_->Zero();
-  systemmatrix_scatra_->Zero();
-  matrix_manifold_scatra_->Zero();
-  matrix_manifold_structure_->Zero();
-  matrix_scatra_manifold_->Zero();
-  matrix_scatra_structure_->Zero();
+  systemmatrix_manifold_->zero();
+  systemmatrix_scatra_->zero();
+  matrix_manifold_scatra_->zero();
+  matrix_manifold_structure_->zero();
+  matrix_scatra_manifold_->zero();
+  matrix_scatra_structure_->zero();
 
   rhs_manifold_->PutScalar(0.0);
   rhs_scatra_->PutScalar(0.0);
@@ -348,18 +349,18 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate()
   {
     // clear matrices and rhs from last condition. Maps are different for each condition (need for
     // UnComplete()).
-    systemmatrix_manifold_cond_->Zero();
-    systemmatrix_manifold_cond_->UnComplete();
-    systemmatrix_scatra_cond_->Zero();
-    systemmatrix_scatra_cond_->UnComplete();
-    matrix_manifold_scatra_cond_->Zero();
-    matrix_manifold_scatra_cond_->UnComplete();
-    matrix_manifold_structure_cond_->Zero();
-    matrix_manifold_structure_cond_->UnComplete();
-    matrix_scatra_manifold_cond_->Zero();
-    matrix_scatra_manifold_cond_->UnComplete();
-    matrix_scatra_structure_cond_->Zero();
-    matrix_scatra_structure_cond_->UnComplete();
+    systemmatrix_manifold_cond_->zero();
+    systemmatrix_manifold_cond_->un_complete();
+    systemmatrix_scatra_cond_->zero();
+    systemmatrix_scatra_cond_->un_complete();
+    matrix_manifold_scatra_cond_->zero();
+    matrix_manifold_scatra_cond_->un_complete();
+    matrix_manifold_structure_cond_->zero();
+    matrix_manifold_structure_cond_->un_complete();
+    matrix_scatra_manifold_cond_->zero();
+    matrix_scatra_manifold_cond_->un_complete();
+    matrix_scatra_structure_cond_->zero();
+    matrix_scatra_structure_cond_->un_complete();
 
     rhs_manifold_cond_->PutScalar(0.0);
     rhs_scatra_cond_->PutScalar(0.0);
@@ -384,7 +385,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
   // First: Set parameters to elements
   pre_evaluate(scatra_manifold_coupling);
 
-  scatra_->ScaTraField()->discretization()->set_state("phinp", scatra_->ScaTraField()->Phinp());
+  scatra_->sca_tra_field()->discretization()->set_state("phinp", scatra_->sca_tra_field()->phinp());
 
   // Second: Evaluate condition
   {
@@ -397,7 +398,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
         "action", ScaTra::BoundaryAction::calc_s2icoupling, condparams);
     condparams.set<int>("evaluate_manifold_coupling", 1);
 
-    scatra_->ScaTraField()->add_time_integration_specific_vectors();
+    scatra_->sca_tra_field()->add_time_integration_specific_vectors();
 
     // Evaluation of RHS and scatra-manifold coupling matrices
     {
@@ -409,17 +410,18 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
           matrix_scatra_manifold_cond_on_scatra_side, rhs_scatra_cond_, Teuchos::null,
           Teuchos::null);
 
-      scatra_->ScaTraField()->discretization()->evaluate_condition(condparams, strategyscatra,
-          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->KineticsConditionID());
+      scatra_->sca_tra_field()->discretization()->evaluate_condition(condparams, strategyscatra,
+          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->kinetics_condition_id());
 
-      systemmatrix_scatra_cond_->Complete();
-      matrix_scatra_manifold_cond_on_scatra_side->Complete();
+      systemmatrix_scatra_cond_->complete();
+      matrix_scatra_manifold_cond_on_scatra_side->complete();
 
       // dscatra_dmanifold (on scatra side) -> dscatra_dmanifold
       Core::LinAlg::MatrixLogicalSplitAndTransform()(*matrix_scatra_manifold_cond_on_scatra_side,
           *full_map_scatra_, *full_map_scatra_, 1.0, nullptr,
-          &*scatra_manifold_coupling->MasterConverter(), *matrix_scatra_manifold_cond_, true, true);
-      matrix_scatra_manifold_cond_->Complete(*full_map_manifold_, *full_map_scatra_);
+          &*scatra_manifold_coupling->master_converter(), *matrix_scatra_manifold_cond_, true,
+          true);
+      matrix_scatra_manifold_cond_->complete(*full_map_manifold_, *full_map_scatra_);
     }
 
     // Evaluation of linearization w.r.t. displacement
@@ -438,17 +440,17 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
           matrix_scatra_structure_cond_slave_side_disp_evaluate, Teuchos::null, Teuchos::null,
           Teuchos::null, Teuchos::null);
 
-      scatra_->ScaTraField()->discretization()->evaluate_condition(condparams, strategyscatra,
-          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->KineticsConditionID());
+      scatra_->sca_tra_field()->discretization()->evaluate_condition(condparams, strategyscatra,
+          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->kinetics_condition_id());
 
-      matrix_scatra_structure_cond_slave_side_disp_evaluate->Complete(
+      matrix_scatra_structure_cond_slave_side_disp_evaluate->complete(
           *full_map_structure_, *full_map_scatra_);
 
       // "slave side" from manifold and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
       auto matrix_scatra_structure_cond_slave_side_disp =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*full_map_scatra_, 27, false, true));
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->mesh_tying_handlers())
       {
         auto slave_slave_transformation = meshtying->slave_slave_transformation();
         // converter between old slave dofs from input and actual slave dofs from current mesh tying
@@ -457,33 +459,33 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
             Core::Adapter::CouplingSlaveConverter(*slave_slave_transformation);
 
         // old slave dofs from input
-        auto slave_map = slave_slave_transformation->SlaveDofMap();
+        auto slave_map = slave_slave_transformation->slave_dof_map();
 
         Core::LinAlg::MatrixLogicalSplitAndTransform()(
             *matrix_scatra_structure_cond_slave_side_disp_evaluate, *full_map_scatra_, *slave_map,
             1.0, nullptr, &slave_slave_converter, *matrix_scatra_structure_cond_slave_side_disp,
             true, true);
       }
-      matrix_scatra_structure_cond_slave_side_disp->Complete(
+      matrix_scatra_structure_cond_slave_side_disp->complete(
           *full_map_structure_, *full_map_scatra_);
 
       // Add slave side disp. contributions
-      matrix_scatra_structure_cond_->Add(
+      matrix_scatra_structure_cond_->add(
           *matrix_scatra_structure_cond_slave_side_disp, false, 1.0, 0.0);
 
       // Add master side disp. contributions
-      for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
+      for (const auto& meshtying : ssi_structure_meshtying_->mesh_tying_handlers())
       {
-        auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
-        auto converter = meshtying->SlaveSideConverter();
+        auto cond_slave_dof_map = meshtying->slave_master_coupling()->slave_dof_map();
+        auto converter = meshtying->slave_side_converter();
 
         // assemble derivatives of x w.r.t. structure slave dofs
         Core::LinAlg::MatrixLogicalSplitAndTransform()(
             *matrix_scatra_structure_cond_slave_side_disp,
-            matrix_scatra_structure_cond_slave_side_disp->RangeMap(), *cond_slave_dof_map, 1.0,
+            matrix_scatra_structure_cond_slave_side_disp->range_map(), *cond_slave_dof_map, 1.0,
             nullptr, &(*converter), *matrix_scatra_structure_cond_, true, true);
       }
-      matrix_scatra_structure_cond_->Complete(*full_map_structure_, *full_map_scatra_);
+      matrix_scatra_structure_cond_->complete(*full_map_structure_, *full_map_scatra_);
     }
   }
 }
@@ -493,13 +495,13 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
 void SSI::ScaTraManifoldScaTraFluxEvaluator::copy_sca_tra_sca_tra_manifold_side(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
-  const double inv_thickness = scatra_manifold_coupling->InvThickness();
+  const double inv_thickness = scatra_manifold_coupling->inv_thickness();
   {
     auto rhs_scatra_cond_extract =
-        scatra_manifold_coupling->ScaTraMapExtractor()->extract_cond_vector(rhs_scatra_cond_);
+        scatra_manifold_coupling->sca_tra_map_extractor()->extract_cond_vector(rhs_scatra_cond_);
 
     auto rhs_manifold_cond_extract =
-        scatra_manifold_coupling->CouplingAdapter()->MasterToSlave(rhs_scatra_cond_extract);
+        scatra_manifold_coupling->coupling_adapter()->master_to_slave(rhs_scatra_cond_extract);
 
     scatra_manifold_coupling->manifold_map_extractor()->add_cond_vector(
         rhs_manifold_cond_extract, rhs_manifold_cond_);
@@ -508,24 +510,24 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::copy_sca_tra_sca_tra_manifold_side(
 
   // dmanifold_dscatra: scatra rows are transformed to manifold side (flux is scaled by -1.0)
   Core::LinAlg::MatrixLogicalSplitAndTransform()(*systemmatrix_scatra_cond_, *full_map_scatra_,
-      *full_map_scatra_, -inv_thickness, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *full_map_scatra_, -inv_thickness, &*scatra_manifold_coupling->master_converter(), nullptr,
       *matrix_manifold_scatra_cond_, true, true);
 
-  matrix_manifold_scatra_cond_->Complete(*full_map_scatra_, *full_map_manifold_);
+  matrix_manifold_scatra_cond_->complete(*full_map_scatra_, *full_map_manifold_);
 
   // dmanifold_dmanifold: scatra rows are transformed to manifold side (flux is scaled by -1.0)
   Core::LinAlg::MatrixLogicalSplitAndTransform()(*matrix_scatra_manifold_cond_, *full_map_scatra_,
-      *full_map_manifold_, -inv_thickness, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *full_map_manifold_, -inv_thickness, &*scatra_manifold_coupling->master_converter(), nullptr,
       *systemmatrix_manifold_cond_, true, true);
 
-  systemmatrix_manifold_cond_->Complete();
+  systemmatrix_manifold_cond_->complete();
 
   // dmanifold_dstructure: scatra rows are transformed to manifold side (flux is scaled by -1.0)
   Core::LinAlg::MatrixLogicalSplitAndTransform()(*matrix_scatra_structure_cond_, *full_map_scatra_,
-      *full_map_structure_, -inv_thickness, &*scatra_manifold_coupling->MasterConverter(), nullptr,
+      *full_map_structure_, -inv_thickness, &*scatra_manifold_coupling->master_converter(), nullptr,
       *matrix_manifold_structure_cond_, true, true);
 
-  matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);
+  matrix_manifold_structure_cond_->complete(*full_map_structure_, *full_map_manifold_);
 }
 
 /*----------------------------------------------------------------------*
@@ -535,12 +537,12 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::add_condition_contribution()
   rhs_manifold_->Update(1.0, *rhs_manifold_cond_, 1.0);
   rhs_scatra_->Update(1.0, *rhs_scatra_cond_, 1.0);
 
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (scatra_->sca_tra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      auto blockmaps_manifold = *scatra_manifold_->ScaTraField()->BlockMaps();
+      auto blockmaps_manifold = *scatra_manifold_->sca_tra_field()->block_maps();
 
       /*
        * m: manifold
@@ -548,48 +550,48 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::add_condition_contribution()
        * d: structure/displacements
        */
       auto flux_manifold_scatra_mm_block =
-          systemmatrix_manifold_cond_->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          systemmatrix_manifold_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
               blockmaps_manifold, blockmaps_manifold);
       auto flux_manifold_scatra_md_block =
-          matrix_manifold_structure_cond_->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          matrix_manifold_structure_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_structure_, blockmaps_manifold);
       auto flux_manifold_scatra_ms_block =
-          matrix_manifold_scatra_cond_->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          matrix_manifold_scatra_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_scatra_, blockmaps_manifold);
       auto flux_manifold_scatra_sm_block =
-          matrix_scatra_manifold_cond_->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          matrix_scatra_manifold_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
               blockmaps_manifold, *block_map_scatra_);
       auto flux_manifold_scatra_sd_block =
-          matrix_scatra_structure_cond_->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          matrix_scatra_structure_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_structure_, *block_map_scatra_);
       auto flux_manifold_scatra_ss_block =
-          systemmatrix_scatra_cond_->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          systemmatrix_scatra_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_scatra_, *block_map_scatra_);
 
-      flux_manifold_scatra_mm_block->Complete();
-      flux_manifold_scatra_md_block->Complete();
-      flux_manifold_scatra_ms_block->Complete();
-      flux_manifold_scatra_sm_block->Complete();
-      flux_manifold_scatra_sd_block->Complete();
-      flux_manifold_scatra_ss_block->Complete();
+      flux_manifold_scatra_mm_block->complete();
+      flux_manifold_scatra_md_block->complete();
+      flux_manifold_scatra_ms_block->complete();
+      flux_manifold_scatra_sm_block->complete();
+      flux_manifold_scatra_sd_block->complete();
+      flux_manifold_scatra_ss_block->complete();
 
-      systemmatrix_manifold_->Add(*flux_manifold_scatra_mm_block, false, 1.0, 1.0);
-      matrix_manifold_scatra_->Add(*flux_manifold_scatra_ms_block, false, 1.0, 1.0);
-      matrix_manifold_structure_->Add(*flux_manifold_scatra_md_block, false, 1.0, 1.0);
-      systemmatrix_scatra_->Add(*flux_manifold_scatra_ss_block, false, 1.0, 1.0);
-      matrix_scatra_manifold_->Add(*flux_manifold_scatra_sm_block, false, 1.0, 1.0);
-      matrix_scatra_structure_->Add(*flux_manifold_scatra_sd_block, false, 1.0, 1.0);
+      systemmatrix_manifold_->add(*flux_manifold_scatra_mm_block, false, 1.0, 1.0);
+      matrix_manifold_scatra_->add(*flux_manifold_scatra_ms_block, false, 1.0, 1.0);
+      matrix_manifold_structure_->add(*flux_manifold_scatra_md_block, false, 1.0, 1.0);
+      systemmatrix_scatra_->add(*flux_manifold_scatra_ss_block, false, 1.0, 1.0);
+      matrix_scatra_manifold_->add(*flux_manifold_scatra_sm_block, false, 1.0, 1.0);
+      matrix_scatra_structure_->add(*flux_manifold_scatra_sd_block, false, 1.0, 1.0);
 
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      systemmatrix_manifold_->Add(*systemmatrix_manifold_cond_, false, 1.0, 1.0);
-      matrix_manifold_structure_->Add(*matrix_manifold_structure_cond_, false, 1.0, 1.0);
-      matrix_manifold_scatra_->Add(*matrix_manifold_scatra_cond_, false, 1.0, 1.0);
-      systemmatrix_scatra_->Add(*systemmatrix_scatra_cond_, false, 1.0, 1.0);
-      matrix_scatra_structure_->Add(*matrix_scatra_structure_cond_, false, 1.0, 1.0);
-      matrix_scatra_manifold_->Add(*matrix_scatra_manifold_cond_, false, 1.0, 1.0);
+      systemmatrix_manifold_->add(*systemmatrix_manifold_cond_, false, 1.0, 1.0);
+      matrix_manifold_structure_->add(*matrix_manifold_structure_cond_, false, 1.0, 1.0);
+      matrix_manifold_scatra_->add(*matrix_manifold_scatra_cond_, false, 1.0, 1.0);
+      systemmatrix_scatra_->add(*systemmatrix_scatra_cond_, false, 1.0, 1.0);
+      matrix_scatra_structure_->add(*matrix_scatra_structure_cond_, false, 1.0, 1.0);
+      matrix_scatra_manifold_->add(*matrix_scatra_manifold_cond_, false, 1.0, 1.0);
 
       break;
     }
@@ -608,13 +610,13 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_inflow()
   inflow_.clear();
   domainintegral_.clear();
 
-  scatra_->ScaTraField()->discretization()->set_state("phinp", scatra_->ScaTraField()->Phinp());
+  scatra_->sca_tra_field()->discretization()->set_state("phinp", scatra_->sca_tra_field()->phinp());
 
   for (const auto& scatra_manifold_coupling : scatra_manifold_couplings_)
   {
-    const int kineticsID = scatra_manifold_coupling->KineticsConditionID();
+    const int kineticsID = scatra_manifold_coupling->kinetics_condition_id();
 
-    std::vector<double> zero_scalar_vector(scatra_->ScaTraField()->NumDofPerNode(), 0.0);
+    std::vector<double> zero_scalar_vector(scatra_->sca_tra_field()->num_dof_per_node(), 0.0);
     inflow_.insert(std::make_pair(kineticsID, zero_scalar_vector));
 
     // First: set parameters to elements
@@ -633,7 +635,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_inflow()
 void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_domain_integral(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
-  const int kineticsID = scatra_manifold_coupling->KineticsConditionID();
+  const int kineticsID = scatra_manifold_coupling->kinetics_condition_id();
 
   // integrate only if not done so far
   if (domainintegral_.find(kineticsID) == domainintegral_.end())
@@ -646,7 +648,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_domain_in
     // integrated domain of this condition
     auto domainintegral_cond = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
 
-    scatra_->ScaTraField()->discretization()->EvaluateScalars(
+    scatra_->sca_tra_field()->discretization()->evaluate_scalars(
         condparams, domainintegral_cond, "SSISurfaceManifold", kineticsID);
 
     domainintegral_.insert(std::make_pair(kineticsID, domainintegral_cond->values()[0]));
@@ -658,7 +660,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_domain_in
 void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_inflow_integral(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
-  const int kineticsID = scatra_manifold_coupling->KineticsConditionID();
+  const int kineticsID = scatra_manifold_coupling->kinetics_condition_id();
 
   Teuchos::ParameterList condparams;
 
@@ -670,10 +672,10 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_sca_tra_manifold_inflow_in
   condparams.set<int>("evaluate_manifold_coupling", 1);
 
   // integrated scalars of this condition
-  auto inflow_cond =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(scatra_->ScaTraField()->NumDofPerNode()));
+  auto inflow_cond = Teuchos::rcp(
+      new Core::LinAlg::SerialDenseVector(scatra_->sca_tra_field()->num_dof_per_node()));
 
-  scatra_->ScaTraField()->discretization()->EvaluateScalars(
+  scatra_->sca_tra_field()->discretization()->evaluate_scalars(
       condparams, inflow_cond, "SSISurfaceManifold", kineticsID);
 
   for (int i = 0; i < inflow_cond->length(); ++i)
@@ -693,36 +695,36 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::pre_evaluate(
   eleparams.set<Core::Conditions::ConditionType>(
       "condition type", Core::Conditions::ConditionType::S2IKinetics);
 
-  switch (scatra_manifold_coupling->ConditionKinetics()->parameters().get<int>("kinetic model"))
+  switch (scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("kinetic model"))
   {
     case Inpar::S2I::kinetics_constantinterfaceresistance:
     {
       eleparams.set<int>("kinetic model", Inpar::S2I::kinetics_constantinterfaceresistance);
       eleparams.set<double>("resistance",
-          scatra_manifold_coupling->ConditionKinetics()->parameters().get<double>("resistance"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("resistance"));
       eleparams.set<const std::vector<int>*>("onoff",
-          &scatra_manifold_coupling->ConditionKinetics()->parameters().get<std::vector<int>>(
+          &scatra_manifold_coupling->condition_kinetics()->parameters().get<std::vector<int>>(
               "onoff"));
       eleparams.set<int>("numelectrons",
-          scatra_manifold_coupling->ConditionKinetics()->parameters().get<int>("e-"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("e-"));
       break;
     }
     case Inpar::S2I::kinetics_butlervolmerreduced:
     {
       eleparams.set<int>("kinetic model", Inpar::S2I::kinetics_butlervolmerreduced);
       eleparams.set<int>("numscal",
-          scatra_manifold_coupling->ConditionKinetics()->parameters().get<int>("numscal"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("numscal"));
       eleparams.set<const std::vector<int>*>("stoichiometries",
-          &scatra_manifold_coupling->ConditionKinetics()->parameters().get<std::vector<int>>(
+          &scatra_manifold_coupling->condition_kinetics()->parameters().get<std::vector<int>>(
               "stoichiometries"));
       eleparams.set<int>("numelectrons",
-          scatra_manifold_coupling->ConditionKinetics()->parameters().get<int>("e-"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<int>("e-"));
       eleparams.set<double>(
-          "k_r", scatra_manifold_coupling->ConditionKinetics()->parameters().get<double>("k_r"));
+          "k_r", scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("k_r"));
       eleparams.set<double>("alpha_a",
-          scatra_manifold_coupling->ConditionKinetics()->parameters().get<double>("alpha_a"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("alpha_a"));
       eleparams.set<double>("alpha_c",
-          scatra_manifold_coupling->ConditionKinetics()->parameters().get<double>("alpha_c"));
+          scatra_manifold_coupling->condition_kinetics()->parameters().get<double>("alpha_c"));
       break;
     }
     case Inpar::S2I::kinetics_nointerfaceflux:
@@ -736,7 +738,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::pre_evaluate(
       break;
     }
   }
-  scatra_manifold_->ScaTraField()->discretization()->evaluate(
+  scatra_manifold_->sca_tra_field()->discretization()->evaluate(
       eleparams, Teuchos::null, Teuchos::null);
 }
 
@@ -765,8 +767,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::output()
           inflow_comp.second[i] / domainint};
     }
   }
-  runtime_csvwriter_->WriteDataToFile(scatra_manifold_->ScaTraField()->Time(),
-      scatra_manifold_->ScaTraField()->Step(), output_data);
+  runtime_csvwriter_->write_data_to_file(scatra_manifold_->sca_tra_field()->time(),
+      scatra_manifold_->sca_tra_field()->step(), output_data);
 }
 
 /*----------------------------------------------------------------------*
@@ -776,7 +778,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::un_complete_matrices_if_necessary(
 {
   // definition of lambda function to get size of graph for given matrix
   auto graph_size = [](Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix)
-  { return matrix->EpetraMatrix()->Graph().NumGlobalEntries(); };
+  { return matrix->epetra_matrix()->Graph().NumGlobalEntries(); };
 
   // get size of graphs of conditions matrices
   const int size_manifold_scatra_graph_ = graph_size(matrix_manifold_scatra_cond_);
@@ -810,12 +812,12 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::un_complete_matrices_if_necessary(
   // uncomplete all global matrices if condition matrices have updated graph
   if (do_uncomplete)
   {
-    matrix_manifold_scatra_->UnComplete();
-    matrix_manifold_structure_->UnComplete();
-    matrix_scatra_manifold_->UnComplete();
-    matrix_scatra_structure_->UnComplete();
-    systemmatrix_manifold_->UnComplete();
-    systemmatrix_scatra_->UnComplete();
+    matrix_manifold_scatra_->un_complete();
+    matrix_manifold_structure_->un_complete();
+    matrix_scatra_manifold_->un_complete();
+    matrix_scatra_structure_->un_complete();
+    systemmatrix_manifold_->un_complete();
+    systemmatrix_scatra_->un_complete();
   }
 }
 
@@ -834,7 +836,7 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
     ssi_meshtying_ = Teuchos::rcp(
         new SSI::UTILS::SSIMeshTying("SSISurfaceManifold", scatra_manifold_dis, false, false));
 
-    if (ssi_meshtying_->MeshTyingHandlers().empty())
+    if (ssi_meshtying_->mesh_tying_handlers().empty())
     {
       FOUR_C_THROW(
           "Could not create mesh tying between manifold fields. They are not intersecting. "
@@ -843,15 +845,16 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
 
     // merge slave dof maps from all mesh tying conditions
     Teuchos::RCP<Epetra_Map> slave_dof_map = Teuchos::null;
-    for (const auto& meshtying : ssi_meshtying_->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_meshtying_->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_adapter = meshtying->slave_master_coupling();
       if (slave_dof_map == Teuchos::null)
-        slave_dof_map = Teuchos::rcp(new Epetra_Map(*coupling_adapter->SlaveDofMap()));
+        slave_dof_map = Teuchos::rcp(new Epetra_Map(*coupling_adapter->slave_dof_map()));
       else
       {
         auto slave_dof_map_old = Teuchos::rcp(new Epetra_Map(*slave_dof_map));
-        slave_dof_map = Core::LinAlg::MergeMap(slave_dof_map_old, coupling_adapter->SlaveDofMap());
+        slave_dof_map =
+            Core::LinAlg::MergeMap(slave_dof_map_old, coupling_adapter->slave_dof_map());
       }
     }
     // exclusive interior and master dofs across all slave conditions
@@ -894,13 +897,13 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
   if (is_manifold_meshtying_)
   {
     // couple meshyting_handler_ and condensed_block_dof_map_ to meshtying_block_handler_
-    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
-      auto slave_dof_map = coupling_adapter->SlaveDofMap();
-      auto perm_slave_dof_map = coupling_adapter->PermSlaveDofMap();
-      auto master_dof_map = coupling_adapter->MasterDofMap();
-      auto perm_master_dof_map = coupling_adapter->PermMasterDofMap();
+      auto coupling_adapter = meshtying->slave_master_coupling();
+      auto slave_dof_map = coupling_adapter->slave_dof_map();
+      auto perm_slave_dof_map = coupling_adapter->perm_slave_dof_map();
+      auto master_dof_map = coupling_adapter->master_dof_map();
+      auto perm_master_dof_map = coupling_adapter->perm_master_dof_map();
 
       // split maps according to split of matrix blocks, i.e. block maps
       std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_slave_block_dof_map;
@@ -909,11 +912,11 @@ SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
       {
         auto [slave_block_map, perm_master_block_map] =
             intersect_coupling_maps_block_map(ssi_maps_->block_map_sca_tra_manifold()->Map(i),
-                slave_dof_map, perm_master_dof_map, scatra_manifold_dis->Comm());
+                slave_dof_map, perm_master_dof_map, scatra_manifold_dis->get_comm());
 
         auto [master_block_map, perm_slave_block_map] =
             intersect_coupling_maps_block_map(ssi_maps_->block_map_sca_tra_manifold()->Map(i),
-                master_dof_map, perm_slave_dof_map, scatra_manifold_dis->Comm());
+                master_dof_map, perm_slave_dof_map, scatra_manifold_dis->get_comm());
 
         auto coupling_adapter_block = Teuchos::rcp(new Core::Adapter::Coupling());
         coupling_adapter_block->setup_coupling(
@@ -964,13 +967,13 @@ void SSI::ManifoldMeshTyingStrategyBase::apply_mesh_tying_to_manifold_rhs(
 {
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_adapter = meshtying->slave_master_coupling();
       auto multimap = meshtying->slave_master_extractor();
 
       auto slave_dofs = multimap->extract_vector(rhs_manifold, 1);
-      auto slave_to_master_dofs = coupling_adapter->SlaveToMaster(slave_dofs);
+      auto slave_to_master_dofs = coupling_adapter->slave_to_master(slave_dofs);
       multimap->add_vector(slave_to_master_dofs, 2, rhs_manifold);
       multimap->put_scalar(*rhs_manifold, 1, 0.0);
     }
@@ -992,11 +995,11 @@ void SSI::ManifoldMeshTyingStrategySparse::apply_meshtying_to_manifold_matrix(
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_adapter = meshtying->slave_master_coupling();
 
-      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto cond_slave_dof_map = coupling_adapter->slave_dof_map();
       auto converter = Core::Adapter::CouplingSlaveConverter(*coupling_adapter);
 
       // add derivs. of slave dofs. w.r.t. slave dofs
@@ -1012,11 +1015,11 @@ void SSI::ManifoldMeshTyingStrategySparse::apply_meshtying_to_manifold_matrix(
 
     // Finalize: put 1.0 on main diag of slave dofs
     const double one = 1.0;
-    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_adapter = meshtying->slave_master_coupling();
 
-      auto slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto slave_dof_map = coupling_adapter->slave_dof_map();
       for (int doflid_slave = 0; doflid_slave < slave_dof_map->NumMyElements(); ++doflid_slave)
       {
         // extract global ID of current slave-side row
@@ -1024,18 +1027,18 @@ void SSI::ManifoldMeshTyingStrategySparse::apply_meshtying_to_manifold_matrix(
         if (dofgid_slave < 0) FOUR_C_THROW("Local ID not found!");
 
         // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column indices
-        if (ssi_manifold_sparse->Filled())
+        if (ssi_manifold_sparse->filled())
         {
-          const int rowlid_slave = ssi_manifold_sparse->RowMap().LID(dofgid_slave);
+          const int rowlid_slave = ssi_manifold_sparse->row_map().LID(dofgid_slave);
           if (rowlid_slave < 0) FOUR_C_THROW("Global ID not found!");
-          if (ssi_manifold_sparse->EpetraMatrix()->ReplaceMyValues(
+          if (ssi_manifold_sparse->epetra_matrix()->ReplaceMyValues(
                   rowlid_slave, 1, &one, &rowlid_slave))
             FOUR_C_THROW("ReplaceMyValues failed!");
         }
 
         // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column
         // indices
-        else if (ssi_manifold_sparse->EpetraMatrix()->InsertGlobalValues(
+        else if (ssi_manifold_sparse->epetra_matrix()->InsertGlobalValues(
                      dofgid_slave, 1, &one, &dofgid_slave))
           FOUR_C_THROW("InsertGlobalValues failed!");
       }
@@ -1059,9 +1062,9 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_matrix(
     for (int col = 0; col < condensed_block_dof_map_->num_maps(); ++col)
     {
       // add derivs. of interior/master dofs. w.r.t. interior/master dofs
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->matrix(row, col),
           *condensed_block_dof_map_->Map(row), *condensed_block_dof_map_->Map(col), 1.0, nullptr,
-          nullptr, ssi_manifold_block->Matrix(row, col), true, true);
+          nullptr, ssi_manifold_block->matrix(row, col), true, true);
 
       if (is_manifold_meshtying_)
       {
@@ -1073,17 +1076,17 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_matrix(
           auto converter_col = Core::Adapter::CouplingSlaveConverter(*meshtying[col]);
 
           // add derivs. of slave dofs. w.r.t. slave dofs
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->matrix(row, col),
               *cond_block_slave_dof_map[row], *cond_block_slave_dof_map[col], 1.0, &converter_row,
-              &converter_col, ssi_manifold_block->Matrix(row, col), true, true);
+              &converter_col, ssi_manifold_block->matrix(row, col), true, true);
           // add derivs. of slave dofs. w.r.t. interior/master dofs
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->matrix(row, col),
               *cond_block_slave_dof_map[row], *condensed_block_dof_map_->Map(col), 1.0,
-              &converter_row, nullptr, ssi_manifold_block->Matrix(row, col), true, true);
+              &converter_row, nullptr, ssi_manifold_block->matrix(row, col), true, true);
           // add derivs. of interior/master dofs w.r.t. slave dofs
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_block->matrix(row, col),
               *condensed_block_dof_map_->Map(row), *cond_block_slave_dof_map[col], 1.0, nullptr,
-              &converter_col, ssi_manifold_block->Matrix(row, col), true, true);
+              &converter_col, ssi_manifold_block->matrix(row, col), true, true);
         }
 
         // Finalize: put 1.0 on main diag of slave dofs
@@ -1093,7 +1096,7 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_matrix(
           for (const auto& block_meshtying : mesh_tying_block_handler())
           {
             auto coupling_adapter = block_meshtying.first[row];
-            auto slave_dof_map = coupling_adapter->SlaveDofMap();
+            auto slave_dof_map = coupling_adapter->slave_dof_map();
             for (int doflid_slave = 0; doflid_slave < slave_dof_map->NumMyElements();
                  ++doflid_slave)
             {
@@ -1103,19 +1106,19 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_matrix(
 
               // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column
               // indices
-              if (ssi_manifold_block->Matrix(row, row).Filled())
+              if (ssi_manifold_block->matrix(row, row).filled())
               {
                 const int rowlid_slave =
-                    ssi_manifold_block->Matrix(row, row).RowMap().LID(dofgid_slave);
+                    ssi_manifold_block->matrix(row, row).row_map().LID(dofgid_slave);
                 if (rowlid_slave < 0) FOUR_C_THROW("Global ID not found!");
-                if (ssi_manifold_block->Matrix(row, row).EpetraMatrix()->ReplaceMyValues(
+                if (ssi_manifold_block->matrix(row, row).epetra_matrix()->ReplaceMyValues(
                         rowlid_slave, 1, &one, &rowlid_slave))
                   FOUR_C_THROW("ReplaceMyValues failed!");
               }
 
               // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and
               // column indices
-              else if (ssi_manifold_block->Matrix(row, row).EpetraMatrix()->InsertGlobalValues(
+              else if (ssi_manifold_block->matrix(row, row).epetra_matrix()->InsertGlobalValues(
                            dofgid_slave, 1, &one, &dofgid_slave))
                 FOUR_C_THROW("InsertGlobalValues failed!");
             }
@@ -1139,21 +1142,21 @@ void SSI::ManifoldMeshTyingStrategySparse::apply_meshtying_to_manifold_scatra_ma
 
   // add derivs. of interior/master dofs w.r.t. scatra dofs
   Core::LinAlg::MatrixLogicalSplitAndTransform()(*manifold_scatra_sparse, *condensed_dof_map_,
-      *ssi_maps_->ScaTraDofRowMap(), 1.0, nullptr, nullptr, *ssi_manifold_scatra_sparse, true,
+      *ssi_maps_->sca_tra_dof_row_map(), 1.0, nullptr, nullptr, *ssi_manifold_scatra_sparse, true,
       true);
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_adapter = meshtying->slave_master_coupling();
 
-      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto cond_slave_dof_map = coupling_adapter->slave_dof_map();
       auto converter = Core::Adapter::CouplingSlaveConverter(*coupling_adapter);
 
       // add derivs. of slave dofs w.r.t. scatra dofs
       Core::LinAlg::MatrixLogicalSplitAndTransform()(*manifold_scatra_sparse, *cond_slave_dof_map,
-          *ssi_maps_->ScaTraDofRowMap(), 1.0, &converter, nullptr, *ssi_manifold_scatra_sparse,
+          *ssi_maps_->sca_tra_dof_row_map(), 1.0, &converter, nullptr, *ssi_manifold_scatra_sparse,
           true, true);
     }
   }
@@ -1172,12 +1175,12 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_scatra_mat
 
   for (int row = 0; row < condensed_block_dof_map_->num_maps(); ++row)
   {
-    for (int col = 0; col < ssi_maps_->BlockMapScaTra()->num_maps(); ++col)
+    for (int col = 0; col < ssi_maps_->block_map_sca_tra()->num_maps(); ++col)
     {
       // add derivs. of interior/master dofs w.r.t. scatra dofs
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_scatra_block->Matrix(row, col),
-          *condensed_block_dof_map_->Map(row), *ssi_maps_->BlockMapScaTra()->Map(col), 1.0, nullptr,
-          nullptr, ssi_manifold_scatra_block->Matrix(row, col), true, true);
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_scatra_block->matrix(row, col),
+          *condensed_block_dof_map_->Map(row), *ssi_maps_->block_map_sca_tra()->Map(col), 1.0,
+          nullptr, nullptr, ssi_manifold_scatra_block->matrix(row, col), true, true);
 
       if (is_manifold_meshtying_)
       {
@@ -1188,9 +1191,9 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_scatra_mat
           auto converter_row = Core::Adapter::CouplingSlaveConverter(*meshtying[row]);
 
           // add derivs. of slave dofs w.r.t. scatra dofs
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_scatra_block->Matrix(row, col),
-              *cond_block_slave_dof_map[row], *ssi_maps_->BlockMapScaTra()->Map(col), 1.0,
-              &converter_row, nullptr, ssi_manifold_scatra_block->Matrix(row, col), true, true);
+          Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_scatra_block->matrix(row, col),
+              *cond_block_slave_dof_map[row], *ssi_maps_->block_map_sca_tra()->Map(col), 1.0,
+              &converter_row, nullptr, ssi_manifold_scatra_block->matrix(row, col), true, true);
         }
       }
     }
@@ -1214,36 +1217,36 @@ void SSI::ManifoldMeshTyingStrategySparse::apply_meshtying_to_manifold_structure
 
   // add derivs. of interior/master dofs w.r.t. structure dofs
   Core::LinAlg::MatrixLogicalSplitAndTransform()(*ssi_manifold_structure_sparse,
-      *condensed_dof_map_, *ssi_maps_->StructureDofRowMap(), 1.0, nullptr, nullptr,
+      *condensed_dof_map_, *ssi_maps_->structure_dof_row_map(), 1.0, nullptr, nullptr,
       *temp_manifold_structure, true, true);
   Core::LinAlg::MatrixLogicalSplitAndTransform()(*manifold_structure_sparse, *condensed_dof_map_,
-      *ssi_maps_->StructureDofRowMap(), 1.0, nullptr, nullptr, *temp_manifold_structure, true,
+      *ssi_maps_->structure_dof_row_map(), 1.0, nullptr, nullptr, *temp_manifold_structure, true,
       true);
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_adapter = meshtying->slave_master_coupling();
 
-      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto cond_slave_dof_map = coupling_adapter->slave_dof_map();
       auto converter = Core::Adapter::CouplingSlaveConverter(*coupling_adapter);
 
       // add derivs. of slave dofs w.r.t. structure dofs
       Core::LinAlg::MatrixLogicalSplitAndTransform()(*ssi_manifold_structure_sparse,
-          *cond_slave_dof_map, *ssi_maps_->StructureDofRowMap(), 1.0, &converter, nullptr,
+          *cond_slave_dof_map, *ssi_maps_->structure_dof_row_map(), 1.0, &converter, nullptr,
           *temp_manifold_structure, true, true);
       Core::LinAlg::MatrixLogicalSplitAndTransform()(*manifold_structure_sparse,
-          *cond_slave_dof_map, *ssi_maps_->StructureDofRowMap(), 1.0, &converter, nullptr,
+          *cond_slave_dof_map, *ssi_maps_->structure_dof_row_map(), 1.0, &converter, nullptr,
           *temp_manifold_structure, true, true);
     }
   }
 
-  ssi_manifold_structure_sparse->Zero();
-  if (do_uncomplete) ssi_manifold_structure_sparse->UnComplete();
-  temp_manifold_structure->Complete(
-      *ssi_maps_->StructureDofRowMap(), *ssi_maps_->sca_tra_manifold_dof_row_map());
-  ssi_manifold_structure_sparse->Add(*temp_manifold_structure, false, 1.0, 0.0);
+  ssi_manifold_structure_sparse->zero();
+  if (do_uncomplete) ssi_manifold_structure_sparse->un_complete();
+  temp_manifold_structure->complete(
+      *ssi_maps_->structure_dof_row_map(), *ssi_maps_->sca_tra_manifold_dof_row_map());
+  ssi_manifold_structure_sparse->add(*temp_manifold_structure, false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -1259,17 +1262,17 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_structure_
       Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(manifold_structure_matrix);
 
   auto temp_manifold_structure = SSI::UTILS::SSIMatrices::setup_block_matrix(
-      ssi_maps_->block_map_sca_tra_manifold(), ssi_maps_->BlockMapStructure());
+      ssi_maps_->block_map_sca_tra_manifold(), ssi_maps_->block_map_structure());
 
   for (int row = 0; row < condensed_block_dof_map_->num_maps(); ++row)
   {
     // add derivs. of interior/master dofs w.r.t. structure dofs
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(ssi_manifold_structure_block->Matrix(row, 0),
-        *condensed_block_dof_map_->Map(row), *ssi_maps_->StructureDofRowMap(), 1.0, nullptr,
-        nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
-    Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_structure_block->Matrix(row, 0),
-        *condensed_block_dof_map_->Map(row), *ssi_maps_->StructureDofRowMap(), 1.0, nullptr,
-        nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
+    Core::LinAlg::MatrixLogicalSplitAndTransform()(ssi_manifold_structure_block->matrix(row, 0),
+        *condensed_block_dof_map_->Map(row), *ssi_maps_->structure_dof_row_map(), 1.0, nullptr,
+        nullptr, temp_manifold_structure->matrix(row, 0), true, true);
+    Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_structure_block->matrix(row, 0),
+        *condensed_block_dof_map_->Map(row), *ssi_maps_->structure_dof_row_map(), 1.0, nullptr,
+        nullptr, temp_manifold_structure->matrix(row, 0), true, true);
 
     if (is_manifold_meshtying_)
     {
@@ -1280,20 +1283,20 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_structure_
         auto converter_row = Core::Adapter::CouplingSlaveConverter(*meshtying[row]);
 
         // add derivs. of slave dofs w.r.t. structure dofs
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(ssi_manifold_structure_block->Matrix(row, 0),
-            *cond_block_slave_dof_map[row], *ssi_maps_->StructureDofRowMap(), 1.0, &converter_row,
-            nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
-        Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_structure_block->Matrix(row, 0),
-            *cond_block_slave_dof_map[row], *ssi_maps_->StructureDofRowMap(), 1.0, &converter_row,
-            nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
+        Core::LinAlg::MatrixLogicalSplitAndTransform()(ssi_manifold_structure_block->matrix(row, 0),
+            *cond_block_slave_dof_map[row], *ssi_maps_->structure_dof_row_map(), 1.0,
+            &converter_row, nullptr, temp_manifold_structure->matrix(row, 0), true, true);
+        Core::LinAlg::MatrixLogicalSplitAndTransform()(manifold_structure_block->matrix(row, 0),
+            *cond_block_slave_dof_map[row], *ssi_maps_->structure_dof_row_map(), 1.0,
+            &converter_row, nullptr, temp_manifold_structure->matrix(row, 0), true, true);
       }
     }
   }
 
-  ssi_manifold_structure_block->Zero();
-  if (do_uncomplete) ssi_manifold_structure_block->UnComplete();
-  temp_manifold_structure->Complete();
-  ssi_manifold_structure_block->Add(*temp_manifold_structure, false, 1.0, 0.0);
+  ssi_manifold_structure_block->zero();
+  if (do_uncomplete) ssi_manifold_structure_block->un_complete();
+  temp_manifold_structure->complete();
+  ssi_manifold_structure_block->add(*temp_manifold_structure, false, 1.0, 0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -1308,25 +1311,25 @@ void SSI::ManifoldMeshTyingStrategySparse::apply_meshtying_to_scatra_manifold_ma
   auto scatra_manifold_sparse =
       Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatra_manifold_matrix);
 
-  if (do_uncomplete) ssi_scatra_manifold_sparse->UnComplete();
+  if (do_uncomplete) ssi_scatra_manifold_sparse->un_complete();
 
   // add derivs. of scatra w.r.t. interior/master dofs
   Core::LinAlg::MatrixLogicalSplitAndTransform()(*scatra_manifold_sparse,
-      *ssi_maps_->ScaTraDofRowMap(), *condensed_dof_map_, 1.0, nullptr, nullptr,
+      *ssi_maps_->sca_tra_dof_row_map(), *condensed_dof_map_, 1.0, nullptr, nullptr,
       *ssi_scatra_manifold_sparse, true, true);
 
   if (is_manifold_meshtying_)
   {
-    for (const auto& meshtying : SSIMeshTying()->MeshTyingHandlers())
+    for (const auto& meshtying : ssi_mesh_tying()->mesh_tying_handlers())
     {
-      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_adapter = meshtying->slave_master_coupling();
 
-      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto cond_slave_dof_map = coupling_adapter->slave_dof_map();
       auto converter = Core::Adapter::CouplingSlaveConverter(*coupling_adapter);
 
       // add derivs. of scatra w.r.t. slave dofs
       Core::LinAlg::MatrixLogicalSplitAndTransform()(*scatra_manifold_sparse,
-          *ssi_maps_->ScaTraDofRowMap(), *cond_slave_dof_map, 1.0, nullptr, &converter,
+          *ssi_maps_->sca_tra_dof_row_map(), *cond_slave_dof_map, 1.0, nullptr, &converter,
           *ssi_scatra_manifold_sparse, true, true);
     }
   }
@@ -1344,16 +1347,16 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_scatra_manifold_mat
   auto scatra_manifold_block =
       Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatra_manifold_matrix);
 
-  if (do_uncomplete) ssi_scatra_manifold_block->UnComplete();
+  if (do_uncomplete) ssi_scatra_manifold_block->un_complete();
 
-  for (int row = 0; row < ssi_maps_->BlockMapScaTra()->num_maps(); ++row)
+  for (int row = 0; row < ssi_maps_->block_map_sca_tra()->num_maps(); ++row)
   {
     for (int col = 0; col < condensed_block_dof_map_->num_maps(); ++col)
     {
       // add derivs. of scatra w.r.t. interior/master dofs
-      Core::LinAlg::MatrixLogicalSplitAndTransform()(scatra_manifold_block->Matrix(row, col),
-          *ssi_maps_->BlockMapScaTra()->Map(row), *condensed_block_dof_map_->Map(col), 1.0, nullptr,
-          nullptr, ssi_scatra_manifold_block->Matrix(row, col), true, true);
+      Core::LinAlg::MatrixLogicalSplitAndTransform()(scatra_manifold_block->matrix(row, col),
+          *ssi_maps_->block_map_sca_tra()->Map(row), *condensed_block_dof_map_->Map(col), 1.0,
+          nullptr, nullptr, ssi_scatra_manifold_block->matrix(row, col), true, true);
 
       if (is_manifold_meshtying_)
       {
@@ -1364,9 +1367,9 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_scatra_manifold_mat
           auto converter_col = Core::Adapter::CouplingSlaveConverter(*meshtying[col]);
 
           // add derivs. of scatra w.r.t. slave dofs
-          Core::LinAlg::MatrixLogicalSplitAndTransform()(scatra_manifold_block->Matrix(row, col),
-              *ssi_maps_->BlockMapScaTra()->Map(row), *cond_block_slave_dof_map[col], 1.0, nullptr,
-              &converter_col, ssi_scatra_manifold_block->Matrix(row, col), true, true);
+          Core::LinAlg::MatrixLogicalSplitAndTransform()(scatra_manifold_block->matrix(row, col),
+              *ssi_maps_->block_map_sca_tra()->Map(row), *cond_block_slave_dof_map[col], 1.0,
+              nullptr, &converter_col, ssi_scatra_manifold_block->matrix(row, col), true, true);
         }
       }
     }

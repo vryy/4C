@@ -34,7 +34,7 @@ FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluidFluid& xfluid)
       discret_(xfluid.discret_),
       velnp_(xfluid.state_->velnp_),
       coupl_discret_(xfluid.embedded_fluid_->discretization()),
-      coupl_velnp_(xfluid.embedded_fluid_->Velnp()),
+      coupl_velnp_(xfluid.embedded_fluid_->velnp()),
       node_from_zero_(false)
 {
   // Todo: remove the "node_from_zero" flag for fluidfluid:
@@ -53,11 +53,11 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
   // Todo: remove!
   if (node_from_zero_) node -= 1;
 
-  if (dis == discret_->Name())
+  if (dis == discret_->name())
   {
     test_node(res, nerr, test_count, node, discret_, velnp_);
   }
-  else if (dis == coupl_discret_->Name())
+  else if (dis == coupl_discret_->name())
   {
     test_node(res, nerr, test_count, node, coupl_discret_, coupl_velnp_);
   }
@@ -69,21 +69,21 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
     int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& velnp)
 {
-  int havenode(discret->HaveGlobalNode(node));
+  int havenode(discret->have_global_node(node));
   int isnodeofanybody(0);
-  discret->Comm().SumAll(&havenode, &isnodeofanybody, 1);
+  discret->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
-    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, discret->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, discret->name().c_str());
   }
   else
   {
-    if (discret->HaveGlobalNode(node))
+    if (discret->have_global_node(node))
     {
-      Core::Nodes::Node* actnode = discret->gNode(node);
+      Core::Nodes::Node* actnode = discret->g_node(node);
 
-      if (actnode->Owner() != discret->Comm().MyPID()) return;
+      if (actnode->owner() != discret->get_comm().MyPID()) return;
 
       double result = 0.;
 
@@ -93,19 +93,19 @@ void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int
       res.extract_string("QUANTITY", position);
       if (position == "velx")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(0, actnode, 0))];
+        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 0))];
       }
       else if (position == "vely")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(0, actnode, 1))];
+        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 1))];
       }
       else if (position == "velz")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(0, actnode, 2))];
+        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 2))];
       }
       else if (position == "pressure")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(0, actnode, 3))];
+        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 3))];
       }
       else
       {

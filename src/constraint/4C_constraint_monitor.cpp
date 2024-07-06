@@ -24,7 +24,7 @@ CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
-  actdisc_->GetCondition(conditionname, moncond_);
+  actdisc_->get_condition(conditionname, moncond_);
   if (moncond_.size())
   {
     montype_ = get_moni_type(conditionname);
@@ -99,8 +99,8 @@ void CONSTRAINTS::Monitor::evaluate(
 void CONSTRAINTS::Monitor::evaluate_monitor(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
-  if (!(actdisc_->Filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!actdisc_->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -119,7 +119,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -130,7 +130,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
       std::vector<int> lm;
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      curr->second->LocationVector(*actdisc_, lm, lmowner, lmstride);
+      curr->second->location_vector(*actdisc_, lm, lmowner, lmstride);
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -145,7 +145,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
       std::vector<int> constrlm;
       std::vector<int> constrowner;
       constrlm.push_back(condID - offsetID);
-      constrowner.push_back(curr->second->Owner());
+      constrowner.push_back(curr->second->owner());
       Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
     }
   }

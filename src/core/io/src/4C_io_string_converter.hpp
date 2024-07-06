@@ -228,7 +228,7 @@ namespace Core::IO
     void ParseSplitString(T &t, const std::vector<std::string> &split_str)
     {
       for (const auto &str : split_str)
-        t.insert(t.end(), StringConverter<typename T::value_type>::Parse(str));
+        t.insert(t.end(), StringConverter<typename T::value_type>::parse(str));
     };
 
     /**
@@ -241,7 +241,7 @@ namespace Core::IO
     {
       CheckDimension(split_str, n);
       for (unsigned int i = 0; i < n; ++i)
-        t[i] = Core::IO::StringConverter<ValueType>::Parse(split_str[i]);
+        t[i] = Core::IO::StringConverter<ValueType>::parse(split_str[i]);
     }
 
     /**
@@ -253,8 +253,8 @@ namespace Core::IO
     void ParseSplitString(std::pair<Key, Value> &t, const std::vector<std::string> &split_str)
     {
       CheckDimension(split_str, 2);
-      t = std::make_pair(Core::IO::StringConverter<Key>::Parse(split_str[0]),
-          StringConverter<Value>::Parse(split_str[1]));
+      t = std::make_pair(Core::IO::StringConverter<Key>::parse(split_str[0]),
+          StringConverter<Value>::parse(split_str[1]));
     }
 
     template <std::size_t index, typename Tuple>
@@ -263,7 +263,7 @@ namespace Core::IO
       if constexpr (index < std::tuple_size<Tuple>::value)
       {
         std::get<index>(t) =
-            StringConverter<std::decay_t<decltype(std::get<index>(t))>>::Parse(split_str[index]);
+            StringConverter<std::decay_t<decltype(std::get<index>(t))>>::parse(split_str[index]);
         ParseSplitStringHelper<index + 1>(t, split_str);
       }
     };
@@ -288,7 +288,7 @@ namespace Core::IO
   template <>
   struct StringConverter<int>
   {
-    static int Parse(const std::string &str)
+    static int parse(const std::string &str)
     {
       std::istringstream is(str);
       int i;
@@ -303,7 +303,7 @@ namespace Core::IO
   template <>
   struct StringConverter<double>
   {
-    static double Parse(const std::string &str)
+    static double parse(const std::string &str)
     {
       std::istringstream is(str);
       double d;
@@ -318,7 +318,7 @@ namespace Core::IO
   template <>
   struct StringConverter<char>
   {
-    static char Parse(const std::string &str)
+    static char parse(const std::string &str)
     {
       std::istringstream is(str);
       char c;
@@ -333,7 +333,7 @@ namespace Core::IO
   template <>
   struct StringConverter<bool>
   {
-    static bool Parse(const std::string &str)
+    static bool parse(const std::string &str)
     {
       std::istringstream is(str);
       bool d;
@@ -359,7 +359,7 @@ namespace Core::IO
   template <class T>
   struct StringConverter<T, std::enable_if_t<INTERNAL::StringPatternTraits<T>::is_list_compatible>>
   {
-    static T Parse(const std::string &str)
+    static T parse(const std::string &str)
     {
       const char sep = INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::list_rank>(
           INTERNAL::default_list_separator);
@@ -384,7 +384,7 @@ namespace Core::IO
   template <class T>
   struct StringConverter<T, std::enable_if_t<INTERNAL::StringPatternTraits<T>::is_map_compatible>>
   {
-    static T Parse(const std::string &str)
+    static T parse(const std::string &str)
     {
       T t;
 
@@ -401,8 +401,8 @@ namespace Core::IO
         auto key_val = Core::UTILS::SplitStringList(split_str_i, sep_map);
         INTERNAL::CheckDimension(key_val, 2);
 
-        t.insert(std::make_pair(StringConverter<typename T::key_type>::Parse(key_val[0]),
-            StringConverter<typename T::mapped_type>::Parse(key_val[1])));
+        t.insert(std::make_pair(StringConverter<typename T::key_type>::parse(key_val[0]),
+            StringConverter<typename T::mapped_type>::parse(key_val[1])));
       }
 
       return t;

@@ -54,7 +54,7 @@ namespace Discret
       LubricationEleInterface() = default;
 
       /// Setup element evaluation
-      virtual int SetupCalc(
+      virtual int setup_calc(
           Core::Elements::Element* ele, Core::FE::Discretization& discretization) = 0;
 
       /// Evaluate the element
@@ -72,7 +72,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra) = 0;
 
-      virtual int EvaluateEHLMon(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_ehl_mon(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -83,10 +83,10 @@ namespace Discret
       /*!
         This class does not provide a definition for this function; it
         must be defined in LubricationEleCalc.
-        The EvaluateService() method is meant for everything not related to
+        The evaluate_service() method is meant for everything not related to
         the assembling of the linearized matrix and the right hand side
       */
-      virtual int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_service(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

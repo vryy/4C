@@ -52,11 +52,11 @@ namespace POROFLUIDMULTIPHASE
         Teuchos::RCP<Epetra_Vector> residual, Core::LinAlg::SolverParams& solver_params) override;
 
     //! calculate norms for convergence checks
-    void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
+    void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
         std::vector<double>& prenorm, const Teuchos::RCP<const Epetra_Vector> increment) override;
 
     //! create the field test
-    void CreateFieldTest() override;
+    void create_field_test() override;
 
     //! restart
     void read_restart(const int step) override;
@@ -69,32 +69,32 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     // return arterial network time integrator
-    Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() override { return artnettimint_; }
+    Teuchos::RCP<Adapter::ArtNet> art_net_tim_int() override { return artnettimint_; }
 
     //! access dof row map
-    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
+    Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
+    Teuchos::RCP<const Epetra_Vector> artery_porofluid_rhs() const override;
 
     //! access to block system matrix of artery poro problem
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! get global (combined) increment of coupled problem
-    Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
+    Teuchos::RCP<const Epetra_Vector> combined_increment(
         const Teuchos::RCP<const Epetra_Vector> inc) const override;
 
     //! check if initial fields on coupled DOFs are equal
-    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const override;
+    void check_initial_fields(Teuchos::RCP<const Epetra_Vector> vec_cont) const override;
 
     //! set the element pairs that are close as found by search algorithm
-    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
+    void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! setup the strategy
     void setup() override;
 
     //! apply the mesh movement
-    void ApplyMeshMovement() const override;
+    void apply_mesh_movement() const override;
 
     //! return blood vessel volume fraction
     Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;

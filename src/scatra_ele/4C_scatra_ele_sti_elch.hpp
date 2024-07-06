@@ -164,13 +164,13 @@ namespace Discret
       }
 
       //! return concentration
-      const double& Conc() const { return conc_; };
+      const double& conc() const { return conc_; };
 
       //! return gradient of concentration
-      const Core::LinAlg::Matrix<nsd, 1>& GradConc() const { return gradconc_; };
+      const Core::LinAlg::Matrix<nsd, 1>& grad_conc() const { return gradconc_; };
 
       //! return gradient of electric potential
-      const Core::LinAlg::Matrix<nsd, 1>& GradPot() const { return gradpot_; };
+      const Core::LinAlg::Matrix<nsd, 1>& grad_pot() const { return gradpot_; };
 
       //! concentration
       double conc_;

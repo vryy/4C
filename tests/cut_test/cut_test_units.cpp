@@ -20,7 +20,7 @@ void test_unit_intersection_touch()
   {
     double x = std::pow(0.1, i);
     Core::Geo::Cut::Options options;
-    options.Init_for_Cuttests();  // use cln
+    options.init_for_cuttests();  // use cln
     Core::Geo::Cut::Mesh mesh(options, x);
 
     Core::LinAlg::SerialDenseMatrix xyze(3, 4);
@@ -61,28 +61,28 @@ void test_unit_intersection_touch()
 
     Core::Geo::Cut::Side* s2 = create_quad4(mesh, xyze);
 
-    const std::vector<Core::Geo::Cut::Edge*>& edges = s2->Edges();
+    const std::vector<Core::Geo::Cut::Edge*>& edges = s2->edges();
 
     Core::Geo::Cut::Edge* e = edges[3];
 
-    if (e->Nodes()[0]->point()->Id() != 7 or e->Nodes()[1]->point()->Id() != 4)
+    if (e->nodes()[0]->point()->id() != 7 or e->nodes()[1]->point()->id() != 4)
     {
       FOUR_C_THROW("unexpected nodal id");
     }
 
 
     Teuchos::RCP<Core::Geo::Cut::IntersectionBase> intersection =
-        Core::Geo::Cut::IntersectionBase::Create(
+        Core::Geo::Cut::IntersectionBase::create(
             Core::FE::CellType::line2, Core::FE::CellType::quad4);
     intersection->init(&mesh, e, s1, false, false, false);
 
     Core::Geo::Cut::PointSet cuts;
-    intersection->Intersect(cuts);
+    intersection->intersect(cuts);
 
     for (Core::Geo::Cut::PointSet::iterator i = cuts.begin(); i != cuts.end(); ++i)
     {
       Core::Geo::Cut::Point* p = *i;
-      if (p->Id() != 8)
+      if (p->id() != 8)
       {
         FOUR_C_THROW("unexpected nodal id");
       }

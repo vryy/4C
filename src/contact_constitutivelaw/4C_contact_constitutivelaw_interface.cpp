@@ -35,7 +35,7 @@ CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
     : Interface(interfaceData, id, comm, dim, icontact, selfcontact)
 {
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(contactconstitutivelawid);
+      CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(contactconstitutivelawid);
   coconstlaw_ = coconstlaw;
   return;
 }
@@ -46,20 +46,21 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
     bool& localisincontact, bool& localactivesetchange)
 {
   // loop over all slave row nodes on the current interface
-  for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
+  for (int i = 0; i < slave_row_nodes()->NumMyElements(); ++i)
   {
-    int gid = SlaveRowNodes()->GID(i);
-    Core::Nodes::Node* node = Discret().gNode(gid);
+    int gid = slave_row_nodes()->GID(i);
+    Core::Nodes::Node* node = discret().g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    int dim = cnode->NumDof();
-    double gap = cnode->Data().Getg();
+    int dim = cnode->num_dof();
+    double gap = cnode->data().getg();
 
-    double kappa = cnode->Data().Kappa();
+    double kappa = cnode->data().kappa();
 
     double lmuzawan = 0.0;
-    for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
+    for (int k = 0; k < dim; ++k)
+      lmuzawan += cnode->mo_data().lmuzawa()[k] * cnode->mo_data().n()[k];
 
 #ifdef CONTACTFDPENALTYKC1
     // set lagrangian multipliers explicitly to constant
@@ -73,16 +74,16 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
 #endif
 
     // Activate/Deactivate node and notice any change
-    if ((cnode->Active() == false) && (-coconstlaw_->Parameter()->GetOffset() - kappa * gap >= 0))
+    if ((cnode->active() == false) && (-coconstlaw_->parameter()->get_offset() - kappa * gap >= 0))
     {
-      cnode->Active() = true;
+      cnode->active() = true;
       localactivesetchange = true;
     }
 
-    else if ((cnode->Active() == true) &&
-             (-coconstlaw_->Parameter()->GetOffset() - kappa * gap < 0))
+    else if ((cnode->active() == true) &&
+             (-coconstlaw_->parameter()->get_offset() - kappa * gap < 0))
     {
-      cnode->Active() = false;
+      cnode->active() = false;
       localactivesetchange = true;
 
       // std::cout << "node #" << gid << " is now inactive, gap=" << gap << std::endl;
@@ -92,39 +93,39 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
     // Compute derivZ-entries with the Macauley-Bracket
     // of course, this is only done for active constraints in order
     // for linearization and r.h.s to match!
-    if (cnode->Active() == true)
+    if (cnode->active() == true)
     {
       // Evaluate pressure
       double pressure = coconstlaw_->evaluate(kappa * gap, cnode);
       // Evaluate pressure derivative
-      double pressurederiv = coconstlaw_->EvaluateDeriv(kappa * gap, cnode);
+      double pressurederiv = coconstlaw_->evaluate_deriv(kappa * gap, cnode);
 
       localisincontact = true;
 
-      double* normal = cnode->MoData().n();
+      double* normal = cnode->mo_data().n();
 
       // compute lagrange multipliers and store into node
-      for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = (lmuzawan - pressure) * normal[j];
+      for (int j = 0; j < dim; ++j) cnode->mo_data().lm()[j] = (lmuzawan - pressure) * normal[j];
 
       // compute derivatives of lagrange multipliers and store into node
       // contribution of derivative of weighted gap
-      std::map<int, double>& derivg = cnode->Data().GetDerivG();
+      std::map<int, double>& derivg = cnode->data().get_deriv_g();
       std::map<int, double>::iterator gcurr;
       // printf("lm=%f\n", -coconstlaw_->evaluate(kappa * gap));
 
       // contribution of derivative of normal
-      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->data().get_deriv_n();
       Core::Gen::Pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
       {
         for (gcurr = derivg.begin(); gcurr != derivg.end(); ++gcurr)
-          cnode->AddDerivZValue(
+          cnode->add_deriv_z_value(
               j, gcurr->first, -kappa * pressurederiv * (gcurr->second) * normal[j]);
         for (ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr)
-          cnode->AddDerivZValue(j, ncurr->first, -pressure * ncurr->second);
+          cnode->add_deriv_z_value(j, ncurr->first, -pressure * ncurr->second);
         for (ncurr = (derivn[j]).begin(); ncurr != (derivn[j]).end(); ++ncurr)
-          cnode->AddDerivZValue(j, ncurr->first, +lmuzawan * ncurr->second);
+          cnode->add_deriv_z_value(j, ncurr->first, +lmuzawan * ncurr->second);
       }
     }
 
@@ -132,10 +133,10 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
     else
     {
       // clear lagrange multipliers
-      for (int j = 0; j < dim; ++j) cnode->MoData().lm()[j] = 0.0;
+      for (int j = 0; j < dim; ++j) cnode->mo_data().lm()[j] = 0.0;
 
       // clear derivz
-      cnode->Data().GetDerivZ().clear();
+      cnode->data().get_deriv_z().clear();
 
     }  // Macauley-Bracket
   }    // loop over slave nodes

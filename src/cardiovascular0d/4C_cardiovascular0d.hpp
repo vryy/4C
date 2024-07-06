@@ -118,7 +118,7 @@ namespace UTILS
         const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5);
 
     /// Return type of Cardiovascular0D function
-    Cardiovascular0DType Type() { return cardiovascular0dtype_; }
+    Cardiovascular0DType type() { return cardiovascular0dtype_; }
 
     std::vector<Core::Conditions::Condition*> get_cardiovascular0_d_condition()
     {
@@ -129,13 +129,13 @@ namespace UTILS
       return cardiovascular0dstructcoupcond_;
     }
 
-    Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel GetRespiratoryModel()
+    Inpar::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel get_respiratory_model()
     {
       return respiratory_model_;
     }
 
     //! Evaluate Cardiovascular0D conditions and assemble the results
-    void EvaluateDStructDp(
+    void evaluate_d_struct_dp(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Core::LinAlg::SparseOperator>

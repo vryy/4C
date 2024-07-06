@@ -83,7 +83,7 @@ namespace BEAMINTERACTION
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
     elements
     */
-    void ResetState(double time, const std::vector<double>& centerline_dofvec_ele1,
+    void reset_state(double time, const std::vector<double>& centerline_dofvec_ele1,
         const std::vector<double>& centerline_dofvec_ele2) override;
 
     /*!
@@ -151,12 +151,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Get first element (beam)
     */
-    inline const Discret::ELEMENTS::Beam3Base* BeamElement() { return beam_element_; };
+    inline const Discret::ELEMENTS::Beam3Base* beam_element() { return beam_element_; };
 
     /*!
     \brief Get second element (sphere)
     */
-    inline const Discret::ELEMENTS::Rigidsphere* SphereElement() { return sphere_element_; };
+    inline const Discret::ELEMENTS::Rigidsphere* sphere_element() { return sphere_element_; };
     //@}
 
    private:

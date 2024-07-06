@@ -82,11 +82,11 @@ namespace Mat
     void read_restart();
 
     //! calculate derivative of determinate w.r.t. time according to macro time int scheme
-    void CalculateDdetFDt(Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint);
+    void calculate_ddet_f_dt(Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint);
 
     //! set time stepping data: time step size @p dt, current time @p time, and number of time step
     //! @p step
-    void SetTimeStepping(double dt, double time, int step);
+    void set_time_stepping(double dt, double time, int step);
 
    private:
     //! map between number of micro-scale discretization and micro-scale time integrator

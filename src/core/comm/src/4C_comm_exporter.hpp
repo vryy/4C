@@ -83,17 +83,17 @@ namespace Core::Communication
     /*!
     \brief Get communicator
     */
-    inline const Epetra_Comm& Comm() const { return comm_; }
+    inline const Epetra_Comm& get_comm() const { return comm_; }
 
     /*!
     \brief Get source map
     */
-    inline const Epetra_Map& SourceMap() const { return frommap_; }
+    inline const Epetra_Map& source_map() const { return frommap_; }
 
     /*!
     \brief Get target map
     */
-    inline const Epetra_Map& TargetMap() const { return tomap_; }
+    inline const Epetra_Map& target_map() const { return tomap_; }
 
     //@}
 
@@ -327,8 +327,8 @@ namespace Core::Communication
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<char>& recvbuff, int& length) const;
-    void Receive(const int source, const int tag, std::vector<char>& recvbuff, int& length) const;
+    void receive_any(int& source, int& tag, std::vector<char>& recvbuff, int& length) const;
+    void receive(const int source, const int tag, std::vector<char>& recvbuff, int& length) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -354,8 +354,8 @@ namespace Core::Communication
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length) const;
-    void Receive(const int source, const int tag, std::vector<int>& recvbuff, int& length) const;
+    void receive_any(int& source, int& tag, std::vector<int>& recvbuff, int& length) const;
+    void receive(const int source, const int tag, std::vector<int>& recvbuff, int& length) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -381,8 +381,8 @@ namespace Core::Communication
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length) const;
-    void Receive(const int source, const int tag, std::vector<double>& recvbuff, int& length) const;
+    void receive_any(int& source, int& tag, std::vector<double>& recvbuff, int& length) const;
+    void receive(const int source, const int tag, std::vector<double>& recvbuff, int& length) const;
 
     /**@}*/
 
@@ -398,7 +398,7 @@ namespace Core::Communication
     \param request (in): mpi request handle
 
     */
-    void Wait(MPI_Request& request) const
+    void wait(MPI_Request& request) const
     {
       MPI_Status status;
       MPI_Wait(&request, &status);
@@ -417,7 +417,7 @@ namespace Core::Communication
     \param recvbuff (output): buffer containing received data
     \param mpi_op   (input): MPI operation
     */
-    void Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op);
+    void allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op);
 
 
     /*!
@@ -433,7 +433,7 @@ namespace Core::Communication
      * \param data vector of the data (must only be filled by the sender)
      * \param tag mpi tag
      */
-    void Broadcast(int frompid, std::vector<char>& data, int tag) const;
+    void broadcast(int frompid, std::vector<char>& data, int tag) const;
 
     //@}
 
@@ -493,14 +493,14 @@ namespace Core::Communication
       virtual ~ExporterHelper() = default;
 
       /// validations performed before the communication
-      virtual void PreExportTest(Exporter* exporter) = 0;
+      virtual void pre_export_test(Exporter* exporter) = 0;
 
       /// Pack one object
       /*!
         Get the object by gid, pack it and append it to the sendblock. We only
         pack it if we know about it.
        */
-      virtual bool PackObject(int gid, PackBuffer& sendblock) = 0;
+      virtual bool pack_object(int gid, PackBuffer& sendblock) = 0;
 
       /// Unpack one object
       /*!
@@ -508,11 +508,11 @@ namespace Core::Communication
         at position index in recvblock. index must be incremented by the objects
         size.
        */
-      virtual void UnpackObject(
+      virtual void unpack_object(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) = 0;
 
       /// after communication remove all objects that are not in the target map
-      virtual void PostExportCleanup(Exporter* exporter) = 0;
+      virtual void post_export_cleanup(Exporter* exporter) = 0;
     };
 
 
@@ -526,7 +526,7 @@ namespace Core::Communication
       {
       }
 
-      void PreExportTest(Exporter* exporter) override
+      void pre_export_test(Exporter* exporter) override
       {
         // test whether type T implements ParObject
         typename std::map<int, Teuchos::RCP<T>>::iterator curr = parobjects_.begin();
@@ -540,7 +540,7 @@ namespace Core::Communication
         }
       }
 
-      bool PackObject(int gid, PackBuffer& sendblock) override
+      bool pack_object(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = parobjects_.find(gid);
         if (curr != parobjects_.end())
@@ -551,7 +551,7 @@ namespace Core::Communication
         return false;
       }
 
-      void UnpackObject(
+      void unpack_object(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         std::vector<char> data;
@@ -566,13 +566,13 @@ namespace Core::Communication
         parobjects_[gid] = refptr;
       }
 
-      void PostExportCleanup(Exporter* exporter) override
+      void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, Teuchos::RCP<T>> newmap;
         typename std::map<int, Teuchos::RCP<T>>::const_iterator fool;
         for (fool = parobjects_.begin(); fool != parobjects_.end(); ++fool)
-          if (exporter->TargetMap().MyGID(fool->first)) newmap[fool->first] = fool->second;
+          if (exporter->target_map().MyGID(fool->first)) newmap[fool->first] = fool->second;
         swap(newmap, parobjects_);
       }
 
@@ -598,9 +598,9 @@ namespace Core::Communication
       {
       }
 
-      void PreExportTest(Exporter* exporter) override {}
+      void pre_export_test(Exporter* exporter) override {}
 
-      bool PackObject(int gid, PackBuffer& sendblock) override
+      bool pack_object(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -611,7 +611,7 @@ namespace Core::Communication
         return false;
       }
 
-      void UnpackObject(
+      void unpack_object(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         Teuchos::RCP<T> obj = Teuchos::rcp(new T);
@@ -621,13 +621,13 @@ namespace Core::Communication
         objects_[gid] = obj;
       }
 
-      void PostExportCleanup(Exporter* exporter) override
+      void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, Teuchos::RCP<T>> newmap;
         typename std::map<int, Teuchos::RCP<T>>::const_iterator fool;
         for (fool = objects_.begin(); fool != objects_.end(); ++fool)
-          if (exporter->TargetMap().MyGID(fool->first)) newmap[fool->first] = fool->second;
+          if (exporter->target_map().MyGID(fool->first)) newmap[fool->first] = fool->second;
         swap(newmap, objects_);
       }
 
@@ -644,12 +644,12 @@ namespace Core::Communication
      public:
       explicit PODExporterHelper(std::map<int, T>& objects) : objects_(objects) {}
 
-      void PreExportTest(Exporter* exporter) override
+      void pre_export_test(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, PackBuffer& sendblock) override
+      bool pack_object(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, T>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -660,20 +660,20 @@ namespace Core::Communication
         return false;
       }
 
-      void UnpackObject(
+      void unpack_object(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         memcpy(&objects_[gid], &recvblock[index], sizeof(T));
         index += sizeof(T);
       }
 
-      void PostExportCleanup(Exporter* exporter) override
+      void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, T> newmap;
         typename std::map<int, T>::const_iterator fool;
         for (fool = objects_.begin(); fool != objects_.end(); ++fool)
-          if (exporter->TargetMap().MyGID(fool->first)) newmap[fool->first] = fool->second;
+          if (exporter->target_map().MyGID(fool->first)) newmap[fool->first] = fool->second;
         swap(newmap, objects_);
       }
 
@@ -691,12 +691,12 @@ namespace Core::Communication
       {
       }
 
-      void PreExportTest(Exporter* exporter) override
+      void pre_export_test(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, PackBuffer& sendblock) override
+      bool pack_object(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, std::vector<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -707,19 +707,19 @@ namespace Core::Communication
         return false;
       }
 
-      void UnpackObject(
+      void unpack_object(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         ParObject::extract_from_pack(index, recvblock, objects_[gid]);
       }
 
-      void PostExportCleanup(Exporter* exporter) override
+      void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, std::vector<T>> newmap;
         typename std::map<int, std::vector<T>>::iterator fool;
         for (fool = objects_.begin(); fool != objects_.end(); ++fool)
-          if (exporter->TargetMap().MyGID(fool->first)) swap(newmap[fool->first], fool->second);
+          if (exporter->target_map().MyGID(fool->first)) swap(newmap[fool->first], fool->second);
         swap(newmap, objects_);
       }
 
@@ -734,12 +734,12 @@ namespace Core::Communication
      public:
       explicit PODSetExporterHelper(std::map<int, std::set<T>>& objects) : objects_(objects) {}
 
-      void PreExportTest(Exporter* exporter) override
+      void pre_export_test(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, PackBuffer& sendblock) override
+      bool pack_object(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, std::set<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -750,19 +750,19 @@ namespace Core::Communication
         return false;
       }
 
-      void UnpackObject(
+      void unpack_object(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         ParObject::extract_from_pack(index, recvblock, objects_[gid]);
       }
 
-      void PostExportCleanup(Exporter* exporter) override
+      void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, std::set<T>> newmap;
         typename std::map<int, std::set<T>>::iterator fool;
         for (fool = objects_.begin(); fool != objects_.end(); ++fool)
-          if (exporter->TargetMap().MyGID(fool->first)) swap(newmap[fool->first], fool->second);
+          if (exporter->target_map().MyGID(fool->first)) swap(newmap[fool->first], fool->second);
         swap(newmap, objects_);
       }
 
@@ -778,12 +778,12 @@ namespace Core::Communication
      public:
       explicit PODMapExporterHelper(std::map<int, std::map<T, U>>& objects) : objects_(objects) {}
 
-      void PreExportTest(Exporter* exporter) override
+      void pre_export_test(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      bool PackObject(int gid, PackBuffer& sendblock) override
+      bool pack_object(int gid, PackBuffer& sendblock) override
       {
         typename std::map<int, std::map<T, U>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -794,19 +794,19 @@ namespace Core::Communication
         return false;
       }
 
-      void UnpackObject(
+      void unpack_object(
           int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         ParObject::extract_from_pack(index, recvblock, objects_[gid]);
       }
 
-      void PostExportCleanup(Exporter* exporter) override
+      void post_export_cleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, std::map<T, U>> newmap;
         typename std::map<int, std::map<T, U>>::iterator fool;
         for (fool = objects_.begin(); fool != objects_.end(); ++fool)
-          if (exporter->TargetMap().MyGID(fool->first)) swap(newmap[fool->first], fool->second);
+          if (exporter->target_map().MyGID(fool->first)) swap(newmap[fool->first], fool->second);
         swap(newmap, objects_);
       }
 

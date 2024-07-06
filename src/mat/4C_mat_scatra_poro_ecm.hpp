@@ -40,11 +40,11 @@ namespace Mat
   class ScatraMatPoroECMType : public ScatraReactionMatType
   {
    public:
-    std::string Name() const override { return "ScatraMatPoroECMType"; }
+    std::string name() const override { return "ScatraMatPoroECMType"; }
 
-    static ScatraMatPoroECMType& Instance() { return instance_; };
+    static ScatraMatPoroECMType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatPoroECMType instance_;
@@ -69,9 +69,9 @@ namespace Mat
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ScatraReactionMatType::Instance().UniqueParObjectId();
+      return ScatraReactionMatType::instance().unique_par_object_id();
     }
 
     /*!
@@ -79,7 +79,7 @@ namespace Mat
 
      Resizes the vector data and stores all information of a class in it.
      The first information to be stored in data has to be the
-     unique parobject id delivered by UniqueParObjectId() which will then
+     unique parobject id delivered by unique_par_object_id() which will then
      identify the exact class on the receiving processor.
 
      \param data (in/out): char vector to store class information
@@ -93,7 +93,7 @@ namespace Mat
      exact copy of an instance of a class on a different processor.
      The first entry in data has to be an integer which is the unique
      parobject id defined at the top of this file and delivered by
-     UniqueParObjectId().
+     unique_par_object_id().
 
      \param data (in) : vector storing all data to be unpacked into this
      instance.
@@ -103,25 +103,25 @@ namespace Mat
     //@}
 
     /// material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_scatra_reaction_poroECM;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ScatraMatPoroECM(*this));
     }
 
     /// Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// return reaction coefficient
-    virtual double ReacCoeff() const { return reaccoeff_; }
+    virtual double reac_coeff() const { return reaccoeff_; }
 
     /// compute reaction coefficient from structure chemical potential
-    void ComputeReacCoeff(double chempot);
+    void compute_reac_coeff(double chempot);
 
    private:
     /// my material parameters

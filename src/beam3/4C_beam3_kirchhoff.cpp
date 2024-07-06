@@ -36,11 +36,11 @@ Discret::ELEMENTS::Beam3kType Discret::ELEMENTS::Beam3kType::instance_;
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Discret::ELEMENTS::Beam3kType& Discret::ELEMENTS::Beam3kType::Instance() { return instance_; }
+Discret::ELEMENTS::Beam3kType& Discret::ELEMENTS::Beam3kType::instance() { return instance_; }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Beam3kType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Beam3kType::create(const std::vector<char>& data)
 {
   Discret::ELEMENTS::Beam3k* object = new Discret::ELEMENTS::Beam3k(-1, -1);
   object->unpack(data);
@@ -49,7 +49,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Beam3kType::Create(const std:
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3kType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3kType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3K")
@@ -63,7 +63,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3kType::Create(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3kType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3kType::create(
     const int id, const int owner)
 
 {
@@ -80,7 +80,7 @@ void Discret::ELEMENTS::Beam3kType::nodal_block_information(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3kType::ComputeNullSpace(
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3kType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -129,15 +129,15 @@ void Discret::ELEMENTS::Beam3kType::setup_element_definition(
 int Discret::ELEMENTS::Beam3kType::initialize(Core::FE::Discretization& dis)
 {
   // setting up geometric variables for Beam3k elements
-  for (int num = 0; num < dis.NumMyColElements(); ++num)
+  for (int num = 0; num < dis.num_my_col_elements(); ++num)
   {
     // in case that current element is not a Beam3k element there is nothing to do and we go back
     // to the head of the loop
-    if (dis.lColElement(num)->ElementType() != *this) continue;
+    if (dis.l_col_element(num)->element_type() != *this) continue;
 
     // if we get so far current element is a Beam3k element and  we get a pointer at it
     Discret::ELEMENTS::Beam3k* currele =
-        dynamic_cast<Discret::ELEMENTS::Beam3k*>(dis.lColElement(num));
+        dynamic_cast<Discret::ELEMENTS::Beam3k*>(dis.l_col_element(num));
     if (!currele) FOUR_C_THROW("cast to Beam3k* failed");
 
     // reference node position
@@ -153,24 +153,24 @@ int Discret::ELEMENTS::Beam3kType::initialize(Core::FE::Discretization& dis)
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
         Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
     periodic_boundingbox->init(
-        Global::Problem::Instance()->binning_strategy_params());  // no setup() call needed here
+        Global::Problem::instance()->binning_strategy_params());  // no setup() call needed here
 
     std::vector<double> disp_shift;
-    int numdof = currele->NumDofPerNode(*(currele->Nodes()[0]));
+    int numdof = currele->num_dof_per_node(*(currele->nodes()[0]));
     disp_shift.resize(numdof * nnode);
     for (unsigned int i = 0; i < disp_shift.size(); ++i) disp_shift[i] = 0.0;
-    if (periodic_boundingbox->HavePBC())
-      currele->UnShiftNodePosition(disp_shift, *periodic_boundingbox);
+    if (periodic_boundingbox->have_pbc())
+      currele->un_shift_node_position(disp_shift, *periodic_boundingbox);
 
     // getting element's nodal coordinates and treating them as reference configuration
-    if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
+    if (currele->nodes()[0] == nullptr || currele->nodes()[1] == nullptr)
       FOUR_C_THROW("Cannot get nodes in order to compute reference configuration'");
     else
     {
       for (int node = 0; node < nnode; ++node)  // element has k nodes
         for (int dof = 0; dof < 3; ++dof)       // element node has three coordinates x1, x2 and x3
         {
-          xrefe[node](dof) = currele->Nodes()[node]->X()[dof] + disp_shift[node * numdof + dof];
+          xrefe[node](dof) = currele->nodes()[node]->x()[dof] + disp_shift[node * numdof + dof];
         }
     }
 
@@ -283,7 +283,7 @@ Discret::ELEMENTS::Beam3k::Beam3k(const Discret::ELEMENTS::Beam3k& old)
  |  Deep copy this instance of Beam3k and return pointer to it (public) |
  |                                                                    meier 05/12 |
  *--------------------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Beam3k::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Beam3k::clone() const
 {
   Discret::ELEMENTS::Beam3k* newelement = new Discret::ELEMENTS::Beam3k(*this);
   return newelement;
@@ -300,7 +300,7 @@ void Discret::ELEMENTS::Beam3k::print(std::ostream& os) const { return; }
  |                                                             (public) |
  |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Beam3k::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Beam3k::shape() const
 {
   int numnodes = num_node();
   switch (numnodes)
@@ -330,7 +330,7 @@ void Discret::ELEMENTS::Beam3k::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class Element
   Beam3Base::pack(data);
@@ -388,7 +388,7 @@ void Discret::ELEMENTS::Beam3k::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -446,7 +446,7 @@ void Discret::ELEMENTS::Beam3k::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          meier 05/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Beam3k::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Beam3k::lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -653,8 +653,8 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
       L_i_xi.clear();
       N_i_xi.clear();
       N_i.clear();
-      Core::FE::shape_function_1D(L_i, xi, Shape());
-      Core::FE::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+      Core::FE::shape_function_1D(L_i, xi, shape());
+      Core::FE::shape_function_1D_deriv1(L_i_xi, xi, shape());
       Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
       Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
 
@@ -817,7 +817,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       L_i.clear();
       N_i_xi.clear();
       N_i_xixi.clear();
-      Core::FE::shape_function_1D(L_i, xi, Shape());
+      Core::FE::shape_function_1D(L_i, xi, shape());
       Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
       Core::FE::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
 
@@ -893,8 +893,8 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       N_i_xi.clear();
       N_i_xixi.clear();
 
-      Core::FE::shape_function_1D(L_i, xi, Shape());
-      Core::FE::shape_function_1D_deriv1(L_i_xi, xi, Shape());
+      Core::FE::shape_function_1D(L_i, xi, shape());
+      Core::FE::shape_function_1D_deriv1(L_i_xi, xi, shape());
       Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
       Core::FE::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
       Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
@@ -955,7 +955,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
+double Discret::ELEMENTS::Beam3k::get_jacobi_fac_at_xi(const double& xi) const
 {
   const int nnode = 2;
 
@@ -968,7 +968,7 @@ double Discret::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
 
   for (unsigned int dim = 0; dim < 3; ++dim)
   {
-    r_xi(dim) += Nodes()[0]->X()[dim] * N_i_xi(0) + Nodes()[1]->X()[dim] * N_i_xi(2) +
+    r_xi(dim) += nodes()[0]->x()[dim] * N_i_xi(0) + nodes()[1]->x()[dim] * N_i_xi(2) +
                  Tref_[0](dim) * N_i_xi(1) + Tref_[1](dim) * N_i_xi(3);
   }
 
@@ -977,7 +977,7 @@ double Discret::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3k::GetPosAtXi(
+void Discret::ELEMENTS::Beam3k::get_pos_at_xi(
     Core::LinAlg::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
 {
   /* we expect the (centerline) displacement state vector (positions and tangents at boundary nodes)
@@ -1017,7 +1017,7 @@ void Discret::ELEMENTS::Beam3k::GetPosAtXi(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3k::GetTriadAtXi(
+void Discret::ELEMENTS::Beam3k::get_triad_at_xi(
     Core::LinAlg::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
 {
   if (not weakkirchhoff_)
@@ -1128,8 +1128,8 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
 
   // this part is associated with the variation of the centerline position
   // (first three rows of Ivar)
-  for (unsigned int irow = 0; irow < N.numRows(); ++irow)
-    for (unsigned int icol = 0; icol < N.numCols(); ++icol) Ivar(irow, icol) += N(irow, icol);
+  for (unsigned int irow = 0; irow < N.num_rows(); ++irow)
+    for (unsigned int icol = 0; icol < N.num_cols(); ++icol) Ivar(irow, icol) += N(irow, icol);
 
   // *******************************************************************************
   // concerning interpolation of variation of CENTERLINE ORIENTATION \vardelta \theta:
@@ -1196,7 +1196,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
@@ -1226,7 +1226,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
   // *******************************************************************************
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi, Shape());
+  Core::FE::shape_function_1D(L_i, xi, shape());
 
   v_theta_bar.clear();
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
@@ -1242,8 +1242,8 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
   // (expressed as rotation vector theta)
   // (rows 4-6 of Iinc)
   // note: we need the transposed of v_theta_bar (rows <-> cols)
-  for (unsigned int irow = 0; irow < v_theta_bar.numCols(); ++irow)
-    for (unsigned int icol = 0; icol < v_theta_bar.numRows(); ++icol)
+  for (unsigned int irow = 0; irow < v_theta_bar.num_cols(); ++irow)
+    for (unsigned int icol = 0; icol < v_theta_bar.num_rows(); ++icol)
       Ivar(ndim + irow, icol) += v_theta_bar(icol, irow);
 }
 
@@ -1343,7 +1343,7 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
@@ -1377,7 +1377,7 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
   // re-interpolation of quantities at xi based on CP values
   // *******************************************************************************
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi, Shape());
+  Core::FE::shape_function_1D(L_i, xi, shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -1423,8 +1423,8 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
 
   // this part is associated with the increment of the centerline position
   // (first three rows of Iinc)
-  for (unsigned int irow = 0; irow < N.numRows(); ++irow)
-    for (unsigned int icol = 0; icol < N.numCols(); ++icol) Iinc(irow, icol) += N(irow, icol);
+  for (unsigned int irow = 0; irow < N.num_rows(); ++irow)
+    for (unsigned int icol = 0; icol < N.num_cols(); ++icol) Iinc(irow, icol) += N(irow, icol);
 
 
   // *******************************************************************************
@@ -1499,7 +1499,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, Shape());
+    Core::FE::shape_function_1D(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
@@ -1578,8 +1578,8 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
   // this part is associated with the increment of the centerline orientation
   // (expressed as rotation vector theta)
   // (rows 4-6 of Iinc)
-  for (unsigned int irow = 0; irow < lin_theta_bar.numRows(); ++irow)
-    for (unsigned int icol = 0; icol < lin_theta_bar.numCols(); ++icol)
+  for (unsigned int irow = 0; irow < lin_theta_bar.num_rows(); ++irow)
+    for (unsigned int icol = 0; icol < lin_theta_bar.num_cols(); ++icol)
       Iinc(ndim + irow, icol) += lin_theta_bar(irow, icol);
 }
 
@@ -1681,11 +1681,11 @@ void Discret::ELEMENTS::Beam3k::add_ref_values_disp(
       {
         if (ndof < 3)
         {
-          dofvec(7 * node + ndof) += (Nodes()[node])->X()[ndof];
+          dofvec(7 * node + ndof) += (nodes()[node])->x()[ndof];
         }
         else if (ndof < 6)
         {
-          dofvec(7 * node + ndof) += (Tref()[node])(ndof - 3);
+          dofvec(7 * node + ndof) += (tref()[node])(ndof - 3);
         }
         else
         {
@@ -1703,7 +1703,7 @@ void Discret::ELEMENTS::Beam3k::add_ref_values_disp(
       {
         if (ndof < 3)
         {
-          dofvec(7 * node + ndof) += (Nodes()[node])->X()[ndof];
+          dofvec(7 * node + ndof) += (nodes()[node])->x()[ndof];
         }
         else if (ndof < 6)
         {
@@ -1729,7 +1729,7 @@ void Discret::ELEMENTS::Beam3k::add_ref_values_disp(
       Core::LargeRotations::angletoquaternion(disptheta, deltaQ);
 
       Core::LinAlg::Matrix<4, 1> Q0;
-      Core::LargeRotations::angletoquaternion(Theta0()[node], Q0);
+      Core::LargeRotations::angletoquaternion(theta0()[node], Q0);
       Core::LargeRotations::quaternionproduct(Q0, deltaQ, Qnew);
 
       // renormalize quaternion to keep its absolute value one even in case of long simulations
@@ -1903,7 +1903,7 @@ void Discret::ELEMENTS::Beam3k::set_triads_and_reference_triads_at_remaining_col
     N_i_xi.clear();
     Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi, Shape());
+    Core::FE::shape_function_1D(L_i, xi, shape());
 
     // Determine storage position for the node node
     ind = Core::LargeRotations::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -2000,7 +2000,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
   }
 
   // difference in position of this GP as compared to last time step
-  pbb->UnShift3D(unshiftedrconvmass_i, position_i_double);
+  pbb->un_shift3_d(unshiftedrconvmass_i, position_i_double);
 
   for (unsigned int idim = 0; idim < ndim; ++idim)
   {

@@ -53,7 +53,7 @@ namespace Discret
       };
 
       /// Zero initialization of elements.
-      virtual void ElementInit(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params);
+      virtual void element_init(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params);
 
       /// Interpolates an HDG solution to the element nodes for output.
       virtual int interpolate_solution_to_nodes(Discret::ELEMENTS::ElemagDiff* ele,
@@ -61,7 +61,7 @@ namespace Discret
 
       /// Initialize the shape functions and solver to the given element (degree is runtime
       /// parameter).
-      void InitializeShapes(const Discret::ELEMENTS::ElemagDiff* ele);
+      void initialize_shapes(const Discret::ELEMENTS::ElemagDiff* ele);
 
       /// Evaluate the element.
       /// Generic virtual interface function.Called via base pointer.
@@ -84,11 +84,11 @@ namespace Discret
           const Core::FE::GaussIntegration& intpoints, bool offdiag = false);
 
       /// Singleton access method.
-      static ElemagDiffEleCalc<distype>* Instance(
+      static ElemagDiffEleCalc<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Used to print the trace values as debugging utility.
-      void PrintTrace(Core::Elements::Element* ele);
+      void print_trace(Core::Elements::Element* ele);
 
 
      private:
@@ -110,16 +110,16 @@ namespace Discret
             Inpar::EleMag::DynamicType& dyna, Core::FE::ShapeValues<distype>& postproc_shapeValues);
 
         /// Compute the residual
-        void ComputeResidual(Teuchos::ParameterList& params,
+        void compute_residual(Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& eleVec, double dt, Discret::ELEMENTS::ElemagDiff& ele);
 
         /// Computes the source term in the element.
-        void ComputeSource(Teuchos::ParameterList& params,
+        void compute_source(Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& interiorSourcen,
             Core::LinAlg::SerialDenseVector& interiorSourcenp);
 
         /// Add terms corresponding to the absorbing boundary condition.
-        void ComputeAbsorbingBC(Core::FE::Discretization& discretization,
+        void compute_absorbing_bc(Core::FE::Discretization& discretization,
             Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Teuchos::RCP<Core::Mat::Material>& mat, int face,
             Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
@@ -130,7 +130,7 @@ namespace Discret
             Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params, int face);
 
         /// Calls local solver to compute matrices: internal and face
-        void ComputeMatrices(Core::FE::Discretization& discretization,
+        void compute_matrices(Core::FE::Discretization& discretization,
             const Teuchos::RCP<Core::Mat::Material>& mat, Discret::ELEMENTS::ElemagDiff& ele,
             double dt, Inpar::EleMag::DynamicType dyna, const double tau);
 
@@ -138,12 +138,12 @@ namespace Discret
         void compute_interior_matrices(double dt, double sigma, double mu, double epsilon);
 
         /// Set up face matrices
-        void ComputeFaceMatrices(const int face, double dt, int indexstart, int newindex,
+        void compute_face_matrices(const int face, double dt, int indexstart, int newindex,
             double sigma, double mu, const double tau);
 
         /// Condense the local matrix into the element matrix for the trace and similarly for the
         /// residuals.
-        void CondenseLocalPart(Core::LinAlg::SerialDenseMatrix& elemat);
+        void condense_local_part(Core::LinAlg::SerialDenseMatrix& elemat);
 
         /*!
         \brief Make the matrix symmetric in case of dirichlet boundary conditions in the element
@@ -151,12 +151,12 @@ namespace Discret
         \note So far the function only acts on the matrices and not on the RHS! This is ok for PEC
         boundary conditions because the DBC is anyway zero.
         */
-        void Symmetrify(Discret::ELEMENTS::ElemagDiff& ele, Core::LinAlg::SerialDenseMatrix& elemat,
+        void symmetrify(Discret::ELEMENTS::ElemagDiff& ele, Core::LinAlg::SerialDenseMatrix& elemat,
             bool dodirich = true);
 
         /// Projection of function field.
         /// The function is used to project the field in the initialization phase.
-        int ProjectField(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+        int project_field(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
         /// Projection of scatra computed gradients into elements
@@ -169,7 +169,7 @@ namespace Discret
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Postprocess the solution to obtain a better approximation
-        void PostProcessing(Discret::ELEMENTS::ElemagDiff& ele);
+        void post_processing(Discret::ELEMENTS::ElemagDiff& ele);
 
         /*!
          * \brief Projection of a given field on the interior variables for testing purposes.
@@ -183,7 +183,7 @@ namespace Discret
          * \note It is possible to project one or both the variables, depending on the debugging
          * needs.
          */
-        int ProjectFieldTest(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+        int project_field_test(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
         /// Projection of a given field on the trace for testing purposes.
@@ -191,7 +191,7 @@ namespace Discret
             Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Projection of Dirichlet function field.
-        int ProjectDirichField(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+        int project_dirich_field(Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Function evaluation routine

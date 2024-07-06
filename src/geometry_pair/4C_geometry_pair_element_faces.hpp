@@ -105,7 +105,7 @@ namespace GEOMETRYPAIR
      * \brief Get the RCP to the DRT face element.
      * @return RCP to the DRT face element.
      */
-    const Core::Elements::FaceElement* GetDrtFaceElement() const
+    const Core::Elements::FaceElement* get_drt_face_element() const
     {
       return drt_face_element_.getRawPtr();
     }
@@ -167,19 +167,19 @@ namespace GEOMETRYPAIR
      * \brief Return if the face is part of a pair.
      * @return True if the face is part of a pair, false otherwise.
      */
-    bool IsPartOfPair() const { return part_of_pair_; }
+    bool is_part_of_pair() const { return part_of_pair_; }
 
     /**
      * \brief Set the part_of_pair_ flag.
      * @param part_of_pair (in) Value to set.
      */
-    void SetPartOfPair(bool part_of_pair) { part_of_pair_ = part_of_pair; }
+    void set_part_of_pair(bool part_of_pair) { part_of_pair_ = part_of_pair; }
 
     /**
      * \brief Get the local to global indices for this surface patch.
      * @return Local to global indices for this surface patch.
      */
-    const std::vector<int>& GetPatchGID() const { return patch_dof_gid_; }
+    const std::vector<int>& get_patch_gid() const { return patch_dof_gid_; }
 
    protected:
     //! Pointer to the drt face element.
@@ -241,12 +241,12 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current element data of this face.
      */
-    const auto& GetFaceElementData() const { return face_position_; }
+    const auto& get_face_element_data() const { return face_position_; }
 
     /**
      * \brief Return the reference normals on this face.
      */
-    virtual const Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, double>* GetReferenceNormals()
+    virtual const Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, double>* get_reference_normals()
         const
     {
       return nullptr;
@@ -255,7 +255,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    virtual const Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, ScalarType>* GetCurrentNormals()
+    virtual const Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, ScalarType>* get_current_normals()
         const
     {
       return nullptr;
@@ -456,7 +456,7 @@ namespace GEOMETRYPAIR
      * @param normals (out) Normals on the nodes.
      */
     template <typename ScalarTypeNormal>
-    void CalculateNormals(
+    void calculate_normals(
         const GEOMETRYPAIR::ElementData<Volume, ScalarTypeNormal>& volume_position,
         const GEOMETRYPAIR::ElementData<Surface, ScalarTypeNormal>& surface_position,
         Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, ScalarTypeNormal>& normals) const;

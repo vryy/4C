@@ -43,7 +43,7 @@ namespace Core::Geo
       /*!
       \Compute the reference plane for this element
        */
-      std::vector<double> GetReferencePlane();
+      std::vector<double> get_reference_plane();
 
       /*!
       \brief Get the reference points that are used to define the reference plane. This is used in

@@ -40,21 +40,21 @@ namespace Discret
     class TransportType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "TransportType"; }
+      std::string name() const override { return "TransportType"; }
 
-      static TransportType& Instance();
+      static TransportType& instance();
 
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
@@ -103,11 +103,11 @@ namespace Discret
       /*!
       \brief Deep copy this instance of Transport and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /// Set element material
       /*!
@@ -122,19 +122,19 @@ namespace Discret
         \note reimplementation of this method, due to initialising
               numdofpernode_, since the material is known now.
        */
-      void SetMaterial(int index, Teuchos::RCP<Core::Mat::Material> mat) override;
+      void set_material(int index, Teuchos::RCP<Core::Mat::Material> mat) override;
 
-      virtual void SetMaterial(int matnum, Core::Elements::Element* oldele);
+      virtual void set_material(int matnum, Core::Elements::Element* oldele);
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief set discretization type of element
       */
-      virtual void SetDisType(Core::FE::CellType shape)
+      virtual void set_dis_type(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -143,27 +143,27 @@ namespace Discret
       /*!
       \brief Return number of lines of this element
       */
-      int NumLine() const override;
+      int num_line() const override;
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int NumSurface() const override;
+      int num_surface() const override;
 
       /*!
       \brief Return number of volumes of this element
       */
-      int NumVolume() const override;
+      int num_volume() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -171,9 +171,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return TransportType::Instance().UniqueParObjectId();
+        return TransportType::instance().unique_par_object_id();
       }
 
       /*!
@@ -206,7 +206,7 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         if (numdofpernode_ < 1) FOUR_C_THROW("NumDofPerNode is < 1");
         return numdofpernode_;
@@ -233,16 +233,16 @@ namespace Discret
       /*!
       \brief Return ElementType
       */
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return TransportType::Instance();
+        return TransportType::instance();
       }
 
       //! set implementation type
-      void SetImplType(const Inpar::ScaTra::ImplType impltype);
+      void set_impl_type(const Inpar::ScaTra::ImplType impltype);
 
       //! return implementation type
-      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
       //@}
 
       //! @name Input and Creation
@@ -250,7 +250,7 @@ namespace Discret
       /*!
       \brief Read input for this element
       */
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
       //@}
@@ -389,18 +389,18 @@ namespace Discret
     class TransportBoundaryType : public Core::Elements::ElementType
     {
      public:
-      std::string Name() const override { return "TransportBoundaryType"; }
+      std::string name() const override { return "TransportBoundaryType"; }
 
-      static TransportBoundaryType& Instance();
+      static TransportBoundaryType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
@@ -450,37 +450,37 @@ namespace Discret
       /*!
       \brief Deep copy this instance of an element and return pointer to the copy
 
-      The Clone() method is used from the virtual base class Element in cases
+      The clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      Core::FE::CellType Shape() const override;
+      Core::FE::CellType shape() const override;
 
       /*!
       \brief Return number of lines of boundary element
       */
-      int NumLine() const override;
+      int num_line() const override;
 
       /*!
       \brief Return number of surfaces of boundary element
        */
-      int NumSurface() const override;
+      int num_surface() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -488,9 +488,9 @@ namespace Discret
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return TransportBoundaryType::Instance().UniqueParObjectId();
+        return TransportBoundaryType::instance().unique_par_object_id();
       }
 
       /*!
@@ -524,9 +524,9 @@ namespace Discret
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const Core::Nodes::Node& node) const override
+      int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
-        return parent_element()->NumDofPerNode(node);
+        return parent_element()->num_dof_per_node(node);
       }
 
       //! Return a pointer to the parent element of this boundary element
@@ -540,7 +540,7 @@ namespace Discret
       }
 
       //! get number of element face
-      int SurfaceNumber() { return FaceMasterNumber(); }
+      int surface_number() { return face_master_number(); }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -563,9 +563,9 @@ namespace Discret
       /*!
       \brief Return ElementType
       */
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return TransportBoundaryType::Instance();
+        return TransportBoundaryType::instance();
       }
 
       //@}
@@ -691,7 +691,7 @@ namespace Discret
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      void LocationVector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
+      void location_vector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
           const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:

@@ -56,7 +56,7 @@ namespace Arteries
       /*!
       \brief Standard write
       */
-      void Write(Teuchos::ParameterList& params);
+      void write(Teuchos::ParameterList& params);
 
 
      private:

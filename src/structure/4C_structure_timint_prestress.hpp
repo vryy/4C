@@ -54,7 +54,7 @@ namespace Solid
     void setup() override;
 
     //! Update element
-    void UpdateStepElement() override;
+    void update_step_element() override;
     //@}
 
   };  // class TimIntPrestress

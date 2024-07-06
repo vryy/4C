@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
@@ -31,7 +31,7 @@ Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
             new ScaTraEleCalcNoPhysics<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[std::make_pair(disname, numdofpernode)].Instance(
+  return singleton_map[std::make_pair(disname, numdofpernode)].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 

@@ -40,7 +40,7 @@ Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::ScaTraEleCalcChemoR
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -50,7 +50,7 @@ Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
             new ScaTraEleCalcChemoReac<distype, probdim>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -69,43 +69,43 @@ void Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
   // of non-reactive elements:
-  advreac::rea_manager()->Clear(my::numscal_);
+  advreac::rea_manager()->clear(my::numscal_);
 
   // We may have some chemotactic and some non-chemotactic discretisation.
   // But since the calculation classes are singleton, we have to reset all chemotaxis stuff each
   // time
   chemo::clear_chemotaxis_terms();
 
-  if (material->MaterialType() == Core::Materials::m_matlist)
+  if (material->material_type() == Core::Materials::m_matlist)
   {
     const Teuchos::RCP<const Mat::MatList> actmat =
         Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
 
-  else if (material->MaterialType() == Core::Materials::m_matlist_reactions)
+  else if (material->material_type() == Core::Materials::m_matlist_reactions)
   {
     const Teuchos::RCP<Mat::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       // Note: order is important here!!
       advreac::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
@@ -115,37 +115,37 @@ void Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
     }
   }
 
-  else if (material->MaterialType() == Core::Materials::m_matlist_chemotaxis)
+  else if (material->material_type() == Core::Materials::m_matlist_chemotaxis)
   {
     const Teuchos::RCP<Mat::MatListChemotaxis> actmat =
         Teuchos::rcp_dynamic_cast<Mat::MatListChemotaxis>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::get_chemotaxis_coefficients(
         material);  // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
 
-  else if (material->MaterialType() == Core::Materials::m_matlist_chemoreac)
+  else if (material->material_type() == Core::Materials::m_matlist_chemoreac)
   {
     const Teuchos::RCP<Mat::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::get_chemotaxis_coefficients(
         material);  // read all chemotaxis input from material and copy it into local variables
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       // Note: order is important here!!
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);

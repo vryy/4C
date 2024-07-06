@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraEleCalcPoro<distype>*
-Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(
+Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
@@ -40,7 +40,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(
             new ScaTraEleCalcPoro<distype>(numdofpernode, numscal, disname));
       });
 
-  return singleton_map[disname].Instance(
+  return singleton_map[disname].instance(
       Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
@@ -155,7 +155,7 @@ int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Element
 
       // need current scalar vector
       // -> extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
@@ -215,11 +215,11 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
-  const int ndsvel = my::scatrapara_->NdsVel();
+  const int ndsvel = my::scatrapara_->nds_vel();
 
   // get velocity values at nodes
   const Teuchos::RCP<const Epetra_Vector> convel =
-      discretization.GetState(ndsvel, "convective velocity field");
+      discretization.get_state(ndsvel, "convective velocity field");
 
   // safety check
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
@@ -241,14 +241,14 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
 
   // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
   // dimension. If so, we assume that this is the porosity
-  if (discretization.NumDof(1, ele->Nodes()[0]) == nsd_ + 1)
+  if (discretization.num_dof(1, ele->nodes()[0]) == nsd_ + 1)
   {
     isnodalporosity_ = true;
 
     // get number of dof-set associated with velocity related dofs
-    const int ndsdisp = my::scatrapara_->NdsDisp();
+    const int ndsdisp = my::scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(ndsdisp, "dispnp");
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(ndsdisp, "dispnp");
 
     if (disp != Teuchos::null)
     {
@@ -284,19 +284,19 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::get_material_params(
   compute_porosity(ele);
 
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->material();
 
   // get diffusivity / diffusivities
-  if (material->MaterialType() == Core::Materials::m_matlist)
+  if (material->material_type() == Core::Materials::m_matlist)
   {
     const Teuchos::RCP<const Mat::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
-    if (actmat->NumMat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
+    if (actmat->num_mat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
-      int matid = actmat->MatID(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->mat_id(k);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -325,7 +325,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::mat_scatra(
     FOUR_C_THROW("no gauss point given for evaluation of scatra material. Check your input file.");
 
   // read the porosity from the diffusion manager
-  const double porosity = diff_manager()->GetPorosity(k);
+  const double porosity = diff_manager()->get_porosity(k);
 
   const Teuchos::RCP<const Mat::ScatraMat>& actmat =
       Teuchos::rcp_dynamic_cast<const Mat::ScatraMat>(material);
@@ -357,7 +357,7 @@ template <Core::FE::CellType distype>
 inline void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::set_diffusivity(
     const Teuchos::RCP<const Mat::ScatraMat>& material, const int k, const double scale)
 {
-  my::diffmanager_->SetIsotropicDiff(material->Diffusivity() * scale, k);
+  my::diffmanager_->set_isotropic_diff(material->diffusivity() * scale, k);
 
   return;
 }
@@ -418,11 +418,11 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
     // empty parameter list
     Teuchos::ParameterList params;
 
-    if (ele->NumMaterial() < 2) FOUR_C_THROW("no secondary material available");
+    if (ele->num_material() < 2) FOUR_C_THROW("no secondary material available");
 
     // here we rely that the structure material has been added as second material
     Teuchos::RCP<Mat::StructPoro> structmat =
-        Teuchos::rcp_dynamic_cast<Mat::StructPoro>(ele->Material(1));
+        Teuchos::rcp_dynamic_cast<Mat::StructPoro>(ele->material(1));
     if (structmat == Teuchos::null) FOUR_C_THROW("cast to Mat::StructPoro failed!");
 
     // just evaluate the first scalar (used only in case of reactive porosity)
@@ -434,7 +434,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
     }
     params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);
 
-    params.set<double>("delta time", my::scatraparatimint_->Dt());
+    params.set<double>("delta time", my::scatraparatimint_->dt());
 
     // use structure material to evaluate porosity
     structmat->compute_porosity(
@@ -442,7 +442,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
   }
 
   // save porosity in diffusion manager for later access
-  diff_manager()->SetPorosity(porosity);
+  diff_manager()->set_porosity(porosity);
 
   return;
 }
@@ -470,7 +470,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
-  for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+  for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
@@ -485,7 +485,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(
         const double fac_funct_i = fac * my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
         {
-          const double porosity = diff_manager()->GetPorosity(k);
+          const double porosity = diff_manager()->get_porosity(k);
           if (std::abs(my::ephinp_[k](i, 0)) > 1e-14)
             scalars[k] += fac_funct_i / (my::ephinp_[k](i, 0) * porosity);
           else
@@ -502,7 +502,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(
         const double fac_funct_i = fac * my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
         {
-          const double porosity = diff_manager()->GetPorosity(k);
+          const double porosity = diff_manager()->get_porosity(k);
           scalars[k] += fac_funct_i * my::ephinp_[k](i, 0) * porosity;
         }
         // for domain volume

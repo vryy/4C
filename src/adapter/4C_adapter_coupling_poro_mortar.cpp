@@ -64,7 +64,7 @@ void Adapter::CouplingPoroMortar::read_mortar_condition(
       mastergnodes, slavegnodes, masterelements, slaveelements);
 
   // Set Problem Type to Poro
-  switch (Global::Problem::Instance()->GetProblemType())
+  switch (Global::Problem::instance()->get_problem_type())
   {
     case Core::ProblemType::poroelast:
       input.set<int>("PROBTYPE", Inpar::CONTACT::poroelast);
@@ -78,11 +78,11 @@ void Adapter::CouplingPoroMortar::read_mortar_condition(
   }
 
   // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
-  const Teuchos::ParameterList& stru = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& stru = Global::Problem::instance()->structural_dynamic_params();
   double porotimefac =
       1 / (stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
   input.set<double>("porotimefac", porotimefac);
-  const Teuchos::ParameterList& porodyn = Global::Problem::Instance()->poroelast_dynamic_params();
+  const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
   input.set<bool>("CONTACTNOPEN",
       Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   if (!Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
@@ -102,7 +102,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (Mortar::Interface)
-  const int dim = Global::Problem::Instance()->NDim();
+  const int dim = Global::Problem::instance()->n_dim();
 
   // We need to determine an element offset to start the numbering of the slave
   // mortar elements AFTER the master mortar elements in order to ensure unique
@@ -124,50 +124,50 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, isnurbs));
+        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, isnurbs));
 
     Teuchos::RCP<Core::Elements::FaceElement> faceele =
         Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
-    cele->PhysType() = Mortar::Element::other;
+    cele->phys_type() = Mortar::Element::other;
 
     std::vector<Teuchos::RCP<Core::Conditions::Condition>> porocondvec;
-    masterdis->GetCondition("PoroCoupling", porocondvec);
+    masterdis->get_condition("PoroCoupling", porocondvec);
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocondvec[i]->Geometry().begin();
-           eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = porocondvec[i]->geometry().begin();
+           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
-        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
           if (mastertype_ == 0)
             FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = Mortar::Element::poro;
+          cele->phys_type() = Mortar::Element::poro;
           mastertype_ = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == Mortar::Element::other)
+    if (cele->phys_type() == Mortar::Element::other)
     {
       if (mastertype_ == 1)
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = Mortar::Element::structure;
+      cele->phys_type() = Mortar::Element::structure;
       mastertype_ = 0;
     }
 
-    cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
+    cele->set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
 
     if (isnurbs)
     {
       Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
           Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(masterdis);
 
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -175,12 +175,12 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
           Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+          faceele->parent_master_element()->id(), faceele->face_master_number());
 
       // store nurbs specific data to node
-      cele->ZeroSized() = zero_size;
-      cele->Knots() = mortarknots;
-      cele->NormalFac() = normalfac;
+      cele->zero_sized() = zero_size;
+      cele->knots() = mortarknots;
+      cele->normal_fac() = normalfac;
     }
 
     interface->add_element(cele);
@@ -192,50 +192,50 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
 
     Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
-        ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), true, isnurbs));
+        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true, isnurbs));
 
     Teuchos::RCP<Core::Elements::FaceElement> faceele =
         Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
     if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
-    cele->PhysType() = Mortar::Element::other;
+    cele->phys_type() = Mortar::Element::other;
 
     std::vector<Teuchos::RCP<Core::Conditions::Condition>> porocondvec;
-    masterdis->GetCondition("PoroCoupling", porocondvec);
+    masterdis->get_condition("PoroCoupling", porocondvec);
 
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
       std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocondvec[i]->Geometry().begin();
-           eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = porocondvec[i]->geometry().begin();
+           eleitergeometry != porocondvec[i]->geometry().end(); ++eleitergeometry)
       {
-        if (faceele->parent_element()->Id() == eleitergeometry->second->Id())
+        if (faceele->parent_element()->id() == eleitergeometry->second->id())
         {
           if (slavetype_ == 0)
             FOUR_C_THROW(
                 "struct and poro slave elements on the same processor - no mixed interface "
                 "supported");
-          cele->PhysType() = Mortar::Element::poro;
+          cele->phys_type() = Mortar::Element::poro;
           slavetype_ = 1;
           break;
         }
       }
     }
-    if (cele->PhysType() == Mortar::Element::other)
+    if (cele->phys_type() == Mortar::Element::other)
     {
       if (slavetype_ == 1)
         FOUR_C_THROW(
             "struct and poro slave elements on the same processor - no mixed interface supported");
-      cele->PhysType() = Mortar::Element::structure;
+      cele->phys_type() = Mortar::Element::structure;
       slavetype_ = 0;
     }
-    cele->set_parent_master_element(faceele->parent_element(), faceele->FaceParentNumber());
+    cele->set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
 
     if (isnurbs)
     {
       Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> nurbsdis =
           Teuchos::rcp_dynamic_cast<Core::FE::Nurbs::NurbsDiscretization>(slavedis);
 
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).GetKnotVector();
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
       std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
@@ -243,12 +243,12 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
           Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
       double normalfac = 0.0;
       bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
-          faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
+          faceele->parent_master_element()->id(), faceele->face_master_number());
 
       // store nurbs specific data to node
-      cele->ZeroSized() = zero_size;
-      cele->Knots() = mortarknots;
-      cele->NormalFac() = normalfac;
+      cele->zero_sized() = zero_size;
+      cele->knots() = mortarknots;
+      cele->normal_fac() = normalfac;
     }
 
     interface->add_element(cele);
@@ -268,7 +268,7 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
   // poro lagrange strategy:
 
   // get problem dimension (2D or 3D) and create (Mortar::Interface)
-  const int dim = Global::Problem::Instance()->NDim();
+  const int dim = Global::Problem::instance()->n_dim();
 
   // bools to decide which side is structural and which side is poroelastic to manage all 4
   // constellations
@@ -336,7 +336,7 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
     }
   }
 
-  const Teuchos::ParameterList& stru = Global::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& stru = Global::Problem::instance()->structural_dynamic_params();
   double theta = stru.sublist("ONESTEPTHETA").get<double>("THETA");
   // what if problem is static ? there should be an error for previous line called in a dyna_statics
   // problem and not a value of 0.5 a proper disctinction is necessary if poro meshtying is expanded
@@ -355,12 +355,12 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
       Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   // create contact poro lagrange strategy for mesh tying
-  porolagstrategy_ = Teuchos::rcp(
-      new CONTACT::LagrangeStrategyPoro(data_ptr, masterdis->dof_row_map(), masterdis->NodeRowMap(),
-          input, interfaces, dim, comm_, alphaf, numcoupleddof, poroslave, poromaster));
+  porolagstrategy_ = Teuchos::rcp(new CONTACT::LagrangeStrategyPoro(data_ptr,
+      masterdis->dof_row_map(), masterdis->node_row_map(), input, interfaces, dim, comm_, alphaf,
+      numcoupleddof, poroslave, poromaster));
 
   porolagstrategy_->setup(false, true);
-  porolagstrategy_->PoroMtInitialize();
+  porolagstrategy_->poro_mt_initialize();
 
   firstinit_ = true;
 
@@ -381,9 +381,9 @@ void Adapter::CouplingPoroMortar::complete_interface(
   // interface->create_volume_ghosting(*masterdis);
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
-  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
+  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_dofs()));
+  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->master_row_dofs()));
+  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_nodes()));
 
   // print parallel distribution
   interface->print_parallel_distribution();
@@ -408,7 +408,7 @@ void Adapter::CouplingPoroMortar::complete_interface(
   interface_ = interface;
 
   // create binary search tree
-  interface_->CreateSearchTree();
+  interface_->create_search_tree();
 
   return;
 }
@@ -417,7 +417,7 @@ void Adapter::CouplingPoroMortar::complete_interface(
 /*----------------------------------------------------------------------*
  |  evaluate blockmatrices for poro meshtying             ager 10/15    |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel,
+void Adapter::CouplingPoroMortar::evaluate_poro_mt(Teuchos::RCP<Epetra_Vector> fvel,
     Teuchos::RCP<Epetra_Vector> svel, Teuchos::RCP<Epetra_Vector> fpres,
     Teuchos::RCP<Epetra_Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
@@ -444,7 +444,7 @@ void Adapter::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
   interface_->evaluate();
 
   porolagstrategy_->poro_mt_prepare_fluid_coupling();
-  porolagstrategy_->PoroInitialize(coupfs, fdofrowmap, firstinit_);
+  porolagstrategy_->poro_initialize(coupfs, fdofrowmap, firstinit_);
   if (firstinit_) firstinit_ = false;
 
   // do system matrix manipulations
@@ -456,12 +456,12 @@ void Adapter::CouplingPoroMortar::EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fve
 /*----------------------------------------------------------------------*
  |  update poro meshtying quantities                      ager 10/15    |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingPoroMortar::UpdatePoroMt()
+void Adapter::CouplingPoroMortar::update_poro_mt()
 {
   // safety check
   check_setup();
 
-  porolagstrategy_->PoroMtUpdate();
+  porolagstrategy_->poro_mt_update();
   return;
 }  // Adapter::CouplingNonLinMortar::UpdatePoroMt()
 
@@ -474,7 +474,7 @@ void Adapter::CouplingPoroMortar::recover_fluid_lm_poro_mt(
   // safety check
   check_setup();
 
-  porolagstrategy_->RecoverPoroNoPen(disi, veli);
+  porolagstrategy_->recover_poro_no_pen(disi, veli);
   return;
 }  // Adapter::CouplingNonLinMortar::recover_fluid_lm_poro_mt
 

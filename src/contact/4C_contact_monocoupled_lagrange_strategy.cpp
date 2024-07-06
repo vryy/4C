@@ -92,17 +92,17 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
-  kteff->Complete();
+  kteff->complete();
 
-  Teuchos::RCP<Epetra_Map> domainmap = Teuchos::rcp(new Epetra_Map(kteff->DomainMap()));
+  Teuchos::RCP<Epetra_Map> domainmap = Teuchos::rcp(new Epetra_Map(kteff->domain_map()));
 
   // system type
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // shape function
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -195,14 +195,14 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     // km: add T(mhataam)*kan
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
-    kmmod->Add(*km, false, 1.0, 1.0);
+    kmmod->add(*km, false, 1.0, 1.0);
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmadd =
           Core::LinAlg::MLMultiply(*mhataam_, true, *ka, false, false, false, true);
-      kmmod->Add(*kmadd, false, 1.0, 1.0);
+      kmmod->add(*kmadd, false, 1.0, 1.0);
     }
-    kmmod->Complete(kteff->DomainMap(), km->RowMap());
+    kmmod->complete(kteff->domain_map(), km->row_map());
 
     //----------------------------------------------------------- THIRD LINE
     //------------------- FOR 3D QUADRATIC CASE ----------------------------
@@ -213,14 +213,14 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     // kin: subtract T(dhat)*kan --
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
-    kimod->Add(*ki, false, 1.0, 1.0);
+    kimod->add(*ki, false, 1.0, 1.0);
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiadd =
           Core::LinAlg::MLMultiply(*dhat_, true, *ka, false, false, false, true);
-      kimod->Add(*kiadd, false, -1.0, 1.0);
+      kimod->add(*kiadd, false, -1.0, 1.0);
     }
-    kimod->Complete(kteff->DomainMap(), ki->RowMap());
+    kimod->complete(kteff->domain_map(), ki->row_map());
 
     //---------------------------------------------------------- FOURTH LINE
     // nothing to do
@@ -283,27 +283,27 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     /**********************************************************************/
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-        *gdisprowmap_, 81, true, false, kteffmatrix->GetMatrixtype()));
+        *gdisprowmap_, 81, true, false, kteffmatrix->get_matrixtype()));
 
     //----------------------------------------------------------- FIRST LINE
     // add n submatrices to kteffnew
-    kteffnew->Add(*kn, false, 1.0, 1.0);
+    kteffnew->add(*kn, false, 1.0, 1.0);
     //---------------------------------------------------------- SECOND LINE
     // add m submatrices to kteffnew
-    kteffnew->Add(*kmmod, false, 1.0, 1.0);
+    kteffnew->add(*kmmod, false, 1.0, 1.0);
     //----------------------------------------------------------- THIRD LINE
     // add i submatrices to kteffnew
-    if (iset) kteffnew->Add(*kimod, false, 1.0, 1.0);
+    if (iset) kteffnew->add(*kimod, false, 1.0, 1.0);
 
     //---------------------------------------------------------- FOURTH LINE
     // for off diag blocks this line is empty (weighted normal = f(disp))
 
     //----------------------------------------------------------- FIFTH LINE
     // add a submatrices to kteffnew
-    if (aset) kteffnew->Add(*kamod, false, 1.0, 1.0);
+    if (aset) kteffnew->add(*kamod, false, 1.0, 1.0);
 
     // fill_complete kteffnew (square)
-    kteffnew->Complete(*domainmap, *gdisprowmap_);
+    kteffnew->complete(*domainmap, *gdisprowmap_);
 
     // finally do the replacement
     kteff = kteffnew;
@@ -318,7 +318,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
 /*------------------------------------------------------------------------*
  | Coupled Recovery method for contact LM                       ager 02/15|
  *-----------------------------------------------------------------------*/
-void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
+void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     Teuchos::RCP<Epetra_Vector> disi, std::map<int, Teuchos::RCP<Epetra_Vector>> inc)
 {
   // check if contact contributions are present,
@@ -333,9 +333,9 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
 
   // shape function and system types
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(Params(), "LM_SHAPEFCN");
+      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM");
+      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   //**********************************************************************
   //**********************************************************************
@@ -365,8 +365,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
-    invdmod->Add(*invda, false, 1.0, 1.0);
-    invdmod->Complete();
+    invdmod->add(*invda, false, 1.0, 1.0);
+    invdmod->complete();
 
     std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>>::iterator matiter;
     std::map<int, Teuchos::RCP<Epetra_Vector>>::iterator inciter;
@@ -421,10 +421,10 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
         Teuchos::RCP<Epetra_Vector> zfluid = Teuchos::rcp(new Epetra_Vector(z_->Map(), true));
 
         Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-        matiter->second->Multiply(false, *inciter->second, *mod);
+        matiter->second->multiply(false, *inciter->second, *mod);
         zfluid->Update(-1.0, *mod, 0.0);
         Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*zfluid));
-        invdmod->Multiply(true, *zcopy, *zfluid);
+        invdmod->multiply(true, *zcopy, *zfluid);
         zfluid->Scale(1 / (1 - alphaf_));
 
         z_->Update(1.0, *zfluid, 1.0);  // Add Offdiag  -  Coupling Contribution to LM!!!
@@ -454,13 +454,13 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
 /*-------------------------------------------------------------------------*
  | Coupled Recovery method for contact LM with one offdiag block ager 02/15|
  *------------------------------------------------------------------------*/
-void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
+void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc)
 {
   std::map<int, Teuchos::RCP<Epetra_Vector>> incm;
   incm.insert(std::pair<int, Teuchos::RCP<Epetra_Vector>>(0, inc));
 
-  RecoverCoupled(disi, incm);
+  recover_coupled(disi, incm);
   return;
 }
 

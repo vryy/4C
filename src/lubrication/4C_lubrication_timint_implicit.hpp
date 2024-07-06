@@ -76,9 +76,9 @@ namespace LUBRICATION
   class TimIntImpl
   {
    public:
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() { return output_; }
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() { return output_; }
 
-    Teuchos::RCP<Epetra_Vector>& InfGapToggle() { return inf_gap_toggle_lub_; }
+    Teuchos::RCP<Epetra_Vector>& inf_gap_toggle() { return inf_gap_toggle_lub_; }
 
     /*========================================================================*/
     //! @name Constructors and destructors and related methods
@@ -108,7 +108,7 @@ namespace LUBRICATION
     void set_height_field(const int nds, Teuchos::RCP<const Epetra_Vector> gap);
 
     //! set the time derivative of the height (film thickness) by OST
-    void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
+    void set_height_dot_field(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
 
     //! set relative tangential interface velocity for Reynolds equation
     void set_average_velocity_field_pure_lub(const int nds);
@@ -135,17 +135,17 @@ namespace LUBRICATION
     /*--- calculate and update -----------------------------------------------*/
 
     //! do time integration (time loop)
-    virtual void TimeLoop();
+    virtual void time_loop();
 
     //! general solver call for coupled algorithms (decides if linear/nonlinear internally)
-    virtual void Solve();
+    virtual void solve();
 
     //! update the solution after convergence of the nonlinear iteration.
     virtual void update(const int num = 0  //!< field number
         ) = 0;
 
     //! apply moving mesh data
-    void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp,  //!< displacement vector
+    void apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp,  //!< displacement vector
         int nds  //!< number of the dofset the displacement state belongs to
     );
 
@@ -158,10 +158,10 @@ namespace LUBRICATION
     virtual void print_time_step_info();
 
     //! return system matrix downcasted as sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix();
 
     //! update Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> prei);
+    virtual void update_newton(Teuchos::RCP<const Epetra_Vector> prei);
 
     //! Update iteration incrementally
     //!
@@ -196,10 +196,10 @@ namespace LUBRICATION
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
+    Teuchos::RCP<const Epetra_Vector> rhs() { return residual_; }
 
     //! return flag indicating if an incremental solution approach is used
-    bool IsIncremental() { return incremental_; }
+    bool is_incremental() { return incremental_; }
 
     //! return discretization
     Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
@@ -214,16 +214,16 @@ namespace LUBRICATION
     /*--- query and output ---------------------------------------------------*/
 
     //! return current time value
-    double Time() const { return time_; }
+    double time() const { return time_; }
 
     //! return current step number
-    int Step() const { return step_; }
+    int step() const { return step_; }
 
     //! return number of newton iterations in last timestep
-    double IterNum() const { return iternum_; }
+    double iter_num() const { return iternum_; }
 
     //! return time step size
-    double Dt() const { return dta_; }
+    double dt() const { return dta_; }
 
     /*========================================================================*/
     //! @name pressure degrees of freedom and related
@@ -232,10 +232,10 @@ namespace LUBRICATION
     /*--- query and output ---------------------------------------------------*/
 
     //! return pressure field pre at time n+1
-    Teuchos::RCP<Epetra_Vector> Prenp() { return prenp_; }
+    Teuchos::RCP<Epetra_Vector> prenp() { return prenp_; }
 
     //! output mean values of pressure(s)
-    virtual void OutputMeanPressures(const int num = 0);
+    virtual void output_mean_pressures(const int num = 0);
 
     //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
     void output_domain_or_boundary_integrals(const std::string condstring);

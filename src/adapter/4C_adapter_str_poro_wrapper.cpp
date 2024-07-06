@@ -51,8 +51,8 @@ void Adapter::StructurePoroWrapper::setup()
   structure_->setup();
   if (type_ == FieldWrapper::type_PoroField)
   {
-    poro_->SetupSystem();
-    poro_->SetupNewton();  // just to avoid modifications in poro (this sets iterinc_ there)
+    poro_->setup_system();
+    poro_->setup_newton();  // just to avoid modifications in poro (this sets iterinc_ there)
   }
 }
 
@@ -75,12 +75,12 @@ Teuchos::RCP<const Epetra_Map> Adapter::StructurePoroWrapper::combined_dbc_map()
 }
 
 //   //! perform result test
-void Adapter::StructurePoroWrapper::TestResults(Global::Problem* problem)
+void Adapter::StructurePoroWrapper::test_results(Global::Problem* problem)
 {
-  problem->AddFieldTest(structure_->CreateFieldTest());
+  problem->add_field_test(structure_->create_field_test());
 
   if (type_ == FieldWrapper::type_PoroField)
-    problem->AddFieldTest(poro_->fluid_field()->CreateFieldTest());
+    problem->add_field_test(poro_->fluid_field()->create_field_test());
 }
 
 const Teuchos::RCP<PoroElast::Monolithic>& Adapter::StructurePoroWrapper::poro_field()
@@ -120,11 +120,11 @@ Teuchos::RCP<Epetra_Vector> Adapter::StructurePoroWrapper::insert_fsi_cond_vecto
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
-      return Interface()->insert_fsi_cond_vector(cond);
+      return interface()->insert_fsi_cond_vector(cond);
       break;
     case FieldWrapper::type_PoroField:
-      tmpcond = Interface()->insert_fsi_cond_vector(cond);
-      return poro_->Extractor()->insert_vector(tmpcond, 0);  // into structural part = 0
+      tmpcond = interface()->insert_fsi_cond_vector(cond);
+      return poro_->extractor()->insert_vector(tmpcond, 0);  // into structural part = 0
       break;
     default:
       FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");

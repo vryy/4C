@@ -69,7 +69,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::setup(
 
   // safety check
   for (const auto& type_i : {fluidphase_, openboundaryphase_})
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+    if (not particlecontainerbundle_->get_particle_types().count(type_i))
       FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
@@ -78,7 +78,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
     const double maxinteractiondistance)
 {
   // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+  const int typevectorsize = *(--particlecontainerbundle_->get_particle_types().end()) + 1;
 
   std::vector<std::set<int>> particlestoremove(typevectorsize);
   std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>> particlestoinsert(
@@ -104,10 +104,10 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
       particlecontainerbundle_->get_specific_container(openboundaryphase_, PARTICLEENGINE::Owned);
 
   // iterate over particles in container
-  for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+  for (int particle_i = 0; particle_i < container_i->particles_stored(); ++particle_i)
   {
     // get pointer to particle states
-    double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
+    double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
 
     // compute distance of open boundary particle from plane
     std::vector<double> temp(3);
@@ -122,7 +122,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
       // duplicate open boundary particle and change phase
       int globalid(0);
       PARTICLEENGINE::ParticleStates particlestates;
-      container_i->GetParticle(particle_i, globalid, particlestates);
+      container_i->get_particle(particle_i, globalid, particlestates);
 
       // construct and store generated particle object
       particlesgenerated.emplace_back(
@@ -135,7 +135,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
     else if (distancefromplane > maxinteractiondistance)
     {
       // get global id of particle i
-      const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+      const int* globalid_i = container_i->get_ptr_to_global_id(particle_i);
 
       // store global id of open boundary particle to be freed
       globalidstofree.push_back(globalid_i[0]);
@@ -150,10 +150,10 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
       particlecontainerbundle_->get_specific_container(fluidphase_, PARTICLEENGINE::Owned);
 
   // iterate over particles in container
-  for (int particle_j = 0; particle_j < container_j->ParticlesStored(); ++particle_j)
+  for (int particle_j = 0; particle_j < container_j->particles_stored(); ++particle_j)
   {
     // get pointer to particle states
-    double* pos_j = container_j->GetPtrToState(PARTICLEENGINE::Position, particle_j);
+    double* pos_j = container_j->get_ptr_to_state(PARTICLEENGINE::Position, particle_j);
 
     // compute distance of fluid particle from plane
     std::vector<double> temp(3);
@@ -167,7 +167,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
     {
       int globalid(0);
       PARTICLEENGINE::ParticleStates particlestates;
-      container_j->GetParticle(particle_j, globalid, particlestates);
+      container_j->get_particle(particle_j, globalid, particlestates);
 
       PARTICLEENGINE::ParticleObjShrdPtr particleobject =
           std::make_shared<PARTICLEENGINE::ParticleObject>(
@@ -182,7 +182,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
   }
 
   // free unique global ids
-  particleengineinterface_->FreeUniqueGlobalIds(globalidstofree);
+  particleengineinterface_->free_unique_global_ids(globalidstofree);
 
   // hand over particles to be removed
   particleengineinterface_->hand_over_particles_to_be_removed(particlestoremove);
@@ -192,7 +192,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
 
   // append particle to be insert
   for (auto& particleobject : particlesgenerated)
-    particlestoinsert[particleobject->ReturnParticleType()].push_back(
+    particlestoinsert[particleobject->return_particle_type()].push_back(
         std::make_pair(-1, particleobject));
 
   // hand over particles to be inserted
@@ -281,26 +281,26 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::prescribe_open_boundary_stat
       particlecontainerbundle_->get_specific_container(openboundaryphase_, PARTICLEENGINE::Owned);
 
   // get number of particles stored in container
-  const int particlestored = container_i->ParticlesStored();
+  const int particlestored = container_i->particles_stored();
 
   // no owned particles of current particle type
   if (particlestored <= 0) return;
 
   // get reference to function
   const auto& function =
-      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
           prescribedstatefunctid_ - 1);
 
   // safety check
-  if (function.NumberComponents() != 1)
+  if (function.number_components() != 1)
     FOUR_C_THROW("dimension of function governing velocity condition is not one!");
 
   // iterate over particles in container
   for (int particle_i = 0; particle_i < particlestored; ++particle_i)
   {
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-    double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+    double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
 
     // evaluate function to set velocity
     UTILS::VecSetScale(vel_i, -function.evaluate(pos_i, evaltime, 0), outwardnormal_.data());
@@ -322,7 +322,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::interpolate_open_boundary_st
       equationofstatebundle_->get_ptr_to_specific_equation_of_state(openboundaryphase_);
 
   // get number of particles stored in container
-  const int particlestored = container_k->ParticlesStored();
+  const int particlestored = container_k->particles_stored();
 
   std::vector<double> sumj_Vj_Wij(particlestored, 0.0);
   std::vector<double> sumj_Vj_Wij_pj(particlestored, 0.0);
@@ -357,14 +357,14 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::interpolate_open_boundary_st
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-    const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
-    const double* press_i = container_i->GetPtrToState(PARTICLEENGINE::Pressure, particle_i);
+    const double* mass_i = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
+    const double* dens_i = container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i);
+    const double* press_i = container_i->get_ptr_to_state(PARTICLEENGINE::Pressure, particle_i);
 
     // get pointer to particle states
-    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
-    const double* dens_j = container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j);
-    const double* press_j = container_j->GetPtrToState(PARTICLEENGINE::Pressure, particle_j);
+    const double* mass_j = container_j->get_ptr_to_state(PARTICLEENGINE::Mass, particle_j);
+    const double* dens_j = container_j->get_ptr_to_state(PARTICLEENGINE::Density, particle_j);
+    const double* press_j = container_j->get_ptr_to_state(PARTICLEENGINE::Pressure, particle_j);
 
     // evaluate contribution of neighboring particle j
     if (type_i == openboundaryphase_)
@@ -387,8 +387,8 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::interpolate_open_boundary_st
   for (int particle_k = 0; particle_k < particlestored; ++particle_k)
   {
     // get pointer to particle states
-    double* dens_k = container_k->GetPtrToState(PARTICLEENGINE::Density, particle_k);
-    double* press_k = container_k->GetPtrToState(PARTICLEENGINE::Pressure, particle_k);
+    double* dens_k = container_k->get_ptr_to_state(PARTICLEENGINE::Density, particle_k);
+    double* press_k = container_k->get_ptr_to_state(PARTICLEENGINE::Pressure, particle_k);
 
     // interpolate pressure
     press_k[0] = (sumj_Vj_Wij[particle_k] > 0.0)
@@ -396,7 +396,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::interpolate_open_boundary_st
                      : 0.0;
 
     // compute density
-    dens_k[0] = equationofstate_k->PressureToDensity(press_k[0], material_k->initDensity_);
+    dens_k[0] = equationofstate_k->pressure_to_density(press_k[0], material_k->initDensity_);
   }
 
   // refresh states of ghosted particles
@@ -489,7 +489,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
       equationofstatebundle_->get_ptr_to_specific_equation_of_state(openboundaryphase_);
 
   // get number of particles stored in container
-  const int particlestored = container_i->ParticlesStored();
+  const int particlestored = container_i->particles_stored();
 
   // no owned particles of current particle type
   if (particlestored <= 0) return;
@@ -498,19 +498,19 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
   {
     // get reference to function
     const auto& function =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
+        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
             prescribedstatefunctid_ - 1);
 
     // safety check
-    if (function.NumberComponents() != 1)
+    if (function.number_components() != 1)
       FOUR_C_THROW("dimension of function governing pressure condition is not one!");
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < particlestored; ++particle_i)
     {
       // get pointer to particle states
-      const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
-      double* press_i = container_i->GetPtrToState(PARTICLEENGINE::Pressure, particle_i);
+      const double* pos_i = container_i->get_ptr_to_state(PARTICLEENGINE::Position, particle_i);
+      double* press_i = container_i->get_ptr_to_state(PARTICLEENGINE::Pressure, particle_i);
 
       // evaluate function to set pressure
       press_i[0] = function.evaluate(pos_i, evaltime, 0);
@@ -519,18 +519,18 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
   else
   {
     // clear pressure state
-    container_i->ClearState(PARTICLEENGINE::Pressure);
+    container_i->clear_state(PARTICLEENGINE::Pressure);
   }
 
   // iterate over particles in container
   for (int particle_i = 0; particle_i < particlestored; ++particle_i)
   {
     // get pointer to particle states
-    const double* press_i = container_i->GetPtrToState(PARTICLEENGINE::Pressure, particle_i);
-    double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
+    const double* press_i = container_i->get_ptr_to_state(PARTICLEENGINE::Pressure, particle_i);
+    double* dens_i = container_i->get_ptr_to_state(PARTICLEENGINE::Density, particle_i);
 
     // compute density
-    dens_i[0] = equationofstate_i->PressureToDensity(press_i[0], material_i->initDensity_);
+    dens_i[0] = equationofstate_i->pressure_to_density(press_i[0], material_i->initDensity_);
   }
 }
 

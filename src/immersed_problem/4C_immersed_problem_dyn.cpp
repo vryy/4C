@@ -32,9 +32,9 @@ void immersed_problem_drt()
   // declare general ParameterList that can be handed into Algorithm
   Teuchos::ParameterList params;
   // get pointer to global problem
-  Global::Problem* problem = Global::Problem::Instance();
+  Global::Problem* problem = Global::Problem::instance();
   // get communicator
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   ///////////////////////////////////////////////////////////////////////
   // Get Parameters
@@ -53,20 +53,20 @@ void immersed_problem_drt()
   {
     case Inpar::Immersed::partitioned:
     {
-      switch (Global::Problem::Instance()->GetProblemType())
+      switch (Global::Problem::instance()->get_problem_type())
       {
         case Core::ProblemType::immersed_fsi:
         {
           // fill discretizations
-          problem->GetDis("structure")->fill_complete(false, false, false);
-          problem->GetDis("fluid")->fill_complete(false, false, false);
+          problem->get_dis("structure")->fill_complete(false, false, false);
+          problem->get_dis("fluid")->fill_complete(false, false, false);
 
           // SAFETY FIRST
           {
             // check if INODE is defined in input file
-            int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
+            int gid = problem->get_dis("fluid")->element_row_map()->GID(0);
             Core::Nodes::ImmersedNode* inode = dynamic_cast<Core::Nodes::ImmersedNode*>(
-                (problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
+                (problem->get_dis("fluid")->g_element(gid)->nodes()[0]));
 
             if (inode == nullptr)
               FOUR_C_THROW(
@@ -98,7 +98,7 @@ void immersed_problem_drt()
           algo->init(params);
 
           // ghost structure redundantly on all procs
-          Core::Rebalance::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
+          Core::Rebalance::GhostDiscretizationOnAllProcs(problem->get_dis("structure"));
 
           // setup algo
           algo->setup();
@@ -106,14 +106,14 @@ void immersed_problem_drt()
           // PARTITIONED FSI ALGORITHM
 
           // read restart step
-          const int restart = Global::Problem::Instance()->restart();
+          const int restart = Global::Problem::instance()->restart();
           if (restart)
             algo->read_restart(restart);
           else
             // additional setup for structural search tree, etc.
             algo->setup_structural_discretization();
 
-          algo->Timeloop(algo);
+          algo->timeloop(algo);
 
           if (immersedmethodparams.get<std::string>("TIMESTATS") == "endofsim")
           {
@@ -122,11 +122,11 @@ void immersed_problem_drt()
           }
 
           // create result tests for single fields
-          Global::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
-          Global::Problem::Instance()->AddFieldTest(algo->structure_field()->CreateFieldTest());
+          Global::Problem::instance()->add_field_test(algo->mb_fluid_field()->create_field_test());
+          Global::Problem::instance()->add_field_test(algo->structure_field()->create_field_test());
 
           // do the actual testing
-          Global::Problem::Instance()->TestAll(comm);
+          Global::Problem::instance()->test_all(comm);
 
           break;
         }  // case Core::ProblemType::immersed_fsi

@@ -38,14 +38,14 @@ namespace Core::Geo
 
       virtual ~IntegrationCell() = default;
       /// get the dimension of the integration cell
-      virtual unsigned Dim() const = 0;
+      virtual unsigned n_dim() const = 0;
 
       /// get the shape of the integration cell
-      virtual Core::FE::CellType Shape() const = 0;
+      virtual Core::FE::CellType shape() const = 0;
 
-      virtual int CubatureDegree(Core::FE::CellType elementshape) const = 0;
+      virtual int cubature_degree(Core::FE::CellType elementshape) const = 0;
 
-      void DumpGmsh(std::ofstream& file, int* value = nullptr);
+      void dump_gmsh(std::ofstream& file, int* value = nullptr);
 
       /** \brief calculate the element volume
        *
@@ -53,18 +53,18 @@ namespace Core::Geo
        *        and for 2-D elements the element area.
        *
        *  \author hiermeier \date 11/16 */
-      double Volume() const;
+      double volume() const;
 
-      const std::vector<Point*>& Points() const { return points_; }
+      const std::vector<Point*>& points() const { return points_; }
 
-      Point::PointPosition Position() const { return position_; }
+      Point::PointPosition position() const { return position_; }
 
-      const Core::LinAlg::SerialDenseMatrix& Coordinates() const { return xyz_; }
+      const Core::LinAlg::SerialDenseMatrix& coordinates() const { return xyz_; }
 
-      bool Contains(Core::LinAlg::Matrix<3, 1>& x);
+      bool contains(Core::LinAlg::Matrix<3, 1>& x);
 
       template <unsigned probdim, Core::FE::CellType celltype>
-      bool Contains(Core::LinAlg::Matrix<probdim, 1>& x);
+      bool contains(Core::LinAlg::Matrix<probdim, 1>& x);
 
 
       /** Print the integration cells
@@ -90,11 +90,11 @@ namespace Core::Geo
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override { return Core::FE::dim<Core::FE::CellType::line2>; };
+      unsigned n_dim() const override { return Core::FE::dim<Core::FE::CellType::line2>; };
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::line2; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::line2; }
 
-      int CubatureDegree(Core::FE::CellType elementshape) const override;
+      int cubature_degree(Core::FE::CellType elementshape) const override;
 
     };  // class Line2IntegrationCell
 
@@ -107,11 +107,11 @@ namespace Core::Geo
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override { return Core::FE::dim<Core::FE::CellType::tri3>; };
+      unsigned n_dim() const override { return Core::FE::dim<Core::FE::CellType::tri3>; };
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::tri3; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::tri3; }
 
-      int CubatureDegree(Core::FE::CellType elementshape) const override;
+      int cubature_degree(Core::FE::CellType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -125,11 +125,11 @@ namespace Core::Geo
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override { return Core::FE::dim<Core::FE::CellType::quad4>; };
+      unsigned n_dim() const override { return Core::FE::dim<Core::FE::CellType::quad4>; };
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::quad4; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::quad4; }
 
-      int CubatureDegree(Core::FE::CellType elementshape) const override;
+      int cubature_degree(Core::FE::CellType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -144,11 +144,11 @@ namespace Core::Geo
       {
       }
 
-      unsigned Dim() const override { return 3; };
+      unsigned n_dim() const override { return 3; };
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::hex8; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::hex8; }
 
-      int CubatureDegree(Core::FE::CellType elementshape) const override;
+      int cubature_degree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
 
@@ -166,11 +166,11 @@ namespace Core::Geo
       {
       }
 
-      unsigned Dim() const override { return 3; };
+      unsigned n_dim() const override { return 3; };
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::tet4; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::tet4; }
 
-      int CubatureDegree(Core::FE::CellType elementshape) const override;
+      int cubature_degree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
     };
@@ -187,11 +187,11 @@ namespace Core::Geo
       {
       }
 
-      unsigned Dim() const override { return 3; };
+      unsigned n_dim() const override { return 3; };
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::wedge6; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::wedge6; }
 
-      int CubatureDegree(Core::FE::CellType elementshape) const override;
+      int cubature_degree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
      private:
@@ -209,11 +209,11 @@ namespace Core::Geo
       {
       }
 
-      unsigned Dim() const override { return 3; };
+      unsigned n_dim() const override { return 3; };
 
-      Core::FE::CellType Shape() const override { return Core::FE::CellType::pyramid5; }
+      Core::FE::CellType shape() const override { return Core::FE::CellType::pyramid5; }
 
-      int CubatureDegree(Core::FE::CellType elementshape) const override;
+      int cubature_degree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
      private:

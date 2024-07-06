@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) cons
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
   // isinit_
   add_to_pack(data, isinit_);
@@ -129,7 +129,7 @@ void BEAMINTERACTION::BeamLink::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // isinit_
   isinit_ = Core::Communication::ParObject::extract_int(position, data);
@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamLink::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+void BEAMINTERACTION::BeamLink::reset_state(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
     std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
@@ -176,16 +176,16 @@ void BEAMINTERACTION::BeamLink::print(std::ostream& out) const
 {
   check_init();
 
-  out << "\nBeamLinkRigidJointed (ID " << Id() << "):";
+  out << "\nBeamLinkRigidJointed (ID " << id() << "):";
   out << "\nbspotIds_[0] = ";
-  out << "EleGID " << GetEleGid(0) << " locbspotnum " << GetLocBSpotNum(0);
+  out << "EleGID " << get_ele_gid(0) << " locbspotnum " << get_loc_b_spot_num(0);
   out << "\nbspotIds_[1] = ";
-  out << "EleGID " << GetEleGid(1) << " locbspotnum " << GetLocBSpotNum(1);
+  out << "EleGID " << get_ele_gid(1) << " locbspotnum " << get_loc_b_spot_num(1);
   out << "\n";
   out << "\nbspotpos1_ = ";
-  GetBindSpotPos1().print(out);
+  get_bind_spot_pos1().print(out);
   out << "\nbspotpos2_ = ";
-  GetBindSpotPos2().print(out);
+  get_bind_spot_pos2().print(out);
 
   out << "\n";
 }

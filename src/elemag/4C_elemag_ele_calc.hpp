@@ -50,7 +50,7 @@ namespace Discret
       };
 
       /// Zero initialization of elements.
-      virtual void ElementInit(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params);
+      virtual void element_init(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params);
 
       /// Interpolates an HDG solution to the element nodes for output.
       virtual int interpolate_solution_to_nodes(Discret::ELEMENTS::Elemag* ele,
@@ -58,7 +58,7 @@ namespace Discret
 
       /// Initialize the shape functions and solver to the given element (degree is runtime
       /// parameter).
-      void InitializeShapes(const Discret::ELEMENTS::Elemag* ele);
+      void initialize_shapes(const Discret::ELEMENTS::Elemag* ele);
 
       /// Evaluate the element.
       /// Generic virtual interface function.Called via base pointer.
@@ -83,11 +83,11 @@ namespace Discret
 
 
       /// Singleton access method.
-      static ElemagEleCalc<distype>* Instance(
+      static ElemagEleCalc<distype>* instance(
           Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Used to print the trace values as debugging utility.
-      void PrintTrace(Core::Elements::Element* ele);
+      void print_trace(Core::Elements::Element* ele);
 
 
      private:
@@ -109,16 +109,16 @@ namespace Discret
             Inpar::EleMag::DynamicType& dyna);
 
         /// Compute the residual
-        void ComputeResidual(Teuchos::ParameterList& params,
+        void compute_residual(Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& eleVec, Discret::ELEMENTS::Elemag& ele);
 
         /// Computes the source term in the element.
-        void ComputeSource(Teuchos::ParameterList& params,
+        void compute_source(Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& interiorSourcen,
             Core::LinAlg::SerialDenseVector& interiorSourcenp);
 
         /// Add terms corresponding to the absorbing boundary condition.
-        void ComputeAbsorbingBC(Core::FE::Discretization& discretization,
+        void compute_absorbing_bc(Core::FE::Discretization& discretization,
             Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
             Teuchos::RCP<Core::Mat::Material>& mat, int face,
             Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
@@ -129,7 +129,7 @@ namespace Discret
             Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params, int face);
 
         /// Calls local solver to compute matrices: internal and face
-        void ComputeMatrices(Core::FE::Discretization& discretization,
+        void compute_matrices(Core::FE::Discretization& discretization,
             const Teuchos::RCP<Core::Mat::Material>& mat, Discret::ELEMENTS::Elemag& ele, double dt,
             Inpar::EleMag::DynamicType dyna, const double tau);
 
@@ -137,16 +137,16 @@ namespace Discret
         void compute_interior_matrices(double dt, double sigma, double mu, double epsilon);
 
         /// Set up face matrices
-        void ComputeFaceMatrices(const int face, double dt, int indexstart, int newindex,
+        void compute_face_matrices(const int face, double dt, int indexstart, int newindex,
             double sigma, double mu, const double tau);
 
         /// Condense the local matrx into the element matrix for the trace and similarly for the
         /// residuals.
-        void CondenseLocalPart(Core::LinAlg::SerialDenseMatrix& elemat);
+        void condense_local_part(Core::LinAlg::SerialDenseMatrix& elemat);
 
         /// Projection of function field.
         /// The function is used to project the field in the initialization phase.
-        int ProjectField(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int project_field(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
         /// Compute the error with respect to an analytical field.
@@ -154,7 +154,7 @@ namespace Discret
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Projection of a given field on the interior variables for testing purposes.
-        int ProjectFieldTest(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int project_field_test(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
         /// Projection of a given field on the trace for testing purposes.
@@ -162,7 +162,7 @@ namespace Discret
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Projection of Dirichlet function field.
-        int ProjectDirichField(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int project_dirich_field(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Function evaluation routine

@@ -55,9 +55,9 @@ namespace BEAMINTERACTION
       if (!is_init()) FOUR_C_THROW("init() has not been called yet!");
     }
 
-    inline enum Inpar::BEAMCONTACT::Strategy Strategy() const { return strategy_; }
+    inline enum Inpar::BEAMCONTACT::Strategy strategy() const { return strategy_; }
 
-    inline enum Inpar::BEAMCONTACT::PenaltyLaw PenaltyLaw() const { return penalty_law_; }
+    inline enum Inpar::BEAMCONTACT::PenaltyLaw penalty_law() const { return penalty_law_; }
 
     inline double beam_to_beam_penalty_law_regularization_g0() const
     {
@@ -74,7 +74,7 @@ namespace BEAMINTERACTION
       return btb_penalty_law_regularization_c0_;
     }
 
-    inline double GapShift() const { return gap_shift_; }
+    inline double gap_shift() const { return gap_shift_; }
 
     inline double beam_to_beam_point_penalty_param() const { return btb_point_penalty_param_; }
 
@@ -94,13 +94,13 @@ namespace BEAMINTERACTION
       return btb_parallel_shifting_angle2_;
     }
 
-    inline double SegmentationAngle() const { return segangle_; }
+    inline double segmentation_angle() const { return segangle_; }
 
     inline int num_integration_intervals() const { return num_integration_intervals_; }
 
-    inline double BasicStiffGap() const { return btb_basicstiff_gap_; }
+    inline double basic_stiff_gap() const { return btb_basicstiff_gap_; }
 
-    inline bool EndPointPenalty() const { return btb_endpoint_penalty_; }
+    inline bool end_point_penalty() const { return btb_endpoint_penalty_; }
 
    private:
     bool isinit_;

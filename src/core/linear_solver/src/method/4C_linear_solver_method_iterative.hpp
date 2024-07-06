@@ -45,14 +45,14 @@ namespace Core::LinearSolver
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
-    int Solve() override;
+    int solve() override;
 
-    int Ncall() { return ncall_; }
+    int ncall() { return ncall_; }
 
     //! return number of iterations
-    int getNumIters() const override { return numiters_; };
+    int get_num_iters() const override { return numiters_; };
 
-    Teuchos::ParameterList& Params() const { return params_; }
+    Teuchos::ParameterList& params() const { return params_; }
 
    private:
     /*! \brief Check whether preconditioner will be reused

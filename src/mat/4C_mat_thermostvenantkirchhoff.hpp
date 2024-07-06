@@ -77,11 +77,11 @@ namespace Mat
   class ThermoStVenantKirchhoffType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "ThermoStVenantKirchhoffType"; }
+    std::string name() const override { return "ThermoStVenantKirchhoffType"; }
 
-    static ThermoStVenantKirchhoffType& Instance() { return instance_; };
+    static ThermoStVenantKirchhoffType& instance() { return instance_; };
 
-    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
    private:
     static ThermoStVenantKirchhoffType instance_;
@@ -106,13 +106,13 @@ namespace Mat
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const override
+    int unique_par_object_id() const override
     {
-      return ThermoStVenantKirchhoffType::Instance().UniqueParObjectId();
+      return ThermoStVenantKirchhoffType::instance().unique_par_object_id();
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::Solid::KinemType kinem) override
+    void valid_kinematics(Inpar::Solid::KinemType kinem) override
     {
       if (kinem != Inpar::Solid::KinemType::linear &&
           kinem != Inpar::Solid::KinemType::nonlinearTotLag)
@@ -124,7 +124,7 @@ namespace Mat
 
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
-      unique parobject id delivered by UniqueParObjectId() which will then
+      unique parobject id delivered by unique_par_object_id() which will then
       identify the exact class on the receiving processor.
     */
     void pack(
@@ -138,7 +138,7 @@ namespace Mat
       exact copy of an instance of a class on a different processor.
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
-      UniqueParObjectId().
+      unique_par_object_id().
     */
     void unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
@@ -147,13 +147,13 @@ namespace Mat
     //@}
 
     //! material type
-    Core::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_thermostvenant;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> clone() const override
     {
       return Teuchos::rcp(new ThermoStVenantKirchhoff(*this));
     }
@@ -169,29 +169,29 @@ namespace Mat
         ) override;
 
     /// add strain energy
-    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-        double& psi,                                               ///< strain energy functions
-        int gp,                                                    ///< Gauss point
-        int eleGID                                                 ///< element GID
+    void strain_energy(const Core::LinAlg::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+        double& psi,                                                ///< strain energy functions
+        int gp,                                                     ///< Gauss point
+        int eleGID                                                  ///< element GID
         ) override;
 
     //! return true if Young's modulus is temperature dependent
     bool youngs_is_temp_dependent() const { return this->params_->youngs_.size() > 1; }
 
     //! density \f$ \rho \f$
-    double Density() const override { return params_->density_; }
+    double density() const override { return params_->density_; }
 
     //! conductivity \f$ k \f$
-    double Conductivity() const { return params_->conduct_; }
+    double conductivity() const { return params_->conduct_; }
 
     //! material capacity \f$ C_V \f$
-    double Capacity() const override { return params_->capa_; }
+    double capacity() const override { return params_->capa_; }
 
     //! Initial temperature \f$ \theta_0 \f$
-    double InitTemp() const { return params_->thetainit_; }
+    double init_temp() const { return params_->thetainit_; }
 
     //! Return quick accessible material parameter data
-    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
         Core::LinAlg::Matrix<3, 1>& heatflux) const override;
@@ -202,30 +202,30 @@ namespace Mat
     void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
         Core::LinAlg::Matrix<1, 1>& heatflux) const override;
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;
+    void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override;
+    void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const override;
 
-    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override;
+    void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const override;
 
-    double CapacityDerivT() const override;
+    double capacity_deriv_t() const override;
 
-    void Reinit(double temperature, unsigned gp) override;
+    void reinit(double temperature, unsigned gp) override;
 
-    void ResetCurrentState() override;
+    void reset_current_state() override;
 
-    void CommitCurrentState() override;
+    void commit_current_state() override;
 
-    void Reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
         const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
 
-    void GetdSdT(Core::LinAlg::Matrix<6, 1>* dS_dT) override;
+    void getd_sd_t(Core::LinAlg::Matrix<6, 1>* dS_dT) override;
 
     void stress_temperature_modulus_and_deriv(
         Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT) override;
 
     //! general thermal tangent of material law depending on stress-temperature modulus
-    static void FillCthermo(Core::LinAlg::Matrix<6, 1>& ctemp, double m);
+    static void fill_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp, double m);
 
    private:
     //! computes isotropic elasticity tensor in matrix notion for 3d

@@ -63,7 +63,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::init(
   // initialize increment vectors
   phiincnp_ = Core::LinAlg::CreateVector(*fluid_field()->dof_row_map(0), true);
   if (artery_coupling_active_)
-    arterypressincnp_ = Core::LinAlg::CreateVector(*fluid_field()->ArteryDofRowMap(), true);
+    arterypressincnp_ = Core::LinAlg::CreateVector(*fluid_field()->artery_dof_row_map(), true);
   dispincnp_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
 
   // initialize fluid vectors
@@ -94,7 +94,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::init(
 /*----------------------------------------------------------------------*
  | setup the system if necessary                             vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::SetupSystem()
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::setup_system()
 {
   // Do nothing, just monolithic coupling needs this method
   return;
@@ -109,17 +109,17 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::outer_loop()
   itnum_ = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "********************************************************************************"
               << "***********************************************\n";
     std::cout << "* PARTITIONED OUTER ITERATION LOOP ----- FLUID  <-------> STRUCTURE         "
               << "                                                  *\n";
-    std::cout << "* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step()
+    std::cout << "* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << step()
               << "/" << std::setw(5) << std::setprecision(4) << std::scientific << n_step()
-              << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << Time()
+              << ", Time: " << std::setw(11) << std::setprecision(4) << std::scientific << time()
               << "/" << std::setw(11) << std::setprecision(4) << std::scientific << max_time()
-              << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << Dt()
+              << ", Dt: " << std::setw(11) << std::setprecision(4) << std::scientific << dt()
               << "                                                           *" << std::endl;
   }
 
@@ -137,7 +137,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::outer_loop()
       // in prepare_time_step()
       do_struct_step();
       // 2.) set disp and vel states in porofluid field
-      set_struct_solution(structure_field()->Dispnp(), structure_field()->Velnp());
+      set_struct_solution(structure_field()->dispnp(), structure_field()->velnp());
     }
     else
     {
@@ -151,7 +151,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::outer_loop()
     do_fluid_step();
 
     // perform relaxation
-    PerformRelaxation(fluid_field()->Phinp(), itnum_);
+    perform_relaxation(fluid_field()->phinp(), itnum_);
 
     // 2.) set fluid solution in structure field
     set_relaxed_fluid_solution();
@@ -190,20 +190,20 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  phiincnp_->Update(1.0, *(fluid_field()->Phinp()), -1.0);
+  phiincnp_->Update(1.0, *(fluid_field()->phinp()), -1.0);
   if (artery_coupling_active_)
-    arterypressincnp_->Update(1.0, *fluid_field()->ArtNetTimInt()->Pressurenp(), -1.0);
-  dispincnp_->Update(1.0, *(structure_field()->Dispnp()), -1.0);
+    arterypressincnp_->Update(1.0, *fluid_field()->art_net_tim_int()->pressurenp(), -1.0);
+  dispincnp_->Update(1.0, *(structure_field()->dispnp()), -1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   phiincnp_->Norm2(&phiincnorm_L2);
-  fluid_field()->Phinp()->Norm2(&phinorm_L2);
+  fluid_field()->phinp()->Norm2(&phinorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  structure_field()->Dispnp()->Norm2(&dispnorm_L2);
+  structure_field()->dispnp()->Norm2(&dispnorm_L2);
   if (artery_coupling_active_)
   {
     arterypressincnp_->Norm2(&artpressincnorm_L2);
-    fluid_field()->ArtNetTimInt()->Pressurenp()->Norm2(&artpressnorm_L2);
+    fluid_field()->art_net_tim_int()->pressurenp()->Norm2(&artpressnorm_L2);
   }
 
   // care for the case that there is (almost) zero scalar
@@ -212,7 +212,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
   if (artpressnorm_L2 < 1e-6) artpressnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "                                                                                 "
                  "                                             *\n";
@@ -240,7 +240,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
       ((artpressincnorm_L2 / artpressnorm_L2) <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)
+    if (get_comm().MyPID() == 0)
     {
       printf(
           "* FLUID  <-------> STRUCTURE Outer Iteration loop converged after iteration %3d/%3d !   "
@@ -259,7 +259,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
           ((artpressincnorm_L2 / artpressnorm_L2) > ittol_)))
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))
+    if ((get_comm().MyPID() == 0))
     {
       printf(
           "|     >>>>>> not converged in itemax steps!                                             "
@@ -281,7 +281,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::convergence_check(int itnu
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::do_struct_step()
 {
-  if (Comm().MyPID() == 0)
+  if (get_comm().MyPID() == 0)
   {
     std::cout << "\n";
     std::cout << "*********************************************************************************"
@@ -292,7 +292,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  structure_field()->Solve();
+  structure_field()->solve();
 
   return;
 }
@@ -305,7 +305,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::do_fluid_step()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  fluid_field()->Solve();
+  fluid_field()->solve();
 
   return;
 }
@@ -324,7 +324,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::set_relaxed_fluid_solution
 /*----------------------------------------------------------------------*
  | Calculate relaxation parameter omega                kremheller 09/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PerformRelaxation(
+void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::perform_relaxation(
     Teuchos::RCP<const Epetra_Vector> phi, const int itnum)
 {
   // get the increment vector
@@ -344,7 +344,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PerformRelaxation(
     {
       // constant relaxation parameter omega
       omega_ = startomega_;
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Fixed relaxation parameter omega is: " << omega_ << std::endl;
       break;
     }
@@ -353,7 +353,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PerformRelaxation(
     {
       // Aitken
       aitken_relaxation(omega_, itnum);
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Aitken relaxation parameter omega is: " << omega_ << std::endl;
       break;
     }
@@ -389,7 +389,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
   double fluidphiincnpdiffnorm = 0.0;
   fluidphiincnpdiff->Norm2(&fluidphiincnpdiffnorm);
 
-  if (fluidphiincnpdiffnorm <= 1e-06 and Comm().MyPID() == 0)
+  if (fluidphiincnpdiffnorm <= 1e-06 and get_comm().MyPID() == 0)
     std::cout << "Warning: The scalar increment is too small in order to use it for Aitken "
                  "relaxation. Using the previous omega instead!"
               << std::endl;
@@ -410,7 +410,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
     // we force omega to be in the range defined in the input file
     if (omega < omegamin_)
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value smaller than MINOMEGA!"
                   << std::endl;
@@ -418,7 +418,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
     }
     if (omega > omegamax_)
     {
-      if (Comm().MyPID() == 0)
+      if (get_comm().MyPID() == 0)
         std::cout << "Warning: The calculation of the relaxation parameter omega via Aitken did "
                      "lead to a value bigger than MAXOMEGA!"
                   << std::endl;
@@ -438,10 +438,10 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::iter_update_states()
   // store last solutions (current states).
   // will be compared in convergence_check to the solutions,
   // obtained from the next Struct and Scatra steps.
-  phiincnp_->Update(1.0, *fluid_field()->Phinp(), 0.0);
+  phiincnp_->Update(1.0, *fluid_field()->phinp(), 0.0);
   if (artery_coupling_active_)
-    arterypressincnp_->Update(1.0, *fluid_field()->ArtNetTimInt()->Pressurenp(), 0.0);
-  dispincnp_->Update(1.0, *structure_field()->Dispnp(), 0.0);
+    arterypressincnp_->Update(1.0, *fluid_field()->art_net_tim_int()->pressurenp(), 0.0);
+  dispincnp_->Update(1.0, *structure_field()->dispnp(), 0.0);
 
   return;
 }  // iter_update_states()
@@ -456,8 +456,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::read_restart(int restart)
     // call base class
     POROMULTIPHASE::PoroMultiPhaseBase::read_restart(restart);
 
-    Core::IO::DiscretizationReader reader(
-        fluid_field()->discretization(), Global::Problem::Instance()->InputControlFile(), restart);
+    Core::IO::DiscretizationReader reader(fluid_field()->discretization(),
+        Global::Problem::instance()->input_control_file(), restart);
     if (restart != reader.read_int("step"))
       FOUR_C_THROW("Time step on file not equal to given step");
 
@@ -481,10 +481,10 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::update_and_output()
   POROMULTIPHASE::PoroMultiPhaseBase::update_and_output();
 
   // write interface force and relaxation parameter in restart
-  if (writerestartevery_ and Step() % writerestartevery_ == 0)
+  if (writerestartevery_ and step() % writerestartevery_ == 0)
   {
-    fluid_field()->discretization()->Writer()->write_double("omega_", omega_);
-    fluid_field()->discretization()->Writer()->write_vector("fluidphioldnp_", fluidphioldnp_);
+    fluid_field()->discretization()->writer()->write_double("omega_", omega_);
+    fluid_field()->discretization()->writer()->write_vector("fluidphioldnp_", fluidphioldnp_);
   }
 }
 

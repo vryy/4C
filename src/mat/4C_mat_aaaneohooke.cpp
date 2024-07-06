@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 Mat::PAR::AAAneohooke::AAAneohooke(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
-  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
@@ -52,7 +52,7 @@ Mat::AAAneohookeType Mat::AAAneohookeType::instance_;
 
 
 
-Core::Communication::ParObject* Mat::AAAneohookeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::AAAneohookeType::create(const std::vector<char>& data)
 {
   Mat::AAAneohooke* aaa = new Mat::AAAneohooke();
   aaa->unpack(data);
@@ -78,12 +78,12 @@ void Mat::AAAneohooke::pack(Core::Communication::PackBuffer& data) const
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
+  int type = unique_par_object_id();
   add_to_pack(data, type);
 
   // matid
   int matid = -1;
-  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
   add_to_pack(data, matid);
 }
 
@@ -94,23 +94,23 @@ void Mat::AAAneohooke::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
 
   // matid
   int matid;
   extract_from_pack(position, data, matid);
   params_ = nullptr;
-  if (Global::Problem::Instance()->Materials() != Teuchos::null)
-    if (Global::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::instance()->materials() != Teuchos::null)
+    if (Global::Problem::instance()->materials()->num() != 0)
     {
-      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
       Core::Mat::PAR::Parameter* mat =
-          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
+          Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
+      if (mat->type() == material_type())
         params_ = static_cast<Mat::PAR::AAAneohooke*>(mat);
       else
-        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->type(),
+            material_type());
     }
 
   if (position != data.size())
@@ -170,13 +170,13 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
-  //  int eleID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  //  int eleID = Global::Problem::instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
 
   // material parameters for isochoric part
-  const double youngs = params_->GetParameter(params_->young, eleGID);  // Young's modulus
-  const double beta = params_->GetParameter(params_->beta, eleGID);     // second parameter
-  const double nue = params_->GetParameter(params_->nue, eleGID);       // Poisson's ratio
-  const double alpha = youngs * 0.1666666666666666667;                  // E = alpha * 6..
+  const double youngs = params_->get_parameter(params_->young, eleGID);  // Young's modulus
+  const double beta = params_->get_parameter(params_->beta, eleGID);     // second parameter
+  const double nue = params_->get_parameter(params_->nue, eleGID);       // Poisson's ratio
+  const double alpha = youngs * 0.1666666666666666667;                   // E = alpha * 6..
 
   // material parameters for volumetric part
   const double beta2 = -2.0;                                           // parameter from Holzapfel
@@ -340,14 +340,14 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*
  |  calculate strain energy                                hemmler 02/17|
  *----------------------------------------------------------------------*/
-void Mat::AAAneohooke::StrainEnergy(
+void Mat::AAAneohooke::strain_energy(
     const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   // material parameters for isochoric part
-  const double youngs = params_->GetParameter(params_->young, eleGID);  // Young's modulus
-  const double beta = params_->GetParameter(params_->beta, eleGID);     // second parameter
-  const double nue = params_->GetParameter(params_->nue, eleGID);       // Poisson's ratio
-  const double alpha = youngs * 0.1666666666666666667;                  // E = alpha * 6..
+  const double youngs = params_->get_parameter(params_->young, eleGID);  // Young's modulus
+  const double beta = params_->get_parameter(params_->beta, eleGID);     // second parameter
+  const double nue = params_->get_parameter(params_->nue, eleGID);       // Poisson's ratio
+  const double alpha = youngs * 0.1666666666666666667;                   // E = alpha * 6..
 
   // material parameters for volumetric part
   const double beta2 = -2.0;                                           // parameter from Holzapfel
@@ -381,7 +381,7 @@ void Mat::AAAneohooke::StrainEnergy(
 
 
 
-void Mat::AAAneohooke::VisNames(std::map<std::string, int>& names)
+void Mat::AAAneohooke::vis_names(std::map<std::string, int>& names)
 {
   std::string fiber = "beta";
   names[fiber] = 1;  // scalar
@@ -392,24 +392,24 @@ void Mat::AAAneohooke::VisNames(std::map<std::string, int>& names)
 }
 
 
-bool Mat::AAAneohooke::VisData(
+bool Mat::AAAneohooke::vis_data(
     const std::string& name, std::vector<double>& data, int numgp, int eleGID)
 {
   if (name == "beta")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
-    data[0] = params_->GetParameter(params_->beta, eleGID);
+    data[0] = params_->get_parameter(params_->beta, eleGID);
   }
   else if (name == "youngs")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
-    data[0] = params_->GetParameter(params_->young, eleGID);
+    data[0] = params_->get_parameter(params_->young, eleGID);
   }
   else if (name == "FourCEleId")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // get element lID incase we have element specific material parameters
-    int eleID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+    int eleID = Global::Problem::instance()->get_dis("structure")->element_col_map()->LID(eleGID);
     data[0] = eleID;
   }
   else

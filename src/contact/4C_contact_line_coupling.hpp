@@ -104,7 +104,7 @@ namespace CONTACT
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& comm() const;
+    virtual const Epetra_Comm& get_comm() const;
 
     /*!
      \brief create integration lines
@@ -123,7 +123,7 @@ namespace CONTACT
      \brief Get problem dimension (here: 3D)
 
      */
-    virtual const int& dim() { return dim_; };
+    virtual const int& n_dim() { return dim_; };
 
     /*!
      \brief Get interface contact parameter list
@@ -428,26 +428,26 @@ namespace CONTACT
      \brief perform line projection
 
      */
-    virtual void LineIntersection(double* sxi, double* mxi,
+    virtual void line_intersection(double* sxi, double* mxi,
         Core::Gen::Pairedvector<int, double>& dsxi, Core::Gen::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief Checks validity
 
      */
-    virtual bool CheckIntersection(double* sxi, double* mxi);
+    virtual bool check_intersection(double* sxi, double* mxi);
 
     /*!
      \brief calculate angle between line elements
 
      */
-    virtual double CalcCurrentAngle(Core::Gen::Pairedvector<int, double>& lineAngle);
+    virtual double calc_current_angle(Core::Gen::Pairedvector<int, double>& lineAngle);
 
     /*!
      \brief Checks parallelity
 
      */
-    virtual bool CheckParallelity();
+    virtual bool check_parallelity();
 
     //@}
    private:
@@ -462,7 +462,7 @@ namespace CONTACT
      \brief Get communicator
 
      */
-    virtual const Epetra_Comm& comm() const;
+    virtual const Epetra_Comm& get_comm() const;
 
     /*!
      \brief Get interface discretization
@@ -474,7 +474,7 @@ namespace CONTACT
      \brief Get problem dimension (here: 3D)
 
      */
-    virtual const int& dim() { return dim_; };
+    virtual const int& n_dim() { return dim_; };
 
     /*!
      \brief Get interface contact parameter list

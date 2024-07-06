@@ -40,7 +40,7 @@ namespace FLD
     virtual ~TurbulenceStatisticsHit() = default;
 
     //! store scatra discretization if passive scalar is included
-    virtual void StoreScatraDiscret(Teuchos::RCP<Core::FE::Discretization> scatradis)
+    virtual void store_scatra_discret(Teuchos::RCP<Core::FE::Discretization> scatradis)
     {
       scatradiscret_ = scatradis;
       return;
@@ -48,21 +48,21 @@ namespace FLD
 
     //! space and time (only forced but not decaying case) averaging
     //! get energy spectrum
-    virtual void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+    virtual void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp);
     //! version with scalar field
-    virtual void DoScatraTimeSample(
+    virtual void do_scatra_time_sample(
         Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp);
 
     // evaluation of dissipation rate and rbvmm-related quantities
-    virtual void EvaluateResiduals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs);
+    virtual void evaluate_residuals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs);
 
     //! dump the result to file
-    virtual void DumpStatistics(int step, bool multiple_records = false);
+    virtual void dump_statistics(int step, bool multiple_records = false);
     //! version with scalar field
     virtual void dump_scatra_statistics(int step, bool multiple_records = false);
 
     //! reset sums and number of samples to zero
-    virtual void ClearStatistics();
+    virtual void clear_statistics();
     //! version with scalar field
     virtual void clear_scatra_statistics();
 
@@ -169,7 +169,7 @@ namespace FLD
 
 
     //! store scatra discretization if passive scalar is included
-    void StoreScatraDiscret(Teuchos::RCP<Core::FE::Discretization> scatradis) override
+    void store_scatra_discret(Teuchos::RCP<Core::FE::Discretization> scatradis) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;
@@ -177,9 +177,9 @@ namespace FLD
 
     //! space and time (only forced but not decaying case) averaging
     //! get energy spectrum
-    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp) override;
+    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp) override;
     //! version with scalar field
-    void DoScatraTimeSample(
+    void do_scatra_time_sample(
         Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp) override
     {
       FOUR_C_THROW("not implemented for hdg");
@@ -187,7 +187,7 @@ namespace FLD
     }
 
     // evaluation of dissipation rate and rbvmm-related quantities
-    void EvaluateResiduals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs) override
+    void evaluate_residuals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;

@@ -89,7 +89,7 @@ namespace
     Core::IO::Level &lvl = ps(Core::IO::debug);
     EXPECT_NO_THROW(lvl.stream(1.2));
     EXPECT_NO_THROW(lvl << 4);
-    EXPECT_NO_THROW(lvl.SetLevel(Core::IO::minimal) << 5);
+    EXPECT_NO_THROW(lvl.set_level(Core::IO::minimal) << 5);
   }
 
   TEST(PstreamTest, LevelExternalOperators)

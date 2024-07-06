@@ -72,10 +72,10 @@ namespace
       const int dummy_node_ids[2] = {0, 1};
       Teuchos::RCP<Core::Elements::Element> beam_element =
           Teuchos::rcp(new Discret::ELEMENTS::Beam3eb(0, 0));
-      beam_element->SetNodeIds(2, dummy_node_ids);
+      beam_element->set_node_ids(2, dummy_node_ids);
       Teuchos::RCP<Discret::ELEMENTS::Fluid> fluid_element =
           Teuchos::rcp(new Discret::ELEMENTS::Fluid(1, 0));
-      fluid_element->SetDisType(Core::FE::CellType::hex8);
+      fluid_element->set_dis_type(Core::FE::CellType::hex8);
 
       // Set up the beam element.
       std::vector<double> xrefe(6);
@@ -98,7 +98,7 @@ namespace
       std::vector<const Core::Elements::Element*> pair_elements;
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*fluid_element));
-      pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
+      pair.create_geometry_pair(pair_elements[0], pair_elements[1], evaluation_data_);
       pair.init(intersection_params, pair_elements);
 
       pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<BeamType, scalar_type>::initialize(
@@ -112,7 +112,7 @@ namespace
       pair.ele1posref_.element_position_ = q_beam;
       pair.ele2posref_.element_position_ = q_fluid;
 
-      pair.ResetState(beam_dofvec, fluid_dofvec);
+      pair.reset_state(beam_dofvec, fluid_dofvec);
 
       const int fluid_dofs = FluidType::n_dof_;
       const int beam_dofs = BeamType::n_dof_;

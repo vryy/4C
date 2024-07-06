@@ -79,7 +79,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::set_particle_refere
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // set particle reference position
-    container->UpdateState(0.0, PARTICLEENGINE::ReferencePosition, 1.0, PARTICLEENGINE::Position);
+    container->update_state(0.0, PARTICLEENGINE::ReferencePosition, 1.0, PARTICLEENGINE::Position);
   }
 }
 
@@ -101,7 +101,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::
         particlecontainerbundle->get_specific_container(particleType, PARTICLEENGINE::Owned);
 
     // get number of particles stored in container
-    const int particlestored = container->ParticlesStored();
+    const int particlestored = container->particles_stored();
 
     // no owned particles of current particle type
     if (particlestored <= 0) continue;
@@ -111,17 +111,17 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::
 
     // get reference to function
     const auto& function =
-        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
+        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
 
     // get pointer to particle states
-    const double* refpos = container->GetPtrToState(PARTICLEENGINE::ReferencePosition, 0);
-    double* temp = container->GetPtrToState(PARTICLEENGINE::Temperature, 0);
+    const double* refpos = container->get_ptr_to_state(PARTICLEENGINE::ReferencePosition, 0);
+    double* temp = container->get_ptr_to_state(PARTICLEENGINE::Temperature, 0);
 
     // get particle state dimension
-    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
+    int statedim = container->get_state_dim(PARTICLEENGINE::Position);
 
     // safety check
-    if (function.NumberComponents() != 1)
+    if (function.number_components() != 1)
       FOUR_C_THROW("dimension of function defining temperature boundary condition is not one!");
 
     // iterate over owned particles of current type

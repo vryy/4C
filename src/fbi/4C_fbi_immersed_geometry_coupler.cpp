@@ -34,14 +34,14 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
     : fluidpositions_(new std::map<int, Core::LinAlg::Matrix<3, 1>>),
       beampositions_(new std::map<int, Core::LinAlg::Matrix<3, 1>>),
       searchtree_(new Core::Geo::SearchTree(5)),
-      searchradius_(Global::Problem::Instance()
-                        ->FBIParams()
+      searchradius_(Global::Problem::instance()
+                        ->fbi_params()
                         .sublist("BEAM TO FLUID MESHTYING")
                         .get<double>("SEARCH_RADIUS")),
       edgebased_fluidstabilization_(false)
 {
   edgebased_fluidstabilization_ = (Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(
-                                       Global::Problem::Instance()->FluidDynamicParams().sublist(
+                                       Global::Problem::instance()->fluid_dynamic_params().sublist(
                                            "RESIDUAL-BASED STABILIZATION"),
                                        "STABTYPE") == Inpar::FLUID::stabtype_edgebased);
 }
@@ -63,12 +63,12 @@ void FBI::FBIGeometryCoupler::setup(
   Core::LinAlg::Matrix<3, 2> fluidBox = Core::Geo::getXAABBofPositions(*fluidpositions_);
 
   // Sets-up the searchtree (octtree) for the fluid elements in the given bounding box
-  searchtree_->initializeTree(
+  searchtree_->initialize_tree(
       fluidBox, *discretizations[1], Core::Geo::TreeType(Core::Geo::OCTTREE));
 }
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
+Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector>& column_structure_displacement)
 {
@@ -100,24 +100,24 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
     for (std::map<int, std::set<int>>::const_iterator closefluideles = closeeles.begin();
          closefluideles != closeeles.end(); closefluideles++)
     {
-      const Core::Nodes::Node* const beamnode = discretizations[0]->gNode(beamnodeiterator->first);
-      const Core::Elements::Element* const* beamelements = beamnode->Elements();
+      const Core::Nodes::Node* const beamnode = discretizations[0]->g_node(beamnodeiterator->first);
+      const Core::Elements::Element* const* beamelements = beamnode->elements();
 
       // loop over the set of beam elements adjacent to the current beam node (this leads to
       // duplicate pairs)
-      for (int beamelementsnumber = 0; beamelementsnumber < beamnode->NumElement();
+      for (int beamelementsnumber = 0; beamelementsnumber < beamnode->num_element();
            beamelementsnumber++)
       {
         // loop over the gids of the fluid elements
         for (std::set<int>::const_iterator fluideleIter = (closefluideles->second).begin();
              fluideleIter != (closefluideles->second).end(); fluideleIter++)
         {
-          if (discretizations[1]->gElement(*fluideleIter)->Owner() ==
-              discretizations[0]->Comm().MyPID())
+          if (discretizations[1]->g_element(*fluideleIter)->owner() ==
+              discretizations[0]->get_comm().MyPID())
           {
             // store pairs because we have to create them on the beam element owner and we are
             // currently on the fluid element owner
-            (*pairids)[beamelements[beamelementsnumber]->Id()].push_back(*fluideleIter);
+            (*pairids)[beamelements[beamelementsnumber]->id()].push_back(*fluideleIter);
           }
         }
       }
@@ -130,48 +130,48 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
 
 // todo Maybe we can use Core::Rebalance::GhostDiscretizationOnAllProcs instead
 // todo Needs to be adapted as soon as problems can contain beam and general structure nodes
-void FBI::FBIGeometryCoupler::ExtendBeamGhosting(Core::FE::Discretization& discretization)
+void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& discretization)
 {
   // Core::Rebalance::GhostDiscretizationOnAllProcs(structure_->discretization());
-  std::vector<int> allproc(discretization.Comm().NumProc());
-  for (int i = 0; i < discretization.Comm().NumProc(); ++i) allproc[i] = i;
+  std::vector<int> allproc(discretization.get_comm().NumProc());
+  for (int i = 0; i < discretization.get_comm().NumProc(); ++i) allproc[i] = i;
 
   // fill my own row node ids
-  const Epetra_Map* noderowmap = discretization.NodeRowMap();
+  const Epetra_Map* noderowmap = discretization.node_row_map();
   std::vector<int> sdata(noderowmap->NumMyElements());
   for (int i = 0; i < noderowmap->NumMyElements(); ++i) sdata[i] = noderowmap->GID(i);
 
   // gather all gids of nodes redundantly
   std::vector<int> rdata;
   Core::LinAlg::Gather<int>(
-      sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
+      sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build completely overlapping map of nodes (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.Comm()));
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(
+      new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm()));
   sdata.clear();
   rdata.clear();
 
   // fill my own row element ids
-  const Epetra_Map* elerowmap = discretization.ElementRowMap();
+  const Epetra_Map* elerowmap = discretization.element_row_map();
   sdata.resize(elerowmap->NumMyElements());
   for (int i = 0; i < elerowmap->NumMyElements(); ++i) sdata[i] = elerowmap->GID(i);
 
   // gather all gids of elements redundantly
   rdata.resize(0);
   Core::LinAlg::Gather<int>(
-      sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
+      sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build complete overlapping map of elements (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.Comm()));
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+      new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm()));
   sdata.clear();
   rdata.clear();
   allproc.clear();
 
   // redistribute the discretization of the interface according to the
   // new column layout
-  discretization.ExportColumnNodes(*newnodecolmap);
+  discretization.export_column_nodes(*newnodecolmap);
   discretization.export_column_elements(*newelecolmap);
 
   discretization.fill_complete(true, false, false);
@@ -179,7 +179,7 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(Core::FE::Discretization& discr
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIGeometryCoupler::PreparePairCreation(
+void FBI::FBIGeometryCoupler::prepare_pair_creation(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
     Teuchos::RCP<std::map<int, std::vector<int>>> pairids)
 {
@@ -187,15 +187,15 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
       Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::PreparePairCreation");
   Teuchos::TimeMonitor monitor(*t);
 
-  std::vector<std::vector<int>> element_senddata(discretizations[0]->Comm().NumProc());
-  std::vector<std::vector<int>> node_senddata(discretizations[0]->Comm().NumProc());
+  std::vector<std::vector<int>> element_senddata(discretizations[0]->get_comm().NumProc());
+  std::vector<std::vector<int>> node_senddata(discretizations[0]->get_comm().NumProc());
   std::vector<std::vector<int>> pairids_to_send(element_senddata.size());
   std::vector<std::vector<int>> pairids_to_recv;
   std::vector<int> element_recvdata;
   std::vector<int> node_recvdata;
   std::vector<int> nodegids;
 
-  for (int i = 0; i < discretizations[0]->Comm().NumProc(); ++i)
+  for (int i = 0; i < discretizations[0]->get_comm().NumProc(); ++i)
   {
     element_senddata[i] = std::vector<int>();
     pairids_to_send[i] = std::vector<int>();
@@ -208,9 +208,9 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
   for (beamelementiterator = pairids->begin(); beamelementiterator != pairids->end();
        beamelementiterator++)
   {
-    Core::Elements::Element* beamele = discretizations[0]->gElement(beamelementiterator->first);
+    Core::Elements::Element* beamele = discretizations[0]->g_element(beamelementiterator->first);
     if (!beamele) FOUR_C_THROW("There is no element with gid %i", beamelementiterator->first);
-    owner = beamele->Owner();
+    owner = beamele->owner();
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();
          fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
     {
@@ -223,7 +223,8 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
   }
 
   // Communicate pair ids
-  Core::LinAlg::AllToAllCommunication(discretizations[0]->Comm(), pairids_to_send, pairids_to_recv);
+  Core::LinAlg::AllToAllCommunication(
+      discretizations[0]->get_comm(), pairids_to_send, pairids_to_recv);
 
   // bring pair_ids in correct format
   pairids->clear();
@@ -237,22 +238,22 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
 
   // Communicate element gids
   Core::LinAlg::AllToAllCommunication(
-      discretizations[0]->Comm(), element_senddata, element_recvdata);
+      discretizations[0]->get_comm(), element_senddata, element_recvdata);
 
 
   // Add my current column elements to the set for the map
-  const Epetra_Map* elecolmap = discretizations[1]->ElementColMap();
+  const Epetra_Map* elecolmap = discretizations[1]->element_col_map();
   for (int i = 0; i < elecolmap->NumMyElements(); ++i)
   {
     int gid = elecolmap->GID(i);
-    Core::Elements::Element* ele = discretizations[1]->gElement(gid);
+    Core::Elements::Element* ele = discretizations[1]->g_element(gid);
     if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
     element_recvdata.push_back(gid);
   }
 
   // build overlapping column map of the elements
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(
-      -1, (int)element_recvdata.size(), element_recvdata.data(), 0, discretizations[1]->Comm()));
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,
+      (int)element_recvdata.size(), element_recvdata.data(), 0, discretizations[1]->get_comm()));
 
 
   if (!newelecolmap->SameAs(*elecolmap))
@@ -263,38 +264,39 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
       for (unsigned int ele = 0; ele < element_senddata[proc].size(); ele++)
       {
         Core::Elements::Element* element =
-            discretizations[1]->gElement(element_senddata[proc][ele]);
+            discretizations[1]->g_element(element_senddata[proc][ele]);
         if (!element) FOUR_C_THROW("Cannot find node with gid %", element_senddata[proc][ele]);
         for (int node = 0; node < element->num_node(); node++)
         {
-          node_senddata[proc].push_back((element->NodeIds())[node]);
+          node_senddata[proc].push_back((element->node_ids())[node]);
         }
       }
     }
 
     // communicate node gids
-    Core::LinAlg::AllToAllCommunication(discretizations[0]->Comm(), node_senddata, node_recvdata);
+    Core::LinAlg::AllToAllCommunication(
+        discretizations[0]->get_comm(), node_senddata, node_recvdata);
 
     // add new node gids to overlapping column map
-    const Epetra_Map* nodecolmap = discretizations[1]->NodeColMap();
+    const Epetra_Map* nodecolmap = discretizations[1]->node_col_map();
     for (int i = 0; i < nodecolmap->NumMyElements(); ++i)
     {
       int gid = nodecolmap->GID(i);
-      Core::Nodes::Node* node = discretizations[1]->gNode(gid);
+      Core::Nodes::Node* node = discretizations[1]->g_node(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       node_recvdata.push_back(gid);
     }
 
     // build complete overlapping map of elements (on ALL processors)
     Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, (int)node_recvdata.size(), node_recvdata.data(), 0, discretizations[1]->Comm()));
+        -1, (int)node_recvdata.size(), node_recvdata.data(), 0, discretizations[1]->get_comm()));
 
     // export nodes and elements
-    discretizations[1]->ExportColumnNodes(*newnodecolmap);
+    discretizations[1]->export_column_nodes(*newnodecolmap);
     discretizations[1]->export_column_elements(*newelecolmap);
 
     Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discretizations[1], true)
-        ->FillCompleteFaces(true, true, true, edgebased_fluidstabilization_);
+        ->fill_complete_faces(true, true, true, edgebased_fluidstabilization_);
   }
 
   element_senddata.clear();
@@ -308,11 +310,11 @@ void FBI::FBIGeometryCoupler::compute_fixed_positions(Core::FE::Discretization& 
     Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions) const
 {
   positions->clear();
-  for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
+  for (int lid = 0; lid < dis.num_my_col_nodes(); ++lid)
   {
-    const Core::Nodes::Node* node = dis.lColNode(lid);
+    const Core::Nodes::Node* node = dis.l_col_node(lid);
 
-    for (int d = 0; d < 3; ++d) (*positions)[node->Id()](d) = node->X()[d];
+    for (int d = 0; d < 3; ++d) (*positions)[node->id()](d) = node->x()[d];
   }
 }
 /*----------------------------------------------------------------------*/
@@ -326,24 +328,24 @@ void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization
       9);  // todo this does not work for all possible elements, does it? Variable size?
   std::vector<double> mydisp(3, 0.0);
 
-  for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
+  for (int lid = 0; lid < dis.num_my_col_nodes(); ++lid)
   {
-    const Core::Nodes::Node* node = dis.lColNode(lid);
+    const Core::Nodes::Node* node = dis.l_col_node(lid);
     if (disp != Teuchos::null)
     {
       // get the DOF numbers of the current node
-      dis.Dof(node, 0, src_dofs);
+      dis.dof(node, 0, src_dofs);
       // get the current displacements
       Core::FE::ExtractMyValues(*disp, mydisp, src_dofs);
 
-      for (int d = 0; d < 3; ++d) (*positions)[node->Id()](d) = node->X()[d] + mydisp.at(d);
+      for (int d = 0; d < 3; ++d) (*positions)[node->id()](d) = node->x()[d] + mydisp.at(d);
     }
   }
 }
 
 /*----------------------------------------------------------------------*/
 
-void FBI::FBIGeometryCoupler::SetBinning(
+void FBI::FBIGeometryCoupler::set_binning(
     Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning){};
 
 FOUR_C_NAMESPACE_CLOSE

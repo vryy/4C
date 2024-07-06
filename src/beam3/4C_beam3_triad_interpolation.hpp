@@ -46,7 +46,7 @@ namespace LargeRotations
      *
      *  \author grill
      *  \date 01/17 */
-    static Teuchos::RCP<TriadInterpolation<T>> Create(unsigned int numnodes);
+    static Teuchos::RCP<TriadInterpolation<T>> create(unsigned int numnodes);
     //@}
 
 

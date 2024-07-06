@@ -30,7 +30,7 @@ namespace
   std::vector<double> get_acceleration_vector(
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
-    const Epetra_Vector& acceleration = *discretization.GetState("acceleration");
+    const Epetra_Vector& acceleration = *discretization.get_state("acceleration");
     std::vector<double> my_acceleration(lm.size());
     Core::FE::ExtractMyValues(acceleration, my_acceleration, lm);
 
@@ -67,7 +67,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
 {
   if (!material_post_setup_)
   {
-    std::visit([&](auto& interface) { interface->material_post_setup(*this, *SolidMaterial()); },
+    std::visit([&](auto& interface) { interface->material_post_setup(*this, *solid_material()); },
         solid_calc_variant_);
     material_post_setup_ = true;
   }
@@ -78,7 +78,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
   const Core::Elements::ActionType action = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return params_interface().get_action_type();
         else
           return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
@@ -92,7 +92,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_nonlinear_force_stiffness_mass(
-                *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
+                *this, *solid_material(), discretization, lm, params, &elevec1, &elemat1, nullptr);
           },
           solid_calc_variant_);
       return 0;
@@ -103,7 +103,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_nonlinear_force_stiffness_mass(
-                *this, *SolidMaterial(), discretization, lm, params, &elevec1, nullptr, nullptr);
+                *this, *solid_material(), discretization, lm, params, &elevec1, nullptr, nullptr);
           },
           solid_calc_variant_);
 
@@ -115,7 +115,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_nonlinear_force_stiffness_mass(
-                *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
+                *this, *solid_material(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
           },
           solid_calc_variant_);
 
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             interface->evaluate_nonlinear_force_stiffness_mass(
-                *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
+                *this, *solid_material(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
           },
           solid_calc_variant_);
 
@@ -145,7 +145,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
+            interface->evaluate_nonlinear_force_stiffness_mass(*this, *solid_material(),
                 discretization, lm, params, &elevec1, nullptr, &mass_matrix);
           },
           solid_calc_variant_);
@@ -156,19 +156,19 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_update_istep:
     {
       std::visit([&](auto& interface)
-          { interface->Update(*this, *SolidMaterial(), discretization, lm, params); },
+          { interface->update(*this, *solid_material(), discretization, lm, params); },
           solid_calc_variant_);
 
       return 0;
     }
     case Core::Elements::struct_update_prestress:
     {
-      update_prestress(solid_calc_variant_, *this, *SolidMaterial(), discretization, lm, params);
+      update_prestress(solid_calc_variant_, *this, *solid_material(), discretization, lm, params);
       return 0;
     }
     case Core::Elements::struct_calc_recover:
     {
-      std::visit([&](auto& interface) { interface->Recover(*this, discretization, lm, params); },
+      std::visit([&](auto& interface) { interface->recover(*this, discretization, lm, params); },
           solid_calc_variant_);
 
       return 0;
@@ -178,7 +178,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->calculate_stress(*this, *SolidMaterial(),
+            interface->calculate_stress(*this, *solid_material(),
                 StressIO{get_io_stress_type(*this, params), get_stress_data(*this, params)},
                 StrainIO{get_io_strain_type(*this, params), get_strain_data(*this, params)},
                 discretization, lm, params);
@@ -193,12 +193,12 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
           [&](auto& interface)
           {
             return interface->calculate_internal_energy(
-                *this, *SolidMaterial(), discretization, lm, params);
+                *this, *solid_material(), discretization, lm, params);
           },
           solid_calc_variant_);
 
 
-      if (IsParamsInterface())
+      if (is_params_interface())
       {
         // new structural time integration
         params_interface().add_contribution_to_energy_type(
@@ -219,8 +219,8 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->initialize_gauss_point_data_output(
-                *this, *SolidMaterial(), *params_interface().gauss_point_data_output_manager_ptr());
+            interface->initialize_gauss_point_data_output(*this, *solid_material(),
+                *params_interface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
 
@@ -231,8 +231,8 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
       std::visit(
           [&](auto& interface)
           {
-            interface->evaluate_gauss_point_data_output(
-                *this, *SolidMaterial(), *params_interface().gauss_point_data_output_manager_ptr());
+            interface->evaluate_gauss_point_data_output(*this, *solid_material(),
+                *params_interface().gauss_point_data_output_manager_ptr());
           },
           solid_calc_variant_);
 
@@ -241,7 +241,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_reset_istep:
     {
       std::visit([&](auto& interface)
-          { interface->reset_to_last_converged(*this, *SolidMaterial()); },
+          { interface->reset_to_last_converged(*this, *solid_material()); },
           solid_calc_variant_);
 
       return 0;
@@ -268,7 +268,7 @@ int Discret::ELEMENTS::Solid::evaluate_neumann(Teuchos::ParameterList& params,
   const double time = std::invoke(
       [&]()
       {
-        if (IsParamsInterface())
+        if (is_params_interface())
           return params_interface().get_total_time();
         else
           return params.get("total time", -1.0);
@@ -285,7 +285,7 @@ double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi(const std::vecto
     const Core::LinAlg::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations)
 {
   return Discret::ELEMENTS::get_normal_cauchy_stress_at_xi<dim>(
-      solid_calc_variant_, *this, *SolidMaterial(), disp, xi, n, dir, linearizations);
+      solid_calc_variant_, *this, *solid_material(), disp, xi, n, dir, linearizations);
 }
 
 template double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi<3>(

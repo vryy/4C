@@ -55,10 +55,10 @@ namespace FSI
     read_mesh is called), the dofmaps for the blocks might get invalid.
 
     */
-    virtual void SetupSystem();
+    virtual void setup_system();
 
     /// outer level FSI time loop
-    void Timeloop();
+    void timeloop();
 
    protected:
     /// time update
@@ -164,7 +164,7 @@ namespace FSI
     //! @name Access methods for subclasses
 
     /// get full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.FullMap(); }
+    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return blockrowdofmap_.full_map(); }
 
     //@}
 

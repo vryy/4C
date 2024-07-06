@@ -69,25 +69,25 @@ namespace ParticleRigidBody
     //! @{
 
     //! get mass of rigid bodies
-    inline const std::vector<double>& GetRefMass() const { return mass_; };
+    inline const std::vector<double>& get_ref_mass() const { return mass_; };
 
     //! get mass moment of inertia of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefInertia() const { return inertia_; };
+    inline const std::vector<std::vector<double>>& get_ref_inertia() const { return inertia_; };
 
     //! get position of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefPosition() const { return position_; };
+    inline const std::vector<std::vector<double>>& get_ref_position() const { return position_; };
 
     //! get velocity of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefVelocity() const { return velocity_; };
+    inline const std::vector<std::vector<double>>& get_ref_velocity() const { return velocity_; };
 
     //! get acceleration of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefAcceleration() const
+    inline const std::vector<std::vector<double>>& get_ref_acceleration() const
     {
       return acceleration_;
     };
 
     //! get rotation of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefRotation() const { return rotation_; };
+    inline const std::vector<std::vector<double>>& get_ref_rotation() const { return rotation_; };
 
     //! get angular velocity of rigid bodies
     inline const std::vector<std::vector<double>>& get_ref_angular_velocity() const
@@ -102,10 +102,10 @@ namespace ParticleRigidBody
     };
 
     //! get force of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefForce() const { return force_; };
+    inline const std::vector<std::vector<double>>& get_ref_force() const { return force_; };
 
     //! get torque of rigid bodies
-    inline const std::vector<std::vector<double>>& GetRefTorque() const { return torque_; };
+    inline const std::vector<std::vector<double>>& get_ref_torque() const { return torque_; };
 
     //! @}
 
@@ -113,22 +113,22 @@ namespace ParticleRigidBody
     //! @{
 
     //! get mass of rigid bodies
-    inline std::vector<double>& GetRefMass() { return mass_; };
+    inline std::vector<double>& get_ref_mass() { return mass_; };
 
     //! get mass moment of inertia of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefInertia() { return inertia_; };
+    inline std::vector<std::vector<double>>& get_ref_inertia() { return inertia_; };
 
     //! get position of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefPosition() { return position_; };
+    inline std::vector<std::vector<double>>& get_ref_position() { return position_; };
 
     //! get velocity of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefVelocity() { return velocity_; };
+    inline std::vector<std::vector<double>>& get_ref_velocity() { return velocity_; };
 
     //! get acceleration of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefAcceleration() { return acceleration_; };
+    inline std::vector<std::vector<double>>& get_ref_acceleration() { return acceleration_; };
 
     //! get rotation of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefRotation() { return rotation_; };
+    inline std::vector<std::vector<double>>& get_ref_rotation() { return rotation_; };
 
     //! get angular velocity of rigid bodies
     inline std::vector<std::vector<double>>& get_ref_angular_velocity()
@@ -143,10 +143,10 @@ namespace ParticleRigidBody
     };
 
     //! get force of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefForce() { return force_; };
+    inline std::vector<std::vector<double>>& get_ref_force() { return force_; };
 
     //! get torque of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefTorque() { return torque_; };
+    inline std::vector<std::vector<double>>& get_ref_torque() { return torque_; };
 
     //! @}
 

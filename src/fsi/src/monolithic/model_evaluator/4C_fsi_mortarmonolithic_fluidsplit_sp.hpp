@@ -71,7 +71,7 @@ namespace FSI
     explicit MortarMonolithicFluidSplitSaddlePoint(
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
-    void SetupSystem() final;
+    void setup_system() final;
 
     //! @name Apply current field state to system
 
@@ -81,7 +81,7 @@ namespace FSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const override;
 
     /// read restart
     void read_restart(int step) final;
@@ -137,7 +137,7 @@ namespace FSI
     void output() final;
 
     /// Write Lagrange multiplier
-    void OutputLambda() final;
+    void output_lambda() final;
 
     /*!
     @copydoc FSI::Monolithic::extract_field_vectors
@@ -207,7 +207,7 @@ namespace FSI
     virtual void set_lag_mult();
 
     //! Set #notsetup_ = true after redistribution
-    void SetNotSetup() override { notsetup_ = true; }
+    void set_not_setup() override { notsetup_ = true; }
 
     //! @name Methods for infnorm-scaling of the system
     //!@{

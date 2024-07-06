@@ -34,9 +34,9 @@ namespace FS3I
 
     void setup() override;
 
-    void Timeloop() override;
+    void timeloop() override;
 
-    void DoFSIStep();
+    void do_fsi_step();
 
     void do_scatra_step();
 

@@ -49,7 +49,7 @@ namespace Core::LinearSolver
         bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) = 0;
 
     /// linear operator used for preconditioning
-    virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
+    virtual Teuchos::RCP<Epetra_Operator> prec_operator() const = 0;
   };
 }  // namespace Core::LinearSolver
 

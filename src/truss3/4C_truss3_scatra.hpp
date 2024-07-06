@@ -23,16 +23,16 @@ namespace Discret
     class Truss3ScatraType : public Truss3Type
     {
      public:
-      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
-      static Truss3ScatraType& Instance();
+      static Truss3ScatraType& instance();
 
-      std::string Name() const override { return "Truss3ScatraType"; }
+      std::string name() const override { return "Truss3ScatraType"; }
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -59,22 +59,22 @@ namespace Discret
 
       Truss3Scatra(const Truss3Scatra& old);
 
-      Core::Elements::Element* Clone() const override;
+      Core::Elements::Element* clone() const override;
 
-      Core::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& element_type() const override
       {
-        return Truss3ScatraType::Instance();
+        return Truss3ScatraType::instance();
       }
 
       /// return ScaTra::ImplType
-      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
 
-      bool ReadElement(const std::string& eletype, const std::string& distype,
+      bool read_element(const std::string& eletype, const std::string& distype,
           Input::LineDefinition* linedef) override;
 
-      int UniqueParObjectId() const override
+      int unique_par_object_id() const override
       {
-        return Truss3ScatraType::Instance().UniqueParObjectId();
+        return Truss3ScatraType::instance().unique_par_object_id();
       }
 
       void calc_internal_force_stiff_tot_lag(
@@ -82,7 +82,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& forcevec,
           Core::LinAlg::SerialDenseMatrix& stiffmat) override;
 
-      void CalcGPStresses(Teuchos::ParameterList& params,
+      void calc_gp_stresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state) override;
 
       void pack(Core::Communication::PackBuffer& data) const override;

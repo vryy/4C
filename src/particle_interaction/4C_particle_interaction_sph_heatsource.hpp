@@ -69,7 +69,7 @@ namespace ParticleInteraction
         const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
 
     //! evaluate heat source
-    virtual void EvaluateHeatSource(const double& evaltime) const = 0;
+    virtual void evaluate_heat_source(const double& evaltime) const = 0;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -107,7 +107,7 @@ namespace ParticleInteraction
     explicit SPHHeatSourceVolume(const Teuchos::ParameterList& params);
 
     //! evaluate heat source
-    void EvaluateHeatSource(const double& evaltime) const override;
+    void evaluate_heat_source(const double& evaltime) const override;
   };
 
   class SPHHeatSourceSurface : public SPHHeatSourceBase
@@ -120,7 +120,7 @@ namespace ParticleInteraction
     void init() override;
 
     //! evaluate heat source
-    void EvaluateHeatSource(const double& evaltime) const override;
+    void evaluate_heat_source(const double& evaltime) const override;
 
    private:
     //! heat source direction vector

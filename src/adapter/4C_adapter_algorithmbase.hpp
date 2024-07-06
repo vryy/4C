@@ -40,26 +40,26 @@ namespace Adapter
     virtual void read_restart(int step) = 0;
 
     /// communicator
-    const Epetra_Comm& Comm() const { return comm_; }
+    const Epetra_Comm& get_comm() const { return comm_; }
 
     /// tests if there are more time steps to do
-    bool NotFinished() const { return step_ < nstep_ and time_ + 1e-8 * dt_ < maxtime_; }
+    bool not_finished() const { return step_ < nstep_ and time_ + 1e-8 * dt_ < maxtime_; }
 
     /// time step size
-    double Dt() const { return dt_; }
+    double dt() const { return dt_; }
 
     /// set time step size
     void set_dt(const double stepsize) { dt_ = stepsize; }
 
     /// current time
-    double Time() const { return time_; }
+    double time() const { return time_; }
 
     /// current time step number
-    int Step() const { return step_; }
+    int step() const { return step_; }
 
     /// set new time step in read_restart() or in a potential outer control
-    void SetTimeStep(const double time,  ///< physical time to set
-        const int step                   ///< time step number to set
+    void set_time_step(const double time,  ///< physical time to set
+        const int step                     ///< time step number to set
     );
 
    protected:

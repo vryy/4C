@@ -85,14 +85,14 @@ namespace FLD
     added to global vectors. This method allows to do the time average
     of the nodal values after a certain amount of timesteps.
     */
-    void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp);
 
     /*!
     \brief The values of velocity, pressure, temperature and its squared
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void DoLomaTimeSample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp,
+    void do_loma_time_sample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp,
         Epetra_Vector& force, const double eosfac);
 
     /*!
@@ -102,7 +102,7 @@ namespace FLD
     statistic to the file
     */
 
-    void DumpStatistics(int step);
+    void dump_statistics(int step);
 
     /*!
     \brief Dump the result to file for low-Mach-number flow.
@@ -111,13 +111,13 @@ namespace FLD
     statistic to the file
     */
 
-    void DumpLomaStatistics(int step);
+    void dump_loma_statistics(int step);
 
     /*!
     \brief Reset sums and number of samples to zero
     */
 
-    void ClearStatistics();
+    void clear_statistics();
 
 
     /*!

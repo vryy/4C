@@ -69,7 +69,7 @@ namespace ScaTra
       /** \brief construct zero iso-contour of level-set field
        *
        *  \author rasthofer \date 09/13 */
-      void CaptureZeroLevelSet(const Teuchos::RCP<const Epetra_Vector>& phi,
+      void capture_zero_level_set(const Teuchos::RCP<const Epetra_Vector>& phi,
           const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
           double& volumedomainplus, double& zerosurface,
           std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells);
@@ -84,7 +84,7 @@ namespace ScaTra
        *  outside domain will be considered.
        *
        *  \author hiermeier \date 11/16 */
-      void SetDesiredPositions(
+      void set_desired_positions(
           const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos);
 
      protected:

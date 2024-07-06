@@ -119,7 +119,7 @@ namespace BEAMINTERACTION
      * \brief Calculate the maps for the beam and solid dofs. The calculated maps are used in
      * Complete of the mortar matrices.
      */
-    void SetGlobalMaps();
+    void set_global_maps();
 
     /**
      * \brief This method builds the local maps from the global multi vector created in Setup. The
@@ -137,7 +137,7 @@ namespace BEAMINTERACTION
      * @param discret Pointer to the discretization.
      * @param contact_pairs All contact pairs on this processor.
      */
-    void SetLocalMaps(
+    void set_local_maps(
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
@@ -146,7 +146,7 @@ namespace BEAMINTERACTION
      *
      * First entry in the pair are the translational GIDs and second entry are the rotational GIDs.
      */
-    [[nodiscard]] std::pair<std::vector<int>, std::vector<int>> LocationVector(
+    [[nodiscard]] std::pair<std::vector<int>, std::vector<int>> location_vector(
         const BEAMINTERACTION::BeamContactPair& contact_pair) const;
 
     /**
@@ -164,20 +164,20 @@ namespace BEAMINTERACTION
      * \brief Get the global vector of Lagrange multipliers.
      * @return Global vector of Lagrange multipliers.
      */
-    [[nodiscard]] virtual Teuchos::RCP<Epetra_Vector> GetGlobalLambda() const;
+    [[nodiscard]] virtual Teuchos::RCP<Epetra_Vector> get_global_lambda() const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
      * the Lagrange GID. on the ranks where they are used.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol() const;
+    Teuchos::RCP<Epetra_Vector> get_global_lambda_col() const;
 
     /**
      * \brief Return a const reference to the contact pairs in this mortar manager.
      * @return Reference to the pair vector.
      */
-    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& GetContactPairs() const
+    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs() const
     {
       return contact_pairs_;
     }
