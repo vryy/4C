@@ -81,6 +81,13 @@ repos:
         files: '\.(h|hpp)$'
         entry: utilities/python-venv/bin/check-header-guards
 
+      - id: cpp-preprocessor
+        name: C++ preprocessor directives
+        description: 'Check that all C++ files only use acceptable preprocessor directives'
+        language: python
+        types_or: [c++, c]
+        entry: utilities/python-venv/bin/check-preprocessor
+
       - id: codeowners
         name: Inclusion in CODEOWNERS file
         description: 'Check that files are listed in CODEOWNERS file'
