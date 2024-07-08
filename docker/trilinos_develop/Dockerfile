@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y \
       lcov \
       libblas-dev \
       libboost-all-dev \
+      libcln-dev \
       libhdf5-dev \
       libhdf5-openmpi-dev \
       libnetcdf-dev \
@@ -68,9 +69,6 @@ RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
 
 # Install qhull
 RUN /dependencies/current/qhull/install.sh ${INSTALL_DIR}
-
- # Install CLN
-RUN /dependencies/current/cln/install.sh ${INSTALL_DIR}
 
 # Install Trilinos
 RUN /dependencies/trilinos_develop/trilinos/install.sh ${INSTALL_DIR} ${TRILINOS_VERSION}
