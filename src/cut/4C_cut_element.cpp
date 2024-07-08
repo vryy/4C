@@ -146,12 +146,12 @@ Core::Geo::Cut::Element::Element(
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
     Side* s = *i;
-    s->Register(this);
+    s->register_entity(this);
   }
   for (std::vector<Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
     Node* n = *i;
-    n->Register(this);
+    n->register_entity(this);
     points_.push_back(n->point());
   }
   parent_id_ = -1;  // initialize with non-reasonable negative element Id

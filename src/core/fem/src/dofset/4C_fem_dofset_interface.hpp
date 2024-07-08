@@ -190,7 +190,7 @@ namespace Core::DOFSets
     virtual void notify_reset() = 0;
 
     /// Register new proxy to notify
-    virtual void Register(DofSetInterface* dofset) = 0;
+    virtual void register_proxy(DofSetInterface* dofset) = 0;
 
     /// Remove proxy from list
     virtual void unregister(DofSetInterface* dofset) = 0;

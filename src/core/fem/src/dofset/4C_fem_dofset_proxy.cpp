@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::DOFSets::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
     : dofset_(dofset), isassigned_(dofset->filled())
 {
-  dofset->Register(this);
+  dofset->register_proxy(this);
 }
 
 

@@ -52,7 +52,7 @@ Core::Geo::Cut::VolumeCell::VolumeCell(const plain_facet_set& facets,
   for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet* f = *i;
-    f->Register(this);
+    f->register_entity(this);
   }
 }
 

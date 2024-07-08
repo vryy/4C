@@ -73,13 +73,13 @@ Core::Geo::Cut::Facet::Facet(
   for (std::vector<Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
   {
     Point* p = *i;
-    p->Register(this);
+    p->register_entity(this);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Facet::Register(VolumeCell* cell)
+void Core::Geo::Cut::Facet::register_entity(VolumeCell* cell)
 {
   cells_.insert(cell);
   if (cells_.size() > 2)
@@ -201,7 +201,7 @@ void Core::Geo::Cut::Facet::add_hole(Facet* hole)
   for (std::vector<Point*>::iterator i = hole->points_.begin(); i != hole->points_.end(); ++i)
   {
     Point* p = *i;
-    p->Register(this);
+    p->register_entity(this);
   }
   holes_.insert(hole);
 }
@@ -358,7 +358,7 @@ void Core::Geo::Cut::Facet::create_triangulation(Mesh& mesh, const std::vector<P
         0.0);  // change tolerance here intelligently !!! - basically
                // there is no reason why I'd like to merge here!
     p_mid->position(position());
-    p_mid->Register(this);
+    p_mid->register_entity(this);
 
     // form triangles and store them in triangulation_
     triangulation_.clear();

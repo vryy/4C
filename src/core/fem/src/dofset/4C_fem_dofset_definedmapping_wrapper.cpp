@@ -39,7 +39,7 @@ Core::DOFSets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
   if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
   if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
 
-  sourcedofset_->Register(this);
+  sourcedofset_->register_proxy(this);
 }
 
 /*----------------------------------------------------------------------*

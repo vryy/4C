@@ -173,17 +173,17 @@ namespace Core::Geo
       int id() const { return nid_; }
 
       /// register an edge adjacent to this node
-      void Register(Edge* edge)
+      void register_entity(Edge* edge)
       {
         edges_.insert(edge);
         point_->add_edge(edge);
       }
 
       /// register a side adjacent to this node
-      void Register(Side* side) { point_->add_side(side); }
+      void register_entity(Side* side) { point_->add_side(side); }
 
       /// register an element adjacent to this node
-      void Register(Element* element) { point_->add_element(element); }
+      void register_entity(Element* element) { point_->add_element(element); }
 
       /// register cuts
       void register_cuts();

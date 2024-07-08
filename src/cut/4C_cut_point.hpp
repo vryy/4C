@@ -160,9 +160,9 @@ namespace Core::Geo
       /*! \brief Get the coordinates of this point */
       virtual void coordinates(double* x) const = 0;
 
-      void Register(Line* line) { lines_.insert(line); }
+      void register_entity(Line* line) { lines_.insert(line); }
 
-      void Register(Facet* facet) { facets_.insert(facet); }
+      void register_entity(Facet* facet) { facets_.insert(facet); }
 
       /*!
       \brief Identifies the edges that are cut by considered point and given point

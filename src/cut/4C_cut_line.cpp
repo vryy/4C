@@ -23,8 +23,8 @@ Core::Geo::Cut::Line::Line(
   if (cut_side2) add_side(cut_side2);
   if (cut_element) add_element(cut_element);
 
-  p1_->Register(this);
-  p2_->Register(this);
+  p1_->register_entity(this);
+  p2_->register_entity(this);
 
   // self-register at all sides
 

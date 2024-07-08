@@ -178,7 +178,7 @@ void Core::DOFSets::DofSetBase::print_all_dofsets(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::Register(DofSetInterface* dofset)
+void Core::DOFSets::DofSetBase::register_proxy(DofSetInterface* dofset)
 {
   registered_dofsets_.push_back(dofset);
 }

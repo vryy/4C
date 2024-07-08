@@ -118,7 +118,7 @@ namespace Core::Geo
       bool is_marked_background_side() { return (!is_cut_side() and (markedsidemap_.size() > 0)); }
 
       /// \brief Register this element in which the side is a part of
-      void Register(Element* element) { elements_.insert(element); }
+      void register_entity(Element* element) { elements_.insert(element); }
 
       /*void CollectElements( plain_element_set & elements )
        {

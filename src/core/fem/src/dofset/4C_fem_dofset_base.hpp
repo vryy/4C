@@ -79,7 +79,7 @@ namespace Core::DOFSets
     void notify_reset() override;
 
     /// Register new dofset to notify
-    void Register(DofSetInterface* dofset) override;
+    void register_proxy(DofSetInterface* dofset) override;
 
     /// Remove dofset from list
     void unregister(DofSetInterface* dofset) override;

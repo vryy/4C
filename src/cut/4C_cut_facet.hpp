@@ -39,7 +39,7 @@ namespace Core::Geo
      public:
       Facet(Mesh& mesh, const std::vector<Point*>& points, Side* side, bool cutsurface);
 
-      void Register(VolumeCell* cell);
+      void register_entity(VolumeCell* cell);
 
       void disconnect_volume(VolumeCell* cell);
 

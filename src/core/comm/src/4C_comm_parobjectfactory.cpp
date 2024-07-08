@@ -40,7 +40,7 @@ namespace Core::Communication
         return instance_.get();
       }
 
-      void Register(ParObjectType* parobjecttype) { types_.push_back(parobjecttype); }
+      void do_register(ParObjectType* parobjecttype) { types_.push_back(parobjecttype); }
 
       static void finalize()
       {
@@ -69,7 +69,7 @@ namespace Core::Communication
 /*----------------------------------------------------------------------*/
 Core::Communication::ParObjectType::ParObjectType() : objectid_(0)
 {
-  ParObjectPreRegister::instance()->Register(this);
+  ParObjectPreRegister::instance()->do_register(this);
 }
 
 

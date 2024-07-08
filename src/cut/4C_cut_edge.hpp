@@ -57,7 +57,7 @@ namespace Core::Geo
         for (std::vector<Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
         {
           Node* n = *i;
-          n->Register(this);
+          n->register_entity(this);
           n->point()->add_edge(this);
         }
         selfcutposition_ = Point::undecided;
@@ -78,13 +78,13 @@ namespace Core::Geo
       virtual Core::FE::CellType shape() const = 0;
 
       /*! \brief Add the side to the list of sides cut by this edge */
-      void Register(Side* side)
+      void register_entity(Side* side)
       {
         sides_.insert(side);
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
         {
           Node* n = *i;
-          n->Register(side);
+          n->register_entity(side);
         }
       }
 

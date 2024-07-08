@@ -35,7 +35,7 @@ Core::Geo::Cut::Side::Side(
   for (std::vector<Edge*>::const_iterator i = edges.begin(); i != edges.end(); ++i)
   {
     Edge* e = *i;
-    e->Register(this);
+    e->register_entity(this);
   }
   selfcutposition_ = Point::undecided;
 
