@@ -327,7 +327,13 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
 
   solver_params.refactor = true;
   solver_params.reset = iter == 0;
-  const int linsol_status = currSolver->NoxSolve(linProblem, solver_params);
+
+  Teuchos::RCP<Epetra_Operator> matrix = Teuchos::rcp(linProblem.GetOperator(), false);
+  Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcp(linProblem.GetLHS(), false);
+  Teuchos::RCP<Epetra_MultiVector> b = Teuchos::rcp(linProblem.GetRHS(), false);
+
+  const int linsol_status = currSolver->Solve(matrix, x, b, solver_params);
+
   if (linsol_status)
   {
     if (utils_.isPrintType(::NOX::Utils::Warning))

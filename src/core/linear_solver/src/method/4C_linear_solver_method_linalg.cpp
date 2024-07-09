@@ -39,10 +39,6 @@ Core::LinAlg::Solver::Solver(const Teuchos::ParameterList& inparams, const Epetr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::setup() { solver_ = Teuchos::null; }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Core::LinAlg::Solver::~Solver() { reset(); }
 
 /*----------------------------------------------------------------------*
@@ -202,33 +198,20 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::Solver::Solve()
-{
-  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  2)   Solve");
-  return solver_->Solve();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 int Core::LinAlg::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
     const SolverParams& params)
 {
   setup(matrix, x, b, params);
-  return Solve();
+
+  int error_value = 0;
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  2)   Solve");
+    error_value = solver_->Solve();
+  }
+
+  return error_value;
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int Core::LinAlg::Solver::NoxSolve(Epetra_LinearProblem& linProblem, const SolverParams& params)
-{
-  Teuchos::RCP<Epetra_Operator> matrix = Teuchos::rcp(linProblem.GetOperator(), false);
-  Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcp(linProblem.GetLHS(), false);
-  Teuchos::RCP<Epetra_MultiVector> b = Teuchos::rcp(linProblem.GetRHS(), false);
-
-  return Solve(matrix, x, b, params);
-}
-
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
