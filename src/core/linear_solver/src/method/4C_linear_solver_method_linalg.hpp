@@ -102,12 +102,6 @@ namespace Core::LinAlg
         const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
         Core::IO::Verbositylevel verbosity, bool translate_params_to_belos = true);
 
-    /*!
-    \brief Set-up of stuff common to all constructors
-
-    */
-    void setup();
-
     //! @name Solve and ApplyInverse methods
 
     /*!
@@ -122,9 +116,6 @@ namespace Core::LinAlg
     */
     void setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
         Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
-
-    /// solve linear system after setup has been done
-    int Solve();
 
     /*!
     \brief Solve system of equations in one go
@@ -141,22 +132,6 @@ namespace Core::LinAlg
     */
     int Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
         Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
-
-    /*!
-    \brief Solve system of equations in one go (NOX)
-
-    Calls the related Solve function. The only difference is the input
-    as Epetra_LinearSystem.
-
-    \param linProblem (in/out): linear Problem wrapper. Includes
-                                --> system of equations
-                                --> initial guess on input, solution on output
-                                --> right hand side vector
-                                if project!=false it might be modified if not orthognal
-                                to matrix kernel.
-    \param params  (in)    : parameters for the solver. See documentation of SolverParams
-    */
-    int NoxSolve(Epetra_LinearProblem& linProblem, const SolverParams& params);
 
     /*!
     \brief Reset the solver and clear data
@@ -296,6 +271,7 @@ namespace Core::LinAlg
 
     //! a communicator
     const Epetra_Comm& comm_;
+
     //! (internal) parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
