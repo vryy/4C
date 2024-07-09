@@ -91,7 +91,7 @@ namespace Core::Geo
         linear_ = false;
       }
       // Free all memory
-      void Delete() { free(static_cast<void*>(container_start_)); }
+      void free_all() { free(static_cast<void*>(container_start_)); }
 
       // reset contaienr to linear allocation, assuming everything inside was freed
       void reset_container();
@@ -142,7 +142,7 @@ namespace Core::Geo
       virtual ~MemoryAllocator() = default;  // Free free requests, etc
       virtual void finalize(){};
       // Free container
-      virtual void Delete(){};
+      virtual void free_all(){};
     };
 
 
@@ -217,7 +217,7 @@ namespace Core::Geo
       void finalize() override;
 
       // Frees memory of the underlying const memory container
-      void Delete() override;
+      void free_all() override;
 
       ~GenericMemoryPool() override;
     };
@@ -238,7 +238,7 @@ namespace Core::Geo
       void finalize();
 
       // Delete all memory allocated by it
-      void Delete();
+      void free_all();
 
       // zeroing out all the allocation
       void reset_allocated();
@@ -317,7 +317,7 @@ namespace Core::Geo
       void finalize();
 
       // Delete free memory from the memory pool allocator
-      void Delete();
+      void free_all();
 
       std::unordered_map<size_t, int>& get_memory_pattern();
 
